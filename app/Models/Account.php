@@ -22,8 +22,28 @@ class Account extends Model
 
     protected $casts = [
         'last_sync_at' => 'datetime',
-        'password'     => 'encrypted',
     ];
+
+    public function getPasswordAttribute($value)
+    {
+        if (empty($value)) {
+            return '';
+        }
+        try {
+            return decrypt($value);
+        } catch (\Throwable $e) {
+            try {
+                return decrypt($value, false);
+            } catch (\Throwable $ex) {
+                return '';
+            }
+        }
+    }
+
+    public function setPasswordAttribute($value)
+    {
+        $this->attributes['password'] = encrypt($value);
+    }
 
     public function scheduledTasks(): HasMany
     {

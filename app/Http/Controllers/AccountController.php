@@ -9,6 +9,7 @@ use App\Services\TsoAmfService;
 use App\Services\ZoneParserService;
 use Illuminate\Http\Request;
 use Exception;
+use Illuminate\Support\Facades\Log;
 
 class AccountController extends Controller
 {
@@ -81,24 +82,62 @@ class AccountController extends Controller
 
     /**
      * Sync: login if needed, fetch zone data, parse and cache.
+     * Only saves zone_data if buildings were found (prevents overwriting valid data).
      */
     public function sync(Account $account)
     {
         try {
+            Log::info("Syncing account {$account->id} ({$account->username})");
             $account->update(['status' => 'syncing']);
 
             // Login if tokens are missing
             if (!$this->authService->isAuthenticated($account)) {
+                Log::info("Account {$account->id} token missing or expired, performing login");
                 $this->authService->login($account);
                 $account->refresh();
             }
 
-            // Fetch zone
-            $rawAmf = $this->amfService->getZone($account);
-            file_put_contents(storage_path('app/debug_zone.amf'), $rawAmf);
+            // Fetch and parse zone with auto-retry loop (handles game server warm-up)
+            $maxRetries = 3;
+            $retryDelay = 5; // seconds
+            $zoneData = null;
+            $rawAmf = null;
+            $errorCode = 0;
+            $buildingCount = 0;
+            $lastException = null;
 
-            // Parse zone
-            $zoneData = $this->zoneParser->parse($rawAmf);
+            for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
+                try {
+                    Log::info("Fetching zone AMF for account {$account->id} (attempt {$attempt}/{$maxRetries})");
+                    $rawAmf = $this->amfService->getZone($account);
+                    $zoneData = $this->zoneParser->parse($rawAmf);
+                    
+                    $errorCode = $zoneData['errorCode'] ?? 0;
+                    $buildingCount = count($zoneData['buildings'] ?? []);
+
+                    if ($errorCode === 0 && $buildingCount > 0) {
+                        file_put_contents(storage_path('app/debug_zone.amf'), $rawAmf);
+                        break;
+                    }
+                } catch (\Exception $e) {
+                    Log::warning("Attempt {$attempt}/{$maxRetries} failed for account {$account->id}: " . $e->getMessage());
+                    $lastException = $e;
+                }
+
+                if ($attempt < $maxRetries) {
+                    sleep($retryDelay);
+                }
+            }
+
+            if ($errorCode !== 0) {
+                $account->update(['status' => 'error']);
+                throw new Exception("Server error code {$errorCode}. The zone may not be loaded yet — try again in a few seconds.");
+            }
+
+            if ($buildingCount === 0) {
+                $account->update(['status' => 'error']);
+                throw $lastException ?: new Exception('Server returned empty zone data. Make sure the game client is closed and try again.');
+            }
 
             // Save
             $account->update([
@@ -107,10 +146,16 @@ class AccountController extends Controller
                 'status'       => 'online',
             ]);
 
+            $specialistCount = count($zoneData['specialists'] ?? []);
+            $buffCount = count($zoneData['buffs'] ?? []);
+            $resourceCount = count($zoneData['resources'] ?? []);
+
+            Log::info("Account {$account->id} synced successfully. Level: " . ($zoneData['level'] ?? 'N/A') . ", Server: " . ($zoneData['gameWorldName'] ?? 'N/A') . ", Buildings: {$buildingCount}, Resources: {$resourceCount}");
+
             BotLog::create([
                 'account_id' => $account->id,
                 'level'      => 'success',
-                'message'    => 'Zone synced: ' . count($zoneData['buildings'] ?? []) . ' buildings found.',
+                'message'    => 'Zone synced: ' . $buildingCount . ' buildings, ' . $resourceCount . ' resources, ' . $specialistCount . ' specialists, ' . $buffCount . ' buffs.',
             ]);
 
             return response()->json([
@@ -119,7 +164,12 @@ class AccountController extends Controller
                 'zone_data' => $zoneData
             ]);
         } catch (Exception $e) {
-            $account->update(['status' => 'error']);
+            Log::error("Sync failed for account {$account->id}: " . $e->getMessage(), ['exception' => $e]);
+            
+            // Don't overwrite status if it was already set to 'error' above
+            if ($account->status !== 'error') {
+                $account->update(['status' => 'error']);
+            }
 
             BotLog::create([
                 'account_id' => $account->id,

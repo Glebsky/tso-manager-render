@@ -274,6 +274,7 @@ export default {
         const tasks = ref([]);
         const accounts = ref([]);
         const scheduling = ref(false);
+        const timezone = ref('UTC');
 
         const selectedAccountId = ref('');
         const taskType = ref('');
@@ -299,9 +300,13 @@ export default {
 
         const loadPlanner = async () => {
             try {
-                const res = await axios.get('/api/tasks');
-                tasks.value = res.data.tasks || [];
-                accounts.value = res.data.accounts || [];
+                const [tasksRes, settingsRes] = await Promise.all([
+                    axios.get('/api/tasks'),
+                    axios.get('/api/settings'),
+                ]);
+                tasks.value = tasksRes.data.tasks || [];
+                accounts.value = tasksRes.data.accounts || [];
+                timezone.value = settingsRes.data.timezone || 'UTC';
             } catch (e) {
                 showToast('Failed to load planner.', 'error');
             }
@@ -441,7 +446,23 @@ export default {
 
         const formatTime = (timeStr) => {
             if (!timeStr) return '—';
-            return timeStr.substring(0, 5);
+            const utc = timeStr.substring(0, 5);
+            if (timezone.value === 'UTC') return utc;
+            try {
+                const [h, m] = utc.split(':').map(Number);
+                const d = new Date();
+                d.setUTCHours(h, m, 0, 0);
+                const local = d.toLocaleTimeString('en-GB', {
+                    timeZone: timezone.value,
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false,
+                });
+                const tzAbbr = timezone.value.split('/').pop().replace('_', ' ');
+                return `${utc} UTC | ${local} ${tzAbbr}`;
+            } catch (e) {
+                return utc;
+            }
         };
 
         const scheduleTask = async () => {
@@ -503,6 +524,7 @@ export default {
             tasks,
             accounts,
             scheduling,
+            timezone,
             selectedAccountId,
             taskType,
             runAtTime,

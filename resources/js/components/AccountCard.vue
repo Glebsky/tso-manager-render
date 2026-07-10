@@ -12,14 +12,14 @@
                          :class="statusClass">
                         {{ avatarLetters }}
                     </div>
-                    <div>
-                        <h3 class="font-semibold text-white group-hover:text-emerald-400 transition-colors">
+                    <router-link :to="'/accounts/' + account.id" class="block">
+                        <h3 class="font-semibold text-white hover:text-emerald-400 transition-colors cursor-pointer">
                             {{ account.nickname || account.username }}
                         </h3>
                         <p class="text-xs text-white/40 truncate max-w-[150px]" :title="account.username">
                             {{ account.username }}
                         </p>
-                    </div>
+                    </router-link>
                 </div>
 
                 <!-- Status -->
@@ -30,13 +30,21 @@
             </div>
 
             <!-- Info row -->
-            <div class="flex items-center gap-3 mb-4">
+            <div class="flex items-center gap-3 mb-4 flex-wrap">
                 <!-- Region badge -->
                 <span class="badge badge-info uppercase">
                     <svg class="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 0 1 3 12c0-1.605.42-3.113 1.157-4.418" />
                     </svg>
                     {{ account.region || 'N/A' }}
+                </span>
+
+                <!-- Server name badge -->
+                <span v-if="serverName" class="badge badge-success bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <svg class="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 0 1-3-3V3.75a3 3 0 0 1 3-3h13.5a3 3 0 0 1 3 3v7.5a3 3 0 0 1-3 3m-13.5 0a3 3 0 0 0-3 3v3.75a3 3 0 0 0 3 3h13.5a3 3 0 0 0 3-3V17.25a3 3 0 0 0-3-3" />
+                    </svg>
+                    {{ serverName }}
                 </span>
 
                 <!-- Building count -->
@@ -66,12 +74,12 @@
                     {{ syncing ? 'Syncing...' : 'Sync' }}
                 </button>
 
-                <button v-if="buildingCount !== null" @click="expanded = !expanded"
+                <button @click="goToDetail"
                         class="btn-secondary btn-sm flex items-center gap-1.5 hover:border-blue-500/30 hover:text-blue-400">
-                    <svg class="w-3.5 h-3.5 transition-transform duration-300" :class="{ 'rotate-180': expanded }" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
                     </svg>
-                    Buildings
+                    Detail Page
                 </button>
 
                 <button @click="deleteAccount"
@@ -82,30 +90,17 @@
                 </button>
             </div>
         </div>
-
-        <!-- Expanded Buildings List -->
-        <div v-show="expanded" class="border-t border-white/5 bg-white/[0.01]">
-            <div class="p-4 space-y-1.5">
-                <p class="text-xs text-white/30 font-medium uppercase tracking-wider mb-3 px-1">Buildings</p>
-                <div class="max-h-72 overflow-y-auto space-y-1.5">
-                    <building-row v-for="b in parsedBuildings" :key="b.buildingGrid"
-                                  :building="b" :account-id="account.id"
-                                  @action-success="$emit('action-success')" />
-                </div>
-            </div>
-        </div>
     </div>
 </template>
 
 <script>
 import { ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
 import axios from 'axios';
 import { showToast } from '../toast';
-import BuildingRow from './BuildingRow.vue';
 
 export default {
     name: 'AccountCard',
-    components: { BuildingRow },
     props: {
         account: {
             type: Object,
@@ -114,7 +109,7 @@ export default {
     },
     emits: ['sync-success', 'delete-success', 'action-success'],
     setup(props, { emit }) {
-        const expanded = ref(false);
+        const router = useRouter();
         const syncing = ref(false);
 
         const statusClass = computed(() => {
@@ -151,12 +146,6 @@ export default {
             return zoneObject.value && zoneObject.value.buildings
                 ? zoneObject.value.buildings.length
                 : null;
-        });
-
-        const parsedBuildings = computed(() => {
-            return zoneObject.value && zoneObject.value.buildings
-                ? zoneObject.value.buildings
-                : [];
         });
 
         const formatSyncTime = (timeStr) => {
@@ -203,17 +192,25 @@ export default {
             }
         };
 
+        const goToDetail = () => {
+            router.push(`/accounts/${props.account.id}`);
+        };
+
+        const serverName = computed(() => {
+            return zoneObject.value?.gameWorldName || null;
+        });
+
         return {
-            expanded,
             syncing,
             statusClass,
             statusDotClass,
             avatarLetters,
             buildingCount,
-            parsedBuildings,
             formatSyncTime,
             syncAccount,
-            deleteAccount
+            deleteAccount,
+            goToDetail,
+            serverName
         };
     }
 };

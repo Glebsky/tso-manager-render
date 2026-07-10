@@ -9,6 +9,33 @@ use Illuminate\Support\Facades\Storage;
 
 class SettingsController extends Controller
 {
+    const TIMEZONES = [
+        'UTC',
+        'Europe/Moscow',
+        'Europe/Kiev',
+        'Europe/London',
+        'Europe/Berlin',
+        'Europe/Paris',
+        'Europe/Rome',
+        'Europe/Madrid',
+        'Europe/Warsaw',
+        'Europe/Bucharest',
+        'Europe/Athens',
+        'Europe/Istanbul',
+        'America/New_York',
+        'America/Chicago',
+        'America/Denver',
+        'America/Los_Angeles',
+        'America/Sao_Paulo',
+        'Asia/Tokyo',
+        'Asia/Shanghai',
+        'Asia/Seoul',
+        'Asia/Kolkata',
+        'Asia/Dubai',
+        'Australia/Sydney',
+        'Pacific/Auckland',
+    ];
+
     private function getSettingsPath(): string
     {
         return 'settings.json';
@@ -42,7 +69,7 @@ class SettingsController extends Controller
         $validated = $request->validate([
             'sync_interval'      => 'required|integer|in:0,5,15,30,60',
             'log_retention_days' => 'required|integer|in:0,7,14,30,90',
-            'timezone'           => 'required|string|max:50',
+            'timezone'           => 'required|string|in:' . implode(',', self::TIMEZONES),
         ]);
 
         $this->saveSettings($validated);

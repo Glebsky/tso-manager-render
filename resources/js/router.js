@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Dashboard from './views/Dashboard.vue';
 import Accounts from './views/Accounts.vue';
+import AccountDetail from './views/AccountDetail.vue';
 import Tasks from './views/Tasks.vue';
 import Logs from './views/Logs.vue';
 import Settings from './views/Settings.vue';
@@ -15,6 +16,11 @@ const routes = [
         path: '/accounts',
         name: 'accounts',
         component: Accounts,
+    },
+    {
+        path: '/accounts/:id',
+        name: 'account-detail',
+        component: AccountDetail,
     },
     {
         path: '/tasks',
