@@ -98,8 +98,8 @@ class AccountController extends Controller
             }
 
             // Fetch and parse zone with auto-retry loop (handles game server warm-up)
-            $maxRetries = 3;
-            $retryDelay = 5; // seconds
+            $maxRetries = 4;
+            $retryDelay = 2; // seconds
             $zoneData = null;
             $rawAmf = null;
             $errorCode = 0;
@@ -114,6 +114,15 @@ class AccountController extends Controller
                     
                     $errorCode = $zoneData['errorCode'] ?? 0;
                     $buildingCount = count($zoneData['buildings'] ?? []);
+
+                    if ($errorCode === 1012) {
+                        Log::info("Received error 1012 for account {$account->id}, session might be expired. Resetting session...");
+                        @unlink($this->authService->getCookieFile($account));
+                        $this->authService->login($account);
+                        $account->refresh();
+                        sleep(2);
+                        continue;
+                    }
 
                     if ($errorCode === 0 && $buildingCount > 0) {
                         file_put_contents(storage_path('app/debug_zone.amf'), $rawAmf);

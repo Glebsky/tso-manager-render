@@ -24,6 +24,10 @@ class Account extends Model
         'last_sync_at' => 'datetime',
     ];
 
+    protected $hidden = [
+        'password',
+    ];
+
     public function getPasswordAttribute($value)
     {
         if (empty($value)) {

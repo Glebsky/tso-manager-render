@@ -30,28 +30,41 @@
 
                     <div class="flex-1">
                         <h1 class="text-2xl font-bold text-white mb-1">{{ playerNickname || account.username }}</h1>
-                        <div class="flex items-center gap-4 text-sm text-white/40">
-                            <span class="flex items-center gap-1">
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <div class="flex items-center flex-wrap gap-4 text-sm text-white/40">
+                            <span class="flex items-center gap-1 text-white/80">
+                                <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 0 0-2.455 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
                                 </svg>
-                                Level {{ level || '?' }}
+                                Уровень {{ level || '?' }}
+                            </span>
+                            <span v-if="pvpLevel" class="flex items-center gap-1 text-rose-400">
+                                ⚔️ PvP {{ pvpLevel }}
                             </span>
                             <span v-if="account.region" class="badge badge-info uppercase text-[10px]">{{ account.region }}</span>
                             <span v-if="serverName" class="badge badge-success bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px]">{{ serverName }}</span>
+                            <span v-if="currentMaximumBuildingsCountAll" class="flex items-center gap-1 text-white/50 text-xs">
+                                🏰 Макс. зданий: {{ currentMaximumBuildingsCountAll }}
+                            </span>
                             <span v-if="account.last_sync_at" class="flex items-center gap-1">
                                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                 </svg>
-                                Synced {{ formatSyncTime(account.last_sync_at) }}
+                                Синхронизировано {{ formatSyncTime(account.last_sync_at) }}
                             </span>
+                        </div>
+
+                        <!-- Specialists overview -->
+                        <div class="flex gap-4 mt-3 text-xs text-white/50 border-t border-white/5 pt-3">
+                            <span title="Генералы">🎖️ Генералы: <strong class="text-white">{{ generalsAmount || 0 }}</strong></span>
+                            <span title="Исследователи">🧭 Разведчики: <strong class="text-white">{{ explorersAmount || 0 }}</strong></span>
+                            <span title="Геологи">🔨 Геологи: <strong class="text-white">{{ geologistsAmount || 0 }}</strong></span>
                         </div>
 
                         <!-- XP Progress Bar -->
                         <div v-if="xp !== null" class="mt-4">
                             <div class="flex items-center justify-between text-xs text-white/30 mb-1">
-                                <span>Experience</span>
-                                <span>{{ formatNumber(xp) }} XP</span>
+                                <span>Опыт: <strong class="text-white/70">{{ formatNumber(xp) }} XP</strong></span>
+                                <span v-if="xpNextTarget">До {{ level + 1 }} уровня: {{ formatNumber(xpNextTarget - xp) }} XP (Всего {{ formatNumber(xpNextTarget) }})</span>
                             </div>
                             <div class="h-2 bg-white/5 rounded-full overflow-hidden">
                                 <div class="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full transition-all duration-500"
@@ -107,18 +120,17 @@
                 </div>
 
                 <!-- Buildings Grid -->
-                <div v-if="filteredBuildings.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div v-if="filteredBuildings.length > 0" class="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
                     <div v-for="b in filteredBuildings" :key="b.buildingGrid" class="glass-card p-4 hover:border-white/20 transition-all duration-300">
                         <div class="flex items-start gap-3">
-                            <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                                 :class="b.isProductionActive ? 'bg-emerald-500/10' : 'bg-white/5'">
-                                <img v-if="getBuildingIcon(b)" :src="getBuildingIcon(b)" :alt="getBuildingName(b)" class="w-8 h-8 object-contain" @error="$event.target.style.display='none'">
-                                <svg v-else class="w-6 h-6" :class="b.isProductionActive ? 'text-emerald-400' : 'text-white/30'" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-dark-900/50 border border-white/5">
+                                <img v-if="getBuildingIcon(b)" :src="getBuildingIcon(b)" :alt="getBuildingName(b)" class="w-8 h-8 object-contain" @error="handleBuildingIconError($event, b)">
+                                <svg v-else class="w-6 h-6 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />
                                 </svg>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <p class="text-sm font-medium text-white/80 truncate">{{ getBuildingName(b) }}</p>
+                                <p class="text-sm font-medium text-white/80 truncate" :title="getBuildingName(b)">{{ getBuildingName(b) }}</p>
                                 <div class="flex items-center gap-2 mt-1">
                                     <span class="text-[10px] text-white/30 font-mono">Grid #{{ b.buildingGrid }}</span>
                                     <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Lvl {{ b.upgradeLevel || 1 }}</span>
@@ -131,11 +143,18 @@
                                     </span>
                                 </div>
                             </div>
-                            <div class="flex flex-col items-end gap-2">
-                                <span class="badge text-[10px]" :class="b.isProductionActive ? 'badge-success' : 'badge-neutral'">
+                            <div class="flex flex-col items-end gap-2 flex-shrink-0">
+                                <span v-if="b.upgradeIsInProgress" class="badge bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px]">
+                                    🔨 Улучшается
+                                </span>
+                                <span v-else-if="isStoppable(b)" class="badge text-[10px]" :class="b.isProductionActive ? 'badge-success' : 'badge-neutral'">
                                     {{ b.isProductionActive ? 'Producing' : 'Stopped' }}
                                 </span>
-                                <button @click="toggleBuilding(b)" :disabled="actionLoading"
+                                <span v-else class="badge badge-neutral text-[10px]">
+                                    Built
+                                </span>
+                                
+                                <button v-if="isStoppable(b) && !b.upgradeIsInProgress" @click="toggleBuilding(b)" :disabled="actionLoading"
                                         class="btn-secondary btn-sm text-[10px] disabled:opacity-50"
                                         :class="b.isProductionActive
                                             ? 'text-amber-400/60 hover:text-amber-400 hover:border-amber-500/30'
@@ -179,24 +198,65 @@
 
             <!-- Buffs Tab -->
             <div v-show="activeTab === 'buffs'">
-                <div v-if="parsedBuffs.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div v-for="b in parsedBuffs" :key="b.uniqueId || b.uniqueId1" class="glass-card p-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
-                                <svg class="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Z" />
-                                </svg>
+                <!-- Star Menu Buffs -->
+                <div class="mb-8">
+                    <h3 class="text-sm font-semibold text-white/50 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                        Звездное меню (Buffs in Star Menu)
+                    </h3>
+                    <div v-if="availableBuffs.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div v-for="(b, idx) in availableBuffs" :key="idx" class="glass-card p-4 hover:border-white/10 transition-all duration-200">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center flex-shrink-0">
+                                    <span class="text-xl">
+                                        {{ b.buffName_string === 'AddResource' ? '📥' : b.buffName_string === 'Adventure' ? '🗺️' : b.buffName_string === 'BuildBuilding' ? '🏗️' : '✨' }}
+                                    </span>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-white/80 truncate" :title="getStarBuffName(b)">
+                                        {{ getStarBuffName(b) }}
+                                    </p>
+                                    <p class="text-[10px] text-white/30">ID: {{ b.uniqueId1 || 'N/A' }}</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold"
+                                          :class="b.buffName_string === 'AddResource' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'">
+                                        {{ b.buffName_string === 'AddResource' ? '+' + formatNumber(b.amount) : 'x' + b.amount }}
+                                    </span>
+                                </div>
                             </div>
-                            <div class="flex-1">
-                                <p class="text-sm font-medium text-white/80">{{ b.name || 'Buff' }}</p>
-                                <p class="text-[10px] text-white/30">ID: {{ b.buffId || b.uniqueId || 'N/A' }}</p>
-                            </div>
-                            <span v-if="b.amount" class="badge badge-warning text-[10px]">x{{ b.amount }}</span>
                         </div>
                     </div>
+                    <div v-else class="text-center py-6 glass-card border-dashed">
+                        <p class="text-white/30 text-sm">В звездном меню нет баффов.</p>
+                    </div>
                 </div>
-                <div v-else class="text-center py-12">
-                    <p class="text-white/30 text-sm">No buffs found.</p>
+
+                <!-- Active Zone Buffs -->
+                <div>
+                    <h3 class="text-sm font-semibold text-white/50 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                        Активные баффы в зоне (Active Buffs)
+                    </h3>
+                    <div v-if="parsedBuffs.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div v-for="b in parsedBuffs" :key="b.uniqueId || b.uniqueId1" class="glass-card p-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Z" />
+                                    </svg>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-white/80 truncate">{{ b.name || 'Buff' }}</p>
+                                    <p class="text-[10px] text-white/30">ID: {{ b.buffId || b.uniqueId || 'N/A' }}</p>
+                                </div>
+                                <span v-if="b.amount" class="badge badge-warning text-[10px]">x{{ b.amount }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-else class="text-center py-6 glass-card border-dashed">
+                        <p class="text-white/30 text-sm">Нет активных баффов в зоне.</p>
+                    </div>
                 </div>
             </div>
 
@@ -498,7 +558,7 @@ export default {
         const tabs = computed(() => [
             { id: 'buildings', label: 'Buildings', icon: BuildingIcon, count: parsedBuildings.value.length },
             { id: 'specialists', label: 'Specialists', icon: SpecialistIcon, count: parsedSpecialists.value.length },
-            { id: 'buffs', label: 'Buffs', icon: BuffIcon, count: parsedBuffs.value.length },
+            { id: 'buffs', label: 'Buffs', icon: BuffIcon, count: availableBuffs.value.length + parsedBuffs.value.length },
             { id: 'resources', label: 'Resources', icon: ResourceIcon, count: parsedResources.value.length },
             { id: 'friends', label: 'Friends', icon: FriendIcon, count: parsedFriends.value.length },
         ]);
@@ -607,6 +667,12 @@ export default {
         const parsedFriends = computed(() => zoneData.value?.friends || []);
         const level = computed(() => zoneData.value?.level);
         const xp = computed(() => zoneData.value?.xp);
+        const pvpLevel = computed(() => zoneData.value?.pvpLevel);
+        const generalsAmount = computed(() => zoneData.value?.generalsAmount);
+        const explorersAmount = computed(() => zoneData.value?.explorersAmount);
+        const geologistsAmount = computed(() => zoneData.value?.geologistsAmount);
+        const currentMaximumBuildingsCountAll = computed(() => zoneData.value?.currentMaximumBuildingsCountAll);
+        const availableBuffs = computed(() => zoneData.value?.availableBuffs || []);
         const resourceLimit = computed(() => zoneData.value?.resourceLimit);
         const playerNickname = computed(() => zoneData.value?.playerNickname || account.value?.nickname || account.value?.username);
 
@@ -622,9 +688,31 @@ export default {
             return name.substring(0, 2).toUpperCase();
         });
 
+        const LEVEL_XP_TABLE = {
+            1: 0, 2: 10, 3: 40, 4: 100, 5: 200, 6: 400, 7: 800, 8: 1500, 9: 2500, 10: 4000,
+            11: 6000, 12: 8500, 13: 11500, 14: 15000, 15: 19000, 16: 23500, 17: 28500, 18: 34000, 19: 40000, 20: 46500,
+            21: 53500, 22: 61000, 23: 69000, 24: 77500, 25: 86500, 26: 96000, 27: 106000, 28: 118000, 29: 132000, 30: 148000,
+            31: 166000, 32: 186000, 33: 208000, 34: 233000, 35: 261000, 36: 293000, 37: 118000, 38: 158000, 39: 236000, 40: 314000,
+            50: 3200000, 60: 16000000, 70: 45000000, 80: 120000000
+        };
+
+        const xpNextTarget = computed(() => {
+            if (!level.value) return 0;
+            const lvl = level.value;
+            return LEVEL_XP_TABLE[lvl + 1] !== undefined ? LEVEL_XP_TABLE[lvl + 1] : ((lvl + 1) * 10000);
+        });
+
         const xpProgress = computed(() => {
-            if (!xp.value) return 0;
-            return Math.min((xp.value / 100000) * 100, 100);
+            if (xp.value === null || xp.value === undefined || !level.value) return 0;
+            const lvl = level.value;
+            const currentXp = xp.value;
+            let startXp = LEVEL_XP_TABLE[lvl] !== undefined ? LEVEL_XP_TABLE[lvl] : (lvl * 10000);
+            let endXp = xpNextTarget.value;
+            if (currentXp < startXp) startXp = Math.max(0, currentXp - 5000);
+            if (currentXp > endXp) endXp = currentXp + 10000;
+            const range = endXp - startXp;
+            if (range <= 0) return 100;
+            return Math.min(Math.max(((currentXp - startXp) / range) * 100, 0), 100);
         });
 
         const totalResources = computed(() => {
@@ -652,14 +740,14 @@ export default {
 
             // Filter by buildingMode
             if (buildingModeFilter.value === '27') {
-                buildings = buildings.filter(b => b.buildingMode === 27);
+                buildings = buildings.filter(b => b.buildingMode === 27 || b.isBought === true);
                 const stopWordsLower = stopWords.map(w => w.toLowerCase());
                 buildings = buildings.filter(b => {
                     const name = (b.buildingName_string || b.buildingName || '').toLowerCase();
                     return !stopWordsLower.some(w => name.includes(w));
                 });
             } else if (buildingModeFilter.value === '28') {
-                buildings = buildings.filter(b => b.buildingMode === 28);
+                buildings = buildings.filter(b => b.buildingMode === 28 && b.isBought !== true);
             }
 
             if (buildingSearch.value) {
@@ -703,6 +791,20 @@ export default {
             return buffNames[buffId] || `Buff #${buffId}`;
         };
 
+        const getStarBuffName = (b) => {
+            if (!b || !b.buffName_string) return 'Unknown Star Buff';
+            if (b.buffName_string === 'AddResource') {
+                return `Добавить ресурс: ${formatResourceName(b.resourceName_string)}`;
+            }
+            if (b.buffName_string === 'BuildBuilding') {
+                return `Чертеж здания: ${formatResourceName(b.resourceName_string)}`;
+            }
+            if (b.buffName_string === 'Adventure') {
+                return `Приключение: ${formatResourceName(b.resourceName_string)}`;
+            }
+            return b.buffName_string.replace(/(?<!^)(?=[A-Z])/g, ' ').replace(/_/g, ' ');
+        };
+
         const getBuildingName = (b) => {
             const name = b.buildingName_string || b.buildingName || 'Building';
             return name.replace(/(?<!^)(?=[A-Z])/g, ' ').replace(/_/g, ' ');
@@ -710,11 +812,33 @@ export default {
 
         const getBuildingIcon = (b) => {
             const name = b.buildingName_string || b.buildingName || '';
-            const iconFile = buildingIconMap[name];
-            if (iconFile) {
-                return `https://settlersonlinewiki.eu/images/buildings/${iconFile}`;
+            if (!name) return null;
+            // Clean name to lowercase and strip suffixes like numbers or _lvl_X
+            let clean = name.replace(/_lvl_\d+/i, '').replace(/decoration_/g, '').trim().toLowerCase();
+            return `/images/buildings/${clean}.webp`;
+        };
+
+        const handleBuildingIconError = (event, b) => {
+            const img = event.target;
+            const name = b.buildingName_string || b.buildingName || '';
+            let clean = name.replace(/_lvl_\d+/i, '').replace(/decoration_/g, '').trim().toLowerCase();
+            if (img.src.endsWith('.webp')) {
+                // If WebP fails, try PNG from resources directory
+                img.src = `/images/resources/${clean}.png`;
+            } else {
+                img.style.display = 'none';
             }
-            return null;
+        };
+
+        const isStoppable = (b) => {
+            if (b.buildingMode !== 27) return false;
+            const name = (b.buildingName_string || b.buildingName || '').toLowerCase();
+            const nonStoppable = [
+                'mayorhouse', 'storehouse', 'residence', 'tavern', 'decoration', 
+                'mountain', 'mine_02', 'pioneercastle', 'lookouttower', 'waterstorehouse', 
+                'floatingstorehouse', 'spaciousstorehouse', 'improvedstorehouse', 'tower', 'wall', 'gate'
+            ];
+            return !nonStoppable.some(word => name.includes(word));
         };
 
         const getSpecialistType = (type) => {
@@ -849,6 +973,13 @@ export default {
             parsedFriends,
             level,
             xp,
+            pvpLevel,
+            generalsAmount,
+            explorersAmount,
+            geologistsAmount,
+            currentMaximumBuildingsCountAll,
+            xpNextTarget,
+            availableBuffs,
             resourceLimit,
             playerNickname,
             avatarUrl,
@@ -867,7 +998,10 @@ export default {
             filteredBuildings,
             getBuildingName,
             getBuildingIcon,
+            handleBuildingIconError,
+            isStoppable,
             getBuffName,
+            getStarBuffName,
             getSpecialistType,
             getResourceIcon,
             getResourceEmoji,
