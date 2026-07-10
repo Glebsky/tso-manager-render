@@ -120,7 +120,7 @@
                 </div>
 
                 <!-- Buildings Grid -->
-                <div v-if="filteredBuildings.length > 0" class="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
+                <div v-if="filteredBuildings.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                     <div v-for="b in filteredBuildings" :key="b.buildingGrid" class="glass-card p-4 hover:border-white/20 transition-all duration-300">
                         <div class="flex items-start gap-3">
                             <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-dark-900/50 border border-white/5">
@@ -133,7 +133,7 @@
                                 <p class="text-sm font-medium text-white/80 truncate" :title="getBuildingName(b)">{{ getBuildingName(b) }}</p>
                                 <div class="flex items-center gap-2 mt-1">
                                     <span class="text-[10px] text-white/30 font-mono">Grid #{{ b.buildingGrid }}</span>
-                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Lvl {{ b.upgradeLevel || 1 }}</span>
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400">Lvl {{ b.upgradeLevel || 1 }}</span>
                                 </div>
                                 <div v-if="b.buffs && b.buffs.length > 0" class="mt-2 flex flex-wrap gap-1">
                                     <span v-for="(bf, idx) in b.buffs" :key="idx" 
