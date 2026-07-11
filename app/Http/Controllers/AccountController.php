@@ -170,6 +170,7 @@ class AccountController extends Controller
             return response()->json([
                 'success'   => true,
                 'message'   => 'Zone synced successfully.',
+                'account'   => $account,
                 'zone_data' => $zoneData
             ]);
         } catch (Exception $e) {
@@ -188,7 +189,8 @@ class AccountController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Sync failed: ' . $e->getMessage()
+                'message' => 'Sync failed: ' . $e->getMessage(),
+                'account' => $account->fresh()
             ], 500);
         }
     }

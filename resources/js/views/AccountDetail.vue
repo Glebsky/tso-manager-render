@@ -21,15 +21,16 @@
         <div class="glass-card overflow-hidden mb-8">
             <div class="h-2 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
             <div class="p-6">
-                <div class="flex items-center gap-6">
-                    <!-- Avatar -->
-                    <div class="w-20 h-20 rounded-2xl overflow-hidden bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-                        <img v-if="avatarUrl" :src="avatarUrl" :alt="playerNickname" class="w-full h-full object-cover" @error="avatarError = true">
-                        <span v-else class="text-2xl font-bold text-white">{{ avatarLetters }}</span>
-                    </div>
+                <div class="flex items-center justify-between gap-6 flex-wrap md:flex-nowrap">
+                    <div class="flex items-center gap-6">
+                        <!-- Avatar -->
+                        <div class="w-20 h-20 rounded-2xl overflow-hidden bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                            <img v-if="avatarUrl" :src="avatarUrl" :alt="playerNickname" class="w-full h-full object-cover" @error="avatarError = true">
+                            <span v-else class="text-2xl font-bold text-white">{{ avatarLetters }}</span>
+                        </div>
 
-                    <div class="flex-1">
-                        <h1 class="text-2xl font-bold text-white mb-1">{{ playerNickname || account.username }}</h1>
+                        <div>
+                            <h1 class="text-2xl font-bold text-white mb-1">{{ playerNickname || account.username }}</h1>
                         <div class="flex items-center flex-wrap gap-4 text-sm text-white/40">
                             <span class="flex items-center gap-1 text-white/80">
                                 <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -73,6 +74,37 @@
                         </div>
                     </div>
                 </div>
+
+                    <!-- Right Side: Visitors and Sync Button -->
+                    <div class="flex items-center gap-4 flex-shrink-0 flex-wrap">
+                        <!-- Visitors list -->
+                        <div v-if="visitors.length > 0" class="flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-2.5 rounded-2xl">
+                            <span class="text-xs text-white/40 font-medium">Гости:</span>
+                            <div class="flex -space-x-2">
+                                <div v-for="visitor in visitors" :key="visitor.nickname" class="relative group">
+                                    <div class="w-8 h-8 rounded-full border-2 border-dark-900 overflow-hidden bg-gradient-to-br from-indigo-500/80 to-purple-600/80 flex items-center justify-center cursor-help">
+                                        <img v-if="getAvatarById(visitor.avatarId)" :src="getAvatarById(visitor.avatarId)" :alt="visitor.nickname" class="w-full h-full object-cover">
+                                        <span v-else class="text-[10px] font-bold text-white">{{ visitor.nickname.substring(0, 2).toUpperCase() }}</span>
+                                    </div>
+                                    <!-- Tooltip -->
+                                    <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block bg-dark-950 border border-white/10 px-3 py-1.5 rounded-xl text-xs text-white whitespace-nowrap shadow-2xl z-50">
+                                        <div class="font-bold text-white">{{ visitor.nickname }}</div>
+                                        <div class="text-[10px] text-white/50">Уровень {{ visitor.level }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sync button -->
+                        <button @click="syncAccount" :disabled="syncing"
+                                class="btn-primary flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-50">
+                            <svg class="w-4 h-4" :class="{ 'animate-spin': syncing }" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                            </svg>
+                            {{ syncing ? 'Синхронизация...' : 'Синхронизировать' }}
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -100,13 +132,6 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                         </svg>
                         <input v-model="buildingSearch" type="text" placeholder="Search buildings..." class="glass-input w-full pl-10">
-                    </div>
-                    <div class="flex items-center">
-                        <select v-model="buildingModeFilter" class="glass-input text-xs py-2 px-3 pr-8 min-w-[150px] bg-dark-900 border-white/10 rounded-xl text-white/80 focus:ring-emerald-500/20">
-                            <option value="27">Построенные</option>
-                            <option value="28">Природные / Декор</option>
-                            <option value="all">Все объекты на карте</option>
-                        </select>
                     </div>
                     <div class="flex gap-2 flex-wrap">
                         <button v-for="cat in buildingCategories" :key="cat" @click="buildingFilter = cat"
@@ -147,8 +172,8 @@
                                 <span v-if="b.upgradeIsInProgress" class="badge bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px]">
                                     🔨 Улучшается
                                 </span>
-                                <span v-else-if="isStoppable(b)" class="badge text-[10px]" :class="b.isProductionActive ? 'badge-success' : 'badge-neutral'">
-                                    {{ b.isProductionActive ? 'Producing' : 'Stopped' }}
+                                <span v-else-if="isStoppable(b)" class="badge text-[10px]" :class="isBuildingActive(b) ? 'badge-success' : 'badge-neutral'">
+                                    {{ isBuildingActive(b) ? 'Producing' : 'Stopped' }}
                                 </span>
                                 <span v-else class="badge badge-neutral text-[10px]">
                                     Built
@@ -156,10 +181,10 @@
                                 
                                 <button v-if="isStoppable(b) && !b.upgradeIsInProgress" @click="toggleBuilding(b)" :disabled="actionLoading"
                                         class="btn-secondary btn-sm text-[10px] disabled:opacity-50"
-                                        :class="b.isProductionActive
+                                        :class="isBuildingActive(b)
                                             ? 'text-amber-400/60 hover:text-amber-400 hover:border-amber-500/30'
                                             : 'text-emerald-400/60 hover:text-emerald-400 hover:border-emerald-500/30'">
-                                    {{ actionLoading ? '...' : (b.isProductionActive ? 'Stop' : 'Start') }}
+                                    {{ actionLoading ? '...' : (isBuildingActive(b) ? 'Stop' : 'Start') }}
                                 </button>
                             </div>
                         </div>
@@ -204,11 +229,12 @@
                         <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
                         Звездное меню (Buffs in Star Menu)
                     </h3>
-                    <div v-if="availableBuffs.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div v-if="availableBuffs.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                         <div v-for="(b, idx) in availableBuffs" :key="idx" class="glass-card p-4 hover:border-white/10 transition-all duration-200">
                             <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center flex-shrink-0">
-                                    <span class="text-xl">
+                                <div class="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                                    <img :src="getBuffIcon(b)" :alt="getStarBuffName(b)" class="w-7 h-7 object-contain" @error="handleBuffIconError($event, b)">
+                                    <span class="text-xl" style="display: none;">
                                         {{ b.buffName_string === 'AddResource' ? '📥' : b.buffName_string === 'Adventure' ? '🗺️' : b.buffName_string === 'BuildBuilding' ? '🏗️' : '✨' }}
                                     </span>
                                 </div>
@@ -238,11 +264,12 @@
                         <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
                         Активные баффы в зоне (Active Buffs)
                     </h3>
-                    <div v-if="parsedBuffs.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div v-if="parsedBuffs.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                         <div v-for="b in parsedBuffs" :key="b.uniqueId || b.uniqueId1" class="glass-card p-4">
                             <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
-                                    <svg class="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <div class="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                                    <img :src="getBuffIcon(b)" :alt="b.name" class="w-7 h-7 object-contain" @error="handleBuffIconError($event, b)">
+                                    <svg class="w-5 h-5 text-emerald-400" style="display: none;" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Z" />
                                     </svg>
                                 </div>
@@ -281,8 +308,8 @@
                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                             Basic Resources (Базовые)
                         </h4>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-                            <div v-for="r in basicResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/10 transition-all duration-200 max-w-[180px] w-full">
+                        <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
+                            <div v-for="r in basicResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/10 transition-all duration-200 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
                                     <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
@@ -301,8 +328,8 @@
                             <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
                             Improved Resources (Улучшенные)
                         </h4>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-                            <div v-for="r in improvedResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/10 transition-all duration-200 max-w-[180px] w-full">
+                        <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
+                            <div v-for="r in improvedResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/10 transition-all duration-200 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
                                     <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
@@ -321,8 +348,8 @@
                             <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
                             Advanced Resources (Усовершенствованные)
                         </h4>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-                            <div v-for="r in advancedResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/10 transition-all duration-200 max-w-[180px] w-full">
+                        <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
+                            <div v-for="r in advancedResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/10 transition-all duration-200 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
                                     <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
@@ -341,8 +368,8 @@
                             <span class="w-1.5 h-1.5 rounded-full bg-orange-400"></span>
                             Master Resources (Искусные)
                         </h4>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-                            <div v-for="r in masterResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/10 transition-all duration-200 max-w-[180px] w-full">
+                        <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
+                            <div v-for="r in masterResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/10 transition-all duration-200 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
                                     <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
@@ -361,8 +388,8 @@
                             <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
                             Event Resources (Событие)
                         </h4>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-                            <div v-for="r in eventResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/10 transition-all duration-200 max-w-[180px] w-full">
+                        <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
+                            <div v-for="r in eventResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/10 transition-all duration-200 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
                                     <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
@@ -381,8 +408,8 @@
                             <span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>
                             Collections (Коллекции)
                         </h4>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-                            <div v-for="r in collectibleResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/10 transition-all duration-200 max-w-[180px] w-full">
+                        <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
+                            <div v-for="r in collectibleResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/10 transition-all duration-200 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
                                     <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
@@ -401,8 +428,8 @@
                             <span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
                             Elite Resources (Элита)
                         </h4>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-                            <div v-for="r in eliteResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/10 transition-all duration-200 max-w-[180px] w-full">
+                        <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
+                            <div v-for="r in eliteResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/10 transition-all duration-200 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
                                     <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
@@ -421,8 +448,8 @@
                             <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
                             Other (Другие)
                         </h4>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-                            <div v-for="r in otherResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/10 transition-all duration-200 max-w-[180px] w-full">
+                        <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
+                            <div v-for="r in otherResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/10 transition-all duration-200 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
                                     <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
@@ -553,7 +580,7 @@ export default {
         const activeTab = ref('buildings');
         const buildingSearch = ref('');
         const buildingFilter = ref('All');
-        const buildingModeFilter = ref('27');
+        const buildingModeFilter = ref('all');
 
         const tabs = computed(() => [
             { id: 'buildings', label: 'Buildings', icon: BuildingIcon, count: parsedBuildings.value.length },
@@ -563,7 +590,7 @@ export default {
             { id: 'friends', label: 'Friends', icon: FriendIcon, count: parsedFriends.value.length },
         ]);
 
-        const buildingCategories = ['All', 'Wood', 'Mines', 'Metal', 'Food', 'Public'];
+        const buildingCategories = ['All', 'Basic', 'Improved', 'Advanced', 'Elite', 'Decorations'];
 
         const zoneData = computed(() => {
             if (!account.value?.zone_data) return null;
@@ -676,12 +703,45 @@ export default {
         const resourceLimit = computed(() => zoneData.value?.resourceLimit);
         const playerNickname = computed(() => zoneData.value?.playerNickname || account.value?.nickname || account.value?.username);
 
+        const getAvatarById = (avatarId) => {
+            if (!avatarId) return null;
+            const idNum = parseInt(avatarId);
+            if (idNum >= 1 && idNum <= 60) {
+                return `/images/avatars/${idNum}.png`;
+            }
+            return `https://settlersonlinewiki.eu/images/avatars/avatar_${avatarId}.png`;
+        };
+
         const avatarUrl = computed(() => {
             if (avatarError.value) return null;
-            const avatarId = zoneData.value?.avatarId;
-            if (!avatarId) return null;
-            return `https://settlersonlinewiki.eu/images/avatars/avatar_${avatarId}.png`;
+            return getAvatarById(zoneData.value?.avatarId);
         });
+
+        const visitors = computed(() => zoneData.value?.visitors || []);
+        const syncing = ref(false);
+
+        const syncAccount = async () => {
+            if (syncing.value) return;
+            syncing.value = true;
+            try {
+                const res = await axios.post(`/api/accounts/${account.value.id}/sync`);
+                if (res.data.success) {
+                    showToast('Account synced successfully!');
+                    if (res.data.account) {
+                        account.value = res.data.account;
+                    }
+                } else {
+                    showToast(res.data.message || 'Sync failed.', 'error');
+                }
+            } catch (e) {
+                if (e.response?.data?.account) {
+                    account.value = e.response.data.account;
+                }
+                showToast(e.response?.data?.message || 'Sync request failed.', 'error');
+            } finally {
+                syncing.value = false;
+            }
+        };
 
         const avatarLetters = computed(() => {
             const name = playerNickname.value || '?';
@@ -758,41 +818,92 @@ export default {
                 });
             }
 
+            // Map building name to categories (CL1 to CL5)
+            const BUILDING_MAP = {
+                // Basic
+                'mayorhouse': 'Basic', 'storehouse': 'Basic', 'woodcutter': 'Basic', 'forester': 'Basic', 
+                'sawmill': 'Basic', 'stonecutter': 'Basic', 'stonemason': 'Basic', 'fishfarm': 'Basic', 
+                'fisher': 'Basic', 'farm': 'Basic', 'well': 'Basic', 'provisionhouse': 'Basic', 
+                'tavern': 'Basic', 'barracks': 'Basic',
+
+                // Improved
+                'cokingplant': 'Improved', 'copperore': 'Improved', 'coppermine': 'Improved', 
+                'bronzesmelter': 'Improved', 'bronzeweaponsmith': 'Improved', 'toolmaker': 'Improved', 
+                'improvedstorehouse': 'Improved', 'improvedfarm': 'Improved', 'improvedwell': 'Improved', 
+                'silo': 'Improved', 'improvedsilo': 'Improved', 'mill': 'Improved', 'bakery': 'Improved', 
+                'brewery': 'Improved',
+
+                // Advanced
+                'ironore': 'Advanced', 'ironmine': 'Advanced', 'ironsmelter': 'Advanced', 
+                'steelsmelter': 'Advanced', 'ironweaponsmith': 'Advanced', 'steelweaponsmith': 'Advanced', 
+                'stable': 'Advanced', 'bowmaker': 'Advanced', 'longbowmaker': 'Advanced', 
+                'hunter': 'Advanced', 'deerstalkerhut': 'Advanced', 'butcher': 'Advanced', 
+                'marblecutter': 'Advanced', 'marblemason': 'Advanced',
+
+                // Elite
+                'coalmine': 'Elite', 'goldore': 'Elite', 'goldmine': 'Elite', 'goldsmelter': 'Elite', 
+                'coinage': 'Elite', 'titaniummine': 'Elite', 'titaniumsmelter': 'Elite', 
+                'titaniumweaponsmith': 'Elite', 'crossbowmaker': 'Elite', 'gunpowderforge': 'Elite', 
+                'cannonforge': 'Elite', 'eliteresidence': 'Elite', 'spaciousstorehouse': 'Elite', 
+                'floatingstorehouse': 'Elite', 'granite_pit': 'Elite', 'grout_factory': 'Elite',
+
+                // Decorations / Specials (CL5)
+                'residence': 'Decorations', 'nobleresidence': 'Decorations', 'floatingresidence': 'Decorations', 
+                'magnificentresidence': 'Decorations', 'witchtower': 'Decorations', 'darkcastle': 'Decorations', 
+                'bonechurch': 'Decorations', 'frozenmanor': 'Decorations', 'watercastle': 'Decorations', 
+                'goldtower': 'Decorations', 'recyclingmanufactory': 'Decorations', 'university2020': 'Decorations',
+                'village_school01': 'Decorations'
+            };
+
+            const getBuildingCategory = (b) => {
+                const name = (b.buildingName_string || b.buildingName || '').toLowerCase();
+                
+                // If it is explicitly in map
+                for (const key in BUILDING_MAP) {
+                    if (name.includes(key)) return BUILDING_MAP[key];
+                }
+                
+                // Fallback rules
+                if (name.includes('residence') || name.includes('manor') || name.includes('castle') || name.includes('palace') || name.includes('deco') || name.includes('monument') || name.includes('statue') || name.includes('flowerbed') || name.includes('bench') || name.includes('tree') || name.includes('lantern') || name.includes('signpost') || name.includes('gate') || name.includes('tower') || name.includes('tent') || name.includes('camp') || name.includes('trophy') || name.includes('garden') || name.includes('lake') || name.includes('well_0') || name.includes('excelsior') || name.includes('garrison') || name.includes('mountain') || name.includes('deposit') || name.includes('rubble') || name.includes('ruin') || name.includes('rock') || name.includes('peak')) {
+                    return 'Decorations';
+                }
+                if (name.includes('titanium') || name.includes('platinum') || name.includes('gold') || name.includes('gunpowder') || name.includes('cannon') || name.includes('crossbow') || name.includes('salpeter') || name.includes('granite') || name.includes('elite')) {
+                    return 'Elite';
+                }
+                if (name.includes('iron') || name.includes('steel') || name.includes('stable') || name.includes('bow') || name.includes('hunter') || name.includes('deerstalker') || name.includes('butcher') || name.includes('marble')) {
+                    return 'Advanced';
+                }
+                if (name.includes('coke') || name.includes('copper') || name.includes('bronze') || name.includes('tool') || name.includes('improved') || name.includes('silo') || name.includes('mill') || name.includes('bakery') || name.includes('brewery')) {
+                    return 'Improved';
+                }
+                return 'Basic';
+            };
+
             if (buildingFilter.value !== 'All') {
-                buildings = buildings.filter(b => {
-                    const name = (b.buildingName_string || b.buildingName || '').toLowerCase();
-                    switch (buildingFilter.value) {
-                        case 'Wood': return name.includes('wood') || name.includes('saw') || name.includes('lumber');
-                        case 'Mines': return name.includes('mine') || name.includes('coal') || name.includes('iron') || name.includes('gold');
-                        case 'Metal': return name.includes('metal') || name.includes('steel') || name.includes('foundry') || name.includes('smith');
-                        case 'Food': return name.includes('farm') || name.includes('wheat') || name.includes('bakery') || name.includes('windmill');
-                        case 'Public': return name.includes('tavern') || name.includes('market') || name.includes('guild') || name.includes('residence');
-                        default: return true;
-                    }
-                });
+                buildings = buildings.filter(b => getBuildingCategory(b) === buildingFilter.value);
             }
 
             return buildings;
         });
 
         const getBuffName = (buffId) => {
-            if (!buffId) return 'Unknown Buff';
+            if (!buffId) return 'Неизвестный бафф';
             const buffNames = {
-                1: 'Fish Platter',
-                2: 'Aunt Irma\'s Basket',
-                3: 'Solid Sandwich',
-                4: 'Gold Fever',
-                6: 'Aunt Irma\'s Feast Basket',
-                7: 'Grilled Steak',
-                8: 'Love Potion',
-                9: 'Chocolate Rabbit',
-                12: 'Stadium Snack'
+                1: 'Рыбное блюдо (x2)',
+                2: 'Корзинка тетушки Ирмы (x2)',
+                3: 'Бутерброд (x2)',
+                4: 'Золотая лихорадка (x3)',
+                6: 'Праздничная корзинка Ирмы (x2)',
+                7: 'Стейк из жареного мяса (x3)',
+                8: 'Любовное зелье (x2)',
+                9: 'Шоколадный кролик (x3)',
+                12: 'Стадионная закуска (x4)'
             };
-            return buffNames[buffId] || `Buff #${buffId}`;
+            return buffNames[buffId] || `Бафф #${buffId}`;
         };
 
         const getStarBuffName = (b) => {
-            if (!b || !b.buffName_string) return 'Unknown Star Buff';
+            if (!b || !b.buffName_string) return 'Неизвестный бафф';
             if (b.buffName_string === 'AddResource') {
                 return `Добавить ресурс: ${formatResourceName(b.resourceName_string)}`;
             }
@@ -802,7 +913,95 @@ export default {
             if (b.buffName_string === 'Adventure') {
                 return `Приключение: ${formatResourceName(b.resourceName_string)}`;
             }
+
+            const mapping = {
+                'ProductivityBuffLvl1': 'Рыбное блюдо (x2)',
+                'ProductivityBuffLvl2': 'Бутерброд (x2)',
+                'ProductivityBuffLvl3': 'Корзинка тетушки Ирмы (x2)',
+                'ProductivityBuffLvl4': 'Стейк из жареного мяса (x3)',
+                'ProductivityBuffLvl5': 'Стадионная закуска (x4)',
+                'ProductivityBuffSpecialist1': 'Шоколадный кролик (x3)',
+                'ProductivityBuffSpecialist2': 'Любовное зелье (x2)',
+                'GoldMineBuff': 'Золотая лихорадка (x3)',
+                'GeneralBuffLvl1': 'Аптечка',
+                'BarracksBuffLvl1': 'Ускорение казармы (x2)',
+                'BarracksBuffLvl2': 'Ускорение казармы (x3)',
+                'ProvisionHouseBuffLvl1': 'Ускорение мастерской (x2)',
+                'ProvisionHouseBuffLvl2': 'Ускорение мастерской (x3)',
+                'BookbinderBuffLvl1': 'Клей для переплетчика',
+                'BookbinderBuffLvl2': 'Смола для переплетчика',
+            };
+
+            const matched = mapping[b.buffName_string];
+            if (matched) return matched;
+
             return b.buffName_string.replace(/(?<!^)(?=[A-Z])/g, ' ').replace(/_/g, ' ');
+        };
+
+        const getBuffIcon = (b) => {
+            const name = b.buffName_string || b.name || '';
+            if (!name) return null;
+            
+            // Clean name: lowercase and strip spaces/special chars
+            let clean = name.trim().toLowerCase().replace(/\s+/g, '_').replace(/['"]/g, '');
+            
+            // Map common buff names to their file names on disk
+            const buffMap = {
+                'aunt_irmas_basket': 'aunt_irma_basket',
+                'aunt_irmas_feast_basket': 'aunt_irma_feast_basket',
+                'solid_sandwich': 'solid_sandwich',
+                'grilled_steak': 'grilled_steak',
+                'fish_platter': 'fish_platter',
+                'chocolate_rabbit': 'chocolate_rabbit',
+                'love_potion': 'love_potion',
+                'fermentation_accelerator': 'fermentation_accelerator',
+                'balloon_dog': 'balloon_dog',
+                'secretsanta': 'buff_secretsanta',
+                'buff_secretsanta': 'buff_secretsanta'
+            };
+            
+            if (buffMap[clean]) {
+                clean = buffMap[clean];
+            }
+            
+            return `/images/resources/${clean}.png`;
+        };
+
+        const handleBuffIconError = (event, b) => {
+            const img = event.target;
+            const name = b.buffName_string || b.name || '';
+            let clean = name.trim().toLowerCase().replace(/\s+/g, '_').replace(/['"]/g, '');
+            
+            const buffMap = {
+                'aunt_irmas_basket': 'aunt_irma_basket',
+                'aunt_irmas_feast_basket': 'aunt_irma_feast_basket',
+                'solid_sandwich': 'solid_sandwich',
+                'grilled_steak': 'grilled_steak',
+                'fish_platter': 'fish_platter',
+                'chocolate_rabbit': 'chocolate_rabbit',
+                'love_potion': 'love_potion',
+                'fermentation_accelerator': 'fermentation_accelerator',
+                'balloon_dog': 'balloon_dog',
+                'secretsanta': 'buff_secretsanta',
+                'buff_secretsanta': 'buff_secretsanta'
+            };
+            
+            if (buffMap[clean]) {
+                clean = buffMap[clean];
+            }
+
+            if (img.src.includes('/images/resources/') && img.src.endsWith('.png')) {
+                // Step 1: PNG in resources failed, try WebP in buildings (from TSO Wiki)
+                img.src = `/images/buildings/${clean}.webp`;
+            } else if (img.src.includes('/images/buildings/') && img.src.endsWith('.webp')) {
+                // Step 2: WebP failed too, try PNG in buildings
+                img.src = `/images/buildings/${clean}.png`;
+            } else {
+                // Step 3: Hide image and show sibling emoji/SVG
+                img.style.display = 'none';
+                const sibling = img.nextElementSibling;
+                if (sibling) sibling.style.display = 'block';
+            }
         };
 
         const getBuildingName = (b) => {
@@ -813,8 +1012,25 @@ export default {
         const getBuildingIcon = (b) => {
             const name = b.buildingName_string || b.buildingName || '';
             if (!name) return null;
-            // Clean name to lowercase and strip suffixes like numbers or _lvl_X
+            
+            // Clean name to lowercase and strip level info
             let clean = name.replace(/_lvl_\d+/i, '').replace(/decoration_/g, '').trim().toLowerCase();
+            
+            // Map game engine names to their actual image names from tsowiki
+            const nameMapping = {
+                'realwoodsawmill': 'sawmill_real_planks',
+                'exoticwoodsawmill': 'sawmill_exotic_planks',
+                'mahoganysawmill': 'mahogany_sawmill',
+                'exoticwoodtreeschool': 'exoticwood_treeschool',
+                'stonecutter': 'stonemason',
+                'marblecutter': 'marblemason',
+                'granitecutter': 'granitemason'
+            };
+            
+            if (nameMapping[clean]) {
+                clean = nameMapping[clean];
+            }
+            
             return `/images/buildings/${clean}.webp`;
         };
 
@@ -822,23 +1038,51 @@ export default {
             const img = event.target;
             const name = b.buildingName_string || b.buildingName || '';
             let clean = name.replace(/_lvl_\d+/i, '').replace(/decoration_/g, '').trim().toLowerCase();
-            if (img.src.endsWith('.webp')) {
-                // If WebP fails, try PNG from resources directory
+            
+            const nameMapping = {
+                'realwoodsawmill': 'sawmill_real_planks',
+                'exoticwoodsawmill': 'sawmill_exotic_planks',
+                'mahoganysawmill': 'mahogany_sawmill',
+                'exoticwoodtreeschool': 'exoticwood_treeschool',
+                'stonecutter': 'stonemason',
+                'marblecutter': 'marblemason',
+                'granitecutter': 'granitemason'
+            };
+            
+            if (nameMapping[clean]) {
+                clean = nameMapping[clean];
+            }
+            
+            if (img.src.includes('/images/buildings/') && img.src.endsWith('.webp')) {
+                // Step 1: WebP failed in buildings, try PNG in buildings
+                img.src = `/images/buildings/${clean}.png`;
+            } else if (img.src.includes('/images/buildings/') && img.src.endsWith('.png')) {
+                // Step 2: PNG failed in buildings, try PNG in resources
                 img.src = `/images/resources/${clean}.png`;
             } else {
+                // Step 3: All failed, hide
                 img.style.display = 'none';
             }
         };
 
         const isStoppable = (b) => {
-            if (b.buildingMode !== 27) return false;
+            const mode = b.buildingMode;
+            // A building can be stopped/started if its mode is active (20-27) or produces no resources / stopped (28)
+            if (mode < 20 || mode > 28) return false;
+
             const name = (b.buildingName_string || b.buildingName || '').toLowerCase();
             const nonStoppable = [
                 'mayorhouse', 'storehouse', 'residence', 'tavern', 'decoration', 
                 'mountain', 'mine_02', 'pioneercastle', 'lookouttower', 'waterstorehouse', 
-                'floatingstorehouse', 'spaciousstorehouse', 'improvedstorehouse', 'tower', 'wall', 'gate'
+                'floatingstorehouse', 'spaciousstorehouse', 'improvedstorehouse', 'tower', 'wall', 'gate',
+                'garrison', 'excelsior', 'ruin', 'rubble', 'wreckage', 'ship', 'depleted', 'deposit',
+                'collectible', 'bandit'
             ];
             return !nonStoppable.some(word => name.includes(word));
+        };
+
+        const isBuildingActive = (b) => {
+            return b.isProductionActive === true || (b.buildingMode >= 20 && b.buildingMode <= 27);
         };
 
         const getSpecialistType = (type) => {
@@ -894,6 +1138,10 @@ export default {
 
         const getFriendAvatar = (f) => {
             if (f.avatarId) {
+                const idNum = parseInt(f.avatarId);
+                if (idNum >= 1 && idNum <= 60) {
+                    return `/images/avatars/${idNum}.png`;
+                }
                 return `https://settlersonlinewiki.eu/images/avatars/avatar_${f.avatarId}.png`;
             }
             return null;
@@ -920,15 +1168,17 @@ export default {
 
         const toggleBuilding = async (b) => {
             actionLoading.value = true;
-            const actionType = b.isProductionActive ? 'stop_production' : 'start_production';
+            const currentlyActive = isBuildingActive(b);
+            const actionType = currentlyActive ? 'stop_production' : 'start_production';
             try {
                 const res = await axios.post(`/api/accounts/${account.value.id}/action`, {
                     action_type: actionType,
                     grid: b.buildingGrid
                 });
                 if (res.data.success) {
-                    showToast(`Production ${b.isProductionActive ? 'stopped' : 'started'}!`);
-                    b.isProductionActive = !b.isProductionActive;
+                    showToast(`Production ${currentlyActive ? 'stopped' : 'started'}!`);
+                    b.isProductionActive = !currentlyActive;
+                    b.buildingMode = currentlyActive ? 28 : 23;
                 } else {
                     showToast(res.data.message || 'Action failed.', 'error');
                 }
@@ -1000,8 +1250,11 @@ export default {
             getBuildingIcon,
             handleBuildingIconError,
             isStoppable,
+            isBuildingActive,
             getBuffName,
             getStarBuffName,
+            getBuffIcon,
+            handleBuffIconError,
             getSpecialistType,
             getResourceIcon,
             getResourceEmoji,
@@ -1013,6 +1266,10 @@ export default {
             formatResourceName,
             serverName,
             buildingModeFilter,
+            syncing,
+            syncAccount,
+            visitors,
+            getAvatarById,
         };
     }
 };

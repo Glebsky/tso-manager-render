@@ -8,27 +8,28 @@
             <div class="flex items-start justify-between mb-4">
                 <div class="flex items-center gap-3">
                     <!-- Avatar -->
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center text-white font-bold text-sm shadow-lg"
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center text-white font-bold text-sm shadow-lg overflow-hidden flex-shrink-0"
                          :class="statusClass">
-                        {{ avatarLetters }}
+                        <img v-if="avatarUrl" :src="avatarUrl" :alt="localAccount.nickname || localAccount.username" class="w-full h-full object-cover" @error="$event.target.style.display='none'">
+                        <span v-else>{{ avatarLetters }}</span>
                     </div>
-                    <router-link :to="'/accounts/' + account.id" class="block">
+                    <router-link :to="'/accounts/' + localAccount.id" class="block">
                         <h3 class="font-semibold text-white hover:text-emerald-400 transition-colors cursor-pointer">
-                            {{ account.nickname || account.username }}
+                            {{ localAccount.nickname || localAccount.username }}
                         </h3>
-                        <p class="text-xs text-white/40 truncate max-w-[150px]" :title="account.username">
-                            {{ account.username }}
+                        <p class="text-xs text-white/40 truncate max-w-[150px]" :title="localAccount.username">
+                            {{ localAccount.username }}
                         </p>
                     </router-link>
                 </div>
-
+ 
                 <!-- Status -->
                 <div class="flex items-center gap-2">
                     <div class="w-2 h-2 rounded-full" :class="statusDotClass"></div>
-                    <span class="text-xs text-white/40 capitalize">{{ account.status || 'offline' }}</span>
+                    <span class="text-xs text-white/40 capitalize">{{ localAccount.status || 'offline' }}</span>
                 </div>
             </div>
-
+ 
             <!-- Info row -->
             <div class="flex items-center gap-3 mb-4 flex-wrap">
                 <!-- Region badge -->
@@ -36,9 +37,9 @@
                     <svg class="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 0 1 3 12c0-1.605.42-3.113 1.157-4.418" />
                     </svg>
-                    {{ account.region || 'N/A' }}
+                    {{ localAccount.region || 'N/A' }}
                 </span>
-
+ 
                 <!-- Server name badge -->
                 <span v-if="serverName" class="badge badge-success bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                     <svg class="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -46,7 +47,7 @@
                     </svg>
                     {{ serverName }}
                 </span>
-
+ 
                 <!-- Building count -->
                 <span v-if="buildingCount !== null" class="badge badge-neutral">
                     <svg class="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -54,13 +55,13 @@
                     </svg>
                     {{ buildingCount }} buildings
                 </span>
-
+ 
                 <!-- Last sync -->
-                <span v-if="account.last_sync_at" class="text-xs text-white/30 flex items-center gap-1">
+                <span v-if="localAccount.last_sync_at" class="text-xs text-white/30 flex items-center gap-1">
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                     </svg>
-                    {{ formatSyncTime(account.last_sync_at) }}
+                    {{ formatSyncTime(localAccount.last_sync_at) }}
                 </span>
             </div>
 
@@ -94,7 +95,7 @@
 </template>
 
 <script>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import { showToast } from '../toast';
@@ -111,6 +112,11 @@ export default {
     setup(props, { emit }) {
         const router = useRouter();
         const syncing = ref(false);
+        const localAccount = ref({ ...props.account });
+
+        watch(() => props.account, (newVal) => {
+            localAccount.value = { ...newVal };
+        }, { deep: true });
 
         const statusClass = computed(() => {
             const colors = {
@@ -119,24 +125,34 @@ export default {
                 error: 'from-red-500 to-rose-500',
                 offline: 'from-gray-500 to-gray-600'
             };
-            return colors[props.account.status] || colors.offline;
+            return colors[localAccount.value.status] || colors.offline;
         });
 
         const statusDotClass = computed(() => {
-            return 'status-' + (props.account.status || 'offline');
+            return 'status-' + (localAccount.value.status || 'offline');
         });
 
         const avatarLetters = computed(() => {
-            const name = props.account.nickname || props.account.username || '?';
+            const name = localAccount.value.nickname || localAccount.value.username || '?';
             return name.substring(0, 2).toUpperCase();
         });
 
+        const avatarUrl = computed(() => {
+            const avatarId = zoneObject.value?.avatarId;
+            if (!avatarId) return null;
+            const idNum = parseInt(avatarId);
+            if (idNum >= 1 && idNum <= 60) {
+                return `/images/avatars/${idNum}.png`;
+            }
+            return `https://settlersonlinewiki.eu/images/avatars/avatar_${avatarId}.png`;
+        });
+
         const zoneObject = computed(() => {
-            if (!props.account.zone_data) return null;
+            if (!localAccount.value.zone_data) return null;
             try {
-                return typeof props.account.zone_data === 'string'
-                    ? JSON.parse(props.account.zone_data)
-                    : props.account.zone_data;
+                return typeof localAccount.value.zone_data === 'string'
+                    ? JSON.parse(localAccount.value.zone_data)
+                    : localAccount.value.zone_data;
             } catch (e) {
                 return null;
             }
@@ -164,15 +180,25 @@ export default {
 
         const syncAccount = async () => {
             syncing.value = true;
+            localAccount.value.status = 'syncing';
             try {
-                const res = await axios.post(`/api/accounts/${props.account.id}/sync`);
+                const res = await axios.post(`/api/accounts/${localAccount.value.id}/sync`);
                 if (res.data.success) {
                     showToast('Account synced successfully!');
-                    emit('sync-success', res.data.zone_data);
+                    if (res.data.account) {
+                        localAccount.value = res.data.account;
+                    }
+                    emit('sync-success', res.data.account || localAccount.value);
                 } else {
+                    localAccount.value.status = 'error';
                     showToast(res.data.message || 'Sync failed.', 'error');
                 }
             } catch (e) {
+                if (e.response?.data?.account) {
+                    localAccount.value = e.response.data.account;
+                } else {
+                    localAccount.value.status = 'error';
+                }
                 showToast(e.response?.data?.message || 'Sync request failed.', 'error');
             } finally {
                 syncing.value = false;
@@ -182,7 +208,7 @@ export default {
         const deleteAccount = async () => {
             if (!confirm('Are you sure you want to delete this account?')) return;
             try {
-                const res = await axios.delete(`/api/accounts/${props.account.id}`);
+                const res = await axios.delete(`/api/accounts/${localAccount.value.id}`);
                 if (res.data.success) {
                     showToast('Account deleted.');
                     emit('delete-success');
@@ -193,7 +219,7 @@ export default {
         };
 
         const goToDetail = () => {
-            router.push(`/accounts/${props.account.id}`);
+            router.push(`/accounts/${localAccount.value.id}`);
         };
 
         const serverName = computed(() => {
@@ -202,9 +228,11 @@ export default {
 
         return {
             syncing,
+            localAccount,
             statusClass,
             statusDotClass,
             avatarLetters,
+            avatarUrl,
             buildingCount,
             formatSyncTime,
             syncAccount,
@@ -213,5 +241,4 @@ export default {
             serverName
         };
     }
-};
-</script>
+};</script>
