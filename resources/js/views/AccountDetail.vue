@@ -65,7 +65,8 @@
                         <div v-if="xp !== null" class="mt-4">
                             <div class="flex items-center justify-between text-xs text-white/30 mb-1">
                                 <span>Опыт: <strong class="text-white/70">{{ formatNumber(xp) }} XP</strong></span>
-                                <span v-if="xpNextTarget">До {{ level + 1 }} уровня: {{ formatNumber(xpNextTarget - xp) }} XP (Всего {{ formatNumber(xpNextTarget) }})</span>
+                                <span v-if="level && level >= 80">Максимальный уровень</span>
+                                <span v-else-if="xpNextTarget">До {{ level + 1 }} уровня: {{ formatNumber(xpNextTarget - xp) }} XP (Всего {{ formatNumber(xpNextTarget) }})</span>
                             </div>
                             <div class="h-2 bg-white/5 rounded-full overflow-hidden">
                                 <div class="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full transition-all duration-500"
@@ -161,7 +162,7 @@
                                     <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400">Lvl {{ b.upgradeLevel || 1 }}</span>
                                 </div>
                                 <div v-if="b.buffs && b.buffs.length > 0" class="mt-2 flex flex-wrap gap-1">
-                                    <span v-for="(bf, idx) in b.buffs" :key="idx" 
+                                    <span v-for="(bf, idx) in b.buffs" :key="idx"
                                           class="inline-flex items-center gap-1 bg-amber-500/10 text-amber-400 text-[10px] px-1.5 py-0.5 rounded border border-amber-500/20"
                                           :title="'ID: ' + bf.buffID">
                                         ✨ {{ getBuffName(bf.buffID) }}
@@ -178,7 +179,7 @@
                                 <span v-else class="badge badge-neutral text-[10px]">
                                     Built
                                 </span>
-                                
+
                                 <button v-if="isStoppable(b) && !b.upgradeIsInProgress" @click="toggleBuilding(b)" :disabled="actionLoading"
                                         class="btn-secondary btn-sm text-[10px] disabled:opacity-50"
                                         :class="isBuildingActive(b)
@@ -567,6 +568,17 @@ const categorizedNames = [...basicResourceNames, ...improvedResourceNames, ...ad
 // Building stop-words (non-stoppable buildings to hide)
 const stopWords = ['Bandit', 'DestroyableMountain', 'Mountain', 'Ruins', 'Camp', 'Loot'];
 
+const LEVEL_XP_TABLE = {
+    1: 0, 2: 100, 3: 200, 4: 300, 5: 400, 6: 500, 7: 600, 8: 700, 9: 800, 10: 900,
+    11: 1000, 12: 1100, 13: 1200, 14: 1300, 15: 1400, 16: 1500, 17: 1700, 18: 2100, 19: 3000, 20: 4000,
+    21: 5100, 22: 6300, 23: 7400, 24: 8600, 25: 9900, 26: 11300, 27: 12800, 28: 14400, 29: 16100, 30: 17900,
+    31: 19900, 32: 28000, 33: 39000, 34: 51000, 35: 66000, 36: 88000, 37: 118000, 38: 158000, 39: 236000, 40: 314000,
+    41: 412000, 42: 535000, 43: 690000, 44: 885000, 45: 1131000, 46: 1441000, 47: 1831000, 48: 2321000, 49: 2941000, 50: 3746000,
+    51: 4697000, 52: 5889000, 53: 7383000, 54: 9257000, 55: 11610000, 56: 14550000, 57: 18240000, 58: 22870000, 59: 28680000, 60: 35960000,
+    61: 45080000, 62: 56520000, 63: 70870000, 64: 88850000, 65: 111400000, 66: 139700000, 67: 175100000, 68: 219600000, 69: 275300000, 70: 345100000,
+    71: 432700000, 72: 542500000, 73: 680200000, 74: 852800000, 75: 1069000000, 76: 1200000000, 77: 1360000000, 78: 1550000000, 79: 1780000000, 80: 2050000000
+};
+
 export default {
     name: 'AccountDetail',
     components: { BuildingIcon, SpecialistIcon, BuffIcon, ResourceIcon, FriendIcon },
@@ -672,12 +684,12 @@ export default {
         const getCategory = (name) => {
             if (!name) return 'Other';
             const normName = name.trim().toLowerCase();
-            
+
             // Check explicit patterns
             if (normName.includes('balloon') || normName.includes('egg') || normName.includes('gift') || normName.includes('pumpkin') || normName.includes('present')) {
                 return 'WarehouseTab6';
             }
-            
+
             for (const cat of CATEGORY_ORDER) {
                 if (RESOURCE_CATEGORIES[cat].some(r => r.toLowerCase() === normName)) return cat;
             }
@@ -693,8 +705,22 @@ export default {
             }));
         });
         const parsedFriends = computed(() => zoneData.value?.friends || []);
-        const level = computed(() => zoneData.value?.level);
         const xp = computed(() => zoneData.value?.xp);
+        const level = computed(() => {
+            const currentXp = xp.value;
+            if (currentXp === null || currentXp === undefined) {
+                return zoneData.value?.level || 1;
+            }
+            let calculatedLevel = 1;
+            for (let lvl = 1; lvl <= 80; lvl++) {
+                if (LEVEL_XP_TABLE[lvl] !== undefined && currentXp >= LEVEL_XP_TABLE[lvl]) {
+                    calculatedLevel = lvl;
+                } else {
+                    break;
+                }
+            }
+            return calculatedLevel;
+        });
         const pvpLevel = computed(() => zoneData.value?.pvpLevel);
         const generalsAmount = computed(() => zoneData.value?.generalsAmount);
         const explorersAmount = computed(() => zoneData.value?.explorersAmount);
@@ -749,25 +775,19 @@ export default {
             return name.substring(0, 2).toUpperCase();
         });
 
-        const LEVEL_XP_TABLE = {
-            1: 0, 2: 10, 3: 40, 4: 100, 5: 200, 6: 400, 7: 800, 8: 1500, 9: 2500, 10: 4000,
-            11: 6000, 12: 8500, 13: 11500, 14: 15000, 15: 19000, 16: 23500, 17: 28500, 18: 34000, 19: 40000, 20: 46500,
-            21: 53500, 22: 61000, 23: 69000, 24: 77500, 25: 86500, 26: 96000, 27: 106000, 28: 118000, 29: 132000, 30: 148000,
-            31: 166000, 32: 186000, 33: 208000, 34: 233000, 35: 261000, 36: 293000, 37: 118000, 38: 158000, 39: 236000, 40: 314000,
-            50: 3200000, 60: 16000000, 70: 45000000, 80: 120000000
-        };
-
         const xpNextTarget = computed(() => {
             if (!level.value) return 0;
             const lvl = level.value;
-            return LEVEL_XP_TABLE[lvl + 1] !== undefined ? LEVEL_XP_TABLE[lvl + 1] : ((lvl + 1) * 10000);
+            if (lvl >= 80) return LEVEL_XP_TABLE[80];
+            return LEVEL_XP_TABLE[lvl + 1] !== undefined ? LEVEL_XP_TABLE[lvl + 1] : LEVEL_XP_TABLE[lvl];
         });
 
         const xpProgress = computed(() => {
             if (xp.value === null || xp.value === undefined || !level.value) return 0;
             const lvl = level.value;
+            if (lvl >= 80) return 100;
             const currentXp = xp.value;
-            let startXp = LEVEL_XP_TABLE[lvl] !== undefined ? LEVEL_XP_TABLE[lvl] : (lvl * 10000);
+            let startXp = LEVEL_XP_TABLE[lvl] !== undefined ? LEVEL_XP_TABLE[lvl] : 0;
             let endXp = xpNextTarget.value;
             if (currentXp < startXp) startXp = Math.max(0, currentXp - 5000);
             if (currentXp > endXp) endXp = currentXp + 10000;
@@ -822,48 +842,48 @@ export default {
             // Map building name to categories (CL1 to CL5)
             const BUILDING_MAP = {
                 // Basic
-                'mayorhouse': 'Basic', 'storehouse': 'Basic', 'woodcutter': 'Basic', 'forester': 'Basic', 
-                'sawmill': 'Basic', 'stonecutter': 'Basic', 'stonemason': 'Basic', 'fishfarm': 'Basic', 
-                'fisher': 'Basic', 'farm': 'Basic', 'well': 'Basic', 'provisionhouse': 'Basic', 
+                'mayorhouse': 'Basic', 'storehouse': 'Basic', 'woodcutter': 'Basic', 'forester': 'Basic',
+                'sawmill': 'Basic', 'stonecutter': 'Basic', 'stonemason': 'Basic', 'fishfarm': 'Basic',
+                'fisher': 'Basic', 'farm': 'Basic', 'well': 'Basic', 'provisionhouse': 'Basic',
                 'tavern': 'Basic', 'barracks': 'Basic',
 
                 // Improved
-                'cokingplant': 'Improved', 'copperore': 'Improved', 'coppermine': 'Improved', 
-                'bronzesmelter': 'Improved', 'bronzeweaponsmith': 'Improved', 'toolmaker': 'Improved', 
-                'improvedstorehouse': 'Improved', 'improvedfarm': 'Improved', 'improvedwell': 'Improved', 
-                'silo': 'Improved', 'improvedsilo': 'Improved', 'mill': 'Improved', 'bakery': 'Improved', 
+                'cokingplant': 'Improved', 'copperore': 'Improved', 'coppermine': 'Improved',
+                'bronzesmelter': 'Improved', 'bronzeweaponsmith': 'Improved', 'toolmaker': 'Improved',
+                'improvedstorehouse': 'Improved', 'improvedfarm': 'Improved', 'improvedwell': 'Improved',
+                'silo': 'Improved', 'improvedsilo': 'Improved', 'mill': 'Improved', 'bakery': 'Improved',
                 'brewery': 'Improved',
 
                 // Advanced
-                'ironore': 'Advanced', 'ironmine': 'Advanced', 'ironsmelter': 'Advanced', 
-                'steelsmelter': 'Advanced', 'ironweaponsmith': 'Advanced', 'steelweaponsmith': 'Advanced', 
-                'stable': 'Advanced', 'bowmaker': 'Advanced', 'longbowmaker': 'Advanced', 
-                'hunter': 'Advanced', 'deerstalkerhut': 'Advanced', 'butcher': 'Advanced', 
+                'ironore': 'Advanced', 'ironmine': 'Advanced', 'ironsmelter': 'Advanced',
+                'steelsmelter': 'Advanced', 'ironweaponsmith': 'Advanced', 'steelweaponsmith': 'Advanced',
+                'stable': 'Advanced', 'bowmaker': 'Advanced', 'longbowmaker': 'Advanced',
+                'hunter': 'Advanced', 'deerstalkerhut': 'Advanced', 'butcher': 'Advanced',
                 'marblecutter': 'Advanced', 'marblemason': 'Advanced',
 
                 // Elite
-                'coalmine': 'Elite', 'goldore': 'Elite', 'goldmine': 'Elite', 'goldsmelter': 'Elite', 
-                'coinage': 'Elite', 'titaniummine': 'Elite', 'titaniumsmelter': 'Elite', 
-                'titaniumweaponsmith': 'Elite', 'crossbowmaker': 'Elite', 'gunpowderforge': 'Elite', 
-                'cannonforge': 'Elite', 'eliteresidence': 'Elite', 'spaciousstorehouse': 'Elite', 
+                'coalmine': 'Elite', 'goldore': 'Elite', 'goldmine': 'Elite', 'goldsmelter': 'Elite',
+                'coinage': 'Elite', 'titaniummine': 'Elite', 'titaniumsmelter': 'Elite',
+                'titaniumweaponsmith': 'Elite', 'crossbowmaker': 'Elite', 'gunpowderforge': 'Elite',
+                'cannonforge': 'Elite', 'eliteresidence': 'Elite', 'spaciousstorehouse': 'Elite',
                 'floatingstorehouse': 'Elite', 'granite_pit': 'Elite', 'grout_factory': 'Elite',
 
                 // Decorations / Specials (CL5)
-                'residence': 'Decorations', 'nobleresidence': 'Decorations', 'floatingresidence': 'Decorations', 
-                'magnificentresidence': 'Decorations', 'witchtower': 'Decorations', 'darkcastle': 'Decorations', 
-                'bonechurch': 'Decorations', 'frozenmanor': 'Decorations', 'watercastle': 'Decorations', 
+                'residence': 'Decorations', 'nobleresidence': 'Decorations', 'floatingresidence': 'Decorations',
+                'magnificentresidence': 'Decorations', 'witchtower': 'Decorations', 'darkcastle': 'Decorations',
+                'bonechurch': 'Decorations', 'frozenmanor': 'Decorations', 'watercastle': 'Decorations',
                 'goldtower': 'Decorations', 'recyclingmanufactory': 'Decorations', 'university2020': 'Decorations',
                 'village_school01': 'Decorations'
             };
 
             const getBuildingCategory = (b) => {
                 const name = (b.buildingName_string || b.buildingName || '').toLowerCase();
-                
+
                 // If it is explicitly in map
                 for (const key in BUILDING_MAP) {
                     if (name.includes(key)) return BUILDING_MAP[key];
                 }
-                
+
                 // Fallback rules
                 if (name.includes('residence') || name.includes('manor') || name.includes('castle') || name.includes('palace') || name.includes('deco') || name.includes('monument') || name.includes('statue') || name.includes('flowerbed') || name.includes('bench') || name.includes('tree') || name.includes('lantern') || name.includes('signpost') || name.includes('gate') || name.includes('tower') || name.includes('tent') || name.includes('camp') || name.includes('trophy') || name.includes('garden') || name.includes('lake') || name.includes('well_0') || name.includes('excelsior') || name.includes('garrison') || name.includes('mountain') || name.includes('deposit') || name.includes('rubble') || name.includes('ruin') || name.includes('rock') || name.includes('peak')) {
                     return 'Decorations';
@@ -937,10 +957,10 @@ export default {
         const getBuffIcon = (b) => {
             const name = b.buffName_string || b.name || '';
             if (!name) return null;
-            
+
             // Clean name: lowercase and strip spaces/special chars
             let clean = name.trim().toLowerCase().replace(/\s+/g, '_').replace(/['"]/g, '');
-            
+
             // Map common buff names to their file names on disk
             const buffMap = {
                 'aunt_irmas_basket': 'aunt_irma_basket',
@@ -955,11 +975,11 @@ export default {
                 'secretsanta': 'buff_secretsanta',
                 'buff_secretsanta': 'buff_secretsanta'
             };
-            
+
             if (buffMap[clean]) {
                 clean = buffMap[clean];
             }
-            
+
             return `/images/resources/${clean}.png`;
         };
 
@@ -967,7 +987,7 @@ export default {
             const img = event.target;
             const name = b.buffName_string || b.name || '';
             let clean = name.trim().toLowerCase().replace(/\s+/g, '_').replace(/['"]/g, '');
-            
+
             const buffMap = {
                 'aunt_irmas_basket': 'aunt_irma_basket',
                 'aunt_irmas_feast_basket': 'aunt_irma_feast_basket',
@@ -981,7 +1001,7 @@ export default {
                 'secretsanta': 'buff_secretsanta',
                 'buff_secretsanta': 'buff_secretsanta'
             };
-            
+
             if (buffMap[clean]) {
                 clean = buffMap[clean];
             }
@@ -1008,10 +1028,10 @@ export default {
         const getBuildingIcon = (b) => {
             const name = b.buildingName_string || b.buildingName || '';
             if (!name) return null;
-            
+
             // Clean name to lowercase and strip level info
             let clean = name.replace(/_lvl_\d+/i, '').replace(/decoration_/g, '').trim().toLowerCase();
-            
+
             // Map game engine names to their actual image names from tsowiki
             const nameMapping = {
                 'realwoodsawmill': 'sawmill_real_planks',
@@ -1022,11 +1042,11 @@ export default {
                 'marblecutter': 'marblemason',
                 'granitecutter': 'granitemason'
             };
-            
+
             if (nameMapping[clean]) {
                 clean = nameMapping[clean];
             }
-            
+
             return `/images/buildings/${clean}.webp`;
         };
 
@@ -1034,7 +1054,7 @@ export default {
             const img = event.target;
             const name = b.buildingName_string || b.buildingName || '';
             let clean = name.replace(/_lvl_\d+/i, '').replace(/decoration_/g, '').trim().toLowerCase();
-            
+
             const nameMapping = {
                 'realwoodsawmill': 'sawmill_real_planks',
                 'exoticwoodsawmill': 'sawmill_exotic_planks',
@@ -1044,11 +1064,11 @@ export default {
                 'marblecutter': 'marblemason',
                 'granitecutter': 'granitemason'
             };
-            
+
             if (nameMapping[clean]) {
                 clean = nameMapping[clean];
             }
-            
+
             if (img.src.includes('/images/buildings/') && img.src.endsWith('.webp')) {
                 // Step 1: WebP failed in buildings, try PNG in buildings
                 img.src = `/images/buildings/${clean}.png`;
@@ -1068,8 +1088,8 @@ export default {
 
             const name = (b.buildingName_string || b.buildingName || '').toLowerCase();
             const nonStoppable = [
-                'mayorhouse', 'storehouse', 'residence', 'tavern', 'decoration', 
-                'mountain', 'mine_02', 'pioneercastle', 'lookouttower', 'waterstorehouse', 
+                'mayorhouse', 'storehouse', 'residence', 'tavern', 'decoration',
+                'mountain', 'mine_02', 'pioneercastle', 'lookouttower', 'waterstorehouse',
                 'floatingstorehouse', 'spaciousstorehouse', 'improvedstorehouse', 'tower', 'wall', 'gate',
                 'garrison', 'excelsior', 'ruin', 'rubble', 'wreckage', 'ship', 'depleted', 'deposit',
                 'collectible', 'bandit'
