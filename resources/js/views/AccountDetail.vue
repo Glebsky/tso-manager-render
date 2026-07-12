@@ -198,27 +198,92 @@
 
             <!-- Specialists Tab -->
             <div v-show="activeTab === 'specialists'">
-                <div v-if="parsedSpecialists.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div v-for="s in parsedSpecialists" :key="s.uniqueId || s.uniqueId1" class="glass-card p-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                                <svg class="w-5 h-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                                </svg>
+                <!-- Search & Filters -->
+                <div class="flex flex-col sm:flex-row gap-4 mb-6">
+                    <div class="flex-1 relative">
+                        <svg class="w-4 h-4 text-white/30 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                        </svg>
+                        <input v-model="specialistSearch" type="text" placeholder="Поиск специалистов..." class="glass-input w-full pl-10">
+                    </div>
+                    <div class="flex gap-2 flex-wrap">
+                        <button v-for="cat in ['All', 'General', 'Explorer', 'Geologist']" :key="cat" @click="specialistFilter = cat"
+                                class="px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-300 border"
+                                :class="specialistFilter === cat
+                                    ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/10 text-emerald-400 border-emerald-500/30'
+                                    : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
+                            {{ cat === 'All' ? 'Все' : cat === 'General' ? 'Генералы' : cat === 'Explorer' ? 'Разведчики' : 'Геологи' }}
+                            <span class="ml-1.5 px-1.5 py-0.5 rounded-full text-[9px]" :class="specialistFilter === cat ? 'bg-emerald-500/20' : 'bg-white/5'">
+                                {{ getSpecialistCategoryCount(cat) }}
+                            </span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Grid -->
+                <div v-if="filteredSpecialists.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    <div v-for="s in filteredSpecialists" :key="s.uniqueId || s.uniqueId1" 
+                         class="glass-card p-4 hover:border-white/20 transition-all duration-300 relative overflow-hidden group">
+                        <!-- Background Glow on Hover -->
+                        <div class="absolute inset-0 bg-gradient-to-br transition-all duration-500 opacity-0 group-hover:opacity-10 pointer-events-none"
+                             :class="getSpecialistCategory(s.type) === 'General' ? 'from-rose-500 to-red-500' : getSpecialistCategory(s.type) === 'Explorer' ? 'from-teal-500 to-emerald-500' : 'from-amber-500 to-orange-500'">
+                        </div>
+                        
+                        <div class="flex items-center gap-3 relative z-10">
+                            <!-- Icon -->
+                            <div class="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg overflow-hidden border bg-white/5"
+                                 :class="getSpecialistCategory(s.type) === 'General' ? 'text-rose-400 border-rose-500/20 shadow-rose-500/5' : getSpecialistCategory(s.type) === 'Explorer' ? 'text-teal-400 border-teal-500/20 shadow-teal-500/5' : 'text-amber-400 border-amber-500/20 shadow-amber-500/5'">
+                                <img :src="getSpecialistIcon(s.type)" @error="handleSpecialistIconError(s.type)" class="w-full h-full object-contain p-1" v-if="!hasSpecialistIconError(s.type) && getSpecialistIcon(s.type)" />
+                                <span v-else-if="getSpecialistCategory(s.type) === 'General'" class="text-xl">🎖️</span>
+                                <span v-else-if="getSpecialistCategory(s.type) === 'Explorer'" class="text-xl">🧭</span>
+                                <span v-else class="text-xl">🔨</span>
                             </div>
-                            <div class="flex-1">
-                                <p class="text-sm font-medium text-white/80">{{ s.name || 'Specialist' }}</p>
-                                <p class="text-[10px] text-white/30">{{ getSpecialistType(s.type) }}</p>
+                            
+                            <!-- Names -->
+                            <div class="flex-1 min-w-0">
+                                <h4 class="text-sm font-bold text-white group-hover:text-emerald-400 transition-colors duration-300 truncate" :title="s.name || getSpecialistTypeName(s.type)">
+                                    {{ s.name || getSpecialistTypeName(s.type) }}
+                                </h4>
+                                <div class="flex items-center flex-wrap gap-2 mt-1">
+                                    <span v-if="s.name" class="text-[10px] text-white/40 truncate block max-w-[140px]" :title="getSpecialistTypeName(s.type)">
+                                        {{ getSpecialistTypeName(s.type) }}
+                                    </span>
+                                    <span class="text-[9px] text-white/30 font-mono">
+                                        ID: {{ s.uniqueId1 }}
+                                    </span>
+                                    <span class="badge text-[8px] px-1 py-0.5" 
+                                          :class="getSpecialistCategory(s.type) === 'General' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : getSpecialistCategory(s.type) === 'Explorer' ? 'bg-teal-500/10 text-teal-400 border border-teal-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'">
+                                        {{ getSpecialistCategory(s.type) === 'General' ? 'Генерал' : getSpecialistCategory(s.type) === 'Explorer' ? 'Разведчик' : 'Геолог' }}
+                                    </span>
+                                </div>
                             </div>
                         </div>
-                        <div v-if="s.taskType || s.taskSubType" class="mt-3 pt-3 border-t border-white/5">
-                            <p class="text-[10px] text-white/30">Current Task</p>
-                            <p class="text-xs text-white/60">{{ s.taskType }} - {{ s.taskSubType }}</p>
+
+                        <!-- Current Task details -->
+                        <div class="mt-4 pt-3 border-t border-white/5 relative z-10">
+                            <div v-if="s.taskType || s.taskSubType" class="flex flex-col gap-1.5">
+                                <div class="flex items-center justify-between text-[10px]">
+                                    <span class="text-white/40">Текущая задача:</span>
+                                    <span class="badge badge-warning text-[9px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">В пути</span>
+                                </div>
+                                <p class="text-xs font-medium text-white/80 flex items-center gap-1.5">
+                                    <span>🚶‍♂️</span>
+                                    {{ getTaskName(s.taskType, s.taskSubType, getSpecialistCategory(s.type)) }}
+                                </p>
+                            </div>
+                            <div v-else class="flex items-center justify-between text-xs">
+                                <span class="text-white/30 text-[10px]">Статус:</span>
+                                <span class="badge badge-success text-[9px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                    Свободен
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
+                
                 <div v-else class="text-center py-12">
-                    <p class="text-white/30 text-sm">No specialists found.</p>
+                    <p class="text-white/30 text-sm">Специалисты не найдены.</p>
                 </div>
             </div>
 
@@ -613,6 +678,8 @@ export default {
         const buildingSearch = ref('');
         const buildingFilter = ref('All');
         const buildingModeFilter = ref('all');
+        const specialistSearch = ref('');
+        const specialistFilter = ref('All');
         const translations = ref({});
 
         const tabs = computed(() => [
@@ -1115,9 +1182,160 @@ export default {
             return b.isProductionActive === true || (b.buildingMode >= 20 && b.buildingMode <= 27);
         };
 
+        const SPECIALIST_TYPES = {
+            0: 'General', 1: 'Explorer', 2: 'Geologist', 3: 'MasterGeneral', 
+            4: 'MasterExplorer', 5: 'MasterGeologist', 6: 'TmpArmyTransporter', 
+            7: 'HalloweenGeneral', 8: 'RetailBoxGeneral', 9: 'EasterGeneral', 
+            10: 'EasterExplorer', 11: 'RetailBox2General', 12: 'TransporterGeneral', 
+            13: 'MajorGeneral', 14: 'StarGeneral1', 15: 'StarGeneral2', 16: 'StarGeneral3', 
+            17: 'FastLuckyExplorer', 18: 'Admiral', 19: 'TransporterAdmiral', 20: 'ExpertAdmiral', 
+            21: 'ExpertTransporterAdmiral', 22: 'AdditionalAdmiralShop', 23: 'Easter2015TransporterAdmiral', 
+            24: 'BlackMarshal', 25: 'HalloweenGeneralDracul', 26: 'ConscientiousGeologist', 
+            27: 'SantaGeneral', 28: 'IntrepidExplorer', 29: 'GeneralVargus', 30: 'GeneralAnslem', 
+            31: 'GeneralNusala', 32: 'CorageousExplorer', 33: 'GeneralMary', 34: 'IronWilledGeologist', 
+            35: 'StoneColdGeologist', 36: 'MedicGeneral', 37: 'MadScientistGeneral', 38: 'VersedGeologist', 
+            39: 'CandidExplorer', 40: 'LovelyGeologist', 41: 'LovelyExplorer', 42: 'GoldheartedGeologist', 
+            43: 'BorisGeneral', 44: 'PrincessZoeExplorer', 45: 'ArcheologistGeologist', 46: 'Soccer2019Explorer', 
+            47: 'Anniversary2019General', 48: 'EmphaticExplorer', 49: 'ThoroughGeologist', 
+            50: 'Halloween2019General', 51: 'BewitchingExplorer', 52: 'Xmas2019General', 53: 'HumbleExplorer', 
+            54: 'ValentinesTransporterGeneral', 55: 'KeenerExplorer', 56: 'AssassinGeneral', 57: 'SylvanaGeneral', 
+            58: 'BoldExplorer', 59: 'DiligentGeologist', 60: 'GeneralTrembleBeard', 61: 'ScaredExplorer', 
+            62: 'ChummyGeologist', 63: 'GhostGeneral', 64: 'FrostyGeneral', 65: 'SnowyExplorer', 
+            66: 'RomanticExplorer', 67: 'LonerGeneral', 68: 'MotherlyExplorer', 69: 'BenevolentExplorer', 
+            70: 'RoyalExplorer', 71: 'SophisticatedGeologist', 72: 'GeneralLoudmouth', 73: 'MummifiedGeologist', 
+            74: 'PirateExplorer', 75: 'NutcrackerGeneral', 76: 'GingerbreadGeologist', 77: 'MiraculousGeneral', 
+            78: 'FluffyButteExplorer', 79: 'ResoluteGeneral', 80: 'GeologistOnVacation', 81: 'RinaTheExplorer', 
+            82: 'TransporterGeneralBjoern', 83: 'SootyGeologist', 84: 'LoveStruckExplorer', 85: 'GeneralJuan', 
+            86: 'BalancedGeologist', 87: 'BlacktreeExplorer', 88: 'Brohmann', 89: 'MarathonGeologist', 
+            90: 'ChummyExplorer', 91: 'VesyGeologist', 92: 'MercenaryExplorer', 93: 'TheSmuggler', 
+            94: 'GhostExplorer', 95: 'StargazingGeologist', 96: 'NarcissisticGeneral', 97: 'GloryExploriExplorer', 
+            98: 'TitanicGeologist'
+        };
+
+        const getSpecialistCategory = (type) => {
+            const rawName = SPECIALIST_TYPES[type];
+            if (!rawName) return 'Other';
+            const lower = rawName.toLowerCase();
+            if (lower.includes('explorer') || lower.includes('scout')) return 'Explorer';
+            if (lower.includes('geologist')) return 'Geologist';
+            return 'General';
+        };
+
+        const getSpecialistTypeName = (type) => {
+            const rawName = SPECIALIST_TYPES[type] || `Specialist #${type}`;
+            
+            // Check translation in lang.txt
+            if (translations.value[rawName]) {
+                return translations.value[rawName];
+            }
+            
+            return rawName
+                .replace(/([A-Z0-9])/g, ' $1')
+                .replace(/^./, str => str.toUpperCase())
+                .trim();
+        };
+
         const getSpecialistType = (type) => {
-            const types = { 0: 'Geologist', 1: 'Explorer', 2: 'General' };
-            return types[type] || 'Specialist';
+            return getSpecialistTypeName(type);
+        };
+
+        const specialistIconErrors = ref(new Set());
+        const handleSpecialistIconError = (type) => {
+            specialistIconErrors.value.add(type);
+        };
+        const hasSpecialistIconError = (type) => {
+            return specialistIconErrors.value.has(type);
+        };
+        const getSpecialistIcon = (type) => {
+            const rawName = SPECIALIST_TYPES[type];
+            if (!rawName) return null;
+            return `/images/resources/${rawName.toLowerCase()}.png`;
+        };
+
+        const filteredSpecialists = computed(() => {
+            let specs = parsedSpecialists.value;
+
+            if (specialistFilter.value !== 'All') {
+                specs = specs.filter(s => getSpecialistCategory(s.type) === specialistFilter.value);
+            }
+
+            if (specialistSearch.value) {
+                const search = specialistSearch.value.toLowerCase();
+                specs = specs.filter(s => {
+                    const name = (s.name || '').toLowerCase();
+                    const typeName = getSpecialistTypeName(s.type).toLowerCase();
+                    return name.includes(search) || typeName.includes(search);
+                });
+            }
+
+            return specs;
+        });
+
+        const getSpecialistCategoryCount = (category) => {
+            if (category === 'All') return parsedSpecialists.value.length;
+            return parsedSpecialists.value.filter(s => getSpecialistCategory(s.type) === category).length;
+        };
+
+        const getTaskName = (taskType, taskSubType, category) => {
+            if (category === 'Explorer') {
+                const subTypeKeys = {
+                    1: 'FindAdventureShort',
+                    2: 'FindAdventureMedium',
+                    3: 'FindAdventureLong',
+                    4: 'FindTreasureShort',
+                    5: 'FindTreasureMedium',
+                    6: 'FindTreasureLong',
+                    7: 'FindTreasureEvenLonger',
+                    8: 'FindTreasureTravellingErudite',
+                    9: 'FindAdventureLootMapFragmentMailSubject',
+                };
+                const key = subTypeKeys[taskSubType];
+                if (key && translations.value[key]) {
+                    return translations.value[key];
+                }
+                const fallbackSubTypes = {
+                    1: 'Поиск приключений (Короткий)',
+                    2: 'Поиск приключений (Средний)',
+                    3: 'Поиск приключений (Длинный)',
+                    4: 'Поиск сокровищ (Короткий)',
+                    5: 'Поиск сокровищ (Средний)',
+                    6: 'Поиск сокровищ (Длинный)',
+                    7: 'Поиск сокровищ (Очень длинный)',
+                    8: 'Поиск сокровищ (Путешествие)',
+                    9: 'Поиск приключений (Очень длинный)',
+                };
+                return fallbackSubTypes[taskSubType] || `Разведка #${taskSubType}`;
+            }
+            if (category === 'Geologist') {
+                const subTypeKeys = {
+                    1: 'FindDepositStone',
+                    2: 'FindDepositBronze',
+                    3: 'FindDepositMarble',
+                    4: 'FindDepositIron',
+                    5: 'FindDepositCoal',
+                    6: 'FindDepositGold',
+                    7: 'FindDepositGranite',
+                    8: 'FindDepositSalpeter',
+                    9: 'FindDepositAlloy',
+                };
+                const key = subTypeKeys[taskSubType];
+                if (key && translations.value[key]) {
+                    return translations.value[key];
+                }
+                const fallbackSubTypes = {
+                    1: 'Поиск каменных залежей',
+                    2: 'Поиск медных залежей',
+                    3: 'Поиск мраморных залежей',
+                    4: 'Поиск железных залежей',
+                    5: 'Поиск угольных залежей',
+                    6: 'Поиск золотых залежей',
+                    7: 'Поиск гранитных залежей',
+                    8: 'Поиск селитры',
+                    9: 'Поиск титановой руды',
+                };
+                return fallbackSubTypes[taskSubType] || `Поиск залежей #${taskSubType}`;
+            }
+            return `Задача #${taskSubType}`;
         };
 
         const getResourceIcon = (name) => {
@@ -1252,6 +1470,17 @@ export default {
             buildingCategories,
             parsedBuildings,
             parsedSpecialists,
+            specialistSearch,
+            specialistFilter,
+            filteredSpecialists,
+            getSpecialistCategory,
+            getSpecialistTypeName,
+            getSpecialistCategoryCount,
+            getTaskName,
+            specialistIconErrors,
+            handleSpecialistIconError,
+            hasSpecialistIconError,
+            getSpecialistIcon,
             parsedBuffs,
             parsedResources,
             parsedFriends,

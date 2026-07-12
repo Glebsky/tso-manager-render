@@ -27,19 +27,15 @@ class LangParserService
         foreach ($xml->translations as $translationsBlock) {
             foreach ($translationsBlock->s as $section) {
                 $category = (string) $section['name'];
-                if ($category !== 'RES') {
-                    continue;
-                }
-
-                foreach ($section->t as $entry) {
-                    $id = (string) $entry['id'];
-                    $text = (string) $entry['text'];
-                    if ($id && $text) {
-                        $translations[$id] = $text;
+                if ($category === 'RES' || $category === 'SPE' || $category === 'LAB') {
+                    foreach ($section->t as $entry) {
+                        $id = (string) $entry['id'];
+                        $text = (string) $entry['text'];
+                        if ($id && $text) {
+                            $translations[$id] = $text;
+                        }
                     }
                 }
-
-                break 2;
             }
         }
 
