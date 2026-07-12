@@ -306,7 +306,7 @@
                     <div v-if="basicResources.length > 0">
                         <h4 class="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3 flex items-center gap-2">
                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                            Basic Resources (Базовые)
+                            {{ translations['WarehouseTab1'] || 'Basic Resources (Базовые)' }}
                         </h4>
                         <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
                             <div v-for="r in basicResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/10 transition-all duration-200 w-full">
@@ -326,7 +326,7 @@
                     <div v-if="improvedResources.length > 0">
                         <h4 class="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3 flex items-center gap-2">
                             <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
-                            Improved Resources (Улучшенные)
+                            {{ translations['WarehouseTab2'] || 'Improved Resources (Улучшенные)' }}
                         </h4>
                         <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
                             <div v-for="r in improvedResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/10 transition-all duration-200 w-full">
@@ -346,7 +346,7 @@
                     <div v-if="advancedResources.length > 0">
                         <h4 class="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3 flex items-center gap-2">
                             <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-                            Advanced Resources (Усовершенствованные)
+                            {{ translations['WarehouseTab3'] || 'Advanced Resources (Усовершенствованные)' }}
                         </h4>
                         <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
                             <div v-for="r in advancedResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/10 transition-all duration-200 w-full">
@@ -366,10 +366,30 @@
                     <div v-if="masterResources.length > 0">
                         <h4 class="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3 flex items-center gap-2">
                             <span class="w-1.5 h-1.5 rounded-full bg-orange-400"></span>
-                            Master Resources (Искусные)
+                            {{ translations['WarehouseTab4'] || 'Master Resources (Искусные)' }}
                         </h4>
                         <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
                             <div v-for="r in masterResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/10 transition-all duration-200 w-full">
+                                <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
+                                    <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
+                                    <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-[10px] font-medium text-white/50 truncate" :title="r.name">{{ formatResourceName(r.name) }}</p>
+                                    <p class="text-xs font-bold text-white leading-none mt-0.5">{{ formatNumber(r.amount) }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Elite Resources (WarehouseTab8) -->
+                    <div v-if="eliteResources.length > 0">
+                        <h4 class="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3 flex items-center gap-2">
+                            <span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+                            {{ translations['WarehouseTab8'] || 'Elite Resources (Элита)' }}
+                        </h4>
+                        <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
+                            <div v-for="r in eliteResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/10 transition-all duration-200 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
                                     <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
@@ -386,7 +406,7 @@
                     <div v-if="eventResources.length > 0">
                         <h4 class="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3 flex items-center gap-2">
                             <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
-                            Event Resources (Событие)
+                            {{ translations['WarehouseTab6'] || 'Event Resources (Событие)' }}
                         </h4>
                         <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
                             <div v-for="r in eventResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/10 transition-all duration-200 w-full">
@@ -406,7 +426,7 @@
                     <div v-if="collectibleResources.length > 0">
                         <h4 class="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3 flex items-center gap-2">
                             <span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>
-                            Collections (Коллекции)
+                            {{ translations['WarehouseTab7'] || 'Collections (Коллекции)' }}
                         </h4>
                         <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
                             <div v-for="r in collectibleResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/10 transition-all duration-200 w-full">
@@ -422,14 +442,14 @@
                         </div>
                     </div>
 
-                    <!-- Elite Resources (WarehouseTab8) -->
-                    <div v-if="eliteResources.length > 0">
+                    <!-- Military (WarehouseTab5) -->
+                    <div v-if="militaryResources.length > 0">
                         <h4 class="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3 flex items-center gap-2">
-                            <span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
-                            Elite Resources (Элита)
+                            <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                            {{ translations['WarehouseTab5'] || 'Military (Войска)' }}
                         </h4>
                         <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
-                            <div v-for="r in eliteResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/10 transition-all duration-200 w-full">
+                            <div v-for="r in militaryResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/10 transition-all duration-200 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
                                     <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
@@ -609,55 +629,36 @@ export default {
         const parsedBuffs = computed(() => zoneData.value?.buffs || []);
         const RESOURCE_CATEGORIES = {
             'WarehouseTab1': [
-                'Wood', 'wood', 'Plank', 'plank',
-                'Stone', 'stone', 'Fish', 'fish', 'Water', 'water', 'Coal', 'coal',
-                'BronzeOre', 'bronzeore', 'CopperOre', 'copperore',
-                'Bronze', 'bronze', 'Copper', 'copper',
-                'BronzeSword', 'bronzesword', 'Bow', 'bow', 'Tool', 'tool', 'tools',
-                'SimplePaper', 'simplepaper'
+                'Tree', 'Wood', 'Plank', 'Stone', 'Fish', 'Population', 'Token', 
+                'CrystalShard', 'Crystal', 'MapPart', 'GuildCoins', 'StarfallStarDust', 'StarfallStarShards'
             ],
             'WarehouseTab2': [
-                'Marble', 'marble',
-                'IronOre', 'ironore',
-                'Iron', 'iron',
-                'IronSword', 'ironsword',
-                'Longbow', 'longbow',
-                'Horse', 'horse', 'horses',
-                'Wheat', 'wheat', 'corn', 'Corn',
-                'Flour', 'flour', 'Bread', 'bread',
-                'Beer', 'beer', 'brew', 'Brew',
-                'Meat', 'meat', 'Sausage', 'sausage',
-                'IntermediatePaper', 'intermediatepaper'
+                'Coal', 'BronzeOre', 'Bronze', 'Tool', 'Tools', 'Water', 'Corn', 'Beer', 
+                'Flour', 'Bread', 'BronzeSword', 'Bow', 'SimplePaper', 'Nib', 'Manuscript', 
+                'AdventureTale', 'Copper', 'CopperOre', 'Grain', 'Brew'
             ],
             'WarehouseTab3': [
-                'RealWood', 'realwood', 'RealPlank', 'realplank',
-                'Steel', 'steel', 'SteelSword', 'steelsword',
-                'GoldOre', 'goldore', 'Gold', 'gold', 'Coin', 'coins', 'Coinage',
-                'TitaniumOre', 'titaniumore', 'Titanium', 'titanium',
-                'TitaniumSword', 'titaniumsword',
-                'Salpeter', 'salpeter', 'Gunpowder', 'gunpowder',
-                'Carriage', 'carriage', 'Wagon', 'wagon', 'Wheel', 'wheel',
-                'AdvancedPaper', 'advancedpaper'
+                'RealWood', 'RealPlank', 'IronOre', 'Iron', 'Steel', 'GoldOre', 'Gold', 
+                'Coin', 'Coins', 'Coinage', 'Marble', 'Meat', 'Sausage', 'IronSword', 'SteelSword', 
+                'Longbow', 'Pike', 'CompositeBow', 'ExpeditionCrossbow', 'BattleLance', 'Saber', 
+                'SpikedMace', 'Horse', 'Horses', 'IntermediatePaper', 'Letter', 'Tome'
             ],
             'WarehouseTab4': [
-                'ExoticWood', 'exoticwood', 'ExoticPlank', 'exoticplank',
-                'Crossbow', 'crossbow', 'DamasceneSword', 'damascenesword',
-                'Cannon', 'cannon',
-                'Granite', 'granite',
-                'Grout', 'grout', 'mortar', 'Mortar',
-                'Manuscript', 'tome', 'Codex', 'Nib',
-                'BookFitting', 'Tome'
+                'ExoticWood', 'ExoticPlank', 'TitaniumOre', 'Titanium', 'Salpeter', 
+                'Gunpowder', 'Granite', 'Grout', 'Wheel', 'Carriage', 'TitaniumSword', 
+                'Crossbow', 'Cannon', 'StarCoin', 'MagicBean', 'MagicBeanstalk', 
+                'AdvancedPaper', 'BookFitting', 'Codex', 'ValorPoint', 'Oil', 
+                'AdvancedTools', 'Oilseed', 'Seed', 'DamasceneSword'
             ],
             'WarehouseTab8': [
-                'MahoganyWood', 'mahoganywood', 'MahoganyPlank', 'mahoganyplank',
-                'PlatinumOre', 'platinumore', 'Platinum', 'platinum', 'PlatinumSword', 'platinumsword',
-                'Archebuse', 'archebuse',
-                'Oilseed', 'seed', 'Oil', 'oil',
-                'ObsidianOre', 'obsidianore', 'Crystal', 'crystal', 'CrystalShard', 'crystalshard'
+                'MahoganyWood', 'MahoganyPlank', 'PlatinumOre', 'Platinum', 'ObsidianOre', 
+                'BattleHorse', 'Wagon', 'Wool', 'Cloth', 'Saddlecloth', 'PlatinumSword', 
+                'Archebuse', 'Mortar'
             ],
             'WarehouseTab6': [
-                'Event', 'balloons', 'flower', 'flowers', 'plant', 'wool', 'cloth',
-                'EventResource', 'EMEventResource', 'StripedEggs', 'ChristmasResource', 'HalloweenResource'
+                'RedNose', 'EventResource', 'EMEventResource', 'HalloweenResource', 
+                'ChristmasResource', 'Balloons', 'StripedEggs', 'Candles', 'CakeDough', 
+                'ValentinesFlower', 'GuildFestToken', 'GuildFestCommendation', 'AdventureRelics'
             ],
             'WarehouseTab7': [
                 'Collectibles', 'CollectibleBanner', 'CollectibleBronzeCauldron', 'CollectibleChristmasBells',
@@ -666,9 +667,12 @@ export default {
                 'CollectibleHerbs', 'CollectibleKettle', 'CollectibleMagicStone', 'CollectibleObsidianShard',
                 'CollectiblePlainEgg', 'CollectibleRobustTools', 'CollectibleSacredStone', 'CollectibleScarecrow',
                 'CollectibleWickerBasket', 'CollectibleWineBarrel', 'AdventureRelics', 'AdventureTale'
+            ],
+            'WarehouseTab5': [
+                'DefensePoint'
             ]
         };
-        const CATEGORY_ORDER = ['WarehouseTab1', 'WarehouseTab2', 'WarehouseTab3', 'WarehouseTab4', 'WarehouseTab8', 'WarehouseTab6', 'WarehouseTab7'];
+        const CATEGORY_ORDER = ['WarehouseTab1', 'WarehouseTab2', 'WarehouseTab3', 'WarehouseTab4', 'WarehouseTab8', 'WarehouseTab6', 'WarehouseTab7', 'WarehouseTab5'];
         const getCategory = (name) => {
             if (!name) return 'Other';
             const normName = name.trim().toLowerCase();
@@ -676,6 +680,10 @@ export default {
             // Check explicit patterns
             if (normName.includes('balloon') || normName.includes('egg') || normName.includes('gift') || normName.includes('pumpkin') || normName.includes('present')) {
                 return 'WarehouseTab6';
+            }
+            
+            if (normName.startsWith('collectible') || normName.includes('collectible') || normName === 'adventuretales') {
+                return 'WarehouseTab7';
             }
             
             for (const cat of CATEGORY_ORDER) {
@@ -689,7 +697,7 @@ export default {
             return raw.map(r => ({
                 ...r,
                 name: r.name || r.name_string || 'Unknown',
-                category: getCategory(r.name || r.name_string || ''),
+                category: r.category || getCategory(r.name || r.name_string || ''),
             }));
         });
         const parsedFriends = computed(() => zoneData.value?.friends || []);
@@ -792,6 +800,7 @@ export default {
         const eventResources = computed(() => parsedResources.value.filter(r => r.category === 'WarehouseTab6'));
         const collectibleResources = computed(() => parsedResources.value.filter(r => r.category === 'WarehouseTab7'));
         const eliteResources = computed(() => parsedResources.value.filter(r => r.category === 'WarehouseTab8'));
+        const militaryResources = computed(() => parsedResources.value.filter(r => r.category === 'WarehouseTab5'));
         const otherResources = computed(() => parsedResources.value.filter(r => !r.category || r.category === 'Other'));
 
         const serverName = computed(() => zoneData.value?.gameWorldName || null);
@@ -1244,6 +1253,7 @@ export default {
             eventResources,
             collectibleResources,
             eliteResources,
+            militaryResources,
             otherResources,
             filteredBuildings,
             getBuildingName,
