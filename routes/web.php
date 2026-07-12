@@ -5,6 +5,7 @@ use App\Http\Controllers\AccountController;
 use App\Http\Controllers\ScheduledTaskController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\LangController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -33,6 +34,9 @@ Route::prefix('api')->group(function () {
 
     // Logs
     Route::get('logs', [LogController::class, 'index']);
+
+    // Translations
+    Route::get('lang/res', [LangController::class, 'res']);
 
     // Settings
     Route::get('settings', [SettingsController::class, 'index']);

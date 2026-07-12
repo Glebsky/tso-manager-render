@@ -229,7 +229,7 @@
                         <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
                         Звездное меню (Buffs in Star Menu)
                     </h3>
-                    <div v-if="availableBuffs.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <div v-if="availableBuffs.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                         <div v-for="(b, idx) in availableBuffs" :key="idx" class="glass-card p-4 hover:border-white/10 transition-all duration-200">
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
@@ -264,7 +264,7 @@
                         <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
                         Активные баффы в зоне (Active Buffs)
                     </h3>
-                    <div v-if="parsedBuffs.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <div v-if="parsedBuffs.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                         <div v-for="b in parsedBuffs" :key="b.uniqueId || b.uniqueId1" class="glass-card p-4">
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
@@ -581,6 +581,7 @@ export default {
         const buildingSearch = ref('');
         const buildingFilter = ref('All');
         const buildingModeFilter = ref('all');
+        const translations = ref({});
 
         const tabs = computed(() => [
             { id: 'buildings', label: 'Buildings', icon: BuildingIcon, count: parsedBuildings.value.length },
@@ -888,54 +889,49 @@ export default {
 
         const getBuffName = (buffId) => {
             if (!buffId) return 'Неизвестный бафф';
-            const buffNames = {
-                1: 'Рыбное блюдо (x2)',
-                2: 'Корзинка тетушки Ирмы (x2)',
-                3: 'Бутерброд (x2)',
-                4: 'Золотая лихорадка (x3)',
-                6: 'Праздничная корзинка Ирмы (x2)',
-                7: 'Стейк из жареного мяса (x3)',
-                8: 'Любовное зелье (x2)',
-                9: 'Шоколадный кролик (x3)',
-                12: 'Стадионная закуска (x4)'
+            const buffIdMap = {
+                1: 'ProductivityBuffLvl1',
+                2: 'ProductivityBuffLvl3',
+                3: 'ProductivityBuffLvl2',
+                4: 'GoldMineBuff',
+                6: 'ProductivityBuffLvl3',
+                7: 'ProductivityBuffLvl4',
+                8: 'ProductivityBuffSpecialist2',
+                9: 'ProductivityBuffSpecialist1',
+                12: 'ProductivityBuffLvl5',
             };
-            return buffNames[buffId] || `Бафф #${buffId}`;
+            const mapped = buffIdMap[buffId];
+            if (mapped && translations.value[mapped]) {
+                return translations.value[mapped];
+            }
+            if (mapped) return mapped;
+            return `Бафф #${buffId}`;
         };
 
         const getStarBuffName = (b) => {
             if (!b || !b.buffName_string) return 'Неизвестный бафф';
-            if (b.buffName_string === 'AddResource') {
-                return `Добавить ресурс: ${formatResourceName(b.resourceName_string)}`;
+
+            const name = b.buffName_string;
+
+            if (translations.value[name]) {
+                return translations.value[name];
             }
-            if (b.buffName_string === 'BuildBuilding') {
-                return `Чертеж здания: ${formatResourceName(b.resourceName_string)}`;
+
+            if (name === 'AddResource') {
+                const tpl = translations.value['AddResource'] || 'Добавить ресурс';
+                const prefix = tpl.split('{')[0].trim();
+                return `${prefix}: ${formatResourceName(b.resourceName_string)}`;
             }
-            if (b.buffName_string === 'Adventure') {
+            if (name === 'BuildBuilding') {
+                const tpl = translations.value['BuildBuilding'] || 'Лицензия';
+                const prefix = tpl.split('{')[0].trim();
+                return `${prefix}: ${formatResourceName(b.resourceName_string)}`;
+            }
+            if (name === 'Adventure') {
                 return `Приключение: ${formatResourceName(b.resourceName_string)}`;
             }
 
-            const mapping = {
-                'ProductivityBuffLvl1': 'Рыбное блюдо (x2)',
-                'ProductivityBuffLvl2': 'Бутерброд (x2)',
-                'ProductivityBuffLvl3': 'Корзинка тетушки Ирмы (x2)',
-                'ProductivityBuffLvl4': 'Стейк из жареного мяса (x3)',
-                'ProductivityBuffLvl5': 'Стадионная закуска (x4)',
-                'ProductivityBuffSpecialist1': 'Шоколадный кролик (x3)',
-                'ProductivityBuffSpecialist2': 'Любовное зелье (x2)',
-                'GoldMineBuff': 'Золотая лихорадка (x3)',
-                'GeneralBuffLvl1': 'Аптечка',
-                'BarracksBuffLvl1': 'Ускорение казармы (x2)',
-                'BarracksBuffLvl2': 'Ускорение казармы (x3)',
-                'ProvisionHouseBuffLvl1': 'Ускорение мастерской (x2)',
-                'ProvisionHouseBuffLvl2': 'Ускорение мастерской (x3)',
-                'BookbinderBuffLvl1': 'Клей для переплетчика',
-                'BookbinderBuffLvl2': 'Смола для переплетчика',
-            };
-
-            const matched = mapping[b.buffName_string];
-            if (matched) return matched;
-
-            return b.buffName_string.replace(/(?<!^)(?=[A-Z])/g, ' ').replace(/_/g, ' ');
+            return name.replace(/(?<!^)(?=[A-Z])/g, ' ').replace(/_/g, ' ');
         };
 
         const getBuffIcon = (b) => {
@@ -1204,6 +1200,10 @@ export default {
 
         onMounted(() => {
             loadAccount();
+            fetch('/api/lang/res')
+                .then(r => r.json())
+                .then(data => { translations.value = data; })
+                .catch(() => {});
         });
 
         return {
@@ -1270,6 +1270,7 @@ export default {
             syncAccount,
             visitors,
             getAvatarById,
+            translations,
         };
     }
 };
