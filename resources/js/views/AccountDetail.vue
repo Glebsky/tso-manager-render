@@ -233,7 +233,7 @@
                             <!-- Icon -->
                             <div class="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg overflow-hidden border bg-white/5"
                                  :class="getSpecialistCategory(s.type) === 'General' ? 'text-rose-400 border-rose-500/20 shadow-rose-500/5' : getSpecialistCategory(s.type) === 'Explorer' ? 'text-teal-400 border-teal-500/20 shadow-teal-500/5' : 'text-amber-400 border-amber-500/20 shadow-amber-500/5'">
-                                <img :src="getSpecialistIcon(s.type)" @error="handleSpecialistIconError(s.type)" class="w-full h-full object-contain p-1" v-if="!hasSpecialistIconError(s.type) && getSpecialistIcon(s.type)" />
+                                <img :src="getSpecialistIcon(s.type)" @error="handleSpecialistIconError($event, s.type)" class="w-full h-full object-contain p-1" v-if="!hasSpecialistIconError(s.type) && getSpecialistIcon(s.type)" />
                                 <span v-else-if="getSpecialistCategory(s.type) === 'General'" class="text-xl">🎖️</span>
                                 <span v-else-if="getSpecialistCategory(s.type) === 'Explorer'" class="text-xl">🧭</span>
                                 <span v-else class="text-xl">🔨</span>
@@ -1240,16 +1240,14 @@ export default {
         };
 
         const specialistIconErrors = ref(new Set());
-        const handleSpecialistIconError = (type) => {
+        const handleSpecialistIconError = (event, type) => {
             specialistIconErrors.value.add(type);
         };
         const hasSpecialistIconError = (type) => {
             return specialistIconErrors.value.has(type);
         };
         const getSpecialistIcon = (type) => {
-            const rawName = SPECIALIST_TYPES[type];
-            if (!rawName) return null;
-            return `/images/resources/${rawName.toLowerCase()}.png`;
+            return `/images/specialists/${type}.webp`;
         };
 
         const filteredSpecialists = computed(() => {
