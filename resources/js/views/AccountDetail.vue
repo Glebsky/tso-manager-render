@@ -21,16 +21,17 @@
         <div class="glass-card overflow-hidden mb-8">
             <div class="h-2 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
             <div class="p-6">
-                <div class="flex items-center justify-between gap-6 flex-wrap md:flex-nowrap">
-                    <div class="flex items-center gap-6">
-                        <!-- Avatar -->
-                        <div class="w-20 h-20 rounded-2xl overflow-hidden bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-                            <img v-if="avatarUrl" :src="avatarUrl" :alt="playerNickname" class="w-full h-full object-cover" @error="avatarError = true">
-                            <span v-else class="text-2xl font-bold text-white">{{ avatarLetters }}</span>
-                        </div>
+                <!-- Main Info Section -->
+                <div class="flex items-start gap-6">
+                    <!-- Avatar -->
+                    <div class="w-20 h-20 rounded-2xl overflow-hidden bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20 flex-shrink-0">
+                        <img v-if="avatarUrl" :src="avatarUrl" :alt="playerNickname" class="w-full h-full object-cover" @error="avatarError = true">
+                        <span v-else class="text-2xl font-bold text-white">{{ avatarLetters }}</span>
+                    </div>
 
-                        <div>
-                            <h1 class="text-2xl font-bold text-white mb-1">{{ playerNickname || account.username }}</h1>
+                    <!-- Details -->
+                    <div class="flex-1 min-w-0">
+                        <h1 class="text-2xl font-bold text-white mb-1">{{ playerNickname || account.username }}</h1>
                         <div class="flex items-center flex-wrap gap-4 text-sm text-white/40">
                             <span class="flex items-center gap-1 text-white/80">
                                 <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -76,35 +77,34 @@
                     </div>
                 </div>
 
-                    <!-- Right Side: Visitors and Sync Button -->
-                    <div class="flex items-center gap-4 flex-shrink-0 flex-wrap">
-                        <!-- Visitors list -->
-                        <div v-if="visitors.length > 0" class="flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-2.5 rounded-2xl">
-                            <span class="text-xs text-white/40 font-medium">Гости:</span>
-                            <div class="flex -space-x-2">
-                                <div v-for="visitor in visitors" :key="visitor.nickname" class="relative group">
-                                    <div class="w-8 h-8 rounded-full border-2 border-dark-900 overflow-hidden bg-gradient-to-br from-indigo-500/80 to-purple-600/80 flex items-center justify-center cursor-help">
-                                        <img v-if="getAvatarById(visitor.avatarId)" :src="getAvatarById(visitor.avatarId)" :alt="visitor.nickname" class="w-full h-full object-cover">
-                                        <span v-else class="text-[10px] font-bold text-white">{{ visitor.nickname.substring(0, 2).toUpperCase() }}</span>
-                                    </div>
-                                    <!-- Tooltip -->
-                                    <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block bg-dark-950 border border-white/10 px-3 py-1.5 rounded-xl text-xs text-white whitespace-nowrap shadow-2xl z-50">
-                                        <div class="font-bold text-white">{{ visitor.nickname }}</div>
-                                        <div class="text-[10px] text-white/50">Уровень {{ visitor.level }}</div>
-                                    </div>
+                <!-- Right Side: Visitors and Sync Button -->
+                <div class="flex items-center justify-end gap-4 mt-6 pt-4 border-t border-white/5 flex-wrap">
+                    <!-- Visitors list -->
+                    <div v-if="visitors.length > 0" class="flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-2.5 rounded-2xl">
+                        <span class="text-xs text-white/40 font-medium">Гости:</span>
+                        <div class="flex -space-x-2">
+                            <div v-for="visitor in visitors" :key="visitor.nickname" class="relative group">
+                                <div class="w-8 h-8 rounded-full border-2 border-dark-900 overflow-hidden bg-gradient-to-br from-indigo-500/80 to-purple-600/80 flex items-center justify-center cursor-help">
+                                    <img v-if="getAvatarById(visitor.avatarId)" :src="getAvatarById(visitor.avatarId)" :alt="visitor.nickname" class="w-full h-full object-cover">
+                                    <span v-else class="text-[10px] font-bold text-white">{{ visitor.nickname.substring(0, 2).toUpperCase() }}</span>
+                                </div>
+                                <!-- Tooltip -->
+                                <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block bg-dark-950 border border-white/10 px-3 py-1.5 rounded-xl text-xs text-white whitespace-nowrap shadow-2xl z-50">
+                                    <div class="font-bold text-white">{{ visitor.nickname }}</div>
+                                    <div class="text-[10px] text-white/50">Уровень {{ visitor.level }}</div>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Sync button -->
-                        <button @click="syncAccount" :disabled="syncing"
-                                class="btn-primary flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-50">
-                            <svg class="w-4 h-4" :class="{ 'animate-spin': syncing }" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
-                            </svg>
-                            {{ syncing ? 'Синхронизация...' : 'Синхронизировать' }}
-                        </button>
                     </div>
+
+                    <!-- Sync button -->
+                    <button @click="syncAccount" :disabled="syncing"
+                            class="btn-primary flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-50">
+                        <svg class="w-4 h-4" :class="{ 'animate-spin': syncing }" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                        </svg>
+                        {{ syncing ? 'Синхронизация...' : 'Синхронизировать' }}
+                    </button>
                 </div>
             </div>
         </div>
