@@ -126,6 +126,39 @@ class AccountController extends Controller
 
                     if ($errorCode === 0 && $buildingCount > 0) {
                         file_put_contents(storage_path('app/debug_zone.amf'), $rawAmf);
+
+                        // Also fetch the friends list!
+                        try {
+                            Log::info("Fetching friend list AMF for account {$account->id}");
+                            $rawFriendsAmf = $this->amfService->getFriendList($account);
+                            $friendsData = $this->zoneParser->parse($rawFriendsAmf);
+                            
+                            $parsedPlayers = $friendsData['players'] ?? [];
+                            if (!empty($parsedPlayers)) {
+                                Log::info("Successfully fetched " . count($parsedPlayers) . " players from friends list for account {$account->id}");
+                                $friendsList = [];
+                                $ownerUid = $zoneData['userID'] ?? null;
+                                
+                                foreach ($parsedPlayers as $p) {
+                                    $puid = $p['userID'] ?? null;
+                                    if ($puid && $ownerUid && $puid == $ownerUid) {
+                                        continue;
+                                    }
+                                    $friendsList[] = [
+                                        'username'     => $p['username_string'] ?? $p['username'] ?? $p['nickname'] ?? 'Unknown',
+                                        'nickname'     => $p['nickname'] ?? $p['username_string'] ?? $p['username'] ?? 'Unknown',
+                                        'playerLevel'  => $p['playerLevel'] ?? $p['level'] ?? 1,
+                                        'level'        => $p['playerLevel'] ?? $p['level'] ?? 1,
+                                        'avatarId'     => $p['avatarId'] ?? 1,
+                                        'onlineStatus' => $p['onlineStatus'] ?? false,
+                                    ];
+                                }
+                                $zoneData['friends'] = $friendsList;
+                            }
+                        } catch (\Exception $fe) {
+                            Log::warning("Failed to fetch friends list for account {$account->id}: " . $fe->getMessage());
+                        }
+
                         break;
                     }
                 } catch (\Exception $e) {

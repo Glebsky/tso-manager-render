@@ -193,6 +193,7 @@ function getRealAmfUrl(string $bbUrl, string $dsoAuthUser, string $dsoAuthToken,
         ]);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
         curl_setopt($ch, CURLOPT_COOKIEFILE, $cookieFile);
+        curl_setopt($ch, CURLOPT_COOKIEJAR, $cookieFile);
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
             'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
             'Referer: ' . $lsUrl,
@@ -231,6 +232,7 @@ class TsoAmfClient
 {
     private string $serverUrl;
     private string $cookieFile;
+    private string $dsId = 'nil';
 
     public function __construct(string $serverUrl, string $cookieFile)
     {
@@ -238,12 +240,17 @@ class TsoAmfClient
         $this->cookieFile = $cookieFile;
     }
 
-    public function sendCommand($dServerCall): string
+    public function setDsId(string $dsId): void
+    {
+        $this->dsId = $dsId;
+    }
+
+    public function sendCommand($dServerCall, string $destination = 'SMC', string $operation = 'ExecuteServerCall', ?string $source = 'com.bluebyte.game.servlet.EventHandler'): string
     {
         $message              = new flex_messaging_messages_RemotingMessage();
-        $message->destination = 'SMC';
-        $message->operation   = 'ExecuteServerCall';
-        $message->source      = 'com.bluebyte.game.servlet.EventHandler';
+        $message->destination = $destination;
+        $message->operation   = $operation;
+        $message->source      = $source;
         $message->messageId   = sprintf(
             '%04X%04X-%04X-%04X-%04X-%04X%04X%04X',
             mt_rand(0, 65535), mt_rand(0, 65535),
@@ -252,7 +259,7 @@ class TsoAmfClient
             mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535)
         );
         $message->headers            = new \stdClass();
-        $message->headers->DSId      = 'nil';
+        $message->headers->DSId      = $this->dsId;
         $message->headers->DSEndpoint = 'SMC-Endpoint';
         $message->body               = [$dServerCall];
 
@@ -269,6 +276,7 @@ class TsoAmfClient
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_POSTREDIR, 3);
         curl_setopt($ch, CURLOPT_COOKIEFILE, $this->cookieFile);
+        curl_setopt($ch, CURLOPT_COOKIEJAR, $this->cookieFile);
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
             'Content-Type: application/x-amf',
             'Connection: Keep-Alive',
@@ -309,10 +317,20 @@ class TsoAmfService
     public const CMD_GET_ZONE        = 1001;
 
     private TsoAuthService $authService;
+    private ?TsoAmfClient $client = null;
+    private string $dsId = 'nil';
 
     public function __construct(TsoAuthService $authService)
     {
         $this->authService = $authService;
+    }
+
+    public function setDsId(string $dsId): void
+    {
+        $this->dsId = $dsId;
+        if ($this->client) {
+            $this->client->setDsId($dsId);
+        }
     }
 
     /**
@@ -350,26 +368,31 @@ class TsoAmfService
      */
     private function getClient(Account $account): TsoAmfClient
     {
-        $cookieFile   = $this->authService->getCookieFile($account);
-        $amfServerUrl = getRealAmfUrl(
-            $account->bb_url,
-            $account->dso_auth_user,
-            $account->dso_auth_token,
-            $cookieFile
-        );
+        if ($this->client === null) {
+            $cookieFile   = $this->authService->getCookieFile($account);
+            $amfServerUrl = getRealAmfUrl(
+                $account->bb_url,
+                $account->dso_auth_user,
+                $account->dso_auth_token,
+                $cookieFile
+            );
 
-        return new TsoAmfClient($amfServerUrl, $cookieFile);
+            $this->client = new TsoAmfClient($amfServerUrl, $cookieFile);
+            $this->client->setDsId($this->dsId);
+        }
+
+        return $this->client;
     }
 
     /**
      * Send a server call via AMF.
      */
-    private function sendServerCall(Account $account, int $commandType, $actionData): string
+    private function sendServerCall(Account $account, int $commandType, $actionData, string $destination = 'SMC', string $operation = 'ExecuteServerCall', ?string $source = 'com.bluebyte.game.servlet.EventHandler'): string
     {
         try {
             $client = $this->getClient($account);
             $call   = $this->buildServerCall($account, $commandType, $actionData);
-            return $client->sendCommand($call);
+            return $client->sendCommand($call, $destination, $operation, $source);
         } catch (Exception $e) {
             $errorMsg = $e->getMessage();
             // If the error seems related to expired session or 301 redirect from load server
@@ -382,7 +405,7 @@ class TsoAmfService
                     // Re-try the request with fresh tokens
                     $client = $this->getClient($account);
                     $call   = $this->buildServerCall($account, $commandType, $actionData);
-                    return $client->sendCommand($call);
+                    return $client->sendCommand($call, $destination, $operation, $source);
                 } catch (Exception $retryException) {
                     throw new Exception($e->getMessage() . " (Auto-relogin also failed: " . $retryException->getMessage() . ")");
                 }
@@ -399,6 +422,23 @@ class TsoAmfService
     public function getZone(Account $account): string
     {
         return $this->sendServerCall($account, self::CMD_GET_ZONE, false);
+    }
+
+    /**
+     * GET_FRIEND_LIST – retrieve the friends list.
+     */
+    public function getFriendList(Account $account): string
+    {
+        $getFriends = new defaultGame_Communication_VO_dGetFriendsVO();
+        $getFriends->version = "1843-Release_queen";
+        return $this->sendServerCall(
+            $account, 
+            1014, // COMMAND.GET_FRIEND_LIST
+            $getFriends, 
+            'PLAYER', 
+            'GetFriends', 
+            'com.bluebyte.game.servlet.PlayerHandler'
+        );
     }
 
     /**
@@ -473,4 +513,9 @@ class Communication_VO_dStartSpecialistTaskVO
     public $uniqueID;
     public $subTaskID;
     public $paramString;
+}
+
+class defaultGame_Communication_VO_dGetFriendsVO
+{
+    public $version;
 }
