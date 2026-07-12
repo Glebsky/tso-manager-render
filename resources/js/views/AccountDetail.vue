@@ -694,11 +694,16 @@ export default {
 
         const parsedResources = computed(() => {
             const raw = zoneData.value?.resources || [];
-            return raw.map(r => ({
-                ...r,
-                name: r.name || r.name_string || 'Unknown',
-                category: r.category || getCategory(r.name || r.name_string || ''),
-            }));
+            return raw.map(r => {
+                const category = r.category && r.category.startsWith('WarehouseTab')
+                    ? r.category
+                    : getCategory(r.name || r.name_string || '');
+                return {
+                    ...r,
+                    name: r.name || r.name_string || 'Unknown',
+                    category,
+                };
+            });
         });
         const parsedFriends = computed(() => zoneData.value?.friends || []);
         const level = computed(() => zoneData.value?.level);
