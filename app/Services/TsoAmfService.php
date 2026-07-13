@@ -173,15 +173,58 @@ function wrapAmf0Remoting(string $targetUri, string $responseUri, string $amf3Bo
 
 // ── Load-balancer resolver ──────────────────────────────────────────────────────
 
-function getRealAmfUrl(string $bbUrl, string $dsoAuthUser, string $dsoAuthToken, string $cookieFile): string
+function getRealAmfUrl(string $bbUrl, string $dsoAuthUser, string $dsoAuthToken, string $cookieFile, ?string &$dsId = null): string
 {
     $lsUrl        = $bbUrl;
     $amfServerUrl = '';
 
+    \Illuminate\Support\Facades\Log::info("getRealAmfUrl: bbUrl={$lsUrl}, user={$dsoAuthUser}");
+
+    // 1. Authenticate session on Load Server (as in C# FastAuth / game boot sequence)
+    $authUrl = rtrim($lsUrl, '/') . '/authenticate';
+    $chAuth = curl_init();
+    curl_setopt($chAuth, CURLOPT_URL, $authUrl);
+    curl_setopt($chAuth, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($chAuth, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($chAuth, CURLOPT_POST, true);
+    curl_setopt($chAuth, CURLOPT_POSTFIELDS, http_build_query([
+        'DSOAUTHUSER'  => $dsoAuthUser,
+        'DSOAUTHTOKEN' => $dsoAuthToken,
+    ]));
+    curl_setopt($chAuth, CURLOPT_COOKIEFILE, $cookieFile);
+    curl_setopt($chAuth, CURLOPT_COOKIEJAR, $cookieFile);
+    curl_setopt($chAuth, CURLOPT_HTTPHEADER, [
+        'Content-Type: application/x-www-form-urlencoded',
+        'User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.12 (KHTML, like Gecko) Chrome/9.0.570.0 Safari/534.12',
+        'Referer: http://game-cdn.thesettlersonline.net/prestaging/PS5724/SWMMO/debug/SWMMO.swf',
+    ]);
+    $authRes = curl_exec($chAuth);
+    $authStatus = curl_getinfo($chAuth, CURLINFO_HTTP_CODE);
+    curl_close($chAuth);
+
+    \Illuminate\Support\Facades\Log::info("LoadServer authenticate: HTTP={$authStatus}, Resp=" . trim($authRes));
+
+    // Extract Flex DSId session hash (third parameter in TOKEN|NICKNAME|HASH) and convert to UUID
+    if ($authStatus === 200 && !empty($authRes)) {
+        $parts = explode('|', trim($authRes));
+        if (count($parts) >= 3) {
+            $hash = trim($parts[2]);
+            if (strlen($hash) === 32) {
+                $dsId = substr($hash, 0, 8) . '-' .
+                        substr($hash, 8, 4) . '-' .
+                        substr($hash, 12, 4) . '-' .
+                        substr($hash, 16, 4) . '-' .
+                        substr($hash, 20);
+                \Illuminate\Support\Facades\Log::info("Extracted DSId from authenticate response: {$dsId}");
+            }
+        }
+    }
+
     $maxRetries = 20;
     for ($i = 0; $i < $maxRetries; $i++) {
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, rtrim($lsUrl, '/') . '/Z' . (time() * 1000));
+        $requestUrl = rtrim($lsUrl, '/') . '/Z' . (time() * 1000);
+        curl_setopt($ch, CURLOPT_URL, $requestUrl);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_POST, true);
@@ -194,15 +237,18 @@ function getRealAmfUrl(string $bbUrl, string $dsoAuthUser, string $dsoAuthToken,
         curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
         curl_setopt($ch, CURLOPT_COOKIEFILE, $cookieFile);
         curl_setopt($ch, CURLOPT_COOKIEJAR, $cookieFile);
+        // Match C# PostSubmitter headers exactly (Chrome 9 + game-cdn referer)
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
-            'Referer: ' . $lsUrl,
-            'Origin: ' . rtrim($lsUrl, '/'),
+            'Content-Type: application/x-www-form-urlencoded',
+            'User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.12 (KHTML, like Gecko) Chrome/9.0.570.0 Safari/534.12',
+            'Referer: http://game-cdn.thesettlersonline.net/prestaging/PS5724/SWMMO/debug/SWMMO.swf',
         ]);
 
         $lsRes    = curl_exec($ch);
         $lsStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
+
+        \Illuminate\Support\Facades\Log::info("LoadServer attempt {$i}: URL={$requestUrl}, HTTP={$lsStatus}, Resp=" . substr($lsRes, 0, 300));
 
         if ($lsStatus != 202) {
             $amfServerUrl = str_replace(':123443', '', trim($lsRes));
@@ -222,6 +268,8 @@ function getRealAmfUrl(string $bbUrl, string $dsoAuthUser, string $dsoAuthToken,
             $amfServerUrl = rtrim($lsUrl, '/') . $amfServerUrl;
         }
     }
+
+    \Illuminate\Support\Facades\Log::info("getRealAmfUrl resolved to: {$amfServerUrl}");
 
     return $amfServerUrl;
 }
@@ -277,14 +325,20 @@ class TsoAmfClient
         curl_setopt($ch, CURLOPT_POSTREDIR, 3);
         curl_setopt($ch, CURLOPT_COOKIEFILE, $this->cookieFile);
         curl_setopt($ch, CURLOPT_COOKIEJAR, $this->cookieFile);
+        // Match C# PostSubmitter headers exactly (Chrome 9 + game-cdn referer)
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
             'Content-Type: application/x-amf',
-            'Connection: Keep-Alive',
             'Accept: */*',
-            'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
-            'Referer: ' . $this->serverUrl,
-            'Origin: ' . dirname($this->serverUrl),
+            'User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.12 (KHTML, like Gecko) Chrome/9.0.570.0 Safari/534.12',
+            'Referer: http://game-cdn.thesettlersonline.net/prestaging/PS5724/SWMMO/debug/SWMMO.swf',
+            'x-flash-version: 11,4,402,287',
         ]);
+        $accountId = 'unknown';
+        if (preg_match('/account_(\d+)\.txt/', $this->cookieFile, $matches)) {
+            $accountId = $matches[1];
+        }
+        @file_put_contents(storage_path("app/debug_request_{$accountId}.amf"), $amf0Envelope);
+
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $amf0Envelope);
 
@@ -292,6 +346,10 @@ class TsoAmfClient
         $error    = curl_error($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
+
+        if ($response) {
+            @file_put_contents(storage_path("app/debug_response_{$accountId}.amf"), $response);
+        }
 
         if ($error) {
             throw new Exception("AMF cURL Error: " . $error);
@@ -319,10 +377,13 @@ class TsoAmfService
     private TsoAuthService $authService;
     private ?TsoAmfClient $client = null;
     private string $dsId = 'nil';
+    private int $dsoAuthRandomClientID;
 
     public function __construct(TsoAuthService $authService)
     {
         $this->authService = $authService;
+        // Match defines.CLIENT_AUTHRANDOM in ActionScript: Math.floor(Math.random() * (int.MAX_VALUE - 1))
+        $this->dsoAuthRandomClientID = mt_rand(0, 2147483646);
     }
 
     public function setDsId(string $dsId): void
@@ -343,7 +404,7 @@ class TsoAmfService
         $call->dsoAuthUser          = (int) $account->dso_auth_user;
         $call->zoneID               = (int) $account->dso_auth_user;
         $call->type                 = $type;
-        $call->dsoAuthRandomClientID = 1;
+        $call->dsoAuthRandomClientID = $this->dsoAuthRandomClientID;
         $call->data                 = $actionData;
 
         return $call;
@@ -370,18 +431,28 @@ class TsoAmfService
     {
         if ($this->client === null) {
             $cookieFile   = $this->authService->getCookieFile($account);
+            $dsId = 'nil';
             $amfServerUrl = getRealAmfUrl(
                 $account->bb_url,
                 $account->dso_auth_user,
                 $account->dso_auth_token,
-                $cookieFile
+                $cookieFile,
+                $dsId
             );
 
             $this->client = new TsoAmfClient($amfServerUrl, $cookieFile);
-            $this->client->setDsId($this->dsId);
+            $this->client->setDsId($dsId);
         }
 
         return $this->client;
+    }
+
+    /**
+     * Reset the cached AMF client.
+     */
+    public function resetClient(): void
+    {
+        $this->client = null;
     }
 
     /**
@@ -401,6 +472,8 @@ class TsoAmfService
                     // Force a fresh login to retrieve new tokens
                     $this->authService->login($account);
                     $account->refresh();
+
+                    $this->resetClient();
 
                     // Re-try the request with fresh tokens
                     $client = $this->getClient($account);
@@ -429,7 +502,14 @@ class TsoAmfService
      */
     public function getMarketOffers(Account $account): string
     {
-        return $this->sendServerCall($account, 1061, null);
+        return $this->sendServerCall(
+            $account, 
+            1061, 
+            null, 
+            'TRADE', 
+            'GetAvailableOffers', 
+            'com.bluebyte.game.servlet.TradeWindowHandler'
+        );
     }
 
     /**

@@ -557,6 +557,87 @@
                     <p class="text-white/30 text-sm">No friends found.</p>
                 </div>
             </div>
+
+            <!-- Session Tab -->
+            <div v-show="activeTab === 'session'">
+                <div class="max-w-2xl mx-auto">
+                    <div class="flex items-center gap-3 mb-5">
+                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+                            <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z" />
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white">Ручное управление сессией</h3>
+                    </div>
+
+                    <div class="glass-card p-5 mb-6 border-amber-500/20 bg-amber-500/[0.02]">
+                        <div class="flex gap-3">
+                            <span class="text-xl">⚠️</span>
+                            <div>
+                                <h4 class="text-xs font-bold text-amber-400 uppercase tracking-wider mb-1">Решение проблемы с капчей</h4>
+                                <p class="text-xs text-white/60 leading-relaxed">
+                                    Если Ubisoft требует ввести капчу при синхронизации, вы можете войти в игру в обычном браузере, скопировать токены сессии и вставить их вручную. Менеджер будет использовать эти данные напрямую без выполнения автоматического входа.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form @submit.prevent="saveSession" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">DSO Auth Token</label>
+                            <input type="text" required v-model="sessionForm.dso_auth_token" placeholder="Вставьте токен (например, IaMl0gKY9uxg...)" class="glass-input w-full font-mono text-sm">
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">DSO Auth User ID</label>
+                                <input type="text" required v-model="sessionForm.dso_auth_user" placeholder="Числовой ID (например, 2425303)" class="glass-input w-full font-mono text-sm">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">BB URL (Сервер авторизации)</label>
+                                <select required v-model="sessionForm.bb_url" class="glass-select w-full text-sm">
+                                    <option value="https://r02-ls.thesettlersonline.ru/">RU (https://r02-ls.thesettlersonline.ru/)</option>
+                                    <option value="https://r01-ls.thesettlersonline.com/">EN/US (https://r01-ls.thesettlersonline.com/)</option>
+                                    <option value="https://r01-ls.diesiedleronline.de/">DE (https://r01-ls.diesiedleronline.de/)</option>
+                                    <option value="https://r01-ls.thesettlersonline.fr/">FR (https://r01-ls.thesettlersonline.fr/)</option>
+                                    <option value="https://r01-ls.thesettlersonline.pl/">PL (https://r01-ls.thesettlersonline.pl/)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="pt-2">
+                            <button type="submit" :disabled="sessionSubmitting" class="btn-primary px-6 py-2.5 flex items-center gap-2 text-sm font-semibold">
+                                <svg v-if="sessionSubmitting" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182" />
+                                </svg>
+                                Сохранить и обновить сессию
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Instruction section -->
+                    <div class="mt-8 border-t border-white/5 pt-6">
+                        <h4 class="text-sm font-semibold text-white mb-3">Как скопировать эти данные в браузере?</h4>
+                        <ol class="list-decimal pl-5 text-xs text-white/50 space-y-2 leading-relaxed">
+                            <li>Перейдите на страницу игры, где идет загрузка самой карты (например, <code class="bg-white/5 px-1 py-0.5 rounded text-white/70">thesettlersonline.ru/ru/play</code>).</li>
+                            <li>Откройте консоль разработчика (нажмите клавишу <code class="bg-white/5 px-1 py-0.5 rounded text-white/70">F12</code> и перейдите на вкладку <strong>Console</strong>).</li>
+                            <li>Скопируйте и вставьте следующий JS-код, затем нажмите <code class="bg-white/5 px-1 py-0.5 rounded text-white/70">Enter</code>:
+                                <pre class="bg-dark-950 border border-white/10 p-3 rounded-lg mt-2 text-white/90 font-mono overflow-x-auto text-[10px] select-all">const match = document.body.innerHTML.match(/(dsoAuthToken=[^&quot;]+)/);
+if (match) {
+    const params = new URLSearchParams(match[1]);
+    console.log(&quot;DSO Auth Token:&quot;, params.get(&quot;dsoAuthToken&quot;));
+    console.log(&quot;DSO Auth User ID:&quot;, params.get(&quot;dsoAuthUser&quot;));
+    console.log(&quot;BB URL:&quot;, params.get(&quot;bb&quot;));
+} else {
+    console.log(&quot;Не удалось найти параметры. Убедитесь, что вы на странице загрузки игры (play)!&quot;);
+}</pre>
+                            </li>
+                            <li>Скопируйте полученные значения в поля выше и нажмите Сохранить.</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -566,7 +647,7 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, h } from 'vue';
+import { ref, computed, onMounted, h, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 import { showToast } from '../toast';
@@ -577,6 +658,7 @@ const SpecialistIcon = { render() { return h('svg', { class: 'w-4 h-4', fill: 'n
 const BuffIcon = { render() { return h('svg', { class: 'w-4 h-4', fill: 'none', viewBox: '0 0 24 24', 'stroke-width': '1.5', stroke: 'currentColor' }, [h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', d: 'M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 0 0-2.455 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z' })]); } };
 const ResourceIcon = { render() { return h('svg', { class: 'w-4 h-4', fill: 'none', viewBox: '0 0 24 24', 'stroke-width': '1.5', stroke: 'currentColor' }, [h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', d: 'M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125' })]); } };
 const FriendIcon = { render() { return h('svg', { class: 'w-4 h-4', fill: 'none', viewBox: '0 0 24 24', 'stroke-width': '1.5', stroke: 'currentColor' }, [h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', d: 'M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z' })]); } };
+const SettingsIcon = { render() { return h('svg', { class: 'w-4 h-4', fill: 'none', viewBox: '0 0 24 24', 'stroke-width': '1.5', stroke: 'currentColor' }, [h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', d: 'M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.43l-1.003.828c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.43l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 0 1 0-.255c.007-.378-.138-.75-.43-.991l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128c.332-.183.582-.495.645-.869l.214-1.28Z' }), h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', d: 'M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z' })]); } };
 
 // Building name to icon URL mapping (TSO CDN)
 const buildingIconMap = {
@@ -648,7 +730,7 @@ const LEVEL_XP_TABLE = {
 
 export default {
     name: 'AccountDetail',
-    components: { BuildingIcon, SpecialistIcon, BuffIcon, ResourceIcon, FriendIcon },
+    components: { BuildingIcon, SpecialistIcon, BuffIcon, ResourceIcon, FriendIcon, SettingsIcon },
     setup() {
         const route = useRoute();
         const router = useRouter();
@@ -681,6 +763,7 @@ export default {
             { id: 'buffs', label: 'Buffs', icon: BuffIcon, count: availableBuffs.value.length },
             { id: 'resources', label: 'Resources', icon: ResourceIcon, count: parsedResources.value.length },
             { id: 'friends', label: 'Friends', icon: FriendIcon, count: parsedFriends.value.length },
+            { id: 'session', label: 'Сессия', icon: SettingsIcon, count: null },
         ]);
 
         const buildingCategories = ['All', 'Basic', 'Improved', 'Advanced', 'Elite', 'Decorations'];
@@ -1441,6 +1524,40 @@ export default {
             }
         };
 
+        const sessionSubmitting = ref(false);
+        const sessionForm = ref({
+            dso_auth_token: '',
+            dso_auth_user: '',
+            bb_url: 'https://r02-ls.thesettlersonline.ru/',
+        });
+
+        watch(account, (newVal) => {
+            if (newVal) {
+                sessionForm.value.dso_auth_token = newVal.dso_auth_token || '';
+                sessionForm.value.dso_auth_user = newVal.dso_auth_user || '';
+                sessionForm.value.bb_url = newVal.bb_url || 'https://r02-ls.thesettlersonline.ru/';
+            }
+        }, { immediate: true });
+
+        const saveSession = async () => {
+            sessionSubmitting.value = true;
+            try {
+                const res = await axios.put(`/api/accounts/${account.value.id}/session`, sessionForm.value);
+                if (res.data.success) {
+                    showToast('Сессия успешно обновлена!');
+                    if (res.data.account) {
+                        account.value = res.data.account;
+                    }
+                } else {
+                    showToast(res.data.message || 'Ошибка сохранения сессии.', 'error');
+                }
+            } catch (e) {
+                showToast(e.response?.data?.message || 'Ошибка сохранения сессии.', 'error');
+            } finally {
+                sessionSubmitting.value = false;
+            }
+        };
+
         onMounted(() => {
             loadAccount();
             fetch('/api/lang/res')
@@ -1527,6 +1644,9 @@ export default {
             visitors,
             getAvatarById,
             translations,
+            sessionForm,
+            sessionSubmitting,
+            saveSession,
         };
     }
 };

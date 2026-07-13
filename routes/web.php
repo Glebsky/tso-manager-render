@@ -26,6 +26,7 @@ Route::prefix('api')->group(function () {
     Route::delete('accounts/{account}', [AccountController::class, 'destroy']);
     Route::post('accounts/{account}/sync', [AccountController::class, 'sync']);
     Route::post('accounts/{account}/action', [AccountController::class, 'action']);
+    Route::put('accounts/{account}/session', [AccountController::class, 'updateSession']);
 
     // Tasks
     Route::get('tasks', [ScheduledTaskController::class, 'index']);

@@ -98,13 +98,15 @@ class AccountController extends Controller
             }
 
             // Fetch and parse zone with auto-retry loop (handles game server warm-up)
-            $maxRetries = 4;
-            $retryDelay = 2; // seconds
+            $maxRetries = 6;
+            $retryDelay = 3; // seconds
             $zoneData = null;
             $rawAmf = null;
             $errorCode = 0;
             $buildingCount = 0;
             $lastException = null;
+
+            $hasResetSession = false;
 
             for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
                 try {
@@ -116,10 +118,21 @@ class AccountController extends Controller
                     $buildingCount = count($zoneData['buildings'] ?? []);
 
                     if ($errorCode === 1012) {
-                        Log::info("Received error 1012 for account {$account->id}, session might be expired. Resetting session...");
+                        Log::info("Received error 1012 (Zone loading) for account {$account->id}. Waiting {$retryDelay}s and retrying...");
+                        sleep($retryDelay);
+                        continue;
+                    }
+
+                    if ($errorCode === 1005) {
+                        if ($hasResetSession) {
+                            throw new Exception("Сессия перехвачена другой игрой (ошибка {$errorCode}). Синхронизация отменена во избежание блокировки.");
+                        }
+                        Log::info("Received error {$errorCode} (Session expired) for account {$account->id}. Resetting session...");
                         @unlink($this->authService->getCookieFile($account));
                         $this->authService->login($account);
+                        $this->amfService->resetClient();
                         $account->refresh();
+                        $hasResetSession = true;
                         sleep(2);
                         continue;
                     }
@@ -173,6 +186,9 @@ class AccountController extends Controller
 
             if ($errorCode !== 0) {
                 $account->update(['status' => 'error']);
+                if ($errorCode === 1012) {
+                    throw new Exception("Игровая зона занята или заблокирована (ошибка 1012). Пожалуйста, выйдите из игры через кнопку «Выход» в меню игры (а не просто закрыв окно), подождите пару минут и попробуйте синхронизацию снова.");
+                }
                 throw new Exception("Server error code {$errorCode}. The zone may not be loaded yet — try again in a few seconds.");
             }
 
@@ -311,5 +327,39 @@ class AccountController extends Controller
                 'message' => 'Action failed: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Manually update the account's session tokens.
+     */
+    public function updateSession(Request $request, Account $account)
+    {
+        $validated = $request->validate([
+            'dso_auth_token' => 'required|string',
+            'dso_auth_user'  => 'required|string',
+            'bb_url'         => 'required|url',
+        ]);
+
+        $account->update([
+            'dso_auth_token' => $validated['dso_auth_token'],
+            'dso_auth_user'  => $validated['dso_auth_user'],
+            'bb_url'         => $validated['bb_url'],
+            'status'         => 'online',
+        ]);
+
+        // Clear cached client connection so the new tokens are used immediately
+        $this->amfService->resetClient();
+
+        BotLog::create([
+            'account_id' => $account->id,
+            'level'      => 'success',
+            'message'    => 'Сессия обновлена вручную.',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Сессия успешно обновлена вручную.',
+            'account' => $account
+        ]);
     }
 }

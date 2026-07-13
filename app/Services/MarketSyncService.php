@@ -51,37 +51,82 @@ class MarketSyncService
                 $account->refresh();
             }
 
-            // 2. Fetch market updates AMF
-            $rawAmf = $this->amfService->getMarketOffers($account);
+            // 2. Fetch and parse market updates with retry loop (handles zone loading)
+            $maxRetries = 6;
+            $retryDelay = 3; // seconds
+            $hasResetSession = false;
+            $parsed = null;
+            $errorCode = 0;
 
-            // 3. Shell out to Python parser
-            $scriptPath = storage_path('app/parse_market.py');
-            if (!file_exists($scriptPath)) {
-                throw new Exception('parse_market.py not found in storage/app/');
+            for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
+                try {
+                    Log::info("Fetching market offers AMF for account {$account->id} (attempt {$attempt}/{$maxRetries})");
+                    $rawAmf = $this->amfService->getMarketOffers($account);
+
+                    $scriptPath = storage_path('app/parse_market.py');
+                    if (!file_exists($scriptPath)) {
+                        throw new Exception('parse_market.py not found in storage/app/');
+                    }
+
+                    $tmpFile = storage_path('app/temp_market_' . uniqid() . '.amf');
+                    file_put_contents($tmpFile, $rawAmf);
+
+                    try {
+                        $pythonBin = $this->findPython();
+                        $command   = escapeshellarg($pythonBin) . ' ' . escapeshellarg($scriptPath) . ' ' . escapeshellarg($tmpFile);
+                        $output    = [];
+                        $exitCode  = 0;
+
+                        exec($command . ' 2>&1', $output, $exitCode);
+                        $outputStr = implode("\n", $output);
+
+                        if ($exitCode !== 0) {
+                            throw new Exception("parse_market.py failed: {$outputStr}");
+                        }
+
+                        $parsed = json_decode($outputStr, true);
+                        if (json_last_error() !== JSON_ERROR_NONE) {
+                            throw new Exception("Failed to decode JSON from parser: " . json_last_error_msg());
+                        }
+                    } finally {
+                        @unlink($tmpFile);
+                    }
+
+                    $errorCode = $parsed['errorCode'] ?? 0;
+
+                    if ($errorCode === 1012) {
+                        Log::info("Received error 1012 (Zone loading) for account {$account->id} during market sync. Waiting {$retryDelay}s and retrying...");
+                        sleep($retryDelay);
+                        continue;
+                    }
+
+                    if ($errorCode === 1005) {
+                        if ($hasResetSession) {
+                            throw new Exception("Сессия перехвачена другой игрой (ошибка {$errorCode}) во время синхронизации рынка.");
+                        }
+                        Log::info("Received error {$errorCode} (Session expired) for account {$account->id} during market sync. Resetting session...");
+                        @unlink($this->authService->getCookieFile($account));
+                        $this->authService->login($account);
+                        $this->amfService->resetClient();
+                        $account->refresh();
+                        $hasResetSession = true;
+                        sleep(2);
+                        continue;
+                    }
+
+                    // Success or other unhandled code
+                    break;
+                } catch (Exception $attemptEx) {
+                    Log::warning("Market sync attempt {$attempt}/{$maxRetries} failed: " . $attemptEx->getMessage());
+                    if ($attempt === $maxRetries) {
+                        throw $attemptEx;
+                    }
+                    sleep($retryDelay);
+                }
             }
 
-            $tmpFile = storage_path('app/temp_market_' . uniqid() . '.amf');
-            file_put_contents($tmpFile, $rawAmf);
-
-            try {
-                $pythonBin = $this->findPython();
-                $command   = escapeshellarg($pythonBin) . ' ' . escapeshellarg($scriptPath) . ' ' . escapeshellarg($tmpFile);
-                $output    = [];
-                $exitCode  = 0;
-
-                exec($command . ' 2>&1', $output, $exitCode);
-                $outputStr = implode("\n", $output);
-
-                if ($exitCode !== 0) {
-                    throw new Exception("parse_market.py failed: {$outputStr}");
-                }
-
-                $parsed = json_decode($outputStr, true);
-                if (json_last_error() !== JSON_ERROR_NONE) {
-                    throw new Exception("Failed to decode JSON from parser: " . json_last_error_msg());
-                }
-            } finally {
-                @unlink($tmpFile);
+            if ($errorCode !== 0) {
+                throw new Exception("Server returned error code {$errorCode} during market sync.");
             }
 
             $rawOffers   = $parsed['offers'] ?? [];

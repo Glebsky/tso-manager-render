@@ -57,26 +57,25 @@ class TsoAuthService
         $server     = self::SERVERS[$region];
         $cookieFile = $this->getCookieFile($account);
 
-        // 1. POST Login
-        $loginUrl = $server['domain'] . str_replace('uplay', 'login', $server['uplay']);
-        $loginRes = $this->curlRequest($loginUrl, [
-            'name'     => $account->username,
-            'password' => $account->password,
-        ], $cookieFile);
-
-        if (strpos($loginRes, 'OKAY') === false) {
-            throw new Exception("Login failed: " . $loginRes);
+        // Clear old cookies to start fresh (like C# client does with new CookieCollection())
+        if (file_exists($cookieFile)) {
+            @unlink($cookieFile);
         }
 
-        // 2. POST Main
-        $mainUrl = $server['domain'] . $server['main'];
-        $this->curlRequest($mainUrl, ['start' => '1'], $cookieFile);
-
-        // 3. GET Play
-        $playUrl  = $server['domain'] . $server['play'];
-        $playHtml = $this->curlRequest($playUrl, null, $cookieFile);
-
-        $params = $this->extractParams($playHtml);
+        try {
+            // Try CipSoft migrated login first (simple form POST, matching C# CipMigratedAuth)
+            $params = $this->loginLegacy($account, $cookieFile, $server);
+        } catch (Exception $e) {
+            \Illuminate\Support\Facades\Log::warning("CipMigrated login failed for account {$account->id}: " . $e->getMessage());
+            // If CipMigrated failed, try Ubisoft OAuth flow (C# CipAuth) as fallback
+            try {
+                $params = $this->loginOAuth($account, $cookieFile, $server);
+            } catch (Exception $e2) {
+                \Illuminate\Support\Facades\Log::warning("OAuth login also failed for account {$account->id}: " . $e2->getMessage());
+                // Re-throw the original CipMigrated error as it's more likely relevant
+                throw $e;
+            }
+        }
 
         // Update account with fresh tokens
         $account->update([
@@ -88,6 +87,250 @@ class TsoAuthService
         ]);
 
         return $params;
+    }
+
+    /**
+     * Legacy form-based login (CipMigratedAuth).
+     * 
+     * Exactly mirrors the C# client's CipMigratedAuth() flow:
+     * 1. POST /ru/api/user/login with name + password
+     * 2. POST /ru/главная-страница with start=1
+     * 3. GET /ru/play → parse HTML for tokens
+     *
+     * The C# client uses BouncyCastle TLS for these requests (useBC=true),
+     * which sends ONLY Host, Content-Type, Cookie, Connection: close headers.
+     * No User-Agent, no Referer, no Accept headers.
+     * It also manually handles redirects (AllowAutoRedirect = false).
+     */
+    public function loginLegacy(Account $account, string $cookieFile, array $server): array
+    {
+        // Step 1: POST Login
+        $loginUrl = $server['domain'] . str_replace('uplay', 'login', $server['uplay']);
+        $loginRes = $this->cipMigratedRequest($loginUrl, [
+            'name'     => $account->username,
+            'password' => $account->password,
+        ], $cookieFile);
+
+        \Illuminate\Support\Facades\Log::info("CipMigratedAuth login response: " . substr($loginRes, 0, 500));
+
+        if (strpos($loginRes, 'OKAY') === false) {
+            if (str_contains($loginRes, 'CAPTCHA') || str_contains($loginRes, 'captcha') || str_contains($loginRes, 'Captcha')) {
+                throw new Exception("Ubisoft требует прохождения CAPTCHA. Пожалуйста, обновите сессию вручную в настройках аккаунта.");
+            }
+            throw new Exception("Login failed: " . $loginRes);
+        }
+
+        // Step 2: POST Main page with start=1
+        $mainUrl = $server['domain'] . $server['main'];
+        $this->cipMigratedRequest($mainUrl, ['start' => '1'], $cookieFile);
+
+        // Step 3: GET Play page
+        $playUrl  = $server['domain'] . $server['play'];
+        $playHtml = $this->cipMigratedRequest($playUrl, null, $cookieFile);
+
+        return $this->extractParams($playHtml);
+    }
+
+    /**
+     * HTTP request that exactly mimics the C# PostSubmitter with useBC=true.
+     * 
+     * BouncyCastle mode sends minimal headers:
+     * - Host (automatic)
+     * - Content-Type: application/x-www-form-urlencoded
+     * - Cookie (from cookie jar)
+     * - Connection: close
+     * - Content-Length (for POST)
+     * 
+     * NO User-Agent, NO Referer, NO Accept, NO Accept-Language.
+     * Manual redirect handling (returns Location header content on redirect).
+     */
+    private function cipMigratedRequest(string $url, ?array $postData, string $cookieFile): string
+    {
+        $maxRedirects = 10;
+        $currentUrl = $url;
+        $isPost = ($postData !== null);
+        $postFields = $isPost ? http_build_query($postData) : null;
+
+        for ($i = 0; $i < $maxRedirects; $i++) {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $currentUrl);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_COOKIEJAR, $cookieFile);
+            curl_setopt($ch, CURLOPT_COOKIEFILE, $cookieFile);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
+            curl_setopt($ch, CURLOPT_HEADER, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+
+            // Minimal headers matching BouncyCastle TLS mode
+            $headers = [
+                'Content-Type: application/x-www-form-urlencoded',
+                'Connection: close',
+            ];
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+            if ($isPost && $i === 0) {
+                // Only POST on the first request, follow redirects as GET
+                curl_setopt($ch, CURLOPT_POST, true);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
+            } else {
+                curl_setopt($ch, CURLOPT_HTTPGET, true);
+            }
+
+            $response = curl_exec($ch);
+            $error    = curl_error($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+            curl_close($ch);
+
+            if ($error) {
+                throw new Exception("cURL Error: " . $error);
+            }
+
+            $headerText = substr($response, 0, $headerSize);
+            $body       = substr($response, $headerSize);
+
+            // Check for redirect (3xx)
+            if ($httpCode >= 300 && $httpCode < 400) {
+                if (preg_match('/^Location:\s*([^\r\n]+)/mi', $headerText, $matches)) {
+                    $location = trim($matches[1]);
+                    // Handle relative redirects
+                    if (!str_starts_with($location, 'http')) {
+                        $parsed = parse_url($currentUrl);
+                        $location = $parsed['scheme'] . '://' . $parsed['host'] . $location;
+                    }
+                    $currentUrl = $location;
+                    continue;
+                }
+            }
+
+            // Non-redirect response — return body
+            return $body;
+        }
+
+        throw new Exception("Too many redirects for URL: " . $url);
+    }
+
+    /**
+     * Modern Ubisoft Connect OAuth login flow.
+     */
+    public function loginOAuth(Account $account, string $cookieFile, array $server): array
+    {
+        // 1. GET /oauth/start
+        $oauthStartUrl = $server['domain'] . '/oauth/start';
+        $redirectUrl = $this->curlRequest($oauthStartUrl, null, $cookieFile, true);
+
+        // GET the first redirect URL to establish cookies and get the final authorize URL
+        $redirectUrl2 = $this->curlRequest($redirectUrl, null, $cookieFile, true);
+
+        $urlParts = parse_url($redirectUrl2);
+        if (!isset($urlParts['query'])) {
+            throw new Exception("OAuth redirect URL query parameters missing: " . $redirectUrl2);
+        }
+        parse_str($urlParts['query'], $redirectUrlOpts);
+        $clientId = $redirectUrlOpts['client_id'] ?? null;
+        if (!$clientId) {
+            throw new Exception("Could not find client_id in Ubisoft redirect URL");
+        }
+
+        // 2. POST to get Ubisoft accessToken
+        $oauthTokenUrl = "https://connect.ubisoft.com/v2/webauth/public/ubiservices/oauthToken";
+        $oauthTokenBody = json_encode([
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json'
+            ]
+        ]);
+        $oauthTokenHeaders = [
+            'Content-Type: application/json',
+            'Accept: application/json',
+        ];
+        $oauthTokenRes = $this->curlRequest($oauthTokenUrl, $oauthTokenBody, $cookieFile, false, $oauthTokenHeaders);
+        $oauthTokenData = json_decode($oauthTokenRes, true);
+        $accessToken = $oauthTokenData['accessToken'] ?? null;
+        if (!$accessToken) {
+            throw new Exception("Ubisoft login failed (could not get oauthToken): " . $oauthTokenRes);
+        }
+
+        // 3. POST to authenticate token using Basic Authorization header
+        $authTokenUrl = "https://api.partners.ubisoft.com/v1/profiles/authentication/token";
+        $authTokenBody = json_encode(['rememberMe' => true]);
+        $credentials = base64_encode(trim($account->username) . ':' . trim($account->password));
+        $authTokenHeaders = [
+            'Content-Type: application/json',
+            'Ubi-RequestedPlatformType: uplay',
+            'Authorization: Bearer ' . $accessToken,
+            'Ubi-Profile-Authorization: Basic ' . $credentials,
+        ];
+        $authTokenRes = $this->curlRequest($authTokenUrl, $authTokenBody, $cookieFile, false, $authTokenHeaders);
+        $authTokenData = json_decode($authTokenRes, true);
+
+        if (isset($authTokenData['twoFactorAuthenticationTicket'])) {
+            throw new Exception("Учетная запись требует двухфакторной аутентификации (2FA).");
+        }
+
+        $token = $authTokenData['token'] ?? null;
+        if (!$token) {
+            throw new Exception("Ubisoft authentication failed (could not get token): " . $authTokenRes);
+        }
+
+        // 4. GET authorize callback with the token to get the consents callback URL redirect
+        $redirectUrlOpts['token'] = $token;
+        $authorizeCallbackUrl = "https://api.partners.ubisoft.com/v1/oauth/authorize/callback?" . http_build_query($redirectUrlOpts);
+        $callbackRedirect = $this->curlRequest($authorizeCallbackUrl, null, $cookieFile, true);
+
+        // Extract redirectUrl from callbackRedirect URL
+        $callbackParts = parse_url($callbackRedirect);
+        if (!isset($callbackParts['query'])) {
+            throw new Exception("Authorize callback query missing: " . $callbackRedirect);
+        }
+        parse_str($callbackParts['query'], $callbackOpts);
+        $consentRedirectUrl = $callbackOpts['redirectUrl'] ?? null;
+        if (!$consentRedirectUrl) {
+            throw new Exception("Consent redirectUrl missing in callback redirect: " . $callbackRedirect);
+        }
+        $consentRedirectParts = parse_url($consentRedirectUrl);
+        parse_str($consentRedirectParts['query'] ?? '', $consentOpts);
+        $profileToken = $consentOpts['profile_token'] ?? null;
+
+        // 5. POST consents to get authorization code callback URL
+        unset($redirectUrlOpts['token']);
+        $redirectUrlOpts['profile_token'] = $profileToken;
+        $consentUrl = "https://api.partners.ubisoft.com/v1/oauth/consents";
+        $consentBody = json_encode([
+            'scopesConsented' => ['offline_access', 'openid', 'profile', 'email'],
+            'isConsented' => true,
+            'redirectUrl' => "https://api.partners.ubisoft.com/v1/oauth/authorize/callback?" . http_build_query($redirectUrlOpts)
+        ]);
+        $consentHeaders = [
+            'Content-Type: application/json',
+            'Ubi-RequestedPlatformType: uplay',
+            'ClientId: ' . $clientId,
+        ];
+        $consentRes = $this->curlRequest($consentUrl, $consentBody, $cookieFile, true, $consentHeaders);
+
+        // 6. GET the consent callback redirect which redirects to the TSO login page
+        $finalCallbackUrl = $this->curlRequest($consentRes, null, $cookieFile, true);
+
+        // 7. Replace login with login2 and call it to set session cookies
+        $login2Url = str_replace('/login?', '/login2?', $finalCallbackUrl);
+        if ($login2Url === $finalCallbackUrl) {
+            $login2Url = str_replace('/login', '/login2', $finalCallbackUrl);
+        }
+        $afterLogin2Url = $this->curlRequest($login2Url, null, $cookieFile, true);
+
+        // Call the redirected page (usually /main)
+        $this->curlRequest($afterLogin2Url, null, $cookieFile);
+
+        // 8. Go to main homepage to ensure session cookies are set correctly
+        $mainUrl = $server['domain'] . $server['main'];
+        $this->curlRequest($mainUrl, null, $cookieFile);
+
+        // 9. Get the play page and extract tokens
+        $playUrl = $server['domain'] . $server['play'];
+        $playHtml = $this->curlRequest($playUrl, null, $cookieFile);
+
+        return $this->extractParams($playHtml);
     }
 
     /**
@@ -143,34 +386,58 @@ class TsoAuthService
     /**
      * Perform a cURL request with cookie support.
      */
-    private function curlRequest(string $url, ?array $postData, string $cookieFile): string
+    private function curlRequest(string $url, $postData, string $cookieFile, bool $returnRedirect = false, ?array $headers = null): string
     {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_COOKIEJAR, $cookieFile);
         curl_setopt($ch, CURLOPT_COOKIEFILE, $cookieFile);
 
-        $headers = [
-            'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
-            'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-            'Accept-Language: ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
-        ];
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        if ($returnRedirect) {
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
+            curl_setopt($ch, CURLOPT_HEADER, true);
+        } else {
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        }
 
-        if ($postData) {
+        $defaultHeaders = [
+            'User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.12 (KHTML, like Gecko) Chrome/9.0.570.0 Safari/534.12',
+            'Referer: http://game-cdn.thesettlersonline.net/prestaging/PS5724/SWMMO/debug/SWMMO.swf',
+        ];
+
+        if ($headers) {
+            $defaultHeaders = array_merge($defaultHeaders, $headers);
+        }
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $defaultHeaders);
+
+        if ($postData !== null) {
             curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postData));
+            if (is_array($postData)) {
+                curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postData));
+            } else {
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+            }
         }
 
         $response = curl_exec($ch);
         $error    = curl_error($ch);
+        $info     = curl_getinfo($ch);
         curl_close($ch);
 
         if ($error) {
             throw new Exception("cURL Error: " . $error);
+        }
+
+        if ($returnRedirect) {
+            if (preg_match('/^Location:\s*([^\r\n]+)/mi', $response, $matches)) {
+                return trim($matches[1]);
+            }
+            if (isset($info['redirect_url']) && $info['redirect_url']) {
+                return $info['redirect_url'];
+            }
+            return $response;
         }
 
         return $response;
