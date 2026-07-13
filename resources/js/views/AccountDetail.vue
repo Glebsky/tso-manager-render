@@ -19,7 +19,10 @@
 
         <!-- Profile Header -->
         <div class="glass-card overflow-hidden mb-8">
-            <div class="h-2 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
+            <div class="h-2 bg-gradient-to-r from-emerald-500 to-teal-500 relative overflow-hidden animate-glow"
+                 :style="{ '--glow': '#10b981' }">
+                <div class="absolute inset-0 animate-shimmer opacity-60"></div>
+            </div>
             <div class="p-6">
                 <!-- Main Info Section -->
                 <div class="flex items-start gap-6">
@@ -110,9 +113,9 @@
         </div>
 
         <!-- Tabs Navigation -->
-        <div class="flex items-center gap-2 mb-6 overflow-x-auto pb-2">
+        <div class="flex items-center gap-2.5 mb-6 overflow-x-auto pb-2">
             <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id"
-                    class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 whitespace-nowrap"
+                    class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 whitespace-nowrap"
                     :class="activeTab === tab.id
                         ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/10 text-emerald-400 border border-emerald-500/30'
                         : 'text-white/40 hover:text-white hover:bg-white/5 border border-transparent'">
@@ -128,26 +131,28 @@
             <div v-show="activeTab === 'buildings'">
                 <!-- Search & Filters -->
                 <div class="flex flex-col sm:flex-row gap-4 mb-6">
-                    <div class="flex-1 relative">
-                        <svg class="w-4 h-4 text-white/30 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-                        </svg>
-                        <input v-model="buildingSearch" type="text" placeholder="Search buildings..." class="glass-input w-full pl-10">
-                    </div>
                     <div class="flex gap-2 flex-wrap">
                         <button v-for="cat in buildingCategories" :key="cat" @click="buildingFilter = cat"
-                                class="px-3 py-2 rounded-lg text-xs font-medium transition-all duration-300"
+                                class="px-5 py-2.5 rounded-lg text-xs font-medium transition-all duration-300"
                                 :class="buildingFilter === cat
                                     ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                                     : 'bg-white/5 text-white/40 border border-transparent hover:bg-white/10'">
                             {{ cat }}
                         </button>
                     </div>
+                    <div class="flex-1 relative">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                            <svg class="w-4 h-4 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                            </svg>
+                        </div>
+                        <input v-model="buildingSearch" type="text" placeholder="Search buildings..." class="glass-input w-full pl-11">
+                    </div>
                 </div>
 
                 <!-- Buildings Grid -->
                 <div v-if="filteredBuildings.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                    <div v-for="b in filteredBuildings" :key="b.buildingGrid" class="glass-card p-4 hover:border-white/20 transition-all duration-300">
+                    <div v-for="b in filteredBuildings" :key="b.buildingGrid" class="glass-card p-4 hover:border-white/20 hover:scale-[1.02] transition-all duration-300">
                         <div class="flex items-start gap-3">
                             <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-dark-900/50 border border-white/5">
                                 <img v-if="getBuildingIcon(b)" :src="getBuildingIcon(b)" :alt="getBuildingName(b)" class="w-8 h-8 object-contain" @error="handleBuildingIconError($event, b)">
@@ -200,15 +205,9 @@
             <div v-show="activeTab === 'specialists'">
                 <!-- Search & Filters -->
                 <div class="flex flex-col sm:flex-row gap-4 mb-6">
-                    <div class="flex-1 relative">
-                        <svg class="w-4 h-4 text-white/30 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-                        </svg>
-                        <input v-model="specialistSearch" type="text" placeholder="Поиск специалистов..." class="glass-input w-full pl-10">
-                    </div>
                     <div class="flex gap-2 flex-wrap">
                         <button v-for="cat in ['All', 'General', 'Explorer', 'Geologist']" :key="cat" @click="specialistFilter = cat"
-                                class="px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-300 border"
+                                class="px-5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-300 border"
                                 :class="specialistFilter === cat
                                     ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/10 text-emerald-400 border-emerald-500/30'
                                     : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
@@ -218,27 +217,35 @@
                             </span>
                         </button>
                     </div>
+                    <div class="flex-1 relative">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                            <svg class="w-4 h-4 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                            </svg>
+                        </div>
+                        <input v-model="specialistSearch" type="text" placeholder="Поиск специалистов..." class="glass-input w-full pl-11">
+                    </div>
                 </div>
 
                 <!-- Grid -->
-                <div v-if="filteredSpecialists.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    <div v-for="s in filteredSpecialists" :key="s.uniqueId || s.uniqueId1" 
-                         class="glass-card p-4 hover:border-white/20 transition-all duration-300 relative overflow-hidden group">
+                <div v-if="filteredSpecialists.length > 0" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    <div v-for="s in filteredSpecialists" :key="s.uniqueId || s.uniqueId1"
+                         class="glass-card p-4 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 relative overflow-hidden group">
                         <!-- Background Glow on Hover -->
                         <div class="absolute inset-0 bg-gradient-to-br transition-all duration-500 opacity-0 group-hover:opacity-10 pointer-events-none"
                              :class="getSpecialistCategory(s.type) === 'General' ? 'from-rose-500 to-red-500' : getSpecialistCategory(s.type) === 'Explorer' ? 'from-teal-500 to-emerald-500' : 'from-amber-500 to-orange-500'">
                         </div>
-                        
+
                         <div class="flex items-center gap-3 relative z-10">
                             <!-- Icon -->
-                            <div class="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg overflow-hidden border bg-white/5"
-                                 :class="getSpecialistCategory(s.type) === 'General' ? 'text-rose-400 border-rose-500/20 shadow-rose-500/5' : getSpecialistCategory(s.type) === 'Explorer' ? 'text-teal-400 border-teal-500/20 shadow-teal-500/5' : 'text-amber-400 border-amber-500/20 shadow-amber-500/5'">
+                            <div class="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg overflow-hidden bg-white/5"
+                                 :class="getSpecialistCategory(s.type) === 'General' ? 'text-rose-400 shadow-rose-500/5' : getSpecialistCategory(s.type) === 'Explorer' ? 'text-teal-400 shadow-teal-500/5' : 'text-amber-400 shadow-amber-500/5'">
                                 <img :src="getSpecialistIcon(s.type)" @error="handleSpecialistIconError($event, s.type)" class="w-full h-full object-contain p-1" v-if="!hasSpecialistIconError(s.type) && getSpecialistIcon(s.type)" />
                                 <span v-else-if="getSpecialistCategory(s.type) === 'General'" class="text-xl">🎖️</span>
                                 <span v-else-if="getSpecialistCategory(s.type) === 'Explorer'" class="text-xl">🧭</span>
                                 <span v-else class="text-xl">🔨</span>
                             </div>
-                            
+
                             <!-- Names -->
                             <div class="flex-1 min-w-0">
                                 <h4 class="text-sm font-bold text-white group-hover:text-emerald-400 transition-colors duration-300 truncate" :title="s.name || getSpecialistTypeName(s.type)">
@@ -251,8 +258,8 @@
                                     <span class="text-[9px] text-white/30 font-mono">
                                         ID: {{ s.uniqueId1 }}
                                     </span>
-                                    <span class="badge text-[8px] px-1 py-0.5" 
-                                          :class="getSpecialistCategory(s.type) === 'General' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : getSpecialistCategory(s.type) === 'Explorer' ? 'bg-teal-500/10 text-teal-400 border border-teal-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'">
+                                    <span class="badge text-[8px] px-1 py-0.5"
+                                          :class="getSpecialistCategory(s.type) === 'General' ? 'bg-rose-500/10 text-rose-400' : getSpecialistCategory(s.type) === 'Explorer' ? 'bg-teal-500/10 text-teal-400' : 'bg-amber-500/10 text-amber-400'">
                                         {{ getSpecialistCategory(s.type) === 'General' ? 'Генерал' : getSpecialistCategory(s.type) === 'Explorer' ? 'Разведчик' : 'Геолог' }}
                                     </span>
                                 </div>
@@ -281,7 +288,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div v-else class="text-center py-12">
                     <p class="text-white/30 text-sm">Специалисты не найдены.</p>
                 </div>
@@ -295,8 +302,8 @@
                         <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
                         Звездное меню (Buffs in Star Menu)
                     </h3>
-                    <div v-if="availableBuffs.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                        <div v-for="(b, idx) in availableBuffs" :key="idx" class="glass-card p-4 hover:border-white/10 transition-all duration-200">
+                    <div v-if="availableBuffs.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                        <div v-for="(b, idx) in availableBuffs" :key="idx" class="glass-card p-4 hover:border-white/20 hover:scale-[1.02] transition-all duration-300">
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
                                     <img :src="getBuffIcon(b)" :alt="getStarBuffName(b)" class="w-7 h-7 object-contain" @error="handleBuffIconError($event, b)">
@@ -324,33 +331,7 @@
                     </div>
                 </div>
 
-                <!-- Active Zone Buffs -->
-                <div>
-                    <h3 class="text-sm font-semibold text-white/50 uppercase tracking-wider mb-4 flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                        Активные баффы в зоне (Active Buffs)
-                    </h3>
-                    <div v-if="parsedBuffs.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                        <div v-for="b in parsedBuffs" :key="b.uniqueId || b.uniqueId1" class="glass-card p-4">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                                    <img :src="getBuffIcon(b)" :alt="b.name" class="w-7 h-7 object-contain" @error="handleBuffIconError($event, b)">
-                                    <svg class="w-5 h-5 text-emerald-400" style="display: none;" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Z" />
-                                    </svg>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-medium text-white/80 truncate">{{ b.name || 'Buff' }}</p>
-                                    <p class="text-[10px] text-white/30">ID: {{ b.buffId || b.uniqueId || 'N/A' }}</p>
-                                </div>
-                                <span v-if="b.amount" class="badge badge-warning text-[10px]">x{{ b.amount }}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div v-else class="text-center py-6 glass-card border-dashed">
-                        <p class="text-white/30 text-sm">Нет активных баффов в зоне.</p>
-                    </div>
-                </div>
+
             </div>
 
             <!-- Resources Tab -->
@@ -358,7 +339,7 @@
                 <!-- Storage limit info -->
                 <div v-if="resourceLimit" class="glass-card p-4 mb-6 flex justify-between items-center">
                     <div>
-                        <h3 class="text-sm font-semibold text-white/80">Вместимость склада (на каждый ресурс)</h3>
+                        <h3 class="text-sm font-semibold text-white/80">Вместимость склада</h3>
                         <p class="text-xs text-white/40 mt-0.5">Вместимость склада распространяется на каждый ресурс отдельно.</p>
                     </div>
                     <div class="px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
@@ -375,7 +356,7 @@
                             {{ translations['WarehouseTab1'] || 'Basic Resources (Базовые)' }}
                         </h4>
                         <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
-                            <div v-for="r in basicResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/10 transition-all duration-200 w-full">
+                            <div v-for="r in basicResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
                                     <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
@@ -395,7 +376,7 @@
                             {{ translations['WarehouseTab2'] || 'Improved Resources (Улучшенные)' }}
                         </h4>
                         <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
-                            <div v-for="r in improvedResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/10 transition-all duration-200 w-full">
+                            <div v-for="r in improvedResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
                                     <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
@@ -415,7 +396,7 @@
                             {{ translations['WarehouseTab3'] || 'Advanced Resources (Усовершенствованные)' }}
                         </h4>
                         <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
-                            <div v-for="r in advancedResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/10 transition-all duration-200 w-full">
+                            <div v-for="r in advancedResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
                                     <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
@@ -435,7 +416,7 @@
                             {{ translations['WarehouseTab4'] || 'Master Resources (Искусные)' }}
                         </h4>
                         <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
-                            <div v-for="r in masterResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/10 transition-all duration-200 w-full">
+                            <div v-for="r in masterResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
                                     <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
@@ -455,7 +436,7 @@
                             {{ translations['WarehouseTab8'] || 'Elite Resources (Элита)' }}
                         </h4>
                         <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
-                            <div v-for="r in eliteResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/10 transition-all duration-200 w-full">
+                            <div v-for="r in eliteResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
                                     <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
@@ -475,7 +456,7 @@
                             {{ translations['WarehouseTab6'] || 'Event Resources (Событие)' }}
                         </h4>
                         <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
-                            <div v-for="r in eventResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/10 transition-all duration-200 w-full">
+                            <div v-for="r in eventResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
                                     <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
@@ -495,7 +476,7 @@
                             {{ translations['WarehouseTab7'] || 'Collections (Коллекции)' }}
                         </h4>
                         <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
-                            <div v-for="r in collectibleResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/10 transition-all duration-200 w-full">
+                            <div v-for="r in collectibleResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
                                     <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
@@ -515,7 +496,7 @@
                             {{ translations['WarehouseTab5'] || 'Military (Войска)' }}
                         </h4>
                         <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
-                            <div v-for="r in militaryResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/10 transition-all duration-200 w-full">
+                            <div v-for="r in militaryResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
                                     <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
@@ -535,7 +516,7 @@
                             Other (Другие)
                         </h4>
                         <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
-                            <div v-for="r in otherResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/10 transition-all duration-200 w-full">
+                            <div v-for="r in otherResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
                                     <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
@@ -685,7 +666,7 @@ export default {
         const tabs = computed(() => [
             { id: 'buildings', label: 'Buildings', icon: BuildingIcon, count: parsedBuildings.value.length },
             { id: 'specialists', label: 'Specialists', icon: SpecialistIcon, count: parsedSpecialists.value.length },
-            { id: 'buffs', label: 'Buffs', icon: BuffIcon, count: availableBuffs.value.length + parsedBuffs.value.length },
+            { id: 'buffs', label: 'Buffs', icon: BuffIcon, count: availableBuffs.value.length },
             { id: 'resources', label: 'Resources', icon: ResourceIcon, count: parsedResources.value.length },
             { id: 'friends', label: 'Friends', icon: FriendIcon, count: parsedFriends.value.length },
         ]);
@@ -705,7 +686,6 @@ export default {
 
         const parsedBuildings = computed(() => zoneData.value?.buildings || []);
         const parsedSpecialists = computed(() => zoneData.value?.specialists || []);
-        const parsedBuffs = computed(() => zoneData.value?.buffs || []);
         const RESOURCE_CATEGORIES = {
             'WarehouseTab1': [
                 'Tree', 'Wood', 'Plank', 'Stone', 'Fish', 'Population', 'Token',
@@ -1183,32 +1163,32 @@ export default {
         };
 
         const SPECIALIST_TYPES = {
-            0: 'General', 1: 'Explorer', 2: 'Geologist', 3: 'MasterGeneral', 
-            4: 'MasterExplorer', 5: 'MasterGeologist', 6: 'TmpArmyTransporter', 
-            7: 'HalloweenGeneral', 8: 'RetailBoxGeneral', 9: 'EasterGeneral', 
-            10: 'EasterExplorer', 11: 'RetailBox2General', 12: 'TransporterGeneral', 
-            13: 'MajorGeneral', 14: 'StarGeneral1', 15: 'StarGeneral2', 16: 'StarGeneral3', 
-            17: 'FastLuckyExplorer', 18: 'Admiral', 19: 'TransporterAdmiral', 20: 'ExpertAdmiral', 
-            21: 'ExpertTransporterAdmiral', 22: 'AdditionalAdmiralShop', 23: 'Easter2015TransporterAdmiral', 
-            24: 'BlackMarshal', 25: 'HalloweenGeneralDracul', 26: 'ConscientiousGeologist', 
-            27: 'SantaGeneral', 28: 'IntrepidExplorer', 29: 'GeneralVargus', 30: 'GeneralAnslem', 
-            31: 'GeneralNusala', 32: 'CorageousExplorer', 33: 'GeneralMary', 34: 'IronWilledGeologist', 
-            35: 'StoneColdGeologist', 36: 'MedicGeneral', 37: 'MadScientistGeneral', 38: 'VersedGeologist', 
-            39: 'CandidExplorer', 40: 'LovelyGeologist', 41: 'LovelyExplorer', 42: 'GoldheartedGeologist', 
-            43: 'BorisGeneral', 44: 'PrincessZoeExplorer', 45: 'ArcheologistGeologist', 46: 'Soccer2019Explorer', 
-            47: 'Anniversary2019General', 48: 'EmphaticExplorer', 49: 'ThoroughGeologist', 
-            50: 'Halloween2019General', 51: 'BewitchingExplorer', 52: 'Xmas2019General', 53: 'HumbleExplorer', 
-            54: 'ValentinesTransporterGeneral', 55: 'KeenerExplorer', 56: 'AssassinGeneral', 57: 'SylvanaGeneral', 
-            58: 'BoldExplorer', 59: 'DiligentGeologist', 60: 'GeneralTrembleBeard', 61: 'ScaredExplorer', 
-            62: 'ChummyGeologist', 63: 'GhostGeneral', 64: 'FrostyGeneral', 65: 'SnowyExplorer', 
-            66: 'RomanticExplorer', 67: 'LonerGeneral', 68: 'MotherlyExplorer', 69: 'BenevolentExplorer', 
-            70: 'RoyalExplorer', 71: 'SophisticatedGeologist', 72: 'GeneralLoudmouth', 73: 'MummifiedGeologist', 
-            74: 'PirateExplorer', 75: 'NutcrackerGeneral', 76: 'GingerbreadGeologist', 77: 'MiraculousGeneral', 
-            78: 'FluffyButteExplorer', 79: 'ResoluteGeneral', 80: 'GeologistOnVacation', 81: 'RinaTheExplorer', 
-            82: 'TransporterGeneralBjoern', 83: 'SootyGeologist', 84: 'LoveStruckExplorer', 85: 'GeneralJuan', 
-            86: 'BalancedGeologist', 87: 'BlacktreeExplorer', 88: 'Brohmann', 89: 'MarathonGeologist', 
-            90: 'ChummyExplorer', 91: 'VesyGeologist', 92: 'MercenaryExplorer', 93: 'TheSmuggler', 
-            94: 'GhostExplorer', 95: 'StargazingGeologist', 96: 'NarcissisticGeneral', 97: 'GloryExploriExplorer', 
+            0: 'General', 1: 'Explorer', 2: 'Geologist', 3: 'MasterGeneral',
+            4: 'MasterExplorer', 5: 'MasterGeologist', 6: 'TmpArmyTransporter',
+            7: 'HalloweenGeneral', 8: 'RetailBoxGeneral', 9: 'EasterGeneral',
+            10: 'EasterExplorer', 11: 'RetailBox2General', 12: 'TransporterGeneral',
+            13: 'MajorGeneral', 14: 'StarGeneral1', 15: 'StarGeneral2', 16: 'StarGeneral3',
+            17: 'FastLuckyExplorer', 18: 'Admiral', 19: 'TransporterAdmiral', 20: 'ExpertAdmiral',
+            21: 'ExpertTransporterAdmiral', 22: 'AdditionalAdmiralShop', 23: 'Easter2015TransporterAdmiral',
+            24: 'BlackMarshal', 25: 'HalloweenGeneralDracul', 26: 'ConscientiousGeologist',
+            27: 'SantaGeneral', 28: 'IntrepidExplorer', 29: 'GeneralVargus', 30: 'GeneralAnslem',
+            31: 'GeneralNusala', 32: 'CorageousExplorer', 33: 'GeneralMary', 34: 'IronWilledGeologist',
+            35: 'StoneColdGeologist', 36: 'MedicGeneral', 37: 'MadScientistGeneral', 38: 'VersedGeologist',
+            39: 'CandidExplorer', 40: 'LovelyGeologist', 41: 'LovelyExplorer', 42: 'GoldheartedGeologist',
+            43: 'BorisGeneral', 44: 'PrincessZoeExplorer', 45: 'ArcheologistGeologist', 46: 'Soccer2019Explorer',
+            47: 'Anniversary2019General', 48: 'EmphaticExplorer', 49: 'ThoroughGeologist',
+            50: 'Halloween2019General', 51: 'BewitchingExplorer', 52: 'Xmas2019General', 53: 'HumbleExplorer',
+            54: 'ValentinesTransporterGeneral', 55: 'KeenerExplorer', 56: 'AssassinGeneral', 57: 'SylvanaGeneral',
+            58: 'BoldExplorer', 59: 'DiligentGeologist', 60: 'GeneralTrembleBeard', 61: 'ScaredExplorer',
+            62: 'ChummyGeologist', 63: 'GhostGeneral', 64: 'FrostyGeneral', 65: 'SnowyExplorer',
+            66: 'RomanticExplorer', 67: 'LonerGeneral', 68: 'MotherlyExplorer', 69: 'BenevolentExplorer',
+            70: 'RoyalExplorer', 71: 'SophisticatedGeologist', 72: 'GeneralLoudmouth', 73: 'MummifiedGeologist',
+            74: 'PirateExplorer', 75: 'NutcrackerGeneral', 76: 'GingerbreadGeologist', 77: 'MiraculousGeneral',
+            78: 'FluffyButteExplorer', 79: 'ResoluteGeneral', 80: 'GeologistOnVacation', 81: 'RinaTheExplorer',
+            82: 'TransporterGeneralBjoern', 83: 'SootyGeologist', 84: 'LoveStruckExplorer', 85: 'GeneralJuan',
+            86: 'BalancedGeologist', 87: 'BlacktreeExplorer', 88: 'Brohmann', 89: 'MarathonGeologist',
+            90: 'ChummyExplorer', 91: 'VesyGeologist', 92: 'MercenaryExplorer', 93: 'TheSmuggler',
+            94: 'GhostExplorer', 95: 'StargazingGeologist', 96: 'NarcissisticGeneral', 97: 'GloryExploriExplorer',
             98: 'TitanicGeologist'
         };
 
@@ -1223,12 +1203,12 @@ export default {
 
         const getSpecialistTypeName = (type) => {
             const rawName = SPECIALIST_TYPES[type] || `Specialist #${type}`;
-            
+
             // Check translation in lang.txt
             if (translations.value[rawName]) {
                 return translations.value[rawName];
             }
-            
+
             return rawName
                 .replace(/([A-Z0-9])/g, ' $1')
                 .replace(/^./, str => str.toUpperCase())
@@ -1479,7 +1459,7 @@ export default {
             handleSpecialistIconError,
             hasSpecialistIconError,
             getSpecialistIcon,
-            parsedBuffs,
+
             parsedResources,
             parsedFriends,
             level,

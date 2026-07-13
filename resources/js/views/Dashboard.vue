@@ -18,61 +18,75 @@
 
         <!-- Stats Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-            <!-- Total Accounts -->
-            <div class="glass-card p-5 group hover:border-white/20 transition-all duration-500">
-                <div class="flex items-center justify-between mb-3">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                        <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
-                        </svg>
+            <!-- Skeleton Stats -->
+            <template v-if="loading && stats.total_accounts === 0">
+                <div v-for="n in 4" :key="'skel-stat-' + n" class="glass-card p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-10 h-10 rounded-xl skeleton"></div>
+                        <div class="w-12 h-5 rounded-full skeleton"></div>
                     </div>
-                    <span class="badge badge-info text-[10px]">Total</span>
+                    <div class="w-16 h-8 rounded skeleton mb-1"></div>
+                    <div class="w-32 h-3 rounded skeleton"></div>
                 </div>
-                <p class="text-2xl font-bold text-white">{{ stats.total_accounts || 0 }}</p>
-                <p class="text-xs text-white/30 mt-1">Registered Accounts</p>
-            </div>
+            </template>
+            <!-- Loaded Stats -->
+            <template v-else>
+                <!-- Total Accounts -->
+                <div class="glass-card p-5 group hover:border-white/20 transition-all duration-500 animate-fade-in-up" style="animation-delay: 0ms">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                            <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
+                            </svg>
+                        </div>
+                        <span class="badge badge-info text-[10px]">Total</span>
+                    </div>
+                    <p class="text-2xl font-bold text-white">{{ stats.total_accounts || 0 }}</p>
+                    <p class="text-xs text-white/30 mt-1">Registered Accounts</p>
+                </div>
 
-            <!-- Active Tasks -->
-            <div class="glass-card p-5 group hover:border-white/20 transition-all duration-500">
-                <div class="flex items-center justify-between mb-3">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-                        <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                        </svg>
+                <!-- Active Tasks -->
+                <div class="glass-card p-5 group hover:border-white/20 transition-all duration-500 animate-fade-in-up" style="animation-delay: 80ms">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                            <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                            </svg>
+                        </div>
+                        <span class="badge badge-success text-[10px]">Active</span>
                     </div>
-                    <span class="badge badge-success text-[10px]">Active</span>
+                    <p class="text-2xl font-bold text-white">{{ stats.active_tasks || 0 }}</p>
+                    <p class="text-xs text-white/30 mt-1">Scheduled Tasks</p>
                 </div>
-                <p class="text-2xl font-bold text-white">{{ stats.active_tasks || 0 }}</p>
-                <p class="text-xs text-white/30 mt-1">Scheduled Tasks</p>
-            </div>
 
-            <!-- Today's Actions -->
-            <div class="glass-card p-5 group hover:border-white/20 transition-all duration-500">
-                <div class="flex items-center justify-between mb-3">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/20">
-                        <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
-                        </svg>
+                <!-- Today's Actions -->
+                <div class="glass-card p-5 group hover:border-white/20 transition-all duration-500 animate-fade-in-up" style="animation-delay: 160ms">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/20">
+                            <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
+                            </svg>
+                        </div>
+                        <span class="badge badge-warning text-[10px]">Today</span>
                     </div>
-                    <span class="badge badge-warning text-[10px]">Today</span>
+                    <p class="text-2xl font-bold text-white">{{ stats.today_actions || 0 }}</p>
+                    <p class="text-xs text-white/30 mt-1">Actions Executed</p>
                 </div>
-                <p class="text-2xl font-bold text-white">{{ stats.today_actions || 0 }}</p>
-                <p class="text-xs text-white/30 mt-1">Actions Executed</p>
-            </div>
 
-            <!-- Errors -->
-            <div class="glass-card p-5 group hover:border-white/20 transition-all duration-500">
-                <div class="flex items-center justify-between mb-3">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center shadow-lg shadow-red-500/20">
-                        <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
-                        </svg>
+                <!-- Errors -->
+                <div class="glass-card p-5 group hover:border-white/20 transition-all duration-500 animate-fade-in-up" style="animation-delay: 240ms">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center shadow-lg shadow-red-500/20">
+                            <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                            </svg>
+                        </div>
+                        <span class="badge badge-danger text-[10px]">Errors</span>
                     </div>
-                    <span class="badge badge-danger text-[10px]">Errors</span>
+                    <p class="text-2xl font-bold text-white">{{ stats.errors || 0 }}</p>
+                    <p class="text-xs text-white/30 mt-1">Error Count</p>
                 </div>
-                <p class="text-2xl font-bold text-white">{{ stats.errors || 0 }}</p>
-                <p class="text-xs text-white/30 mt-1">Error Count</p>
-            </div>
+            </template>
         </div>
 
         <!-- Accounts Overview -->
@@ -92,8 +106,36 @@
                 </router-link>
             </div>
 
-            <div v-if="accounts.length > 0" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                <account-card v-for="acc in accounts.slice(0, 6)" :key="acc.id" :account="acc"
+            <!-- Skeleton Accounts -->
+            <div v-if="loading && accounts.length === 0" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                <div v-for="n in 3" :key="'skel-acc-' + n" class="glass-card overflow-hidden">
+                    <div class="h-[3px] skeleton"></div>
+                    <div class="p-5">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl skeleton"></div>
+                                <div>
+                                    <div class="w-24 h-4 rounded skeleton mb-1"></div>
+                                    <div class="w-32 h-3 rounded skeleton"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex gap-2 mb-4">
+                            <div class="w-16 h-5 rounded-full skeleton"></div>
+                            <div class="w-20 h-5 rounded-full skeleton"></div>
+                        </div>
+                        <div class="pt-3 border-t border-white/5 flex gap-2">
+                            <div class="w-16 h-7 rounded-lg skeleton"></div>
+                            <div class="w-20 h-7 rounded-lg skeleton"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Loaded Accounts -->
+            <div v-else-if="accounts.length > 0" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                <account-card v-for="(acc, idx) in accounts.slice(0, 6)" :key="acc.id" :account="acc"
+                              class="animate-fade-in-up"
+                              :style="{ animationDelay: (idx * 80) + 'ms' }"
                               @sync-success="loadData" @delete-success="loadData" @action-success="loadData" />
             </div>
             <div v-else class="glass-card p-12 text-center">
@@ -131,7 +173,19 @@
             </div>
 
             <div class="glass-card overflow-hidden">
-                <div v-if="logs.length > 0" class="divide-y divide-white/5">
+                <!-- Skeleton Logs -->
+                <div v-if="loading && logs.length === 0" class="p-5 space-y-3">
+                    <div v-for="n in 5" :key="'skel-log-' + n" class="flex items-center gap-3 py-3 border-b border-white/5 last:border-0">
+                        <div class="w-16 h-5 rounded-full skeleton"></div>
+                        <div class="flex-1">
+                            <div class="w-48 h-3 rounded skeleton mb-1"></div>
+                            <div class="w-32 h-2 rounded skeleton"></div>
+                        </div>
+                        <div class="w-20 h-3 rounded skeleton"></div>
+                    </div>
+                </div>
+                <!-- Loaded Logs -->
+                <div v-else-if="logs.length > 0" class="divide-y divide-white/5">
                     <log-entry v-for="log in logs.slice(0, 10)" :key="log.id" :log="log" />
                 </div>
                 <div v-else class="p-8 text-center">

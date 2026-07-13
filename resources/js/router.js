@@ -1,41 +1,35 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import Dashboard from './views/Dashboard.vue';
-import Accounts from './views/Accounts.vue';
-import AccountDetail from './views/AccountDetail.vue';
-import Tasks from './views/Tasks.vue';
-import Logs from './views/Logs.vue';
-import Settings from './views/Settings.vue';
 
 const routes = [
     {
         path: '/',
         name: 'dashboard',
-        component: Dashboard,
+        component: () => import('./views/Dashboard.vue'),
     },
     {
         path: '/accounts',
         name: 'accounts',
-        component: Accounts,
+        component: () => import('./views/Accounts.vue'),
     },
     {
         path: '/accounts/:id',
         name: 'account-detail',
-        component: AccountDetail,
+        component: () => import('./views/AccountDetail.vue'),
     },
     {
         path: '/tasks',
         name: 'tasks',
-        component: Tasks,
+        component: () => import('./views/Tasks.vue'),
     },
     {
         path: '/logs',
         name: 'logs',
-        component: Logs,
+        component: () => import('./views/Logs.vue'),
     },
     {
         path: '/settings',
         name: 'settings',
-        component: Settings,
+        component: () => import('./views/Settings.vue'),
     },
 ];
 

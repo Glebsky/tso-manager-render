@@ -89,12 +89,17 @@
         <!-- MAIN CONTENT -->
         <main class="flex-1 ml-64 min-h-full">
             <div class="p-8 h-full overflow-y-auto">
-                <router-view></router-view>
+                <router-view v-slot="{ Component }">
+                    <transition name="page" mode="out-in">
+                        <component :is="Component" />
+                    </transition>
+                </router-view>
             </div>
         </main>
+    </div>
 
-        <!-- TOAST CONTAINER -->
-        <div class="fixed top-5 right-5 z-50 max-w-sm w-full pointer-events-none">
+        <!-- TOAST CONTAINER (outside main flex to ensure top-level stacking) -->
+        <div class="fixed top-5 right-5 z-[9999] max-w-sm w-full pointer-events-none">
             <transition-group name="toast" tag="div" class="flex flex-col gap-3">
                 <div v-for="t in toasts" :key="t.id"
                      class="glass-card p-4 pointer-events-auto shadow-2xl transition-all duration-300 w-full"
@@ -129,7 +134,6 @@
                 </div>
             </transition-group>
         </div>
-    </div>
 </template>
 
 <script>
@@ -167,5 +171,19 @@ export default {
 .toast-leave-active {
     position: absolute;
     width: 100%;
+}
+
+/* Page Transition Animations */
+.page-enter-active,
+.page-leave-active {
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.page-enter-from {
+    opacity: 0;
+    transform: translateY(8px);
+}
+.page-leave-to {
+    opacity: 0;
+    transform: translateY(-8px);
 }
 </style>

@@ -1,7 +1,9 @@
 <template>
     <div class="glass-card overflow-hidden group hover:border-white/20 transition-all duration-500">
         <!-- Gradient accent stripe -->
-        <div class="h-1 bg-gradient-to-r" :class="statusClass"></div>
+        <div class="h-1 bg-gradient-to-r relative overflow-hidden animate-glow" :class="statusClass.gradient" :style="{ '--glow': statusClass.glow }">
+            <div class="absolute inset-0 animate-shimmer opacity-60"></div>
+        </div>
 
         <div class="p-5">
             <!-- Header row -->
@@ -22,14 +24,14 @@
                         </p>
                     </router-link>
                 </div>
- 
+
                 <!-- Status -->
                 <div class="flex items-center gap-2">
                     <div class="w-2 h-2 rounded-full" :class="statusDotClass"></div>
                     <span class="text-xs text-white/40 capitalize">{{ localAccount.status || 'offline' }}</span>
                 </div>
             </div>
- 
+
             <!-- Info row -->
             <div class="flex items-center gap-3 mb-4 flex-wrap">
                 <!-- Region badge -->
@@ -39,7 +41,7 @@
                     </svg>
                     {{ localAccount.region || 'N/A' }}
                 </span>
- 
+
                 <!-- Server name badge -->
                 <span v-if="serverName" class="badge badge-success bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                     <svg class="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -47,7 +49,7 @@
                     </svg>
                     {{ serverName }}
                 </span>
- 
+
                 <!-- Building count -->
                 <span v-if="buildingCount !== null" class="badge badge-neutral">
                     <svg class="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -55,7 +57,7 @@
                     </svg>
                     {{ buildingCount }} buildings
                 </span>
- 
+
                 <!-- Last sync -->
                 <span v-if="localAccount.last_sync_at" class="text-xs text-white/30 flex items-center gap-1">
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -68,7 +70,8 @@
             <!-- Action buttons -->
             <div class="flex items-center gap-2 pt-3 border-t border-white/5">
                 <button @click="syncAccount" :disabled="syncing"
-                        class="btn-secondary btn-sm flex items-center gap-1.5 hover:border-emerald-500/30 hover:text-emerald-400 disabled:opacity-50">
+                        class="btn-secondary btn-sm flex items-center gap-1.5 hover:border-emerald-500/30 hover:text-emerald-400 disabled:opacity-50 transition-all duration-300"
+                        :class="{ 'animate-pulse shadow-lg shadow-emerald-500/40': syncing }">
                     <svg class="w-3.5 h-3.5" :class="{ 'animate-spin': syncing }" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182" />
                     </svg>
@@ -120,10 +123,22 @@ export default {
 
         const statusClass = computed(() => {
             const colors = {
-                online: 'from-emerald-500 to-teal-500',
-                syncing: 'from-amber-500 to-orange-500',
-                error: 'from-red-500 to-rose-500',
-                offline: 'from-gray-500 to-gray-600'
+                online: {
+                    gradient: 'from-emerald-500 to-teal-500',
+                    glow: '#10b981'
+                },
+                syncing: {
+                    gradient: 'from-amber-500 to-orange-500',
+                    glow: '#f59e0b'
+                },
+                error: {
+                    gradient: 'from-red-500 to-rose-500',
+                    glow: '#ef4444'
+                },
+                offline: {
+                    gradient: 'from-gray-500 to-gray-600',
+                    glow: '#6b7280'
+                }
             };
             return colors[localAccount.value.status] || colors.offline;
         });
@@ -170,7 +185,7 @@ export default {
             const now = new Date();
             const diffMs = now - date;
             const diffMins = Math.floor(diffMs / 60000);
-            
+
             if (diffMins < 1) return 'just now';
             if (diffMins < 60) return `${diffMins}m ago`;
             const diffHours = Math.floor(diffMins / 60);
