@@ -19,8 +19,9 @@
 
         <!-- Profile Header -->
         <div class="glass-card overflow-hidden mb-8">
-            <div class="h-2 bg-gradient-to-r from-emerald-500 to-teal-500 relative overflow-hidden animate-glow"
-                 :style="{ '--glow': '#10b981' }">
+            <div class="h-2 bg-gradient-to-r relative overflow-hidden animate-glow"
+                 :class="statusClass.gradient"
+                 :style="{ '--glow': statusClass.glow }">
                 <div class="absolute inset-0 animate-shimmer opacity-60"></div>
             </div>
             <div class="p-6">
@@ -653,6 +654,17 @@ export default {
         const router = useRouter();
         const loading = ref(true);
         const account = ref(null);
+
+        const statusClass = computed(() => {
+            const colors = {
+                online:  { gradient: 'from-emerald-500 to-teal-500', glow: '#10b981' },
+                syncing: { gradient: 'from-amber-500 to-orange-500', glow: '#f59e0b' },
+                error:   { gradient: 'from-red-500 to-rose-500', glow: '#ef4444' },
+                offline: { gradient: 'from-gray-500 to-gray-600', glow: '#6b7280' }
+            };
+            return colors[account.value?.status] || colors.offline;
+        });
+
         const actionLoading = ref(false);
         const avatarError = ref(false);
         const activeTab = ref('buildings');
@@ -1439,6 +1451,7 @@ export default {
         return {
             loading,
             account,
+            statusClass,
             actionLoading,
             avatarError,
             activeTab,
