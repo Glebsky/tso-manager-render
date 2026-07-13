@@ -31,6 +31,11 @@ const routes = [
         name: 'settings',
         component: () => import('./views/Settings.vue'),
     },
+    {
+        path: '/market',
+        name: 'market',
+        component: () => import('./views/MarketAnalytics.vue'),
+    },
 ];
 
 const router = createRouter({

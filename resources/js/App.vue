@@ -61,6 +61,18 @@
                 </router-link>
 
                 <div class="pt-4">
+                    <p class="px-4 text-[10px] font-semibold uppercase tracking-widest text-white/20 mb-3">Market Analytics</p>
+                </div>
+
+                <!-- Market Analytics -->
+                <router-link to="/market" class="nav-link" :class="{ active: $route.name === 'market' }">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18 9 11.25l4.306 4.307a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-3.75-1.002m3.75 1.002-1.002 3.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                    </svg>
+                    <span class="font-medium">Market Analytics</span>
+                </router-link>
+
+                <div class="pt-4">
                     <p class="px-4 text-[10px] font-semibold uppercase tracking-widest text-white/20 mb-3">System</p>
                 </div>
 

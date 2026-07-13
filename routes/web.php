@@ -6,6 +6,7 @@ use App\Http\Controllers\ScheduledTaskController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\LangController;
+use App\Http\Controllers\MarketAnalyticsController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -43,6 +44,15 @@ Route::prefix('api')->group(function () {
     Route::put('settings', [SettingsController::class, 'update']);
     Route::delete('settings/logs', [SettingsController::class, 'clearLogs']);
     Route::post('settings/tasks/stop', [SettingsController::class, 'stopAllTasks']);
+
+    // Market Analytics
+    Route::get('market/settings', [MarketAnalyticsController::class, 'getSettings']);
+    Route::put('market/settings', [MarketAnalyticsController::class, 'updateSettings']);
+    Route::post('market/sync', [MarketAnalyticsController::class, 'syncNow']);
+    Route::get('market/goods', [MarketAnalyticsController::class, 'getGoods']);
+    Route::get('market/targets', [MarketAnalyticsController::class, 'getTargets']);
+    Route::get('market/analytics', [MarketAnalyticsController::class, 'getAnalytics']);
+    Route::get('market/logs', [MarketAnalyticsController::class, 'getLogs']);
 });
 
 /*

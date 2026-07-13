@@ -425,6 +425,14 @@ class TsoAmfService
     }
 
     /**
+     * GET_MARKET_OFFERS – retrieve current trade updates/offers from the market.
+     */
+    public function getMarketOffers(Account $account): string
+    {
+        return $this->sendServerCall($account, 1061, null);
+    }
+
+    /**
      * GET_FRIEND_LIST – retrieve the friends list.
      */
     public function getFriendList(Account $account): string
