@@ -1,0 +1,808 @@
+<template>
+    <div>
+        <!-- Page Header -->
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-white">Market Analytics</h1>
+                <p class="text-white/40 mt-1">Analyze trade prices, demand history, and popular items on the game market</p>
+            </div>
+            <!-- Tab Navigation -->
+            <div class="flex items-center gap-1 bg-white/5 border border-white/10 p-1 rounded-xl">
+                <button @click="activeTab = 'analytics'"
+                        class="px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all"
+                        :class="activeTab === 'analytics' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'text-white/50 hover:text-white'">
+                    Analytics
+                </button>
+                <button @click="activeTab = 'settings'"
+                        class="px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all"
+                        :class="activeTab === 'settings' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'text-white/50 hover:text-white'">
+                    Settings
+                </button>
+            </div>
+        </div>
+
+        <!-- TAB 1: ANALYTICS -->
+        <div v-if="activeTab === 'analytics'" class="space-y-6">
+            <!-- Dropdowns Selection -->
+            <div class="glass-card p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+                    <!-- Selling Item Selection -->
+                    <div>
+                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">Selling Item</label>
+                        <div class="relative">
+                            <select v-model="selectedItem" @change="onItemChange" class="glass-select w-full">
+                                <option value="" class="bg-dark-900">Select selling item...</option>
+                                <option v-for="good in goods" :key="good.item_id" :value="good.item_id" class="bg-dark-900">
+                                    {{ good.item_name }} ({{ good.item_id }})
+                                </option>
+                            </select>
+                            <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                                <svg class="w-4 h-4 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Target Item Selection -->
+                    <div>
+                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">Target Item</label>
+                        <div class="relative">
+                            <select v-model="selectedTarget" :disabled="!selectedItem" @change="fetchAnalytics" class="glass-select w-full disabled:opacity-40">
+                                <option value="" class="bg-dark-900">Select target item...</option>
+                                <option v-for="target in targets" :key="target.target_item_id" :value="target.target_item_id" class="bg-dark-900">
+                                    {{ target.target_item_name }} ({{ target.target_item_id }})
+                                </option>
+                            </select>
+                            <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                                <svg class="w-4 h-4 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Selection Path Indicator -->
+                <div v-if="selectedItemName && selectedTargetName" class="mt-5 pt-5 border-t border-white/5 flex items-center gap-3 text-lg font-semibold text-emerald-400">
+                    <span>{{ selectedItemName }}</span>
+                    <svg class="w-5 h-5 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                    </svg>
+                    <span>{{ selectedTargetName }}</span>
+                </div>
+            </div>
+
+            <!-- Analysis Dashboard (Visible if both selected) -->
+            <div v-if="selectedItem && selectedTarget && stats" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Stats Swarm (Left columns) -->
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- Pricing Stats -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <!-- Current Price -->
+                        <div class="glass-card p-4">
+                            <span class="text-[10px] font-semibold text-white/30 uppercase tracking-wider block">Current Price</span>
+                            <span class="text-xl font-bold text-white mt-1 block">{{ stats.current }}</span>
+                            <span class="text-[10px] text-white/40 block mt-0.5">{{ selectedTargetName }}</span>
+                        </div>
+                        <!-- Average Price -->
+                        <div class="glass-card p-4">
+                            <span class="text-[10px] font-semibold text-white/30 uppercase tracking-wider block">Average Price</span>
+                            <span class="text-xl font-bold text-emerald-400 mt-1 block">{{ stats.average }}</span>
+                            <span class="text-[10px] text-white/40 block mt-0.5">{{ selectedTargetName }}</span>
+                        </div>
+                        <!-- Min Price -->
+                        <div class="glass-card p-4">
+                            <span class="text-[10px] font-semibold text-white/30 uppercase tracking-wider block">Minimum Price</span>
+                            <span class="text-xl font-bold text-blue-400 mt-1 block">{{ stats.minimum }}</span>
+                            <span class="text-[10px] text-white/40 block mt-0.5">{{ selectedTargetName }}</span>
+                        </div>
+                        <!-- Max Price -->
+                        <div class="glass-card p-4">
+                            <span class="text-[10px] font-semibold text-white/30 uppercase tracking-wider block">Maximum Price</span>
+                            <span class="text-xl font-bold text-red-400 mt-1 block">{{ stats.maximum }}</span>
+                            <span class="text-[10px] text-white/40 block mt-0.5">{{ selectedTargetName }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Price Dynamic Chart Card -->
+                    <div class="glass-card p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-sm font-semibold text-white">Price History (1 {{ selectedItemName }} = X {{ selectedTargetName }})</h3>
+                            <!-- Chart Price Indicator Legend -->
+                            <div class="flex items-center gap-4 text-[10px] text-white/40">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="w-2.5 h-0.5 bg-emerald-500 inline-block"></span>
+                                    <span>Average Price</span>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="w-2.5 h-0.5 bg-white/20 border-dashed border inline-block"></span>
+                                    <span>Global Mean</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SVG Price Chart -->
+                        <div class="h-64 w-full relative pt-2">
+                            <template v-if="history.length > 0">
+                                <svg class="w-full h-full" viewBox="0 0 600 220" preserveAspectRatio="none">
+                                    <!-- Gradients -->
+                                    <defs>
+                                        <linearGradient id="priceGrad" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stop-color="#10b981" stop-opacity="0.2"/>
+                                            <stop offset="100%" stop-color="#10b981" stop-opacity="0.0"/>
+                                        </linearGradient>
+                                    </defs>
+                                    
+                                    <!-- Grid lines Y -->
+                                    <line v-for="grid in 4" :key="'grid-y-'+grid"
+                                          x1="40" :y1="20 + (grid - 1) * 50" x2="590" :y2="20 + (grid - 1) * 50"
+                                          stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+
+                                    <!-- Price Line Area Fill -->
+                                    <path :d="chartPriceAreaPath" fill="url(#priceGrad)"/>
+
+                                    <!-- Price Line -->
+                                    <path :d="chartPriceLinePath" fill="none" stroke="#10b981" stroke-width="2"/>
+
+                                    <!-- Global Mean Line -->
+                                    <line x1="40" :y1="chartMeanY" x2="590" :y2="chartMeanY"
+                                          stroke="rgba(255,255,255,0.2)" stroke-dasharray="4,4" stroke-width="1.5"/>
+
+                                    <!-- Data Dots -->
+                                    <circle v-for="(p, idx) in chartPoints" :key="'dot-'+idx"
+                                            :cx="p.x" :cy="p.y" r="3.5"
+                                            fill="#10b981" stroke="#0b171c" stroke-width="1.5"
+                                            class="cursor-pointer hover:scale-150 transition-all"/>
+                                </svg>
+                                <!-- X-Axis Labels (Timeline) -->
+                                <div class="flex justify-between text-[8px] text-white/30 px-9 mt-1 font-mono">
+                                    <span>{{ history[0].collected_at }}</span>
+                                    <span>{{ history[Math.floor(history.length / 2)].collected_at }}</span>
+                                    <span>{{ history[history.length - 1].collected_at }}</span>
+                                </div>
+                            </template>
+                            <div v-else class="absolute inset-0 flex items-center justify-center text-xs text-white/20">
+                                Not enough historical data to display the chart
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Demand Dynamic Chart Card -->
+                    <div class="glass-card p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-sm font-semibold text-white">Market Volume & Active Offers</h3>
+                            <div class="flex items-center gap-4 text-[10px] text-white/40">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="w-2.5 h-2.5 bg-blue-500/20 border border-blue-500 rounded-sm inline-block"></span>
+                                    <span>Sellers Count</span>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="w-2.5 h-2.5 bg-indigo-500/20 border border-indigo-500 rounded-sm inline-block"></span>
+                                    <span>Active Offers</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SVG Demand Chart -->
+                        <div class="h-64 w-full relative pt-2">
+                            <template v-if="history.length > 0">
+                                <svg class="w-full h-full" viewBox="0 0 600 220" preserveAspectRatio="none">
+                                    <!-- Grid lines Y -->
+                                    <line v-for="grid in 4" :key="'grid-dy-'+grid"
+                                          x1="40" :y1="20 + (grid - 1) * 50" x2="590" :y2="20 + (grid - 1) * 50"
+                                          stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+
+                                    <!-- Sellers Area Fill -->
+                                    <path :d="chartSellersAreaPath" fill="rgba(59, 130, 246, 0.1)"/>
+                                    <!-- Sellers Line -->
+                                    <path :d="chartSellersLinePath" fill="none" stroke="#3b82f6" stroke-width="1.5"/>
+
+                                    <!-- Offers Area Fill -->
+                                    <path :d="chartOffersAreaPath" fill="rgba(99, 102, 241, 0.1)"/>
+                                    <!-- Offers Line -->
+                                    <path :d="chartOffersLinePath" fill="none" stroke="#6366f1" stroke-width="1.5"/>
+
+                                    <!-- Volume Bars (drawn as faint vertical glass cylinders) -->
+                                    <rect v-for="(b, idx) in chartPoints" :key="'vol-bar-'+idx"
+                                          :x="b.x - 3" :y="b.vy" width="6" :height="200 - b.vy"
+                                          fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" stroke-width="0.5" rx="1"/>
+                                </svg>
+                                <div class="flex justify-between text-[8px] text-white/30 px-9 mt-1 font-mono">
+                                    <span>{{ history[0].collected_at }}</span>
+                                    <span>{{ history[Math.floor(history.length / 2)].collected_at }}</span>
+                                    <span>{{ history[history.length - 1].collected_at }}</span>
+                                </div>
+                            </template>
+                            <div v-else class="absolute inset-0 flex items-center justify-center text-xs text-white/20">
+                                Not enough historical data to display the chart
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calculator Side Panel (Right columns) -->
+                <div class="space-y-6">
+                    <!-- Calculator Card -->
+                    <div class="glass-card p-6">
+                        <div class="flex items-center gap-3 mb-5 border-b border-white/5 pb-3">
+                            <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 15.75V18m-3-3v3m-3-3v3M9 3h12a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 21 21H9a2.25 2.25 0 0 1-2.25-2.25V5.25A2.25 2.25 0 0 1 9 3Zm2.25 3h7.5a.75.75 0 0 0 .75-.75V4.5a.75.75 0 0 0-.75-.75h-7.5a.75.75 0 0 0-.75.75v.75a.75.75 0 0 0 .75.75Z" />
+                                </svg>
+                            </div>
+                            <h3 class="text-sm font-semibold text-white">Cost Calculator</h3>
+                        </div>
+
+                        <div class="space-y-5">
+                            <div>
+                                <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">Amount of {{ selectedItemName }}</label>
+                                <input type="number" v-model.number="calcAmount" min="1" class="glass-input w-full font-mono text-white text-lg"/>
+                            </div>
+
+                            <div class="p-4 rounded-xl border border-emerald-500/10 bg-emerald-500/[0.02]">
+                                <span class="text-[10px] font-semibold text-white/30 uppercase tracking-wider block">Estimated Cost</span>
+                                <div class="flex items-baseline gap-2 mt-1">
+                                    <span class="text-2xl font-bold text-emerald-400 font-mono">{{ calculatedCost }}</span>
+                                    <span class="text-xs text-white/40">{{ selectedTargetName }}</span>
+                                </div>
+                                <span class="text-[9px] text-white/20 block mt-2">Formula: {{ calcAmount || 0 }} * {{ stats.average }} average price</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Selected pair market details -->
+                    <div class="glass-card p-6">
+                        <h3 class="text-sm font-semibold text-white mb-4">Market Information</h3>
+                        <div class="space-y-3 text-xs">
+                            <div class="flex justify-between py-2 border-b border-white/5">
+                                <span class="text-white/40">Total Active Volume:</span>
+                                <span class="text-white font-mono font-medium">{{ activeVolume }} {{ selectedItemName }}</span>
+                            </div>
+                            <div class="flex justify-between py-2 border-b border-white/5">
+                                <span class="text-white/40">Active Offers Count:</span>
+                                <span class="text-white font-mono font-medium">{{ activeOffersCount }}</span>
+                            </div>
+                            <div class="flex justify-between py-2 border-b border-white/5">
+                                <span class="text-white/40">Active Sellers:</span>
+                                <span class="text-white font-mono font-medium">{{ activeSellersCount }}</span>
+                            </div>
+                            <div class="flex justify-between py-2 last:border-0">
+                                <span class="text-white/40">Current Trend:</span>
+                                <span class="font-semibold" :class="priceTrendClass">{{ priceTrendText }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Popular Items Overview (Visible when nothing is selected) -->
+            <div v-else class="glass-card p-6 animate-fade-in-up">
+                <div class="flex items-center gap-3 mb-6 border-b border-white/5 pb-3">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18 9 11.25l4.306 4.307a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-3.75-1.002m3.75 1.002-1.002 3.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                        </svg>
+                    </div>
+                    <h2 class="text-lg font-semibold text-white">Most Popular Items</h2>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-white/5 text-[10px] font-semibold text-white/30 uppercase tracking-wider">
+                                <th class="py-3 px-4">Item Name</th>
+                                <th class="py-3 px-4">Item Code</th>
+                                <th class="py-3 px-4 text-right">Active Offers</th>
+                                <th class="py-3 px-4 text-right">Unique Sellers</th>
+                                <th class="py-3 px-4 text-right">Active Volume</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-white/5 text-sm text-white/70">
+                            <tr v-for="item in popular" :key="item.item_id" class="hover:bg-white/[0.01] transition-all">
+                                <td class="py-3 px-4 font-semibold text-white">{{ item.item_name }}</td>
+                                <td class="py-3 px-4 font-mono text-xs text-white/35">{{ item.item_id }}</td>
+                                <td class="py-3 px-4 text-right text-emerald-400 font-mono font-medium">{{ item.offers_count }} offers</td>
+                                <td class="py-3 px-4 text-right text-blue-400 font-mono">{{ item.sellers_count }} sellers</td>
+                                <td class="py-3 px-4 text-right font-mono">{{ formatVolume(item.total_volume) }} units</td>
+                            </tr>
+                            <tr v-if="popular.length === 0">
+                                <td colspan="5" class="py-8 text-center text-white/20">
+                                    No data available. Perform market synchronization first.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: SETTINGS & SYNC LOGS -->
+        <div v-else-if="activeTab === 'settings'" class="space-y-6">
+            <div class="glass-card p-6">
+                <div class="flex items-center gap-3 mb-5 border-b border-white/5 pb-3">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                        </svg>
+                    </div>
+                    <h2 class="text-lg font-semibold text-white">Synchronization Settings</h2>
+                </div>
+
+                <form @submit.prevent="saveSettings">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <!-- Account Selection -->
+                        <div>
+                            <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">Account</label>
+                            <div class="relative">
+                                <select v-model="settingsForm.account_id" class="glass-select w-full">
+                                    <option :value="null" class="bg-dark-900">Select game account...</option>
+                                    <option v-for="acc in accounts" :key="acc.id" :value="acc.id" class="bg-dark-900">
+                                        {{ acc.username }} ({{ acc.nickname || 'No Nickname' }})
+                                    </option>
+                                </select>
+                                <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                                    <svg class="w-4 h-4 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sync Interval Selection -->
+                        <div>
+                            <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">Sync Interval</label>
+                            <div class="relative">
+                                <select v-model="settingsForm.sync_interval" class="glass-select w-full">
+                                    <option value="5" class="bg-dark-900">5 minutes</option>
+                                    <option value="15" class="bg-dark-900">15 minutes</option>
+                                    <option value="30" class="bg-dark-900">30 minutes</option>
+                                    <option value="60" class="bg-dark-900">1 hour</option>
+                                    <option value="custom" class="bg-dark-900">Custom</option>
+                                </select>
+                                <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                                    <svg class="w-4 h-4 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Custom Interval Input -->
+                        <div v-if="settingsForm.sync_interval === 'custom'">
+                            <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">Custom Interval (Minutes)</label>
+                            <input type="number" v-model.number="settingsForm.custom_interval_minutes" min="1" class="glass-input w-full font-mono text-white"/>
+                        </div>
+
+                        <!-- Account Status Information -->
+                        <div>
+                            <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">Account ID</label>
+                            <div class="glass-input w-full font-mono text-white/50 select-none bg-white/[0.02]">
+                                {{ settingsForm.account_id || 'Not selected' }}
+                            </div>
+                        </div>
+
+                        <!-- Connection Status -->
+                        <div>
+                            <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">Connection Status</label>
+                            <div class="flex items-center gap-2 pt-2">
+                                <span class="w-2.5 h-2.5 rounded-full"
+                                      :class="connectionStatus === 'Connected' ? 'bg-emerald-500 shadow-lg shadow-emerald-500/50 animate-pulse' : 'bg-red-500 shadow-lg shadow-red-500/50'"></span>
+                                <span class="text-sm font-semibold text-white">{{ connectionStatus }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Last Synchronization -->
+                        <div>
+                            <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">Last Synchronization</label>
+                            <div class="text-sm font-semibold text-white/70 pt-2 font-mono">
+                                {{ lastSync }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <button type="submit" :disabled="saving" class="btn-primary flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                            </svg>
+                            {{ saving ? 'Saving...' : 'Save Settings' }}
+                        </button>
+                        <button type="button" @click="triggerManualSync" :disabled="syncing || !settingsForm.account_id" class="btn-secondary flex items-center gap-2">
+                            <svg class="w-4 h-4" :class="{ 'animate-spin': syncing }" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182" />
+                            </svg>
+                            {{ syncing ? 'Syncing...' : 'Sync Now' }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Sync Logs -->
+            <div class="glass-card p-6">
+                <div class="flex items-center gap-3 mb-6 border-b border-white/5 pb-3">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center text-white">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 0 1 0 3.75H5.625a1.875 1.875 0 0 1 0-3.75Z" />
+                        </svg>
+                    </div>
+                    <h2 class="text-lg font-semibold text-white">Synchronization Log</h2>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-white/5 text-[10px] font-semibold text-white/30 uppercase tracking-wider">
+                                <th class="py-3 px-4">Date</th>
+                                <th class="py-3 px-4">Action</th>
+                                <th class="py-3 px-4">Status</th>
+                                <th class="py-3 px-4">Message</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-white/5 text-sm text-white/70">
+                            <tr v-for="(log, idx) in logs" :key="'log-'+idx" class="hover:bg-white/[0.01] transition-all">
+                                <td class="py-3 px-4 font-mono text-xs">{{ log.date }}</td>
+                                <td class="py-3 px-4 font-semibold text-white/95">{{ log.action }}</td>
+                                <td class="py-3 px-4">
+                                    <span class="badge text-[10px]"
+                                          :class="log.status === 'SUCCESS' ? 'badge-success' : 'badge-danger'">
+                                        {{ log.status }}
+                                    </span>
+                                </td>
+                                <td class="py-3 px-4 text-xs text-white/50">{{ log.message }}</td>
+                            </tr>
+                            <tr v-if="logs.length === 0">
+                                <td colspan="4" class="py-8 text-center text-white/20">
+                                    No synchronization logs yet.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+import { ref, computed, onMounted } from 'vue';
+import axios from 'axios';
+import { showToast } from '../toast';
+
+export default {
+    name: 'MarketAnalytics',
+    setup() {
+        const activeTab = ref('analytics');
+        const loading = ref(false);
+        const saving = ref(false);
+        const syncing = ref(false);
+
+        // API lists
+        const goods = ref([]);
+        const targets = ref([]);
+        const popular = ref([]);
+        const history = ref([]);
+        const stats = ref(null);
+        const accounts = ref([]);
+        const logs = ref([]);
+
+        // Form state
+        const selectedItem = ref('');
+        const selectedTarget = ref('');
+        const calcAmount = ref(100);
+        
+        const settingsForm = ref({
+            account_id: null,
+            sync_interval: '15',
+            custom_interval_minutes: 15,
+        });
+
+        const connectionStatus = ref('Disconnected');
+        const lastSync = ref('Never');
+
+        // Dynamic translated names
+        const selectedItemName = computed(() => {
+            const item = goods.value.find(g => g.item_id === selectedItem.value);
+            return item ? item.item_name : '';
+        });
+
+        const selectedTargetName = computed(() => {
+            const item = targets.value.find(t => t.target_item_id === selectedTarget.value);
+            return item ? item.target_item_name : '';
+        });
+
+        // Calculator cost
+        const calculatedCost = computed(() => {
+            if (!stats.value || !stats.value.average) return 0;
+            const amt = parseFloat(calcAmount.value) || 0;
+            return Math.round(amt * stats.value.average * 100) / 100;
+        });
+
+        // Market detail helpers
+        const activeVolume = computed(() => {
+            if (!history.value || history.value.length === 0) return 0;
+            return history.value[history.value.length - 1].volume;
+        });
+
+        const activeOffersCount = computed(() => {
+            if (!history.value || history.value.length === 0) return 0;
+            return history.value[history.value.length - 1].offers_count;
+        });
+
+        const activeSellersCount = computed(() => {
+            if (!history.value || history.value.length === 0) return 0;
+            return history.value[history.value.length - 1].sellers_count;
+        });
+
+        // Trend calculation
+        const priceTrendText = computed(() => {
+            if (history.value.length < 2) return 'Stable';
+            const last = history.value[history.value.length - 1].price;
+            const prev = history.value[history.value.length - 2].price;
+            if (last > prev) return 'Rising';
+            if (last < prev) return 'Falling';
+            return 'Stable';
+        });
+
+        const priceTrendClass = computed(() => {
+            const trend = priceTrendText.value;
+            if (trend === 'Rising') return 'text-emerald-400';
+            if (trend === 'Falling') return 'text-red-400';
+            return 'text-white/40';
+        });
+
+        // Volume Formatting Helper
+        const formatVolume = (val) => {
+            if (val >= 1000000) return (val / 1000000).toFixed(1) + 'M';
+            if (val >= 1000) return (val / 1000).toFixed(1) + 'K';
+            return val;
+        };
+
+        // Charts calculations
+        const chartPoints = computed(() => {
+            if (history.value.length === 0) return [];
+            const w = 550; // width bounds (from 40 to 590)
+            const h = 200; // height bounds (from 20 to 220, so height is 200)
+
+            const maxPrice = Math.max(...history.value.map(h => h.price)) || 1;
+            const minPrice = Math.min(...history.value.map(h => h.price)) || 0;
+            const priceDiff = (maxPrice - minPrice) || 1;
+
+            const maxSellers = Math.max(...history.value.map(h => h.sellers_count)) || 1;
+            const maxOffers = Math.max(...history.value.map(h => h.offers_count)) || 1;
+            const maxVolume = Math.max(...history.value.map(h => h.volume)) || 1;
+
+            return history.value.map((d, idx) => {
+                const stepX = history.value.length > 1 ? w / (history.value.length - 1) : w;
+                const x = 40 + idx * stepX;
+                
+                // Y for price: invert coordinate
+                const py = maxPrice === minPrice 
+                    ? 120 
+                    : 220 - ((d.price - minPrice) / priceDiff) * 180 - 10;
+                
+                // Y for sellers & offers
+                const sy = 220 - (d.sellers_count / maxSellers) * 180 - 10;
+                const oy = 220 - (d.offers_count / maxOffers) * 180 - 10;
+                
+                // Y for volume bar (vy starts at 220 and goes up)
+                const vy = 220 - (d.volume / maxVolume) * 180 - 10;
+
+                return { x, y: py, sy, oy, vy, price: d.price };
+            });
+        });
+
+        const chartPriceLinePath = computed(() => {
+            const pts = chartPoints.value;
+            if (pts.length === 0) return '';
+            return pts.reduce((path, p, idx) => {
+                return idx === 0 ? `M ${p.x} ${p.y}` : `${path} L ${p.x} ${p.y}`;
+            }, '');
+        });
+
+        const chartPriceAreaPath = computed(() => {
+            const pts = chartPoints.value;
+            if (pts.length === 0) return '';
+            const line = chartPriceLinePath.value;
+            return `${line} L ${pts[pts.length - 1].x} 220 L ${pts[0].x} 220 Z`;
+        });
+
+        const chartMeanY = computed(() => {
+            if (!stats.value || !stats.value.average) return 120;
+            const maxPrice = Math.max(...history.value.map(h => h.price)) || 1;
+            const minPrice = Math.min(...history.value.map(h => h.price)) || 0;
+            const priceDiff = (maxPrice - minPrice) || 1;
+            
+            return maxPrice === minPrice 
+                ? 120 
+                : 220 - ((stats.value.average - minPrice) / priceDiff) * 180 - 10;
+        });
+
+        // Demand Charts Paths
+        const chartSellersLinePath = computed(() => {
+            const pts = chartPoints.value;
+            if (pts.length === 0) return '';
+            return pts.reduce((path, p, idx) => {
+                return idx === 0 ? `M ${p.x} ${p.sy}` : `${path} L ${p.x} ${p.sy}`;
+            }, '');
+        });
+
+        const chartSellersAreaPath = computed(() => {
+            const pts = chartPoints.value;
+            if (pts.length === 0) return '';
+            const line = chartSellersLinePath.value;
+            return `${line} L ${pts[pts.length - 1].x} 220 L ${pts[0].x} 220 Z`;
+        });
+
+        const chartOffersLinePath = computed(() => {
+            const pts = chartPoints.value;
+            if (pts.length === 0) return '';
+            return pts.reduce((path, p, idx) => {
+                return idx === 0 ? `M ${p.x} ${p.oy}` : `${path} L ${p.x} ${p.oy}`;
+            }, '');
+        });
+
+        const chartOffersAreaPath = computed(() => {
+            const pts = chartPoints.value;
+            if (pts.length === 0) return '';
+            const line = chartOffersLinePath.value;
+            return `${line} L ${pts[pts.length - 1].x} 220 L ${pts[0].x} 220 Z`;
+        });
+
+        // API Methods
+        const loadInitialData = async () => {
+            loading.value = true;
+            try {
+                // Fetch settings
+                const settingsRes = await axios.get('/api/market/settings');
+                settingsForm.value = settingsRes.data.settings || {
+                    account_id: null,
+                    sync_interval: '15',
+                    custom_interval_minutes: 15
+                };
+                accounts.value = settingsRes.data.accounts || [];
+                connectionStatus.value = settingsRes.data.connection_status || 'Disconnected';
+                lastSync.value = settingsRes.data.last_sync || 'Never';
+
+                // Fetch logs
+                const logsRes = await axios.get('/api/market/logs');
+                logs.value = logsRes.data || [];
+
+                // Fetch popular items & goods
+                const goodsRes = await axios.get('/api/market/goods');
+                goods.value = goodsRes.data || [];
+
+                // Fetch basic analytics (for popular table)
+                const analyticsRes = await axios.get('/api/market/analytics');
+                popular.value = analyticsRes.data.popular || [];
+            } catch (e) {
+                showToast('Failed to load market statistics.', 'error');
+            } finally {
+                loading.value = false;
+            }
+        };
+
+        const onItemChange = async () => {
+            selectedTarget.value = '';
+            targets.value = [];
+            stats.value = null;
+            history.value = [];
+
+            if (!selectedItem.value) return;
+
+            try {
+                const res = await axios.get('/api/market/targets', {
+                    params: { item_id: selectedItem.value }
+                });
+                targets.value = res.data || [];
+            } catch (e) {
+                showToast('Failed to load target items.', 'error');
+            }
+        };
+
+        const fetchAnalytics = async () => {
+            if (!selectedItem.value || !selectedTarget.value) {
+                stats.value = null;
+                history.value = [];
+                return;
+            }
+
+            try {
+                const res = await axios.get('/api/market/analytics', {
+                    params: {
+                        item_id: selectedItem.value,
+                        target_item_id: selectedTarget.value
+                    }
+                });
+                stats.value = res.data.stats || null;
+                history.value = res.data.history || [];
+            } catch (e) {
+                showToast('Failed to load analytics charts.', 'error');
+            }
+        };
+
+        const saveSettings = async () => {
+            saving.value = true;
+            try {
+                const res = await axios.put('/api/market/settings', settingsForm.value);
+                if (res.data.success) {
+                    showToast('Market settings updated.');
+                    // Reload status
+                    const settingsRes = await axios.get('/api/market/settings');
+                    connectionStatus.value = settingsRes.data.connection_status;
+                    lastSync.value = settingsRes.data.last_sync;
+                }
+            } catch (e) {
+                showToast('Failed to save settings.', 'error');
+            } finally {
+                saving.value = false;
+            }
+        };
+
+        const triggerManualSync = async () => {
+            syncing.value = true;
+            try {
+                const res = await axios.post('/api/market/sync');
+                if (res.data.success) {
+                    showToast(`Synchronization complete! ${res.data.message}`);
+                    await loadInitialData();
+                    if (selectedItem.value && selectedTarget.value) {
+                        await fetchAnalytics();
+                    }
+                }
+            } catch (e) {
+                const msg = e.response?.data?.message || 'Sync failed.';
+                showToast(msg, 'error');
+            } finally {
+                syncing.value = false;
+            }
+        };
+
+        onMounted(() => {
+            loadInitialData();
+        });
+
+        return {
+            activeTab,
+            loading,
+            saving,
+            syncing,
+            goods,
+            targets,
+            popular,
+            history,
+            stats,
+            accounts,
+            logs,
+            selectedItem,
+            selectedTarget,
+            calcAmount,
+            settingsForm,
+            connectionStatus,
+            lastSync,
+            selectedItemName,
+            selectedTargetName,
+            calculatedCost,
+            activeVolume,
+            activeOffersCount,
+            activeSellersCount,
+            priceTrendText,
+            priceTrendClass,
+            chartPoints,
+            chartPriceLinePath,
+            chartPriceAreaPath,
+            chartMeanY,
+            chartSellersLinePath,
+            chartSellersAreaPath,
+            chartOffersLinePath,
+            chartOffersAreaPath,
+            onItemChange,
+            fetchAnalytics,
+            saveSettings,
+            triggerManualSync,
+            formatVolume
+        };
+    }
+};
+</script>
