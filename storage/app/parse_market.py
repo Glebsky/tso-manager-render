@@ -32,7 +32,8 @@ def recursive_extract_offers(obj, offers, visited=None):
             alias = str(pyamf.get_class_alias(type(obj)).alias)
         except (pyamf.UnknownClassAlias, AttributeError):
             pass
-        full_name = str(alias or class_name)
+        direct_alias = getattr(obj, 'alias', '')
+        full_name = str(direct_alias or alias or class_name)
 
         if 'dTradeObjectVO' in full_name or 'TradeObjectVO' in full_name:
             offer = {}
@@ -112,18 +113,31 @@ def main():
 
     offers = []
     current_time = 0
+    error_code = 0
 
     # Walk through bodies
     for target, message in envelope.bodies:
-        # Check current time in dTradeWindowResultVO if present
+        # Check current time and error code in response if present
         if hasattr(message, 'body'):
             body = message.body
             if hasattr(body, 'body'):
                 resp = body.body
+                
+                data = None
                 if isinstance(resp, dict):
                     data = resp.get('data', None)
+                elif hasattr(resp, 'data'):
+                    data = resp.data
+                
+                if data is not None:
                     if isinstance(data, dict):
-                        current_time = data.get('currentTime', 0)
+                        current_time = data.get('currentTime', current_time)
+                        error_code = data.get('errorCode', error_code)
+                    else:
+                        if hasattr(data, 'currentTime'):
+                            current_time = getattr(data, 'currentTime')
+                        if hasattr(data, 'errorCode'):
+                            error_code = getattr(data, 'errorCode')
         
         if hasattr(message, 'body'):
             recursive_extract_offers(message.body, offers)
@@ -132,7 +146,8 @@ def main():
 
     result = {
         'offers': make_serializable(offers),
-        'currentTime': current_time
+        'currentTime': current_time,
+        'errorCode': error_code
     }
 
     print(json.dumps(result, ensure_ascii=False, indent=2))
