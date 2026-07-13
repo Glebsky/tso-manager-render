@@ -794,9 +794,9 @@ export default {
             return calculatedLevel;
         });
         const pvpLevel = computed(() => zoneData.value?.pvpLevel);
-        const generalsAmount = computed(() => zoneData.value?.generalsAmount);
-        const explorersAmount = computed(() => zoneData.value?.explorersAmount);
-        const geologistsAmount = computed(() => zoneData.value?.geologistsAmount);
+        const generalsAmount = computed(() => parsedSpecialists.value.filter(s => getSpecialistCategory(s.type) === 'General').length);
+        const explorersAmount = computed(() => parsedSpecialists.value.filter(s => getSpecialistCategory(s.type) === 'Explorer').length);
+        const geologistsAmount = computed(() => parsedSpecialists.value.filter(s => getSpecialistCategory(s.type) === 'Geologist').length);
         const currentMaximumBuildingsCountAll = computed(() => zoneData.value?.currentMaximumBuildingsCountAll);
         const availableBuffs = computed(() => zoneData.value?.availableBuffs || []);
         const resourceLimit = computed(() => zoneData.value?.resourceLimit);
@@ -1007,18 +1007,19 @@ export default {
             const name = b.buffName_string;
 
             if (translations.value[name]) {
-                return translations.value[name];
+                let tpl = translations.value[name];
+                if (tpl.includes('{0}')) {
+                    tpl = tpl.replace('{0}', formatResourceName(b.resourceName_string));
+                }
+                tpl = tpl.replace(/\{1,\w+\}/g, '').replace(/[:\s]+$/, '').replace(/\s+/g, ' ').trim();
+                return tpl;
             }
 
             if (name === 'AddResource') {
-                const tpl = translations.value['AddResource'] || 'Добавить ресурс';
-                const prefix = tpl.split('{')[0].trim();
-                return `${prefix}: ${formatResourceName(b.resourceName_string)}`;
+                return `Добавить ресурс: ${formatResourceName(b.resourceName_string)}`;
             }
             if (name === 'BuildBuilding') {
-                const tpl = translations.value['BuildBuilding'] || 'Лицензия';
-                const prefix = tpl.split('{')[0].trim();
-                return `${prefix}: ${formatResourceName(b.resourceName_string)}`;
+                return `Лицензия: ${formatResourceName(b.resourceName_string)}`;
             }
             if (name === 'Adventure') {
                 return `Приключение: ${formatResourceName(b.resourceName_string)}`;

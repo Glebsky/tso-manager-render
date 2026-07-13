@@ -207,6 +207,7 @@ export default {
                 } else {
                     localAccount.value.status = 'error';
                     showToast(res.data.message || 'Sync failed.', 'error');
+                    emit('sync-success');
                 }
             } catch (e) {
                 if (e.response?.data?.account) {
@@ -215,6 +216,7 @@ export default {
                     localAccount.value.status = 'error';
                 }
                 showToast(e.response?.data?.message || 'Sync request failed.', 'error');
+                emit('sync-success');
             } finally {
                 syncing.value = false;
             }
