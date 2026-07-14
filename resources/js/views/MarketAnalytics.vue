@@ -23,9 +23,42 @@
 
         <!-- TAB 1: ANALYTICS -->
         <div v-if="activeTab === 'analytics'" class="space-y-6">
-            <!-- Dropdowns Selection -->
+            <!-- Selection Card (Dropdowns or Visual Grid) -->
             <div class="glass-card p-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+                <!-- Selector Header: Mode Switch & Mirror Button -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-white/5 pb-4">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-semibold text-white/40 uppercase tracking-wider">Selection Mode:</span>
+                        <div class="flex items-center gap-1 bg-white/5 border border-white/10 p-0.5 rounded-lg">
+                            <button @click="selectionMode = 'dropdown'"
+                                    class="px-3 py-1 rounded text-[10px] font-bold uppercase transition-all"
+                                    :class="selectionMode === 'dropdown' ? 'bg-emerald-500 text-white' : 'text-white/50 hover:text-white'">
+                                Dropdowns
+                            </button>
+                            <button @click="selectionMode = 'visual'"
+                                    class="px-3 py-1 rounded text-[10px] font-bold uppercase transition-all"
+                                    :class="selectionMode === 'visual' ? 'bg-emerald-500 text-white' : 'text-white/50 hover:text-white'">
+                                Visual Browser
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Reset Selection / Mirror Button -->
+                    <div class="flex items-center gap-2">
+                        <button v-if="selectedItem || selectedTarget" @click="resetSelection" class="btn-secondary py-1 px-3 text-xs bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition-all">
+                            Reset Selection
+                        </button>
+                        <button v-if="selectedItem && selectedTarget" @click="mirrorSelection" class="btn-secondary py-1 px-3 text-xs bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all flex items-center gap-1">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+                            </svg>
+                            Mirror Trade
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Mode 1: Dropdown Selection -->
+                <div v-if="selectionMode === 'dropdown'" class="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
                     <!-- Selling Item Selection -->
                     <div>
                         <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">Selling Item</label>
@@ -63,12 +96,62 @@
                     </div>
                 </div>
 
+                <!-- Mode 2: Visual Browser Selection -->
+                <div v-else class="space-y-6">
+                    <!-- Tab Navigation for Visual steps -->
+                    <div class="flex items-center border-b border-white/10 gap-4">
+                        <button @click="visualTab = 1"
+                                class="pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2"
+                                :class="visualTab === 1 ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-white/40 hover:text-white'">
+                            1. Sell Resource
+                            <span v-if="selectedItem" class="ml-1 text-[10px] text-emerald-500 font-mono font-medium">({{ selectedItemName }})</span>
+                        </button>
+                        <button @click="visualTab = 2"
+                                :disabled="!selectedItem"
+                                class="pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 disabled:opacity-30 disabled:cursor-not-allowed"
+                                :class="visualTab === 2 ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-white/40 hover:text-white'">
+                            2. Buy Resource
+                            <span v-if="selectedTarget" class="ml-1 text-[10px] text-emerald-500 font-mono font-medium">({{ selectedTargetName }})</span>
+                        </button>
+                    </div>
+
+                    <!-- Step 1: Selling resource grid -->
+                    <div v-if="visualTab === 1" class="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-8 lg:grid-cols-10 gap-2 max-h-60 overflow-y-auto p-1.5">
+                        <div v-for="good in goods" :key="good.item_id"
+                             @click="selectVisualItem(good.item_id)"
+                             class="flex flex-col items-center justify-center p-1.5 rounded-lg border cursor-pointer hover:border-emerald-500/40 hover:bg-white/[0.05] hover:shadow-md hover:shadow-emerald-500/5 text-center select-none transition-all duration-200"
+                             :class="selectedItem === good.item_id ? 'bg-emerald-500/10 border-emerald-500 shadow shadow-emerald-500/10' : 'bg-white/[0.02] border-white/5 hover:border-white/20 hover:bg-white/[0.04]'">
+                            <img :src="getResourceIcon(good.item_id)" @error="handleIconError($event, good.item_id)" class="w-6 h-6 object-contain mb-1 pointer-events-none" />
+                            <span class="text-[9px] font-medium text-white/90 truncate w-full" :title="good.item_name">{{ good.item_name }}</span>
+                        </div>
+                        <div v-if="goods.length === 0" class="col-span-full py-8 text-center text-xs text-white/30">
+                            No resources available in the database.
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Buying target resource grid -->
+                    <div v-if="visualTab === 2" class="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-8 lg:grid-cols-10 gap-2 max-h-60 overflow-y-auto p-1.5">
+                        <div v-for="target in targets" :key="target.target_item_id"
+                             @click="selectVisualTarget(target.target_item_id)"
+                             class="flex flex-col items-center justify-center p-1.5 rounded-lg border cursor-pointer hover:border-emerald-500/40 hover:bg-white/[0.05] hover:shadow-md hover:shadow-emerald-500/5 text-center select-none transition-all duration-200"
+                             :class="selectedTarget === target.target_item_id ? 'bg-emerald-500/10 border-emerald-500 shadow shadow-emerald-500/10' : 'bg-white/[0.02] border-white/5 hover:border-white/20 hover:bg-white/[0.04]'">
+                            <img :src="getResourceIcon(target.target_item_id)" @error="handleIconError($event, target.target_item_id)" class="w-6 h-6 object-contain mb-1 pointer-events-none" />
+                            <span class="text-[9px] font-medium text-white/90 truncate w-full" :title="target.target_item_name">{{ target.target_item_name }}</span>
+                        </div>
+                        <div v-if="targets.length === 0" class="col-span-full py-8 text-center text-xs text-white/30">
+                            Please select a selling item first.
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Selection Path Indicator -->
                 <div v-if="selectedItemName && selectedTargetName" class="mt-5 pt-5 border-t border-white/5 flex items-center gap-3 text-lg font-semibold text-emerald-400">
+                    <img :src="getResourceIcon(selectedItem)" @error="handleIconError($event, selectedItem)" class="w-6 h-6 object-contain" />
                     <span>{{ selectedItemName }}</span>
                     <svg class="w-5 h-5 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
                     </svg>
+                    <img :src="getResourceIcon(selectedTarget)" @error="handleIconError($event, selectedTarget)" class="w-6 h-6 object-contain" />
                     <span>{{ selectedTargetName }}</span>
                 </div>
             </div>
@@ -107,17 +190,29 @@
 
                     <!-- Price Dynamic Chart Card -->
                     <div class="glass-card p-6">
-                        <div class="flex items-center justify-between mb-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                             <h3 class="text-sm font-semibold text-white">Price History (1 {{ selectedItemName }} = X {{ selectedTargetName }})</h3>
-                            <!-- Chart Price Indicator Legend -->
-                            <div class="flex items-center gap-4 text-[10px] text-white/40">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="w-2.5 h-0.5 bg-emerald-500 inline-block"></span>
-                                    <span>Average Price</span>
+                            
+                            <div class="flex items-center gap-4">
+                                <!-- Period Selection Buttons -->
+                                <div class="flex items-center bg-white/5 border border-white/10 p-0.5 rounded-lg text-[10px] font-semibold">
+                                    <button v-for="p in periods" :key="p.value" @click="changePeriod(p.value)"
+                                            class="px-2.5 py-1 rounded transition-all uppercase tracking-wider"
+                                            :class="selectedPeriod === p.value ? 'bg-emerald-500 text-white shadow' : 'text-white/40 hover:text-white'">
+                                        {{ p.label }}
+                                    </button>
                                 </div>
-                                <div class="flex items-center gap-1.5">
-                                    <span class="w-2.5 h-0.5 bg-white/20 border-dashed border inline-block"></span>
-                                    <span>Global Mean</span>
+
+                                <!-- Chart Price Indicator Legend -->
+                                <div class="flex items-center gap-4 text-[10px] text-white/40">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="w-2.5 h-0.5 bg-emerald-500 inline-block"></span>
+                                        <span>Average Price</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="w-2.5 h-0.5 bg-white/20 border-dashed border inline-block"></span>
+                                        <span>Global Mean</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -153,7 +248,8 @@
                                     <circle v-for="(p, idx) in chartPoints" :key="'dot-'+idx"
                                             :cx="p.x" :cy="p.y" r="3.5"
                                             fill="#10b981" stroke="#0b171c" stroke-width="1.5"
-                                            class="cursor-pointer hover:scale-150 transition-all"/>
+                                            class="cursor-pointer hover-jitter transition-all"
+                                            :title="'Price: ' + p.price"/>
                                 </svg>
                                 <!-- X-Axis Labels (Timeline) -->
                                 <div class="flex justify-between text-[8px] text-white/30 px-9 mt-1 font-mono">
@@ -240,13 +336,27 @@
                                 <input type="number" v-model.number="calcAmount" min="1" class="glass-input w-full font-mono text-white text-lg"/>
                             </div>
 
+                            <!-- Direct estimated revenue -->
                             <div class="p-4 rounded-xl border border-emerald-500/10 bg-emerald-500/[0.02]">
-                                <span class="text-[10px] font-semibold text-white/30 uppercase tracking-wider block">Estimated Cost</span>
+                                <span class="text-[10px] font-semibold text-emerald-400/70 uppercase tracking-wider block">Estimated Revenue (Direct Trade: Sell A for B)</span>
                                 <div class="flex items-baseline gap-2 mt-1">
                                     <span class="text-2xl font-bold text-emerald-400 font-mono">{{ calculatedCost }}</span>
                                     <span class="text-xs text-white/40">{{ selectedTargetName }}</span>
                                 </div>
                                 <span class="text-[9px] text-white/20 block mt-2">Formula: {{ calcAmount || 0 }} * {{ stats.average }} average price</span>
+                            </div>
+
+                            <!-- Mirrored estimated cost -->
+                            <div v-if="mirroredStats" class="p-4 rounded-xl border border-blue-500/10 bg-blue-500/[0.02]">
+                                <span class="text-[10px] font-semibold text-blue-400/70 uppercase tracking-wider block">Estimated Cost (Mirrored Trade: Buy A by selling B)</span>
+                                <div class="flex items-baseline gap-2 mt-1">
+                                    <span class="text-2xl font-bold text-blue-400 font-mono">{{ calculatedMirroredCost }}</span>
+                                    <span class="text-xs text-white/40">{{ selectedTargetName }}</span>
+                                </div>
+                                <span class="text-[9px] text-white/20 block mt-2">Formula: {{ calcAmount || 0 }} / {{ mirroredStats.average }} average price</span>
+                            </div>
+                            <div v-else class="p-4 rounded-xl border border-white/5 bg-white/[0.01] text-center text-xs text-white/30">
+                                No mirrored trades ({{ selectedTargetName }} ➔ {{ selectedItemName }}) found to calculate mirrored cost.
                             </div>
                         </div>
                     </div>
@@ -276,43 +386,111 @@
                 </div>
             </div>
 
-            <!-- Popular Items Overview (Visible when nothing is selected) -->
-            <div v-else class="glass-card p-6 animate-fade-in-up">
-                <div class="flex items-center gap-3 mb-6 border-b border-white/5 pb-3">
-                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18 9 11.25l4.306 4.307a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-3.75-1.002m3.75 1.002-1.002 3.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                        </svg>
+            <!-- Popular Items & Current Active Market (Visible when nothing is selected) -->
+            <div v-else class="space-y-6">
+                <!-- Most Popular Items Card -->
+                <div class="glass-card p-6 animate-fade-in-up">
+                    <div class="flex items-center gap-3 mb-6 border-b border-white/5 pb-3">
+                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18 9 11.25l4.306 4.307a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-3.75-1.002m3.75 1.002-1.002 3.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                            </svg>
+                        </div>
+                        <h2 class="text-lg font-semibold text-white">Most Popular Items</h2>
                     </div>
-                    <h2 class="text-lg font-semibold text-white">Most Popular Items</h2>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-white/5 text-[10px] font-semibold text-white/30 uppercase tracking-wider">
+                                    <th class="py-3 px-4">Item Name</th>
+                                    <th class="py-3 px-4">Item Code</th>
+                                    <th class="py-3 px-4 text-right">Active Offers</th>
+                                    <th class="py-3 px-4 text-right">Unique Sellers</th>
+                                    <th class="py-3 px-4 text-right">Active Volume</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-white/5 text-sm text-white/70">
+                                <tr v-for="item in popular" :key="item.item_id" class="hover:bg-white/[0.01] transition-all">
+                                    <td class="py-3 px-4 font-semibold text-white">
+                                        <div class="flex items-center gap-2">
+                                            <img :src="getResourceIcon(item.item_id)" @error="handleIconError($event, item.item_id)" class="w-5 h-5 object-contain" />
+                                            <span>{{ item.item_name }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-3 px-4 font-mono text-xs text-white/35">{{ item.item_id }}</td>
+                                    <td class="py-3 px-4 text-right text-emerald-400 font-mono font-medium">{{ item.offers_count }} offers</td>
+                                    <td class="py-3 px-4 text-right text-blue-400 font-mono">{{ item.sellers_count }} sellers</td>
+                                    <td class="py-3 px-4 text-right font-mono">{{ formatVolume(item.total_volume) }} units</td>
+                                </tr>
+                                <tr v-if="popular.length === 0">
+                                    <td colspan="5" class="py-8 text-center text-white/20">
+                                        No data available. Perform market synchronization first.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="border-b border-white/5 text-[10px] font-semibold text-white/30 uppercase tracking-wider">
-                                <th class="py-3 px-4">Item Name</th>
-                                <th class="py-3 px-4">Item Code</th>
-                                <th class="py-3 px-4 text-right">Active Offers</th>
-                                <th class="py-3 px-4 text-right">Unique Sellers</th>
-                                <th class="py-3 px-4 text-right">Active Volume</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-white/5 text-sm text-white/70">
-                            <tr v-for="item in popular" :key="item.item_id" class="hover:bg-white/[0.01] transition-all">
-                                <td class="py-3 px-4 font-semibold text-white">{{ item.item_name }}</td>
-                                <td class="py-3 px-4 font-mono text-xs text-white/35">{{ item.item_id }}</td>
-                                <td class="py-3 px-4 text-right text-emerald-400 font-mono font-medium">{{ item.offers_count }} offers</td>
-                                <td class="py-3 px-4 text-right text-blue-400 font-mono">{{ item.sellers_count }} sellers</td>
-                                <td class="py-3 px-4 text-right font-mono">{{ formatVolume(item.total_volume) }} units</td>
-                            </tr>
-                            <tr v-if="popular.length === 0">
-                                <td colspan="5" class="py-8 text-center text-white/20">
-                                    No data available. Perform market synchronization first.
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <!-- Current Active Market Listings Card -->
+                <div class="glass-card p-6 animate-fade-in-up">
+                    <div class="flex items-center gap-3 mb-6 border-b border-white/5 pb-3">
+                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
+                            </svg>
+                        </div>
+                        <h2 class="text-lg font-semibold text-white">Current Active Market Listings</h2>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-white/5 text-[10px] font-semibold text-white/30 uppercase tracking-wider">
+                                    <th class="py-3 px-4">Player</th>
+                                    <th class="py-3 px-4">Selling Resource</th>
+                                    <th class="py-3 px-4">Buying Resource</th>
+                                    <th class="py-3 px-4 text-right">Price</th>
+                                    <th class="py-3 px-4 text-right">Lots Remaining</th>
+                                    <th class="py-3 px-4 text-right">Time Left</th>
+                                    <th class="py-3 px-4 text-right">Sync Time</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-white/5 text-sm text-white/70">
+                                <tr v-for="offer in activeOffers" :key="offer.offer_id" class="hover:bg-white/[0.01] transition-all">
+                                    <td class="py-3 px-4 font-semibold text-white">{{ offer.sender_name }}</td>
+                                    <td class="py-3 px-4">
+                                        <div class="flex items-center gap-2">
+                                            <img :src="getResourceIcon(offer.item_id)" @error="handleIconError($event, offer.item_id)" class="w-5 h-5 object-contain" />
+                                            <span class="font-mono text-white/90">{{ formatVolume(offer.amount) }}</span>
+                                            <span class="text-xs text-white/40 truncate max-w-[100px]">{{ offer.item_name }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        <div class="flex items-center gap-2">
+                                            <img :src="getResourceIcon(offer.target_item_id)" @error="handleIconError($event, offer.target_item_id)" class="w-5 h-5 object-contain" />
+                                            <span class="font-mono text-white/90">{{ formatVolume(offer.target_amount) }}</span>
+                                            <span class="text-xs text-white/40 truncate max-w-[100px]">{{ offer.target_item_name }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-3 px-4 text-right text-emerald-400 font-mono font-medium">
+                                        {{ offer.price }}
+                                    </td>
+                                    <td class="py-3 px-4 text-right text-blue-400 font-mono">{{ offer.lots_remaining }}</td>
+                                    <td class="py-3 px-4 text-right font-mono text-xs" :class="offer.time_left > 0 ? 'text-amber-400' : 'text-red-500'">
+                                        {{ formatTimeLeft(offer.time_left) }}
+                                    </td>
+                                    <td class="py-3 px-4 text-right text-[10px] text-white/30 font-mono">{{ offer.created_at }}</td>
+                                </tr>
+                                <tr v-if="activeOffers.length === 0">
+                                    <td colspan="7" class="py-8 text-center text-white/20">
+                                        No active listings found in database. Perform synchronization first.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -466,7 +644,7 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import axios from 'axios';
 import { showToast } from '../toast';
 
@@ -486,6 +664,22 @@ export default {
         const stats = ref(null);
         const accounts = ref([]);
         const logs = ref([]);
+
+        // New Mirrored Trade and period variables
+        const selectionMode = ref('dropdown'); // 'dropdown' or 'visual'
+        const visualTab = ref(1); // 1 = Sell, 2 = Buy
+        const selectedPeriod = ref('all');
+        const mirroredStats = ref(null);
+        const mirroredHistory = ref(null);
+        const activeOffers = ref([]);
+
+        const periods = [
+            { value: '1d', label: '24h' },
+            { value: '7d', label: '7d' },
+            { value: '30d', label: '30d' },
+            { value: '1y', label: '1y' },
+            { value: 'all', label: 'All' }
+        ];
 
         // Form state
         const selectedItem = ref('');
@@ -512,11 +706,17 @@ export default {
             return item ? item.target_item_name : '';
         });
 
-        // Calculator cost
+        // Calculator costs
         const calculatedCost = computed(() => {
             if (!stats.value || !stats.value.average) return 0;
             const amt = parseFloat(calcAmount.value) || 0;
             return Math.round(amt * stats.value.average * 100) / 100;
+        });
+
+        const calculatedMirroredCost = computed(() => {
+            if (!mirroredStats.value || !mirroredStats.value.average) return 0;
+            const amt = parseFloat(calcAmount.value) || 0;
+            return Math.round((amt / mirroredStats.value.average) * 100) / 100;
         });
 
         // Market detail helpers
@@ -557,6 +757,58 @@ export default {
             if (val >= 1000000) return (val / 1000000).toFixed(1) + 'M';
             if (val >= 1000) return (val / 1000).toFixed(1) + 'K';
             return val;
+        };
+
+        // Resource Icons helper
+        const getResourceIcon = (itemId) => {
+            if (!itemId) return '/images/resources/addresource.png';
+            const lower = itemId.toLowerCase();
+            
+            const webpResources = [
+                'advancedtools', 'adventurerelics', 'adventuretale', 'archebuse', 'battlehorse', 'battlelance',
+                'beer', 'bow', 'bread', 'cannon', 'coal', 'compositebow', 'crossbow', 'crystal', 'deadtreewood',
+                'fish', 'flour', 'gold', 'goldore', 'granite', 'iron', 'ironore', 'marble', 'meat', 'mortar',
+                'oil', 'pike', 'plank', 'platinumore', 'platinumsword', 'realwood', 'saddlecloth', 'steel', 'steelsword',
+                'stone', 'titaniumsword', 'water', 'wood', 'wool'
+            ];
+            
+            const pngResources = [
+                'beer', 'bow', 'bread', 'bronze', 'bronzeore', 'bronzesword', 'clock', 'cloth', 'codex', 'coin',
+                'crystal', 'crystalshard', 'exoticwood', 'flour', 'granite', 'gunpowder', 'iron', 'ironsword',
+                'mahoganywood', 'meat', 'platinumore', 'saddlecloth', 'stone', 'titaniumsword', 'tool', 'water', 'wood'
+            ];
+            
+            if (pngResources.includes(lower)) {
+                return `/images/resources/${lower}.png`;
+            }
+            if (webpResources.includes(lower)) {
+                return `/images/resources/${lower}.webp`;
+            }
+            return `/images/resources/${lower}.webp`;
+        };
+
+        const handleIconError = (event, itemId) => {
+            const img = event.target;
+            if (!img || !itemId) return;
+            
+            const src = img.getAttribute('src') || '';
+            const lower = itemId.toLowerCase();
+            if (src.endsWith('.webp')) {
+                img.src = `/images/resources/${lower}.png`;
+            } else if (src.endsWith('.png') && !src.includes('addresource.png')) {
+                img.src = '/images/resources/addresource.png';
+            } else {
+                img.src = '/images/resources/addresource.png';
+            }
+        };
+
+        // Real-time Countdown formatting
+        const formatTimeLeft = (seconds) => {
+            if (seconds <= 0) return 'Expired';
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = seconds % 60;
+            return `${h}h ${m}m ${s}s`;
         };
 
         // Charts calculations
@@ -650,6 +902,18 @@ export default {
             return `${line} L ${pts[pts.length - 1].x} 220 L ${pts[0].x} 220 Z`;
         });
 
+        let countdownInterval = null;
+        const startCountdown = () => {
+            if (countdownInterval) clearInterval(countdownInterval);
+            countdownInterval = setInterval(() => {
+                activeOffers.value.forEach(offer => {
+                    if (offer.time_left > 0) {
+                        offer.time_left--;
+                    }
+                });
+            }, 1000);
+        };
+
         // API Methods
         const loadInitialData = async () => {
             loading.value = true;
@@ -673,9 +937,11 @@ export default {
                 const goodsRes = await axios.get('/api/market/goods');
                 goods.value = goodsRes.data || [];
 
-                // Fetch basic analytics (for popular table)
+                // Fetch basic analytics (for popular table and active listings)
                 const analyticsRes = await axios.get('/api/market/analytics');
                 popular.value = analyticsRes.data.popular || [];
+                activeOffers.value = analyticsRes.data.active_offers || [];
+                startCountdown();
             } catch (e) {
                 showToast('Failed to load market statistics.', 'error');
             } finally {
@@ -688,6 +954,8 @@ export default {
             targets.value = [];
             stats.value = null;
             history.value = [];
+            mirroredStats.value = null;
+            mirroredHistory.value = null;
 
             if (!selectedItem.value) return;
 
@@ -705,6 +973,8 @@ export default {
             if (!selectedItem.value || !selectedTarget.value) {
                 stats.value = null;
                 history.value = [];
+                mirroredStats.value = null;
+                mirroredHistory.value = null;
                 return;
             }
 
@@ -712,11 +982,14 @@ export default {
                 const res = await axios.get('/api/market/analytics', {
                     params: {
                         item_id: selectedItem.value,
-                        target_item_id: selectedTarget.value
+                        target_item_id: selectedTarget.value,
+                        period: selectedPeriod.value
                     }
                 });
                 stats.value = res.data.stats || null;
                 history.value = res.data.history || [];
+                mirroredStats.value = res.data.mirrored_stats || null;
+                mirroredHistory.value = res.data.mirrored_history || null;
             } catch (e) {
                 showToast('Failed to load analytics charts.', 'error');
             }
@@ -759,8 +1032,73 @@ export default {
             }
         };
 
+        // Visual Browser Handlers
+        const selectVisualItem = async (itemId) => {
+            selectedItem.value = itemId;
+            await onItemChange();
+            visualTab.value = 2;
+        };
+
+        const selectVisualTarget = async (targetId) => {
+            selectedTarget.value = targetId;
+            await fetchAnalytics();
+        };
+
+        const resetSelection = () => {
+            selectedItem.value = '';
+            selectedTarget.value = '';
+            targets.value = [];
+            stats.value = null;
+            history.value = [];
+            mirroredStats.value = null;
+            mirroredHistory.value = null;
+            visualTab.value = 1;
+        };
+
+        // Swapping / Mirroring Trade pair handler
+        const mirrorSelection = async () => {
+            if (!selectedItem.value || !selectedTarget.value) return;
+            const tempItem = selectedItem.value;
+            const tempTarget = selectedTarget.value;
+            
+            // Check if target is a valid selling item
+            const canSellTarget = goods.value.some(g => g.item_id === tempTarget);
+            if (!canSellTarget) {
+                showToast(`Cannot mirror: No listings for selling ${selectedTargetName.value} are available.`, 'warning');
+                return;
+            }
+            
+            selectedItem.value = tempTarget;
+            try {
+                const res = await axios.get('/api/market/targets', {
+                    params: { item_id: selectedItem.value }
+                });
+                targets.value = res.data || [];
+                
+                const hasOldItemAsTarget = targets.value.some(t => t.target_item_id === tempItem);
+                if (hasOldItemAsTarget) {
+                    selectedTarget.value = tempItem;
+                    await fetchAnalytics();
+                } else {
+                    selectedTarget.value = '';
+                    showToast(`Opposite trade not found. Targets reloaded.`, 'info');
+                }
+            } catch (e) {
+                showToast('Failed to mirror trade pair.', 'error');
+            }
+        };
+
+        const changePeriod = (val) => {
+            selectedPeriod.value = val;
+            fetchAnalytics();
+        };
+
         onMounted(() => {
             loadInitialData();
+        });
+
+        onUnmounted(() => {
+            if (countdownInterval) clearInterval(countdownInterval);
         });
 
         return {
@@ -784,6 +1122,7 @@ export default {
             selectedItemName,
             selectedTargetName,
             calculatedCost,
+            calculatedMirroredCost,
             activeVolume,
             activeOffersCount,
             activeSellersCount,
@@ -801,8 +1140,46 @@ export default {
             fetchAnalytics,
             saveSettings,
             triggerManualSync,
-            formatVolume
+            formatVolume,
+            selectionMode,
+            visualTab,
+            selectedPeriod,
+            mirroredStats,
+            mirroredHistory,
+            activeOffers,
+            periods,
+            changePeriod,
+            selectVisualItem,
+            selectVisualTarget,
+            resetSelection,
+            getResourceIcon,
+            formatTimeLeft,
+            mirrorSelection,
+            handleIconError
         };
     }
 };
 </script>
+
+<style scoped>
+@keyframes jitter {
+  0% { transform: translate(0, 0) scale(1.5); }
+  20% { transform: translate(-1.5px, 1.5px) scale(1.5); }
+  40% { transform: translate(1.5px, -1.5px) scale(1.5); }
+  60% { transform: translate(-1.5px, -1.5px) scale(1.5); }
+  80% { transform: translate(1.5px, 1.5px) scale(1.5); }
+  100% { transform: translate(0, 0) scale(1.5); }
+}
+
+.hover-jitter {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: r 0.1s ease;
+}
+
+.hover-jitter:hover {
+  r: 6;
+  animation: jitter 0.12s infinite linear;
+  fill: #34d399 !important;
+}
+</style>

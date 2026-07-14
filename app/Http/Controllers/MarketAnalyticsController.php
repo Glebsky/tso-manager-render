@@ -8,6 +8,7 @@ use App\Models\MarketHistory;
 use App\Models\MarketSyncLog;
 use App\Services\MarketSyncService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 use Exception;
@@ -157,59 +158,201 @@ class MarketAnalyticsController extends Controller
     {
         $itemId = $request->input('item_id');
         $targetItemId = $request->input('target_item_id');
+        $period = $request->input('period', 'all');
 
-        // 1. Most popular items (if pair is not selected)
-        $popular = MarketOffer::selectRaw('item_id, item_name, count(*) as offers_count, count(distinct player_id) as sellers_count, sum(volume) as total_volume')
-            ->groupBy('item_id', 'item_name')
+        // 3. Date filter calculation (moved up so stats queries can use it)
+        $now = Carbon::now();
+        $dateFilter = null;
+        $groupByExpression = 'day';
+
+        switch ($period) {
+            case '1d':
+                $dateFilter = $now->copy()->subDay();
+                $groupByExpression = 'hour';
+                break;
+            case '7d':
+                $dateFilter = $now->copy()->subDays(7);
+                $groupByExpression = 'day';
+                break;
+            case '30d':
+                $dateFilter = $now->copy()->subDays(30);
+                $groupByExpression = 'day';
+                break;
+            case '1y':
+                $dateFilter = $now->copy()->subYear();
+                $groupByExpression = 'week';
+                break;
+            case 'all':
+            default:
+                $groupByExpression = 'day';
+                break;
+        }
+
+        // 1. Most popular items (from history, both active and closed)
+        $popularQuery = MarketHistory::selectRaw('item_id, item_name, count(*) as offers_count, count(distinct player_id) as sellers_count, sum(volume) as total_volume');
+        if ($dateFilter) {
+            $popularQuery->where('collected_at', '>=', $dateFilter);
+        }
+        $popular = $popularQuery->groupBy('item_id', 'item_name')
             ->orderBy('offers_count', 'desc')
             ->orderBy('total_volume', 'desc')
             ->limit(10)
             ->get();
 
         if (empty($itemId) || empty($targetItemId)) {
+            // Also fetch current active market listings (current active market is active offers only)
+            $activeOffers = MarketOffer::orderBy('created_at', 'desc')
+                ->limit(50)
+                ->get()
+                ->map(function ($offer) {
+                    $now = now();
+                    $expiresAt = $offer->created_at->copy()->addHours(24);
+                    $timeLeft = $now->diffInSeconds($expiresAt, false);
+                    return [
+                        'id'               => $offer->id,
+                        'offer_id'         => $offer->offer_id,
+                        'sender_name'      => $offer->sender_name,
+                        'item_id'          => $offer->item_id,
+                        'item_name'        => $offer->item_name,
+                        'amount'           => $offer->amount,
+                        'target_item_id'   => $offer->target_item_id,
+                        'target_item_name' => $offer->target_item_name,
+                        'target_amount'    => $offer->target_amount,
+                        'price'            => round($offer->price, 4),
+                        'volume'           => $offer->volume,
+                        'lots_remaining'   => $offer->lots_remaining,
+                        'created_at'       => $offer->created_at->format('d.m.Y H:i'),
+                        'time_left'        => $timeLeft > 0 ? $timeLeft : 0,
+                    ];
+                });
+
             return response()->json([
-                'popular' => $popular,
+                'popular'       => $popular,
+                'active_offers' => $activeOffers,
             ]);
         }
 
-        // 2. Active offers stats
-        $stats = MarketOffer::where('item_id', $itemId)
-            ->where('target_item_id', $targetItemId)
-            ->selectRaw('avg(price) as average_price, min(price) as min_price, max(price) as max_price')
+        // 2. Active & closed history stats
+        $statsQuery = MarketHistory::where('item_id', $itemId)
+            ->where('target_item_id', $targetItemId);
+
+        if ($dateFilter) {
+            $statsQuery->where('collected_at', '>=', $dateFilter);
+        }
+
+        $stats = $statsQuery->selectRaw('avg(price) as average_price, min(price) as min_price, max(price) as max_price')
             ->first();
 
         // Latest price (current)
-        $current = MarketOffer::where('item_id', $itemId)
+        $current = MarketHistory::where('item_id', $itemId)
             ->where('target_item_id', $targetItemId)
-            ->orderBy('created_at', 'desc')
+            ->orderBy('collected_at', 'desc')
+            ->value('price');
+
+        // Fetch mirrored stats if possible
+        $mirroredStatsQuery = MarketHistory::where('item_id', $targetItemId)
+            ->where('target_item_id', $itemId);
+
+        if ($dateFilter) {
+            $mirroredStatsQuery->where('collected_at', '>=', $dateFilter);
+        }
+
+        $mirroredStats = $mirroredStatsQuery->selectRaw('avg(price) as average_price, min(price) as min_price, max(price) as max_price')
+            ->first();
+
+        $mirroredCurrent = MarketHistory::where('item_id', $targetItemId)
+            ->where('target_item_id', $itemId)
+            ->orderBy('collected_at', 'desc')
             ->value('price');
 
         // 3. Historical data
-        $history = MarketHistory::where('item_id', $itemId)
-            ->where('target_item_id', $targetItemId)
-            ->selectRaw("collected_at, avg(price) as price, sum(volume) as volume, count(distinct player_id) as sellers_count, count(*) as offers_count")
-            ->groupBy('collected_at')
-            ->orderBy('collected_at', 'asc')
-            ->get()
-            ->map(function ($item) {
+
+        $driver = DB::connection()->getDriverName();
+
+        $buildHistoryQuery = function ($item, $target, $dateFilter, $groupByExpression, $driver) {
+            $query = MarketHistory::where('item_id', $item)
+                ->where('target_item_id', $target);
+
+            if ($dateFilter) {
+                $query->where('collected_at', '>=', $dateFilter);
+            }
+
+            if ($driver === 'pgsql') {
+                $trunc = "date_trunc('{$groupByExpression}', collected_at)";
+                $query->selectRaw("{$trunc} as time_bucket, avg(price) as price, sum(volume) as volume, count(distinct player_id) as sellers_count, count(*) as offers_count")
+                    ->groupBy('time_bucket')
+                    ->orderBy('time_bucket', 'asc');
+            } elseif ($driver === 'mysql') {
+                if ($groupByExpression === 'hour') {
+                    $format = '%Y-%m-%d %H:00:00';
+                } elseif ($groupByExpression === 'week') {
+                    $format = '%Y-%u';
+                } else {
+                    $format = '%Y-%m-%d';
+                }
+                $query->selectRaw("DATE_FORMAT(collected_at, '{$format}') as time_bucket, avg(price) as price, sum(volume) as volume, count(distinct player_id) as sellers_count, count(*) as offers_count")
+                    ->groupBy('time_bucket')
+                    ->orderBy('time_bucket', 'asc');
+            } else {
+                // sqlite or fallback
+                if ($groupByExpression === 'hour') {
+                    $format = '%Y-%m-%d %H:00:00';
+                } else {
+                    $format = '%Y-%m-%d';
+                }
+                $query->selectRaw("strftime('{$format}', collected_at) as time_bucket, avg(price) as price, sum(volume) as volume, count(distinct player_id) as sellers_count, count(*) as offers_count")
+                    ->groupBy('time_bucket')
+                    ->orderBy('time_bucket', 'asc');
+            }
+
+            return $query->get()->map(function ($item) use ($groupByExpression) {
+                $dateVal = is_string($item->time_bucket) ? Carbon::parse($item->time_bucket) : new Carbon($item->time_bucket);
+                if ($groupByExpression === 'hour') {
+                    $formattedDate = $dateVal->format('d.m.Y H:i');
+                } elseif ($groupByExpression === 'week') {
+                    $formattedDate = $dateVal->format('d.m.Y (\W\e\e\k W)');
+                } else {
+                    $formattedDate = $dateVal->format('d.m.Y');
+                }
+
                 return [
-                    'collected_at'  => $item->collected_at->format('d.m.Y H:i'),
+                    'collected_at'  => $formattedDate,
                     'price'         => round($item->price, 2),
                     'volume'        => (int)$item->volume,
                     'sellers_count' => (int)$item->sellers_count,
                     'offers_count'  => (int)$item->offers_count,
                 ];
             });
+        };
+
+        $history = $buildHistoryQuery($itemId, $targetItemId, $dateFilter, $groupByExpression, $driver);
+
+        $mirroredHistory = collect([]);
+        if ($itemId && $targetItemId) {
+            $mirroredHistory = $buildHistoryQuery($targetItemId, $itemId, $dateFilter, $groupByExpression, $driver);
+        }
+
+        $mirroredStatsData = null;
+        if ($mirroredStats && $mirroredStats->average_price !== null) {
+            $mirroredStatsData = [
+                'average' => round($mirroredStats->average_price ?? 0, 2),
+                'minimum' => round($mirroredStats->min_price ?? 0, 2),
+                'maximum' => round($mirroredStats->max_price ?? 0, 2),
+                'current' => round($mirroredCurrent ?? 0, 2),
+            ];
+        }
 
         return response()->json([
-            'popular' => $popular,
-            'stats'   => [
+            'popular'          => $popular,
+            'stats'            => [
                 'average' => round($stats->average_price ?? 0, 2),
                 'minimum' => round($stats->min_price ?? 0, 2),
                 'maximum' => round($stats->max_price ?? 0, 2),
                 'current' => round($current ?? 0, 2),
             ],
-            'history' => $history,
+            'history'          => $history,
+            'mirrored_stats'   => $mirroredStatsData,
+            'mirrored_history' => $mirroredHistory->isEmpty() ? null : $mirroredHistory,
         ]);
     }
 

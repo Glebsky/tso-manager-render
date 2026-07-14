@@ -230,8 +230,30 @@ class MarketSyncService
                     MarketOffer::insert($chunk);
                 }
 
-                foreach (array_chunk($historyToInsert, 200) as $chunk) {
-                    MarketHistory::insert($chunk);
+                // Filter out history entries that already exist in market_history to avoid duplicates
+                $offerIds = array_column($historyToInsert, 'offer_id');
+                $existingIds = [];
+                if (!empty($offerIds)) {
+                    foreach (array_chunk($offerIds, 500) as $idChunk) {
+                        $chunkExisting = MarketHistory::whereIn('offer_id', $idChunk)
+                            ->pluck('offer_id')
+                            ->toArray();
+                        $existingIds = array_merge($existingIds, $chunkExisting);
+                    }
+                }
+
+                $existingIdsSet = array_flip($existingIds);
+                $filteredHistory = [];
+                foreach ($historyToInsert as $h) {
+                    if (!isset($existingIdsSet[$h['offer_id']])) {
+                        $filteredHistory[] = $h;
+                    }
+                }
+
+                if (!empty($filteredHistory)) {
+                    foreach (array_chunk($filteredHistory, 200) as $chunk) {
+                        MarketHistory::insert($chunk);
+                    }
                 }
             });
 
