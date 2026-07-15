@@ -43,7 +43,7 @@ class MarketSyncService
         $collectedAt = now();
 
         try {
-            Log::info("Starting market sync for account {$account->id} ({$account->username})");
+            $this->logEvent($account, $action, 'INFO', 'Starting market synchronization');
 
             // 1. Authenticate if needed
             if (!$this->authService->isAuthenticated($account)) {
@@ -60,7 +60,7 @@ class MarketSyncService
 
             for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
                 try {
-                    Log::info("Fetching market offers AMF for account {$account->id} (attempt {$attempt}/{$maxRetries})");
+                    $this->logEvent($account, $action, 'INFO', "Fetching market offers AMF (attempt {$attempt}/{$maxRetries})");
                     $rawAmf = $this->amfService->getMarketOffers($account);
 
                     $scriptPath = storage_path('app/parse_market.py');
@@ -95,7 +95,7 @@ class MarketSyncService
                     $errorCode = $parsed['errorCode'] ?? 0;
 
                     if ($errorCode === 1012) {
-                        Log::info("Received error 1012 (Zone loading) for account {$account->id} during market sync. Waiting {$retryDelay}s and retrying...");
+                        $this->logEvent($account, $action, 'WARNING', "Received error 1012 (Zone loading). Waiting {$retryDelay}s and retrying...");
                         sleep($retryDelay);
                         continue;
                     }
@@ -104,7 +104,7 @@ class MarketSyncService
                         if ($hasResetSession) {
                             throw new Exception("Сессия перехвачена другой игрой (ошибка {$errorCode}) во время синхронизации рынка.");
                         }
-                        Log::info("Received error {$errorCode} (Session expired) for account {$account->id} during market sync. Resetting session...");
+                        $this->logEvent($account, $action, 'WARNING', "Received error {$errorCode} (Session expired). Resetting session...");
                         @unlink($this->authService->getCookieFile($account));
                         $this->authService->login($account);
                         $this->amfService->resetClient();
@@ -117,7 +117,7 @@ class MarketSyncService
                     // Success or other unhandled code
                     break;
                 } catch (Exception $attemptEx) {
-                    Log::warning("Market sync attempt {$attempt}/{$maxRetries} failed: " . $attemptEx->getMessage());
+                    $this->logEvent($account, $action, 'WARNING', "Attempt {$attempt}/{$maxRetries} failed: " . $attemptEx->getMessage());
                     if ($attempt === $maxRetries) {
                         throw $attemptEx;
                     }
@@ -260,13 +260,7 @@ class MarketSyncService
             $count   = count($offersToInsert);
             $message = "{$count} offers received";
 
-            MarketSyncLog::create([
-                'account_id' => $account->id,
-                'action'     => $action,
-                'status'     => 'SUCCESS',
-                'message'    => $message,
-                'created_at' => $collectedAt,
-            ]);
+            $this->logEvent($account, $action, 'SUCCESS', $message);
 
             return [
                 'success' => true,
@@ -275,17 +269,34 @@ class MarketSyncService
             ];
 
         } catch (Exception $e) {
-            Log::error("Market sync failed for account {$account->id}: " . $e->getMessage());
+            $this->logEvent($account, $action, 'ERROR', $e->getMessage());
+            throw $e;
+        }
+    }
 
+    private function logEvent(Account $account, string $action, string $status, string $message): void
+    {
+        // 1. Write to standard Laravel file logs (storage/logs/laravel.log)
+        $logMessage = "[MarketSync] [{$account->username}] {$action} - {$status}: {$message}";
+        if ($status === 'FAILED' || $status === 'ERROR') {
+            Log::error($logMessage);
+        } elseif ($status === 'WARNING') {
+            Log::warning($logMessage);
+        } else {
+            Log::info($logMessage);
+        }
+
+        // 2. Write to the database table (MarketSyncLog model)
+        try {
             MarketSyncLog::create([
                 'account_id' => $account->id,
                 'action'     => $action,
-                'status'     => 'ERROR',
-                'message'    => $e->getMessage(),
-                'created_at' => $collectedAt,
+                'status'     => $status,
+                'message'    => $message,
+                'created_at' => now(),
             ]);
-
-            throw $e;
+        } catch (Exception $dbEx) {
+            Log::error("Failed to write market sync log to database: " . $dbEx->getMessage());
         }
     }
 }

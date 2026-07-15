@@ -37,15 +37,19 @@ def recursive_extract_offers(obj, offers, visited=None):
 
         if 'dTradeObjectVO' in full_name or 'TradeObjectVO' in full_name:
             offer = {}
-            for attr in ['id', 'senderID', 'senderName', 'offer', 'type', 'created', 'lotsRemaining']:
-                val = None
-                if hasattr(obj, attr):
-                    val = getattr(obj, attr)
-                elif isinstance(obj, dict) and attr in obj:
-                    val = obj[attr]
-                
-                if val is not None:
-                    offer[attr] = val
+            if isinstance(obj, dict):
+                for k, v in obj.items():
+                    offer[k] = v
+            elif hasattr(obj, '__dict__'):
+                for k, v in obj.__dict__.items():
+                    offer[k] = v
+            else:
+                for attr in dir(obj):
+                    if not attr.startswith('_'):
+                        try:
+                            offer[attr] = getattr(obj, attr)
+                        except:
+                            pass
             if offer:
                 offers.append(offer)
 

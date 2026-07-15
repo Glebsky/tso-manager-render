@@ -433,6 +433,102 @@
                     </div>
                 </div>
 
+                <!-- Profitable Arbitrage Schemes Card -->
+                <div class="glass-card p-6 animate-fade-in-up">
+                    <div class="flex items-center justify-between mb-6 border-b border-white/5 pb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 0 0-3.7-3.7 48.656 48.656 0 0 0-7.324 0 4.006 4.006 0 0 0-3.7 3.7C4.547 9.547 4.5 10.768 4.5 12s.047 2.453.138 3.662a4.006 4.006 0 0 0 3.7 3.7 48.656 48.656 0 0 0 7.324 0 4.006 4.006 0 0 0 3.7-3.7C19.453 14.453 19.5 13.232 19.5 12Zm0 0h.008v.008h-.008V12Zm-3 0h.008v.008h-.008V12c0-1.68-.282-3.297-.802-4.806m-9.396 0A20.732 20.732 0 0 1 12 6.75c1.455 0 2.843.15 4.198.437M12 6.75a20.733 20.733 0 0 0-4.198.437m0 0A20.73 20.73 0 0 0 7 12c0 1.68.282 3.297.802 4.806m9.396 0A20.73 20.73 0 0 1 12 17.25c-1.455 0-2.843-.15-4.198-.437M12 17.25a20.73 20.73 0 0 0 4.198-.437" />
+                                </svg>
+                            </div>
+                            <div class="flex flex-col">
+                                <h2 class="text-lg font-semibold text-white">Profitable Exchange Schemes</h2>
+                                <span class="text-xs text-white/40">Real-time market arbitrage detection</span>
+                            </div>
+                        </div>
+                        <span class="badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs py-1 px-3">
+                            {{ arbitrageLoops.length }} schemes found
+                        </span>
+                    </div>
+
+                    <div class="space-y-4 max-h-[500px] overflow-y-auto pr-2 scrollbar-thin">
+                        <div v-for="(scheme, idx) in arbitrageLoops" :key="'scheme-'+idx" 
+                             class="p-4 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-all flex flex-col gap-4">
+                            
+                            <!-- Card Header (Type & Profit) -->
+                            <div class="flex items-center justify-between flex-wrap gap-2 border-b border-white/5 pb-2">
+                                <span class="badge text-[10px] font-semibold tracking-wider uppercase"
+                                      :class="scheme.type === '2-step' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-purple-500/10 text-purple-400 border border-purple-500/20'">
+                                    {{ scheme.type }} loop
+                                </span>
+                                
+                                <div class="flex items-center gap-3">
+                                    <!-- Leftovers -->
+                                    <div v-if="scheme.leftovers && scheme.leftovers.length" class="flex items-center gap-2 text-xs text-blue-400">
+                                        <span class="text-white/30">Leftovers:</span>
+                                        <span v-for="leftover in scheme.leftovers" :key="leftover.item_id" class="flex items-center gap-1 text-white/70">
+                                            <img :src="getResourceIcon(leftover.item_id)" @error="handleIconError($event, leftover.item_id)" class="w-3.5 h-3.5 object-contain" />
+                                            +{{ formatVolume(leftover.amount) }}
+                                        </span>
+                                    </div>
+                                    <!-- Net Profit -->
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-xs text-white/40">Net Profit:</span>
+                                        <div class="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg py-1 px-2">
+                                            <img :src="getResourceIcon(scheme.profit.item_id)" @error="handleIconError($event, scheme.profit.item_id)" class="w-4 h-4 object-contain" />
+                                            <span class="font-mono text-sm font-bold text-emerald-400">+{{ formatVolume(scheme.profit.amount) }}</span>
+                                            <span class="text-xs text-emerald-400/70 truncate max-w-[80px]">{{ scheme.profit.item_name }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Steps flowchart -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                                <div v-for="(step, sIdx) in scheme.steps" :key="sIdx" class="flex items-center gap-3">
+                                    <div class="flex-1 p-3 rounded-lg bg-white/[0.02] border border-white/5 relative">
+                                        <!-- Step label -->
+                                        <div class="text-[10px] uppercase font-bold text-white/30 mb-2">Step {{ sIdx + 1 }}</div>
+                                        
+                                        <!-- Exchange description -->
+                                        <div class="flex flex-col gap-1.5">
+                                            <div class="flex items-center gap-1.5 text-xs">
+                                                <span class="text-white/40 w-8">Give:</span>
+                                                <img :src="getResourceIcon(step.give_item)" @error="handleIconError($event, step.give_item)" class="w-4.5 h-4.5 object-contain" />
+                                                <span class="font-mono font-semibold text-white/90">{{ formatVolume(step.give_per_lot) }}</span>
+                                                <span class="text-[10px] text-white/30">(total: {{ formatVolume(step.give_amount) }})</span>
+                                            </div>
+                                            <div class="flex items-center gap-1.5 text-xs">
+                                                <span class="text-white/40 w-8">Get:</span>
+                                                <img :src="getResourceIcon(step.receive_item)" @error="handleIconError($event, step.receive_item)" class="w-4.5 h-4.5 object-contain" />
+                                                <span class="font-mono font-semibold text-emerald-400">{{ formatVolume(step.receive_per_lot) }}</span>
+                                                <span class="text-[10px] text-emerald-400/40">(total: {{ formatVolume(step.receive_amount) }})</span>
+                                            </div>
+                                            <div class="text-[10px] text-white/30 mt-1 border-t border-white/5 pt-1 flex justify-between">
+                                                <span>Lots: <strong class="text-white/80">{{ step.lots }}</strong></span>
+                                                <span class="truncate max-w-[100px]" :title="step.sender">By: <strong class="text-white/85">{{ step.sender }}</strong></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Flow arrow icon -->
+                                    <div v-if="sIdx < scheme.steps.length - 1" class="hidden md:flex text-white/20">
+                                        <svg class="w-5 h-5 animate-pulse" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Empty state -->
+                        <div v-if="arbitrageLoops.length === 0" class="py-8 text-center text-white/20">
+                            No profitable exchange schemes found on the market currently.
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Current Active Market Listings Card -->
                 <div class="glass-card p-6 animate-fade-in-up">
                     <div class="flex items-center gap-3 mb-6 border-b border-white/5 pb-3">
@@ -441,7 +537,10 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
                             </svg>
                         </div>
-                        <h2 class="text-lg font-semibold text-white">Current Active Market Listings</h2>
+                        <div class="flex flex-col">
+                            <h2 class="text-lg font-semibold text-white">Current Active Market Listings</h2>
+                            <span class="text-xs text-white/40">{{ totalActiveCount }} active trades</span>
+                        </div>
                     </div>
 
                     <div class="overflow-x-auto">
@@ -490,6 +589,16 @@
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+
+                    <!-- Load More Button -->
+                    <div v-if="hasMoreActiveOffers" class="flex justify-center mt-4 pt-4 border-t border-white/5">
+                        <button @click="loadMoreActiveOffers" :disabled="loadingMore" class="btn-secondary py-2 px-6 flex items-center gap-2 bg-white/5 border border-white/10 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all text-xs font-semibold">
+                            <svg v-if="loadingMore" class="animate-spin w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                            </svg>
+                            {{ loadingMore ? 'Loading more...' : 'Load More Listings' }}
+                        </button>
                     </div>
                 </div>
             </div>
@@ -624,7 +733,7 @@
                                 <td class="py-3 px-4 font-semibold text-white/95">{{ log.action }}</td>
                                 <td class="py-3 px-4">
                                     <span class="badge text-[10px]"
-                                          :class="log.status === 'SUCCESS' ? 'badge-success' : 'badge-danger'">
+                                          :class="getStatusBadgeClass(log.status)">
                                         {{ log.status }}
                                     </span>
                                 </td>
@@ -666,12 +775,17 @@ export default {
         const logs = ref([]);
 
         // New Mirrored Trade and period variables
-        const selectionMode = ref('dropdown'); // 'dropdown' or 'visual'
+        const selectionMode = ref('visual'); // 'dropdown' or 'visual'
         const visualTab = ref(1); // 1 = Sell, 2 = Buy
         const selectedPeriod = ref('all');
         const mirroredStats = ref(null);
         const mirroredHistory = ref(null);
         const activeOffers = ref([]);
+        const totalActiveCount = ref(0);
+        const activeOffersPage = ref(1);
+        const hasMoreActiveOffers = ref(false);
+        const loadingMore = ref(false);
+        const arbitrageLoops = ref([]);
 
         const periods = [
             { value: '1d', label: '24h' },
@@ -797,8 +911,21 @@ export default {
                 img.src = `/images/resources/${lower}.png`;
             } else if (src.endsWith('.png') && !src.includes('addresource.png')) {
                 img.src = '/images/resources/addresource.png';
-            } else {
-                img.src = '/images/resources/addresource.png';
+            }
+        };
+
+        const getStatusBadgeClass = (status) => {
+            switch (status) {
+                case 'SUCCESS':
+                    return 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+                case 'INFO':
+                    return 'bg-blue-500/10 text-blue-400 border border-blue-500/20';
+                case 'WARNING':
+                    return 'bg-amber-500/10 text-amber-400 border border-amber-500/20';
+                case 'FAILED':
+                case 'ERROR':
+                default:
+                    return 'bg-red-500/10 text-red-400 border border-red-500/20';
             }
         };
 
@@ -941,6 +1068,14 @@ export default {
                 const analyticsRes = await axios.get('/api/market/analytics');
                 popular.value = analyticsRes.data.popular || [];
                 activeOffers.value = analyticsRes.data.active_offers || [];
+                totalActiveCount.value = analyticsRes.data.total_active_count || 0;
+                activeOffersPage.value = 1;
+                hasMoreActiveOffers.value = analyticsRes.data.has_more || false;
+
+                // Fetch arbitrage loops
+                const arbitrageRes = await axios.get('/api/market/arbitrage');
+                arbitrageLoops.value = arbitrageRes.data || [];
+
                 startCountdown();
             } catch (e) {
                 showToast('Failed to load market statistics.', 'error');
@@ -966,6 +1101,25 @@ export default {
                 targets.value = res.data || [];
             } catch (e) {
                 showToast('Failed to load target items.', 'error');
+            }
+        };
+
+        const loadMoreActiveOffers = async () => {
+            if (loadingMore.value || !hasMoreActiveOffers.value) return;
+            loadingMore.value = true;
+            try {
+                const nextPage = activeOffersPage.value + 1;
+                const res = await axios.get('/api/market/analytics', {
+                    params: { page: nextPage }
+                });
+                const newOffers = res.data.active_offers || [];
+                activeOffers.value.push(...newOffers);
+                activeOffersPage.value = nextPage;
+                hasMoreActiveOffers.value = res.data.has_more || false;
+            } catch (e) {
+                showToast('Failed to load more listings.', 'error');
+            } finally {
+                loadingMore.value = false;
             }
         };
 
@@ -1155,7 +1309,14 @@ export default {
             getResourceIcon,
             formatTimeLeft,
             mirrorSelection,
-            handleIconError
+            handleIconError,
+            getStatusBadgeClass,
+            totalActiveCount,
+            activeOffersPage,
+            hasMoreActiveOffers,
+            loadingMore,
+            loadMoreActiveOffers,
+            arbitrageLoops
         };
     }
 };

@@ -127,11 +127,16 @@ class MarketAnalyticsController extends Controller
 
     public function getGoods()
     {
-        // Get list of unique items that are available for sale
-        $goods = MarketOffer::select('item_id', 'item_name')
+        // Get list of unique items from both active offers and full trade history
+        $fromOffers = MarketOffer::select('item_id', 'item_name');
+        $fromHistory = MarketHistory::select('item_id', 'item_name');
+
+        $goods = $fromOffers->union($fromHistory)
             ->distinct()
             ->orderBy('item_name')
-            ->get();
+            ->get()
+            ->unique('item_id')
+            ->values();
 
         return response()->json($goods);
     }
@@ -144,12 +149,18 @@ class MarketAnalyticsController extends Controller
             return response()->json([]);
         }
 
-        // Get target items that are traded for the selected item
-        $targets = MarketOffer::where('item_id', $itemId)
-            ->select('target_item_id', 'target_item_name')
+        // Get target items from both active offers and full trade history
+        $fromOffers = MarketOffer::where('item_id', $itemId)
+            ->select('target_item_id', 'target_item_name');
+        $fromHistory = MarketHistory::where('item_id', $itemId)
+            ->select('target_item_id', 'target_item_name');
+
+        $targets = $fromOffers->union($fromHistory)
             ->distinct()
             ->orderBy('target_item_name')
-            ->get();
+            ->get()
+            ->unique('target_item_id')
+            ->values();
 
         return response()->json($targets);
     }
@@ -200,13 +211,20 @@ class MarketAnalyticsController extends Controller
             ->get();
 
         if (empty($itemId) || empty($targetItemId)) {
-            // Also fetch current active market listings (current active market is active offers only)
-            $activeOffers = MarketOffer::orderBy('created_at', 'desc')
-                ->limit(50)
+            $limit = (int)$request->input('limit', 100);
+            $page = (int)$request->input('page', 1);
+            $offset = ($page - 1) * $limit;
+
+            $activeOffersQuery = MarketOffer::where('created_at', '>=', now()->subHours(6))
+                ->orderBy('created_at', 'desc');
+            $totalActive = $activeOffersQuery->count();
+
+            $activeOffers = $activeOffersQuery->offset($offset)
+                ->limit($limit)
                 ->get()
                 ->map(function ($offer) {
                     $now = now();
-                    $expiresAt = $offer->created_at->copy()->addHours(24);
+                    $expiresAt = $offer->created_at->copy()->addHours(6);
                     $timeLeft = $now->diffInSeconds($expiresAt, false);
                     return [
                         'id'               => $offer->id,
@@ -227,8 +245,11 @@ class MarketAnalyticsController extends Controller
                 });
 
             return response()->json([
-                'popular'       => $popular,
-                'active_offers' => $activeOffers,
+                'popular'            => $popular,
+                'active_offers'      => $activeOffers,
+                'total_active_count' => $totalActive,
+                'page'               => $page,
+                'has_more'           => ($offset + $limit) < $totalActive,
             ]);
         }
 
@@ -371,5 +392,235 @@ class MarketAnalyticsController extends Controller
             });
 
         return response()->json($logs);
+    }
+
+    public function getArbitrage()
+    {
+        $offers = MarketOffer::where('created_at', '>=', now()->subHours(6))->get();
+        $byPair = [];
+
+        foreach ($offers as $offer) {
+            $from = $offer->target_item_id;
+            $to = $offer->item_id;
+            $byPair[$from][$to][] = [
+                'offer_id'         => $offer->offer_id,
+                'sender_name'      => $offer->sender_name,
+                'item_id'          => $offer->item_id,
+                'item_name'        => $offer->item_name,
+                'amount'           => $offer->amount,
+                'target_item_id'   => $offer->target_item_id,
+                'target_item_name' => $offer->target_item_name,
+                'target_amount'    => $offer->target_amount,
+                'lots_remaining'   => $offer->lots_remaining,
+            ];
+        }
+
+        $loops = [];
+        $resources = array_keys($byPair);
+
+        foreach ($resources as $A) {
+            if (!isset($byPair[$A])) continue;
+
+            foreach ($byPair[$A] as $B => $t1List) {
+                if ($B === $A) continue;
+
+                // 1. 2-step loops: A -> B -> A
+                if (isset($byPair[$B][$A])) {
+                    $t2List = $byPair[$B][$A];
+                    foreach ($t1List as $t1) {
+                        foreach ($t2List as $t2) {
+                            $bestProfit = -99999999;
+                            $best_x = 0;
+                            $best_y = 0;
+
+                            for ($y = 1; $y <= $t2['lots_remaining']; $y++) {
+                                $neededB = $y * $t2['target_amount'];
+                                $x = (int)ceil($neededB / $t1['amount']);
+                                if ($x > $t1['lots_remaining']) {
+                                    continue;
+                                }
+                                $profitA = ($y * $t2['amount']) - ($x * $t1['target_amount']);
+                                if ($profitA > $bestProfit) {
+                                    $bestProfit = $profitA;
+                                    $best_x = $x;
+                                    $best_y = $y;
+                                }
+                            }
+
+                            if ($bestProfit > 0 && $best_x >= 1 && $best_y >= 1) {
+                                $leftoverB = ($best_x * $t1['amount']) - ($best_y * $t2['target_amount']);
+                                $loops[] = [
+                                    'type' => '2-step',
+                                    'start_resource' => $A,
+                                    'start_resource_name' => $t1['target_item_name'],
+                                    'steps' => [
+                                        [
+                                            'sender' => $t1['sender_name'],
+                                            'offer_id' => $t1['offer_id'],
+                                            'give_item' => $A,
+                                            'give_name' => $t1['target_item_name'],
+                                            'give_amount' => $best_x * $t1['target_amount'],
+                                            'give_per_lot' => $t1['target_amount'],
+                                            'receive_item' => $B,
+                                            'receive_name' => $t1['item_name'],
+                                            'receive_amount' => $best_x * $t1['amount'],
+                                            'receive_per_lot' => $t1['amount'],
+                                            'lots' => $best_x,
+                                        ],
+                                        [
+                                            'sender' => $t2['sender_name'],
+                                            'offer_id' => $t2['offer_id'],
+                                            'give_item' => $B,
+                                            'give_name' => $t2['target_item_name'],
+                                            'give_amount' => $best_y * $t2['target_amount'],
+                                            'give_per_lot' => $t2['target_amount'],
+                                            'receive_item' => $A,
+                                            'receive_name' => $t2['item_name'],
+                                            'receive_amount' => $best_y * $t2['amount'],
+                                            'receive_per_lot' => $t2['amount'],
+                                            'lots' => $best_y,
+                                        ]
+                                    ],
+                                    'profit' => [
+                                        'item_id' => $A,
+                                        'item_name' => $t1['target_item_name'],
+                                        'amount' => $bestProfit,
+                                    ],
+                                    'leftovers' => $leftoverB > 0 ? [
+                                        [
+                                            'item_id' => $B,
+                                            'item_name' => $t1['item_name'],
+                                            'amount' => $leftoverB,
+                                        ]
+                                    ] : [],
+                                ];
+                            }
+                        }
+                    }
+                }
+
+                // 2. 3-step loops: A -> B -> C -> A
+                if (isset($byPair[$B])) {
+                    foreach ($byPair[$B] as $C => $t2List) {
+                        if ($C === $A || $C === $B) continue;
+
+                        if (isset($byPair[$C][$A])) {
+                            $t3List = $byPair[$C][$A];
+                            foreach ($t1List as $t1) {
+                                foreach ($t2List as $t2) {
+                                    foreach ($t3List as $t3) {
+                                        $bestProfit = -99999999;
+                                        $best_x = 0;
+                                        $best_y = 0;
+                                        $best_z = 0;
+
+                                        for ($z = 1; $z <= $t3['lots_remaining']; $z++) {
+                                            $neededC = $z * $t3['target_amount'];
+                                            $y = (int)ceil($neededC / $t2['amount']);
+                                            if ($y > $t2['lots_remaining']) {
+                                                continue;
+                                            }
+                                            $neededB = $y * $t2['target_amount'];
+                                            $x = (int)ceil($neededB / $t1['amount']);
+                                            if ($x > $t1['lots_remaining']) {
+                                                continue;
+                                            }
+
+                                            $profitA = ($z * $t3['amount']) - ($x * $t1['target_amount']);
+                                            if ($profitA > $bestProfit) {
+                                                $bestProfit = $profitA;
+                                                $best_x = $x;
+                                                $best_y = $y;
+                                                $best_z = $z;
+                                            }
+                                        }
+
+                                        if ($bestProfit > 0 && $best_x >= 1 && $best_y >= 1 && $best_z >= 1) {
+                                            $leftoverB = ($best_x * $t1['amount']) - ($best_y * $t2['target_amount']);
+                                            $leftoverC = ($best_y * $t2['amount']) - ($best_z * $t3['target_amount']);
+
+                                            $leftovers = [];
+                                            if ($leftoverB > 0) {
+                                                $leftovers[] = [
+                                                    'item_id' => $B,
+                                                    'item_name' => $t1['item_name'],
+                                                    'amount' => $leftoverB,
+                                                ];
+                                            }
+                                            if ($leftoverC > 0) {
+                                                $leftovers[] = [
+                                                    'item_id' => $C,
+                                                    'item_name' => $t2['item_name'],
+                                                    'amount' => $leftoverC,
+                                                ];
+                                            }
+
+                                            $loops[] = [
+                                                'type' => '3-step',
+                                                'start_resource' => $A,
+                                                'start_resource_name' => $t1['target_item_name'],
+                                                'steps' => [
+                                                    [
+                                                        'sender' => $t1['sender_name'],
+                                                        'offer_id' => $t1['offer_id'],
+                                                        'give_item' => $A,
+                                                        'give_name' => $t1['target_item_name'],
+                                                        'give_amount' => $best_x * $t1['target_amount'],
+                                                        'give_per_lot' => $t1['target_amount'],
+                                                        'receive_item' => $B,
+                                                        'receive_name' => $t1['item_name'],
+                                                        'receive_amount' => $best_x * $t1['amount'],
+                                                        'receive_per_lot' => $t1['amount'],
+                                                        'lots' => $best_x,
+                                                    ],
+                                                    [
+                                                        'sender' => $t2['sender_name'],
+                                                        'offer_id' => $t2['offer_id'],
+                                                        'give_item' => $B,
+                                                        'give_name' => $t2['target_item_name'],
+                                                        'give_amount' => $best_y * $t2['target_amount'],
+                                                        'give_per_lot' => $t2['target_amount'],
+                                                        'receive_item' => $C,
+                                                        'receive_name' => $t2['item_name'],
+                                                        'receive_amount' => $best_y * $t2['amount'],
+                                                        'receive_per_lot' => $t2['amount'],
+                                                        'lots' => $best_y,
+                                                    ],
+                                                    [
+                                                        'sender' => $t3['sender_name'],
+                                                        'offer_id' => $t3['offer_id'],
+                                                        'give_item' => $C,
+                                                        'give_name' => $t3['target_item_name'],
+                                                        'give_amount' => $best_z * $t3['target_amount'],
+                                                        'give_per_lot' => $t3['target_amount'],
+                                                        'receive_item' => $A,
+                                                        'receive_name' => $t3['item_name'],
+                                                        'receive_amount' => $best_z * $t3['amount'],
+                                                        'receive_per_lot' => $t3['amount'],
+                                                        'lots' => $best_z,
+                                                    ]
+                                                ],
+                                                'profit' => [
+                                                    'item_id' => $A,
+                                                    'item_name' => $t1['target_item_name'],
+                                                    'amount' => $bestProfit,
+                                                ],
+                                                'leftovers' => $leftovers,
+                                            ];
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } // end isset($byPair[$B])
+            }
+        }
+
+        usort($loops, function ($a, $b) {
+            return $b['profit']['amount'] <=> $a['profit']['amount'];
+        });
+
+        return response()->json(array_slice($loops, 0, 20));
     }
 }

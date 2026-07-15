@@ -53,6 +53,7 @@ Route::prefix('api')->group(function () {
     Route::get('market/goods', [MarketAnalyticsController::class, 'getGoods']);
     Route::get('market/targets', [MarketAnalyticsController::class, 'getTargets']);
     Route::get('market/analytics', [MarketAnalyticsController::class, 'getAnalytics']);
+    Route::get('market/arbitrage', [MarketAnalyticsController::class, 'getArbitrage']);
     Route::get('market/logs', [MarketAnalyticsController::class, 'getLogs']);
 });
 

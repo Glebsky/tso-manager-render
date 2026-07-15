@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use Illuminate\Support\Facades\Storage;
+use App\Models\MarketOffer;
+use App\Models\MarketHistory;
 
 class MarketAnalyticsTest extends TestCase
 {
@@ -78,6 +80,7 @@ class MarketAnalyticsTest extends TestCase
             'volume' => 1000,
             'lots_remaining' => 10,
             'created_at' => now(),
+            'collected_at' => now(),
         ]);
 
         // Historical offer (already closed/inactive, i.e. NOT in MarketOffer)
@@ -116,8 +119,11 @@ class MarketAnalyticsTest extends TestCase
         $response->assertStatus(200)
                  ->assertJsonStructure([
                      'popular',
-                     'active_offers'
+                     'active_offers',
+                     'total_active_count'
                  ]);
+
+        $this->assertEquals(1, $response->json('total_active_count'));
 
         // Assert popular items come from MarketHistory (includes closed oil and active oil)
         $popular = $response->json('popular');
@@ -137,23 +143,136 @@ class MarketAnalyticsTest extends TestCase
         $response->assertStatus(200)
                  ->assertJsonStructure([
                      'stats' => [
-                         'average_price',
-                         'min_price',
-                         'max_price',
+                         'average',
+                         'minimum',
+                         'maximum',
+                         'current',
                      ],
-                     'current_price',
                      'history',
                      'mirrored_stats',
-                     'mirrored_current',
                      'mirrored_history'
                  ]);
 
         // Average should be (0.5 + 0.6) / 2 = 0.55
-        $this->assertEquals(0.55, $response->json('stats.average_price'));
-        $this->assertEquals(0.5, $response->json('stats.min_price'));
-        $this->assertEquals(0.6, $response->json('stats.max_price'));
+        $this->assertEquals(0.55, $response->json('stats.average'));
+        $this->assertEquals(0.5, $response->json('stats.minimum'));
+        $this->assertEquals(0.6, $response->json('stats.maximum'));
         
         // Current should be the latest recorded price in history (0.5 was collected 1 hour ago, which is newer than 2 hours ago)
-        $this->assertEquals(0.5, $response->json('current_price'));
+        $this->assertEquals(0.5, $response->json('stats.current'));
+    }
+
+    public function test_get_arbitrage_finds_profitable_loops()
+    {
+        MarketOffer::truncate();
+
+        // 1. Create a 2-step loop: Iron_Ore <-> Steel_Swords
+        // Offer A: Sell 1000 Steel_Swords for 500 Iron_Ore (lots: 10)
+        MarketOffer::create([
+            'offer_id' => 201,
+            'player_id' => 1,
+            'sender_name' => 'SellerA',
+            'item_id' => 'Steel_Swords',
+            'item_name' => 'Steel Swords',
+            'amount' => 1000,
+            'target_item_id' => 'Iron_Ore',
+            'target_item_name' => 'Iron Ore',
+            'target_amount' => 500,
+            'price' => 0.5,
+            'volume' => 10000,
+            'lots_remaining' => 10,
+            'created_at' => now(),
+            'collected_at' => now(),
+        ]);
+
+        // Offer B: Sell 1000 Iron_Ore for 1500 Steel_Swords (lots: 5)
+        MarketOffer::create([
+            'offer_id' => 202,
+            'player_id' => 2,
+            'sender_name' => 'SellerB',
+            'item_id' => 'Iron_Ore',
+            'item_name' => 'Iron Ore',
+            'amount' => 1000,
+            'target_item_id' => 'Steel_Swords',
+            'target_item_name' => 'Steel Swords',
+            'target_amount' => 1500,
+            'price' => 1.5,
+            'volume' => 5000,
+            'lots_remaining' => 5,
+            'created_at' => now(),
+            'collected_at' => now(),
+        ]);
+
+        $response = $this->getJson('/api/market/arbitrage');
+
+        $response->assertStatus(200);
+        $loops = $response->json();
+        
+        $this->assertNotEmpty($loops);
+        
+        // Loop 0 (Steel_Swords -> Iron_Ore -> Steel_Swords)
+        $this->assertEquals('2-step', $loops[0]['type']);
+        $this->assertEquals('Steel_Swords', $loops[0]['start_resource']);
+        $this->assertEquals(2500, $loops[0]['profit']['amount']);
+        $this->assertEquals(5, $loops[0]['steps'][0]['lots']);
+        $this->assertEquals(10, $loops[0]['steps'][1]['lots']);
+
+        // Loop 1 (Iron_Ore -> Steel_Swords -> Iron_Ore)
+        $this->assertEquals('2-step', $loops[1]['type']);
+        $this->assertEquals('Iron_Ore', $loops[1]['start_resource']);
+        $this->assertEquals(1000, $loops[1]['profit']['amount']);
+        $this->assertEquals(6, $loops[1]['steps'][0]['lots']);
+        $this->assertEquals(4, $loops[1]['steps'][1]['lots']);
+    }
+
+    public function test_expired_offers_are_filtered_out_from_active_listings()
+    {
+        MarketOffer::truncate();
+
+        // 1. Create a non-expired active offer (5 hours ago)
+        MarketOffer::create([
+            'offer_id' => 301,
+            'player_id' => 1,
+            'sender_name' => 'FreshSeller',
+            'item_id' => 'Oil',
+            'item_name' => 'Oil',
+            'amount' => 100,
+            'target_item_id' => 'Coin',
+            'target_item_name' => 'Coin',
+            'target_amount' => 50,
+            'price' => 0.5,
+            'volume' => 1000,
+            'lots_remaining' => 10,
+            'created_at' => now()->subHours(5),
+            'collected_at' => now(),
+        ]);
+
+        // 2. Create an expired active offer (7 hours ago)
+        MarketOffer::create([
+            'offer_id' => 302,
+            'player_id' => 2,
+            'sender_name' => 'ExpiredSeller',
+            'item_id' => 'Oil',
+            'item_name' => 'Oil',
+            'amount' => 100,
+            'target_item_id' => 'Coin',
+            'target_item_name' => 'Coin',
+            'target_amount' => 60,
+            'price' => 0.6,
+            'volume' => 2000,
+            'lots_remaining' => 5,
+            'created_at' => now()->subHours(7),
+            'collected_at' => now(),
+        ]);
+
+        $response = $this->getJson('/api/market/analytics');
+
+        $response->assertStatus(200);
+        
+        $activeOffers = $response->json('active_offers');
+        // Only 301 should be returned, 302 should be filtered out
+        $this->assertCount(1, $activeOffers);
+        $this->assertEquals(301, $activeOffers[0]['offer_id']);
+        $this->assertEquals(1, $response->json('total_active_count'));
     }
 }
