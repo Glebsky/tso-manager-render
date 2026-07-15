@@ -390,16 +390,26 @@
             <div v-else class="space-y-6">
                 <!-- Most Popular Items Card -->
                 <div class="glass-card p-6 animate-fade-in-up">
-                    <div class="flex items-center gap-3 mb-6 border-b border-white/5 pb-3">
-                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18 9 11.25l4.306 4.307a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-3.75-1.002m3.75 1.002-1.002 3.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                            </svg>
+                    <div class="flex items-center justify-between gap-3 mb-6 border-b border-white/5 pb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18 9 11.25l4.306 4.307a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-3.75-1.002m3.75 1.002-1.002 3.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                </svg>
+                            </div>
+                            <h2 class="text-lg font-semibold text-white">Most Popular Items</h2>
                         </div>
-                        <h2 class="text-lg font-semibold text-white">Most Popular Items</h2>
+                        <button @click="togglePopularItems" class="text-white/40 hover:text-white transition-colors">
+                            <svg v-if="showPopularItems" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
+                            </svg>
+                            <svg v-else class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
                     </div>
 
-                    <div class="overflow-x-auto">
+                    <div v-show="showPopularItems" class="overflow-x-auto">
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="border-b border-white/5 text-[10px] font-semibold text-white/30 uppercase tracking-wider">
@@ -447,12 +457,22 @@
                                 <span class="text-xs text-white/40">Real-time market arbitrage detection</span>
                             </div>
                         </div>
-                        <span class="badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs py-1 px-3">
-                            {{ arbitrageLoops.length }} schemes found
-                        </span>
+                        <div class="flex items-center gap-4">
+                            <span class="badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs py-1 px-3">
+                                {{ arbitrageLoops.length }} schemes found
+                            </span>
+                            <button @click="toggleArbitrageSchemes" class="text-white/40 hover:text-white transition-colors">
+                                <svg v-if="showArbitrageSchemes" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
+                                </svg>
+                                <svg v-else class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                        </div>
                     </div>
 
-                    <div class="space-y-4 max-h-[500px] overflow-y-auto pr-2 scrollbar-thin">
+                    <div v-show="showArbitrageSchemes" class="space-y-4 max-h-[500px] overflow-y-auto pr-2 scrollbar-thin">
                         <div v-for="(scheme, idx) in arbitrageLoops" :key="'scheme-'+idx" 
                              class="p-4 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-all flex flex-col gap-4">
                             
@@ -531,19 +551,29 @@
 
                 <!-- Current Active Market Listings Card -->
                 <div class="glass-card p-6 animate-fade-in-up">
-                    <div class="flex items-center gap-3 mb-6 border-b border-white/5 pb-3">
-                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
+                    <div class="flex items-center justify-between gap-3 mb-6 border-b border-white/5 pb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
+                                </svg>
+                            </div>
+                            <div class="flex flex-col">
+                                <h2 class="text-lg font-semibold text-white">Current Active Market Listings</h2>
+                                <span class="text-xs text-white/40">{{ totalActiveCount }} active trades</span>
+                            </div>
+                        </div>
+                        <button @click="toggleActiveListings" class="text-white/40 hover:text-white transition-colors">
+                            <svg v-if="showActiveListings" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
                             </svg>
-                        </div>
-                        <div class="flex flex-col">
-                            <h2 class="text-lg font-semibold text-white">Current Active Market Listings</h2>
-                            <span class="text-xs text-white/40">{{ totalActiveCount }} active trades</span>
-                        </div>
+                            <svg v-else class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
                     </div>
 
-                    <div class="overflow-x-auto">
+                    <div v-show="showActiveListings" class="overflow-x-auto">
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="border-b border-white/5 text-[10px] font-semibold text-white/30 uppercase tracking-wider">
@@ -764,6 +794,14 @@ export default {
         const loading = ref(false);
         const saving = ref(false);
         const syncing = ref(false);
+        const showPopularItems = ref(true);
+        const showArbitrageSchemes = ref(true);
+        const showActiveListings = ref(true);
+
+        const togglePopularItems = () => showPopularItems.value = !showPopularItems.value;
+        const toggleArbitrageSchemes = () => showArbitrageSchemes.value = !showArbitrageSchemes.value;
+        const toggleActiveListings = () => showActiveListings.value = !showActiveListings.value;
+
 
         // API lists
         const goods = ref([]);
@@ -1316,7 +1354,13 @@ export default {
             hasMoreActiveOffers,
             loadingMore,
             loadMoreActiveOffers,
-            arbitrageLoops
+            arbitrageLoops,
+            showPopularItems,
+            showArbitrageSchemes,
+            showActiveListings,
+            togglePopularItems,
+            toggleArbitrageSchemes,
+            toggleActiveListings
         };
     }
 };
