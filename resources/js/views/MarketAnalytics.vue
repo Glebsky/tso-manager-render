@@ -207,10 +207,12 @@
                                 <div class="flex items-center gap-4 text-[10px] text-white/40">
                                     <div class="flex items-center gap-1.5">
                                         <span class="w-2.5 h-0.5 bg-emerald-500 inline-block"></span>
+                                        Avg Price
                                         <span>Average Price</span>
                                     </div>
                                     <div class="flex items-center gap-1.5">
                                         <span class="w-2.5 h-0.5 bg-white/20 border-dashed border inline-block"></span>
+                                        Mean
                                         <span>Global Mean</span>
                                     </div>
                                 </div>
@@ -253,6 +255,9 @@
                                 </svg>
                                 <!-- X-Axis Labels (Timeline) -->
                                 <div class="flex justify-between text-[8px] text-white/30 px-9 mt-1 font-mono">
+                                    <span>{{ history[0]?.collected_at }}</span>
+                                    <span>{{ history[Math.floor(history.length / 2)]?.collected_at }}</span>
+                                    <span>{{ history[history.length - 1]?.collected_at }}</span>
                                     <span>{{ history[0].collected_at }}</span>
                                     <span>{{ history[Math.floor(history.length / 2)].collected_at }}</span>
                                     <span>{{ history[history.length - 1].collected_at }}</span>
@@ -271,10 +276,12 @@
                             <div class="flex items-center gap-4 text-[10px] text-white/40">
                                 <div class="flex items-center gap-1.5">
                                     <span class="w-2.5 h-2.5 bg-blue-500/20 border border-blue-500 rounded-sm inline-block"></span>
+                                    Sellers
                                     <span>Sellers Count</span>
                                 </div>
                                 <div class="flex items-center gap-1.5">
                                     <span class="w-2.5 h-2.5 bg-indigo-500/20 border border-indigo-500 rounded-sm inline-block"></span>
+                                    Active Offers
                                     <span>Active Offers</span>
                                 </div>
                             </div>
@@ -301,10 +308,13 @@
 
                                     <!-- Volume Bars (drawn as faint vertical glass cylinders) -->
                                     <rect v-for="(b, idx) in chartPoints" :key="'vol-bar-'+idx"
-                                          :x="b.x - 3" :y="b.vy" width="6" :height="200 - b.vy"
+                                          :x="b.x - 3" :y="b.vy" width="6" :height="220 - b.vy"
                                           fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" stroke-width="0.5" rx="1"/>
                                 </svg>
                                 <div class="flex justify-between text-[8px] text-white/30 px-9 mt-1 font-mono">
+                                    <span>{{ history[0]?.collected_at }}</span>
+                                    <span>{{ history[Math.floor(history.length / 2)]?.collected_at }}</span>
+                                    <span>{{ history[history.length - 1]?.collected_at }}</span>
                                     <span>{{ history[0].collected_at }}</span>
                                     <span>{{ history[Math.floor(history.length / 2)].collected_at }}</span>
                                     <span>{{ history[history.length - 1].collected_at }}</span>
