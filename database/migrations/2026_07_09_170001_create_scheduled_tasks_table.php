@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('account_id')->constrained('accounts')->cascadeOnDelete();
             $table->string('task_type');
             $table->json('payload');
-            $table->time('run_at_time');
+            $table->time('run_at_time')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamp('last_run_at')->nullable();
             $table->text('last_result')->nullable();
