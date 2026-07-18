@@ -2,11 +2,11 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
-use Illuminate\Support\Facades\Storage;
-use App\Models\MarketOffer;
 use App\Models\MarketHistory;
+use App\Models\MarketOffer;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
+use Tests\TestCase;
 
 class MarketAnalyticsTest extends TestCase
 {
@@ -23,16 +23,16 @@ class MarketAnalyticsTest extends TestCase
         $response = $this->getJson('/api/market/settings');
 
         $response->assertStatus(200)
-                 ->assertJsonStructure([
-                     'settings' => [
-                         'account_id',
-                         'sync_interval',
-                         'custom_interval_minutes',
-                     ],
-                     'accounts',
-                     'connection_status',
-                     'last_sync',
-                 ]);
+            ->assertJsonStructure([
+                'settings' => [
+                    'account_id',
+                    'sync_interval',
+                    'custom_interval_minutes',
+                ],
+                'accounts',
+                'connection_status',
+                'last_sync',
+            ]);
     }
 
     public function test_update_settings_validates_input(): void
@@ -42,7 +42,7 @@ class MarketAnalyticsTest extends TestCase
         ]);
 
         $response->assertStatus(422)
-                 ->assertJsonValidationErrors(['sync_interval']);
+            ->assertJsonValidationErrors(['sync_interval']);
     }
 
     public function test_update_settings_saves_correct_data(): void
@@ -54,10 +54,10 @@ class MarketAnalyticsTest extends TestCase
         ]);
 
         $response->assertStatus(200)
-                 ->assertJson(['success' => true]);
+            ->assertJson(['success' => true]);
 
         Storage::disk('local')->assertExists('market_settings.json');
-        
+
         $settings = json_decode(Storage::disk('local')->get('market_settings.json'), true);
         $this->assertEquals('30', $settings['sync_interval']);
     }
@@ -117,11 +117,11 @@ class MarketAnalyticsTest extends TestCase
         $response = $this->getJson('/api/market/analytics');
 
         $response->assertStatus(200)
-                 ->assertJsonStructure([
-                     'popular',
-                     'active_offers',
-                     'total_active_count'
-                 ]);
+            ->assertJsonStructure([
+                'popular',
+                'active_offers',
+                'total_active_count',
+            ]);
 
         $this->assertEquals(1, $response->json('total_active_count'));
 
@@ -141,23 +141,23 @@ class MarketAnalyticsTest extends TestCase
         $response = $this->getJson('/api/market/analytics?item_id=Oil&target_item_id=Coin');
 
         $response->assertStatus(200)
-                 ->assertJsonStructure([
-                     'stats' => [
-                         'average',
-                         'minimum',
-                         'maximum',
-                         'current',
-                     ],
-                     'history',
-                     'mirrored_stats',
-                     'mirrored_history'
-                 ]);
+            ->assertJsonStructure([
+                'stats' => [
+                    'average',
+                    'minimum',
+                    'maximum',
+                    'current',
+                ],
+                'history',
+                'mirrored_stats',
+                'mirrored_history',
+            ]);
 
         // Average should be (0.5 + 0.6) / 2 = 0.55
         $this->assertEquals(0.55, $response->json('stats.average'));
         $this->assertEquals(0.5, $response->json('stats.minimum'));
         $this->assertEquals(0.6, $response->json('stats.maximum'));
-        
+
         // Current should be the latest recorded price in history (0.5 was collected 1 hour ago, which is newer than 2 hours ago)
         $this->assertEquals(0.5, $response->json('stats.current'));
     }
@@ -207,9 +207,9 @@ class MarketAnalyticsTest extends TestCase
 
         $response->assertStatus(200);
         $loops = $response->json();
-        
+
         $this->assertNotEmpty($loops);
-        
+
         // Loop 0 (Steel_Swords -> Iron_Ore -> Steel_Swords)
         $this->assertEquals('2-step', $loops[0]['type']);
         $this->assertEquals('Steel_Swords', $loops[0]['start_resource']);
@@ -268,7 +268,7 @@ class MarketAnalyticsTest extends TestCase
         $response = $this->getJson('/api/market/analytics');
 
         $response->assertStatus(200);
-        
+
         $activeOffers = $response->json('active_offers');
         // Only 301 should be returned, 302 should be filtered out
         $this->assertCount(1, $activeOffers);
