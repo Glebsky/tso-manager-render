@@ -15,12 +15,19 @@ class ScheduledTask extends Model
         'is_active',
         'last_run_at',
         'last_result',
+        'schedule_type',
+        'run_at_datetime',
+        'interval_hours',
+        'interval_minutes',
     ];
 
     protected $casts = [
-        'payload'     => 'array',
-        'is_active'   => 'boolean',
+        'payload' => 'array',
+        'is_active' => 'boolean',
         'last_run_at' => 'datetime',
+        'run_at_datetime' => 'datetime',
+        'interval_hours' => 'integer',
+        'interval_minutes' => 'integer',
     ];
 
     public function account(): BelongsTo

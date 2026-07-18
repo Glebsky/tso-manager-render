@@ -24,9 +24,9 @@ class MarketOffer extends Model
     ];
 
     protected $casts = [
-        'created_at'   => 'datetime',
+        'created_at' => 'datetime',
         'collected_at' => 'datetime',
-        'price'        => 'double',
+        'price' => 'double',
     ];
 
     public $timestamps = false;

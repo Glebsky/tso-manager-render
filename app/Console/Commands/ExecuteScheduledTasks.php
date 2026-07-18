@@ -12,50 +12,95 @@ use Illuminate\Console\Command;
 
 class ExecuteScheduledTasks extends Command
 {
-    protected $signature   = 'tso:execute-tasks';
+    protected $signature = 'tso:execute-tasks {--task= : Run a specific task ID directly}';
+
     protected $description = 'Execute scheduled TSO tasks that match the current time (±1 minute tolerance).';
 
     private TsoAuthService $authService;
-    private TsoAmfService  $amfService;
+
+    private TsoAmfService $amfService;
 
     public function __construct(TsoAuthService $authService, TsoAmfService $amfService)
     {
         parent::__construct();
         $this->authService = $authService;
-        $this->amfService  = $amfService;
+        $this->amfService = $amfService;
     }
 
     public function handle(): int
     {
-        $now         = Carbon::now();
-        $currentTime = $now->format('H:i');
+        $now = Carbon::now();
 
-        // Also check 1 minute before (tolerance)
-        $prevMinute = $now->copy()->subMinute()->format('H:i');
+        $singleTaskId = $this->option('task');
+        if ($singleTaskId) {
+            $task = ScheduledTask::with('account')->find($singleTaskId);
+            if (! $task) {
+                $this->error("Task #{$singleTaskId} not found.");
 
-        $tasks = ScheduledTask::where('is_active', true)
-            ->where(function ($query) use ($currentTime, $prevMinute) {
-                $query->whereRaw("TO_CHAR(run_at_time, 'HH24:MI') = ?", [$currentTime])
-                      ->orWhereRaw("TO_CHAR(run_at_time, 'HH24:MI') = ?", [$prevMinute]);
-            })
-            ->where(function ($query) use ($now) {
-                // Don't re-run if already ran within last 2 minutes
-                $query->whereNull('last_run_at')
-                      ->orWhere('last_run_at', '<', $now->copy()->subMinutes(2));
-            })
-            ->with('account')
-            ->get();
+                return self::FAILURE;
+            }
+            $this->processTask($task);
 
-        if ($tasks->isEmpty()) {
-            $this->info("No tasks to run at {$currentTime}.");
             return self::SUCCESS;
         }
 
-        foreach ($tasks as $task) {
+        $activeTasks = ScheduledTask::where('is_active', true)->with('account')->get();
+        $tasksToRun = [];
+
+        foreach ($activeTasks as $task) {
+            $shouldRun = false;
+
+            if ($task->schedule_type === 'daily' || is_null($task->schedule_type)) {
+                if ($task->run_at_time) {
+                    $currentTime = $now->format('H:i');
+                    $prevMinute = $now->copy()->subMinute()->format('H:i');
+                    $runTime = Carbon::parse($task->run_at_time)->format('H:i');
+
+                    if ($runTime === $currentTime || $runTime === $prevMinute) {
+                        if (is_null($task->last_run_at) || $task->last_run_at->lt($now->copy()->subMinutes(2))) {
+                            $shouldRun = true;
+                        }
+                    }
+                }
+            } elseif ($task->schedule_type === 'once') {
+                if ($task->run_at_datetime && is_null($task->last_run_at)) {
+                    if ($now->greaterThanOrEqualTo($task->run_at_datetime)) {
+                        $shouldRun = true;
+                    }
+                }
+            } elseif ($task->schedule_type === 'interval') {
+                $hours = (int) $task->interval_hours;
+                $minutes = (int) $task->interval_minutes;
+                $intervalTotalMinutes = ($hours * 60) + $minutes;
+
+                if ($intervalTotalMinutes > 0) {
+                    $baseline = $task->last_run_at ?? $task->created_at;
+                    if ($baseline) {
+                        $diffInMinutes = $now->diffInMinutes($baseline);
+                        if ($diffInMinutes >= $intervalTotalMinutes) {
+                            $shouldRun = true;
+                        }
+                    }
+                }
+            }
+
+            if ($shouldRun) {
+                $tasksToRun[] = $task;
+            }
+        }
+
+        if (empty($tasksToRun)) {
+            $this->info("No tasks to run at {$now->toDateTimeString()}.");
+
+            return self::SUCCESS;
+        }
+
+        foreach ($tasksToRun as $task) {
             $this->processTask($task);
         }
 
-        $this->info("Processed {$tasks->count()} task(s).");
+        $this->info('Processed '.count($tasksToRun).' task(s).');
+
         return self::SUCCESS;
     }
 
@@ -66,73 +111,120 @@ class ExecuteScheduledTasks extends Command
 
         try {
             // Authenticate if needed
-            if (!$this->authService->isAuthenticated($account)) {
+            if (! $this->authService->isAuthenticated($account)) {
                 $this->authService->login($account);
                 $account->refresh();
             }
 
             $payload = $task->payload ?? [];
-            $result  = '';
+            $result = '';
 
-            switch ($task->task_type) {
-                case 'stop_production':
-                    $grid   = $payload['grid'] ?? 0;
-                    $result = $this->amfService->stopProduction($account, (int) $grid);
-                    break;
+            if ($task->task_type === 'sequence') {
+                $actions = $payload['actions'] ?? [];
+                $executedCount = 0;
+                $resultsSummary = [];
 
-                case 'start_production':
-                    $grid   = $payload['grid'] ?? 0;
-                    $result = $this->amfService->startProduction($account, (int) $grid);
-                    break;
+                foreach ($actions as $index => $action) {
+                    $actionType = $action['task_type'];
+                    $actionPayload = $action['payload'] ?? [];
+                    $delay = (int) ($action['delay_seconds'] ?? 0);
 
-                case 'apply_buff':
-                    $grid      = $payload['grid'] ?? 0;
-                    $uniqueId1 = $payload['unique_id1'] ?? 0;
-                    $uniqueId2 = $payload['unique_id2'] ?? 0;
-                    $result    = $this->amfService->applyBuff($account, (int) $grid, (int) $uniqueId1, (int) $uniqueId2);
-                    break;
+                    $this->info('  → Executing step '.($index + 1).'/'.count($actions).": [{$actionType}]");
 
-                case 'send_geologist':
-                case 'send_explorer':
-                    $taskType  = $payload['task_type'] ?? 0;
-                    $subTaskId = $payload['sub_task_id'] ?? 0;
-                    $uniqueId1 = $payload['unique_id1'] ?? 0;
-                    $uniqueId2 = $payload['unique_id2'] ?? 0;
-                    $result    = $this->amfService->sendSpecialist($account, (int) $taskType, (int) $subTaskId, (int) $uniqueId1, (int) $uniqueId2);
-                    break;
+                    // Run the single action
+                    $stepResult = $this->executeSingleAction($account, $actionType, $actionPayload);
+                    $executedCount++;
+                    $resultsSummary[] = 'Step '.($index + 1)." [{$actionType}]: OK (".strlen($stepResult).' bytes)';
 
-                default:
-                    throw new Exception("Unknown task type: {$task->task_type}");
+                    // Create step bot log
+                    BotLog::create([
+                        'account_id' => $account->id,
+                        'level' => 'success',
+                        'message' => "Sequence task #{$task->id} step ".($index + 1)." [{$actionType}] executed successfully.",
+                    ]);
+
+                    // If not the last action, and delay > 0, sleep
+                    if ($index < count($actions) - 1 && $delay > 0) {
+                        $this->info("  → Sleeping for {$delay} seconds before next step...");
+                        sleep($delay);
+                    }
+                }
+
+                $result = implode('; ', $resultsSummary);
+            } else {
+                $result = $this->executeSingleAction($account, $task->task_type, $payload);
             }
 
-            $task->update([
+            $updateData = [
                 'last_run_at' => now(),
-                'last_result' => 'OK: AMF response received (' . strlen($result) . ' bytes)',
-            ]);
+                'last_result' => 'OK: '.(strlen($result) > 100 ? substr($result, 0, 97).'...' : $result),
+            ];
+            if ($task->schedule_type === 'once') {
+                $updateData['is_active'] = false;
+            }
+            $task->update($updateData);
 
             BotLog::create([
                 'account_id' => $account->id,
-                'level'      => 'success',
-                'message'    => "Scheduled [{$task->task_type}] executed successfully.",
+                'level' => 'success',
+                'message' => "Scheduled [{$task->task_type}] executed successfully. ".(strlen($result) > 100 ? substr($result, 0, 97).'...' : $result),
             ]);
 
-            $this->info("  → Success.");
+            $this->info('  → Success.');
 
         } catch (Exception $e) {
             $errorMsg = $e->getMessage();
 
-            $task->update([
+            $updateData = [
                 'last_run_at' => now(),
-                'last_result' => 'ERROR: ' . $errorMsg,
-            ]);
+                'last_result' => 'ERROR: '.$errorMsg,
+            ];
+            if ($task->schedule_type === 'once') {
+                $updateData['is_active'] = false;
+            }
+            $task->update($updateData);
 
             BotLog::create([
                 'account_id' => $account->id,
-                'level'      => 'error',
-                'message'    => "Scheduled [{$task->task_type}] failed: {$errorMsg}",
+                'level' => 'error',
+                'message' => "Scheduled [{$task->task_type}] failed: {$errorMsg}",
             ]);
 
             $this->error("  → Failed: {$errorMsg}");
+        }
+    }
+
+    private function executeSingleAction($account, string $taskType, array $payload): string
+    {
+        switch ($taskType) {
+            case 'stop_production':
+                $grid = $payload['grid'] ?? 0;
+
+                return $this->amfService->stopProduction($account, (int) $grid);
+
+            case 'start_production':
+                $grid = $payload['grid'] ?? 0;
+
+                return $this->amfService->startProduction($account, (int) $grid);
+
+            case 'apply_buff':
+                $grid = $payload['grid'] ?? 0;
+                $uniqueId1 = $payload['unique_id1'] ?? 0;
+                $uniqueId2 = $payload['unique_id2'] ?? 0;
+
+                return $this->amfService->applyBuff($account, (int) $grid, (int) $uniqueId1, (int) $uniqueId2);
+
+            case 'send_geologist':
+            case 'send_explorer':
+                $taskTypeVal = $payload['task_type'] ?? 0;
+                $subTaskId = $payload['sub_task_id'] ?? 0;
+                $uniqueId1 = $payload['unique_id1'] ?? 0;
+                $uniqueId2 = $payload['unique_id2'] ?? 0;
+
+                return $this->amfService->sendSpecialist($account, (int) $taskTypeVal, (int) $subTaskId, (int) $uniqueId1, (int) $uniqueId2);
+
+            default:
+                throw new Exception("Unknown action type: {$taskType}");
         }
     }
 }

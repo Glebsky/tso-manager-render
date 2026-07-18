@@ -4,24 +4,26 @@ namespace App\Http\Controllers;
 
 use App\Models\Account;
 use App\Models\BotLog;
-use App\Services\TsoAuthService;
 use App\Services\TsoAmfService;
+use App\Services\TsoAuthService;
 use App\Services\ZoneParserService;
-use Illuminate\Http\Request;
 use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class AccountController extends Controller
 {
-    private TsoAuthService    $authService;
-    private TsoAmfService     $amfService;
+    private TsoAuthService $authService;
+
+    private TsoAmfService $amfService;
+
     private ZoneParserService $zoneParser;
 
     public function __construct(TsoAuthService $authService, TsoAmfService $amfService, ZoneParserService $zoneParser)
     {
         $this->authService = $authService;
-        $this->amfService  = $amfService;
-        $this->zoneParser  = $zoneParser;
+        $this->amfService = $amfService;
+        $this->zoneParser = $zoneParser;
     }
 
     /**
@@ -30,6 +32,7 @@ class AccountController extends Controller
     public function index()
     {
         $accounts = Account::latest()->get();
+
         return response()->json($accounts);
     }
 
@@ -41,7 +44,7 @@ class AccountController extends Controller
         $validated = $request->validate([
             'username' => 'required|string|max:255',
             'password' => 'required|string',
-            'region'   => 'required|string|max:10',
+            'region' => 'required|string|max:10',
         ]);
 
         $account = Account::create($validated);
@@ -49,7 +52,7 @@ class AccountController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Account added.',
-            'account' => $account
+            'account' => $account,
         ], 201);
     }
 
@@ -76,7 +79,7 @@ class AccountController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Account deleted.'
+            'message' => 'Account deleted.',
         ]);
     }
 
@@ -91,7 +94,7 @@ class AccountController extends Controller
             $account->update(['status' => 'syncing']);
 
             // Login if tokens are missing
-            if (!$this->authService->isAuthenticated($account)) {
+            if (! $this->authService->isAuthenticated($account)) {
                 Log::info("Account {$account->id} token missing or expired, performing login");
                 $this->authService->login($account);
                 $account->refresh();
@@ -113,13 +116,14 @@ class AccountController extends Controller
                     Log::info("Fetching zone AMF for account {$account->id} (attempt {$attempt}/{$maxRetries})");
                     $rawAmf = $this->amfService->getZone($account);
                     $zoneData = $this->zoneParser->parse($rawAmf);
-                    
+
                     $errorCode = $zoneData['errorCode'] ?? 0;
                     $buildingCount = count($zoneData['buildings'] ?? []);
 
                     if ($errorCode === 1012) {
                         Log::info("Received error 1012 (Zone loading) for account {$account->id}. Waiting {$retryDelay}s and retrying...");
                         sleep($retryDelay);
+
                         continue;
                     }
 
@@ -134,6 +138,7 @@ class AccountController extends Controller
                         $account->refresh();
                         $hasResetSession = true;
                         sleep(2);
+
                         continue;
                     }
 
@@ -145,37 +150,37 @@ class AccountController extends Controller
                             Log::info("Fetching friend list AMF for account {$account->id}");
                             $rawFriendsAmf = $this->amfService->getFriendList($account);
                             $friendsData = $this->zoneParser->parse($rawFriendsAmf);
-                            
+
                             $parsedPlayers = $friendsData['players'] ?? [];
-                            if (!empty($parsedPlayers)) {
-                                Log::info("Successfully fetched " . count($parsedPlayers) . " players from friends list for account {$account->id}");
+                            if (! empty($parsedPlayers)) {
+                                Log::info('Successfully fetched '.count($parsedPlayers)." players from friends list for account {$account->id}");
                                 $friendsList = [];
                                 $ownerUid = $zoneData['userID'] ?? null;
-                                
+
                                 foreach ($parsedPlayers as $p) {
                                     $puid = $p['userID'] ?? null;
                                     if ($puid && $ownerUid && $puid == $ownerUid) {
                                         continue;
                                     }
                                     $friendsList[] = [
-                                        'username'     => $p['username_string'] ?? $p['username'] ?? $p['nickname'] ?? 'Unknown',
-                                        'nickname'     => $p['nickname'] ?? $p['username_string'] ?? $p['username'] ?? 'Unknown',
-                                        'playerLevel'  => $p['playerLevel'] ?? $p['level'] ?? 1,
-                                        'level'        => $p['playerLevel'] ?? $p['level'] ?? 1,
-                                        'avatarId'     => $p['avatarId'] ?? 1,
+                                        'username' => $p['username_string'] ?? $p['username'] ?? $p['nickname'] ?? 'Unknown',
+                                        'nickname' => $p['nickname'] ?? $p['username_string'] ?? $p['username'] ?? 'Unknown',
+                                        'playerLevel' => $p['playerLevel'] ?? $p['level'] ?? 1,
+                                        'level' => $p['playerLevel'] ?? $p['level'] ?? 1,
+                                        'avatarId' => $p['avatarId'] ?? 1,
                                         'onlineStatus' => $p['onlineStatus'] ?? false,
                                     ];
                                 }
                                 $zoneData['friends'] = $friendsList;
                             }
                         } catch (\Exception $fe) {
-                            Log::warning("Failed to fetch friends list for account {$account->id}: " . $fe->getMessage());
+                            Log::warning("Failed to fetch friends list for account {$account->id}: ".$fe->getMessage());
                         }
 
                         break;
                     }
                 } catch (\Exception $e) {
-                    Log::warning("Attempt {$attempt}/{$maxRetries} failed for account {$account->id}: " . $e->getMessage());
+                    Log::warning("Attempt {$attempt}/{$maxRetries} failed for account {$account->id}: ".$e->getMessage());
                     $lastException = $e;
                 }
 
@@ -187,7 +192,7 @@ class AccountController extends Controller
             if ($errorCode !== 0) {
                 $account->update(['status' => 'error']);
                 if ($errorCode === 1012) {
-                    throw new Exception("Игровая зона занята или заблокирована (ошибка 1012). Пожалуйста, выйдите из игры через кнопку «Выход» в меню игры (а не просто закрыв окно), подождите пару минут и попробуйте синхронизацию снова.");
+                    throw new Exception('Игровая зона занята или заблокирована (ошибка 1012). Пожалуйста, выйдите из игры через кнопку «Выход» в меню игры (а не просто закрыв окно), подождите пару минут и попробуйте синхронизацию снова.');
                 }
                 throw new Exception("Server error code {$errorCode}. The zone may not be loaded yet — try again in a few seconds.");
             }
@@ -199,32 +204,32 @@ class AccountController extends Controller
 
             // Save
             $account->update([
-                'zone_data'    => json_encode($zoneData, JSON_UNESCAPED_UNICODE),
+                'zone_data' => json_encode($zoneData, JSON_UNESCAPED_UNICODE),
                 'last_sync_at' => now(),
-                'status'       => 'online',
+                'status' => 'online',
             ]);
 
             $specialistCount = count($zoneData['specialists'] ?? []);
             $buffCount = count($zoneData['buffs'] ?? []);
             $resourceCount = count($zoneData['resources'] ?? []);
 
-            Log::info("Account {$account->id} synced successfully. Level: " . ($zoneData['level'] ?? 'N/A') . ", Server: " . ($zoneData['gameWorldName'] ?? 'N/A') . ", Buildings: {$buildingCount}, Resources: {$resourceCount}");
+            Log::info("Account {$account->id} synced successfully. Level: ".($zoneData['level'] ?? 'N/A').', Server: '.($zoneData['gameWorldName'] ?? 'N/A').", Buildings: {$buildingCount}, Resources: {$resourceCount}");
 
             BotLog::create([
                 'account_id' => $account->id,
-                'level'      => 'success',
-                'message'    => 'Zone synced: ' . $buildingCount . ' buildings, ' . $resourceCount . ' resources, ' . $specialistCount . ' specialists, ' . $buffCount . ' buffs.',
+                'level' => 'success',
+                'message' => 'Zone synced: '.$buildingCount.' buildings, '.$resourceCount.' resources, '.$specialistCount.' specialists, '.$buffCount.' buffs.',
             ]);
 
             return response()->json([
-                'success'   => true,
-                'message'   => 'Zone synced successfully.',
-                'account'   => $account,
-                'zone_data' => $zoneData
+                'success' => true,
+                'message' => 'Zone synced successfully.',
+                'account' => $account,
+                'zone_data' => $zoneData,
             ]);
         } catch (Exception $e) {
-            Log::error("Sync failed for account {$account->id}: " . $e->getMessage(), ['exception' => $e]);
-            
+            Log::error("Sync failed for account {$account->id}: ".$e->getMessage(), ['exception' => $e]);
+
             // Don't overwrite status if it was already set to 'error' above
             if ($account->status !== 'error') {
                 $account->update(['status' => 'error']);
@@ -232,14 +237,14 @@ class AccountController extends Controller
 
             BotLog::create([
                 'account_id' => $account->id,
-                'level'      => 'error',
-                'message'    => 'Sync failed: ' . $e->getMessage(),
+                'level' => 'error',
+                'message' => 'Sync failed: '.$e->getMessage(),
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Sync failed: ' . $e->getMessage(),
-                'account' => $account->fresh()
+                'message' => 'Sync failed: '.$e->getMessage(),
+                'account' => $account->fresh(),
             ], 500);
         }
     }
@@ -255,13 +260,13 @@ class AccountController extends Controller
 
         try {
             // Ensure authenticated
-            if (!$this->authService->isAuthenticated($account)) {
+            if (! $this->authService->isAuthenticated($account)) {
                 $this->authService->login($account);
                 $account->refresh();
             }
 
             $actionType = $request->input('action_type');
-            $result     = '';
+            $result = '';
 
             switch ($actionType) {
                 case 'stop_production':
@@ -276,7 +281,7 @@ class AccountController extends Controller
 
                 case 'apply_buff':
                     $request->validate([
-                        'grid'       => 'required|integer',
+                        'grid' => 'required|integer',
                         'unique_id1' => 'required|integer',
                         'unique_id2' => 'required|integer',
                     ]);
@@ -290,10 +295,10 @@ class AccountController extends Controller
 
                 case 'send_specialist':
                     $request->validate([
-                        'task_type'   => 'required|integer',
+                        'task_type' => 'required|integer',
                         'sub_task_id' => 'required|integer',
-                        'unique_id1'  => 'required|integer',
-                        'unique_id2'  => 'required|integer',
+                        'unique_id1' => 'required|integer',
+                        'unique_id2' => 'required|integer',
                     ]);
                     $result = $this->amfService->sendSpecialist(
                         $account,
@@ -307,24 +312,24 @@ class AccountController extends Controller
 
             BotLog::create([
                 'account_id' => $account->id,
-                'level'      => 'success',
-                'message'    => "Action [{$actionType}] executed successfully.",
+                'level' => 'success',
+                'message' => "Action [{$actionType}] executed successfully.",
             ]);
 
             return response()->json([
                 'success' => true,
-                'message' => "Action [{$actionType}] executed successfully."
+                'message' => "Action [{$actionType}] executed successfully.",
             ]);
         } catch (Exception $e) {
             BotLog::create([
                 'account_id' => $account->id,
-                'level'      => 'error',
-                'message'    => "Action [{$request->input('action_type')}] failed: " . $e->getMessage(),
+                'level' => 'error',
+                'message' => "Action [{$request->input('action_type')}] failed: ".$e->getMessage(),
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Action failed: ' . $e->getMessage()
+                'message' => 'Action failed: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -336,15 +341,15 @@ class AccountController extends Controller
     {
         $validated = $request->validate([
             'dso_auth_token' => 'required|string',
-            'dso_auth_user'  => 'required|string',
-            'bb_url'         => 'required|url',
+            'dso_auth_user' => 'required|string',
+            'bb_url' => 'required|url',
         ]);
 
         $account->update([
             'dso_auth_token' => $validated['dso_auth_token'],
-            'dso_auth_user'  => $validated['dso_auth_user'],
-            'bb_url'         => $validated['bb_url'],
-            'status'         => 'online',
+            'dso_auth_user' => $validated['dso_auth_user'],
+            'bb_url' => $validated['bb_url'],
+            'status' => 'online',
         ]);
 
         // Clear cached client connection so the new tokens are used immediately
@@ -352,14 +357,14 @@ class AccountController extends Controller
 
         BotLog::create([
             'account_id' => $account->id,
-            'level'      => 'success',
-            'message'    => 'Сессия обновлена вручную.',
+            'level' => 'success',
+            'message' => 'Сессия обновлена вручную.',
         ]);
 
         return response()->json([
             'success' => true,
             'message' => 'Сессия успешно обновлена вручную.',
-            'account' => $account
+            'account' => $account,
         ]);
     }
 }

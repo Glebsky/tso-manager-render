@@ -87,20 +87,44 @@
             </nav>
 
             <!-- Sidebar footer -->
-            <div class="px-4 py-4 border-t border-white/5">
-                <div class="glass-card p-3">
-                    <div class="flex items-center gap-2">
-                        <div class="w-2 h-2 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50 animate-pulse"></div>
-                        <span class="text-xs text-white/40">System Online</span>
+            <div class="px-4 py-4 border-t border-white/5 mt-auto">
+                <div class="glass-card p-3 space-y-2">
+                    <div class="flex items-center justify-between text-[11px]">
+                        <span class="text-white/40">Локальное:</span>
+                        <span class="text-white font-mono font-medium">{{ localTimeStr }}</span>
                     </div>
-                    <p class="text-[10px] text-white/20 mt-1">v1.0.0 · SPA Vue 3 Edition</p>
+                    <div class="flex items-center justify-between text-[11px] border-t border-white/5 pt-1.5">
+                        <span class="text-white/40">Серверное:</span>
+                        <span class="text-emerald-400 font-mono font-medium">{{ serverTimeStr }}</span>
+                    </div>
+                    <div class="flex items-center gap-2 border-t border-white/5 pt-1.5">
+                        <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50 animate-pulse"></div>
+                        <span class="text-[9px] text-white/20">Система в сети</span>
+                    </div>
                 </div>
             </div>
         </aside>
 
         <!-- MAIN CONTENT -->
-        <main class="flex-1 ml-64 min-h-full">
-            <div class="p-8 h-full overflow-y-auto">
+        <main class="flex-1 ml-64 min-h-full flex flex-col">
+            <!-- Header clock bar -->
+            <header class="h-16 border-b border-white/5 flex items-center justify-between px-8 bg-dark-950/20 backdrop-blur-md sticky top-0 z-20">
+                <div>
+                    <span class="text-xs text-white/40">Панель управления TSO</span>
+                </div>
+                <div class="flex items-center gap-6 text-xs text-white/60">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                        <span>Локальное время: <strong class="text-white font-mono">{{ localTimeStr }}</strong></span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span>Время сервера: <strong class="text-white font-mono">{{ serverTimeStr }}</strong></span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="p-8 flex-1 overflow-y-auto">
                 <router-view v-slot="{ Component }">
                     <transition name="page" mode="out-in">
                         <component :is="Component" />
@@ -110,52 +134,124 @@
         </main>
     </div>
 
-        <!-- TOAST CONTAINER (outside main flex to ensure top-level stacking) -->
-        <div class="fixed top-5 right-5 z-[9999] max-w-sm w-full pointer-events-none">
-            <transition-group name="toast" tag="div" class="flex flex-col gap-3">
-                <div v-for="t in toasts" :key="t.id"
-                     class="glass-card p-4 pointer-events-auto shadow-2xl transition-all duration-300 w-full"
-                     :class="{
-                         'border-emerald-500/30 bg-emerald-500/10': t.type === 'success',
-                         'border-red-500/30 bg-red-500/10': t.type === 'error',
-                         'border-amber-500/30 bg-amber-500/10': t.type === 'warning'
-                     }">
-                    <div class="flex items-start gap-3">
-                        <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                             :class="{
-                                 'bg-emerald-500/20 text-emerald-400': t.type === 'success',
-                                 'bg-red-500/20 text-red-400': t.type === 'error',
-                                 'bg-amber-500/20 text-amber-400': t.type === 'warning'
-                             }">
-                            <svg v-if="t.type === 'success'" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
-                            </svg>
-                            <svg v-else class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
-                            </svg>
-                        </div>
-                        <p class="text-sm font-medium pt-1.5"
-                           :class="{
-                               'text-emerald-300': t.type === 'success',
-                               'text-red-300': t.type === 'error',
-                               'text-amber-300': t.type === 'warning'
-                           }">
-                            {{ t.message }}
-                        </p>
+    <!-- TOAST CONTAINER (outside main flex to ensure top-level stacking) -->
+    <div class="fixed top-5 right-5 z-[9999] max-w-sm w-full pointer-events-none">
+        <transition-group name="toast" tag="div" class="flex flex-col gap-3">
+            <div v-for="t in toasts" :key="t.id"
+                 class="glass-card p-4 pointer-events-auto shadow-2xl transition-all duration-300 w-full"
+                 :class="{
+                     'border-emerald-500/30 bg-emerald-500/10': t.type === 'success',
+                     'border-red-500/30 bg-red-500/10': t.type === 'error',
+                     'border-amber-500/30 bg-amber-500/10': t.type === 'warning'
+                 }">
+                <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                         :class="{
+                             'bg-emerald-500/20 text-emerald-400': t.type === 'success',
+                             'bg-red-500/20 text-red-400': t.type === 'error',
+                             'bg-amber-500/20 text-amber-400': t.type === 'warning'
+                         }">
+                        <svg v-if="t.type === 'success'" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                        </svg>
+                        <svg v-else class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                        </svg>
                     </div>
+                    <p class="text-sm font-medium pt-1.5"
+                       :class="{
+                           'text-emerald-300': t.type === 'success',
+                           'text-red-300': t.type === 'error',
+                           'text-amber-300': t.type === 'warning'
+                       }">
+                        {{ t.message }}
+                    </p>
                 </div>
-            </transition-group>
-        </div>
+            </div>
+        </transition-group>
+    </div>
 </template>
 
 <script>
+import { ref, onMounted, onUnmounted } from 'vue';
 import { toasts } from './toast';
+import axios from 'axios';
 
 export default {
     name: 'App',
     setup() {
+        const localTimeStr = ref('');
+        const serverTimeStr = ref('');
+        const serverOffset = ref(0);
+        let timer = null;
+
+        const updateClocks = () => {
+            try {
+                const now = new Date();
+                
+                // Local Time Formatting
+                localTimeStr.value = now.toLocaleDateString('ru-RU', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                }) + ' ' + now.toLocaleTimeString('ru-RU', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+
+                // Server Time Formatting
+                let offset = serverOffset.value;
+                if (typeof offset !== 'number' || isNaN(offset)) {
+                    offset = 0;
+                }
+                
+                const serverTime = new Date(now.getTime() + offset);
+                
+                if (isNaN(serverTime.getTime())) {
+                    serverTimeStr.value = localTimeStr.value;
+                } else {
+                    serverTimeStr.value = serverTime.toLocaleDateString('ru-RU', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
+                    }) + ' ' + serverTime.toLocaleTimeString('ru-RU', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+                }
+            } catch (err) {
+                console.error('Clock update error:', err);
+            }
+        };
+
+        const syncServerTime = async () => {
+            try {
+                const res = await axios.get('/api/settings');
+                if (res.data && res.data.server_time) {
+                    const serverTimeMs = Date.parse(res.data.server_time);
+                    serverOffset.value = serverTimeMs - Date.now();
+                }
+            } catch (e) {
+                console.error('Failed to sync server time:', e);
+            }
+        };
+
+        onMounted(async () => {
+            await syncServerTime();
+            updateClocks();
+            timer = setInterval(updateClocks, 1000);
+        });
+
+        onUnmounted(() => {
+            if (timer) clearInterval(timer);
+        });
+
         return {
-            toasts
+            toasts,
+            localTimeStr,
+            serverTimeStr
         };
     }
 };

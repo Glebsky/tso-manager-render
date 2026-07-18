@@ -24,7 +24,7 @@ class MarketHistory extends Model
 
     protected $casts = [
         'collected_at' => 'datetime',
-        'price'        => 'double',
+        'price' => 'double',
     ];
 
     public $timestamps = false;

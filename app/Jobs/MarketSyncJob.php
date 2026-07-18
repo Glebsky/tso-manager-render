@@ -34,7 +34,7 @@ class MarketSyncJob implements ShouldQueue
             Log::info("Running MarketSyncJob for account #{$this->account->id}");
             $syncService->sync($this->account);
         } catch (\Exception $e) {
-            Log::error("MarketSyncJob failed: " . $e->getMessage());
+            Log::error('MarketSyncJob failed: '.$e->getMessage());
             // Re-throw to fail the job in queue
             throw $e;
         }

@@ -46,10 +46,11 @@ class SettingsController extends Controller
         if (Storage::disk('local')->exists($this->getSettingsPath())) {
             return json_decode(Storage::disk('local')->get($this->getSettingsPath()), true) ?? [];
         }
+
         return [
-            'sync_interval'        => 30,
-            'log_retention_days'   => 30,
-            'timezone'             => 'UTC',
+            'sync_interval' => 30,
+            'log_retention_days' => 30,
+            'timezone' => 'UTC',
         ];
     }
 
@@ -61,41 +62,45 @@ class SettingsController extends Controller
     public function index()
     {
         $settings = $this->loadSettings();
+        $settings['server_time'] = now()->toIso8601String();
+
         return response()->json($settings);
     }
 
     public function update(Request $request)
     {
         $validated = $request->validate([
-            'sync_interval'      => 'required|integer|in:0,5,15,30,60',
+            'sync_interval' => 'required|integer|in:0,5,15,30,60',
             'log_retention_days' => 'required|integer|in:0,7,14,30,90',
-            'timezone'           => 'required|string|in:' . implode(',', self::TIMEZONES),
+            'timezone' => 'required|string|in:'.implode(',', self::TIMEZONES),
         ]);
 
         $this->saveSettings($validated);
 
         return response()->json([
-            'success'  => true,
-            'message'  => 'Settings updated.',
-            'settings' => $validated
+            'success' => true,
+            'message' => 'Settings updated.',
+            'settings' => $validated,
         ]);
     }
 
     public function clearLogs()
     {
         BotLog::truncate();
+
         return response()->json([
             'success' => true,
-            'message' => 'All logs cleared.'
+            'message' => 'All logs cleared.',
         ]);
     }
 
     public function stopAllTasks()
     {
         ScheduledTask::query()->update(['is_active' => false]);
+
         return response()->json([
             'success' => true,
-            'message' => 'All scheduled tasks paused.'
+            'message' => 'All scheduled tasks paused.',
         ]);
     }
 }

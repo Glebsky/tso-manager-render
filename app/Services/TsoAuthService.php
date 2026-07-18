@@ -3,8 +3,8 @@
 namespace App\Services;
 
 use App\Models\Account;
-use Illuminate\Support\Facades\Storage;
 use Exception;
+use Illuminate\Support\Facades\Storage;
 
 class TsoAuthService
 {
@@ -12,21 +12,21 @@ class TsoAuthService
      * Server configurations per region.
      */
     private const SERVERS = [
-        'de'  => ['domain' => 'https://www.diesiedleronline.de',       'uplay' => '/de/api/user/uplay', 'main' => '/de/startseite',                                             'play' => '/de/spielen'],
-        'us'  => ['domain' => 'https://www.thesettlersonline.net',     'uplay' => '/en/api/user/uplay', 'main' => '/en/homepage',                                               'play' => '/en/play'],
-        'en'  => ['domain' => 'https://www.thesettlersonline.com',     'uplay' => '/en/api/user/uplay', 'main' => '/en/homepage',                                               'play' => '/en/play'],
-        'fr'  => ['domain' => 'https://www.thesettlersonline.fr',      'uplay' => '/fr/api/user/uplay', 'main' => '/fr/page-de-d%C3%A9marrage',                                 'play' => '/fr/jouer'],
-        'ru'  => ['domain' => 'https://www.thesettlersonline.ru',      'uplay' => '/ru/api/user/uplay', 'main' => '/ru/%D0%B3%D0%BB%D0%B0%D0%B2%D0%BD%D0%B0%D1%8F-%D1%81%D1%82%D1%80%D0%B0%D0%BD%D0%B8%D1%86%D0%B0', 'play' => '/ru/play'],
-        'pl'  => ['domain' => 'https://www.thesettlersonline.pl',      'uplay' => '/pl/api/user/uplay', 'main' => '/pl/strona-g%C5%82%C3%B3wna',                                'play' => '/pl/graj'],
+        'de' => ['domain' => 'https://www.diesiedleronline.de',       'uplay' => '/de/api/user/uplay', 'main' => '/de/startseite',                                             'play' => '/de/spielen'],
+        'us' => ['domain' => 'https://www.thesettlersonline.net',     'uplay' => '/en/api/user/uplay', 'main' => '/en/homepage',                                               'play' => '/en/play'],
+        'en' => ['domain' => 'https://www.thesettlersonline.com',     'uplay' => '/en/api/user/uplay', 'main' => '/en/homepage',                                               'play' => '/en/play'],
+        'fr' => ['domain' => 'https://www.thesettlersonline.fr',      'uplay' => '/fr/api/user/uplay', 'main' => '/fr/page-de-d%C3%A9marrage',                                 'play' => '/fr/jouer'],
+        'ru' => ['domain' => 'https://www.thesettlersonline.ru',      'uplay' => '/ru/api/user/uplay', 'main' => '/ru/%D0%B3%D0%BB%D0%B0%D0%B2%D0%BD%D0%B0%D1%8F-%D1%81%D1%82%D1%80%D0%B0%D0%BD%D0%B8%D1%86%D0%B0', 'play' => '/ru/play'],
+        'pl' => ['domain' => 'https://www.thesettlersonline.pl',      'uplay' => '/pl/api/user/uplay', 'main' => '/pl/strona-g%C5%82%C3%B3wna',                                'play' => '/pl/graj'],
         'es2' => ['domain' => 'https://www.thesettlersonline.es',      'uplay' => '/es/api/user/uplay', 'main' => '/es/p%C3%A1gina-de-inicio',                                  'play' => '/es/jugar'],
-        'es'  => ['domain' => 'https://www.juego-thesettlersonline.com', 'uplay' => '/es/api/user/uplay', 'main' => '/es/p%C3%A1gina-de-inicio',                                'play' => '/es/jugar'],
-        'nl'  => ['domain' => 'https://www.thesettlersonline.nl',      'uplay' => '/nl/api/user/uplay', 'main' => '/nl/homepage',                                               'play' => '/nl/play'],
-        'cz'  => ['domain' => 'https://www.thesettlersonline.cz',      'uplay' => '/cz/api/user/uplay', 'main' => '/cs/domovsk%C3%A1-str%C3%A1nka',                              'play' => '/cs/play'],
-        'pt'  => ['domain' => 'https://www.thesettlersonline.com.br',  'uplay' => '/pt/api/user/uplay', 'main' => '/pt/p%C3%A1gina-inicial',                                    'play' => '/pt/jogar'],
-        'it'  => ['domain' => 'https://www.thesettlersonline.it',      'uplay' => '/it/api/user/uplay', 'main' => '/it/homepage',                                               'play' => '/it/gioca'],
-        'el'  => ['domain' => 'https://www.thesettlersonline.gr',      'uplay' => '/el/api/user/uplay', 'main' => '/el/%CE%B1%CF%81%CF%87%CE%B9%CE%BA%CE%AE-%CF%83%CE%B5%CE%BB%CE%AF%CE%B4%CE%B1', 'play' => '/el/play'],
-        'ro'  => ['domain' => 'https://www.thesettlersonline.ro',      'uplay' => '/ro/api/user/uplay', 'main' => '/ro/pagina-de-start',                                        'play' => '/ro/play'],
-        'ts'  => ['domain' => 'https://www.tsotesting.com',            'uplay' => '/en/api/user/uplay', 'main' => '/en/homepage',                                               'play' => '/en/play'],
+        'es' => ['domain' => 'https://www.juego-thesettlersonline.com', 'uplay' => '/es/api/user/uplay', 'main' => '/es/p%C3%A1gina-de-inicio',                                'play' => '/es/jugar'],
+        'nl' => ['domain' => 'https://www.thesettlersonline.nl',      'uplay' => '/nl/api/user/uplay', 'main' => '/nl/homepage',                                               'play' => '/nl/play'],
+        'cz' => ['domain' => 'https://www.thesettlersonline.cz',      'uplay' => '/cz/api/user/uplay', 'main' => '/cs/domovsk%C3%A1-str%C3%A1nka',                              'play' => '/cs/play'],
+        'pt' => ['domain' => 'https://www.thesettlersonline.com.br',  'uplay' => '/pt/api/user/uplay', 'main' => '/pt/p%C3%A1gina-inicial',                                    'play' => '/pt/jogar'],
+        'it' => ['domain' => 'https://www.thesettlersonline.it',      'uplay' => '/it/api/user/uplay', 'main' => '/it/homepage',                                               'play' => '/it/gioca'],
+        'el' => ['domain' => 'https://www.thesettlersonline.gr',      'uplay' => '/el/api/user/uplay', 'main' => '/el/%CE%B1%CF%81%CF%87%CE%B9%CE%BA%CE%AE-%CF%83%CE%B5%CE%BB%CE%AF%CE%B4%CE%B1', 'play' => '/el/play'],
+        'ro' => ['domain' => 'https://www.thesettlersonline.ro',      'uplay' => '/ro/api/user/uplay', 'main' => '/ro/pagina-de-start',                                        'play' => '/ro/play'],
+        'ts' => ['domain' => 'https://www.tsotesting.com',            'uplay' => '/en/api/user/uplay', 'main' => '/en/homepage',                                               'play' => '/en/play'],
     ];
 
     /**
@@ -35,26 +35,28 @@ class TsoAuthService
     public function getCookieFile(Account $account): string
     {
         $dir = storage_path('app/cookies');
-        if (!is_dir($dir)) {
+        if (! is_dir($dir)) {
             mkdir($dir, 0755, true);
         }
-        return $dir . '/account_' . $account->id . '.txt';
+
+        return $dir.'/account_'.$account->id.'.txt';
     }
 
     /**
      * Authenticate the account and store tokens.
      *
      * @return array Auth tokens
+     *
      * @throws Exception
      */
     public function login(Account $account): array
     {
         $region = $account->region;
-        if (!isset(self::SERVERS[$region])) {
+        if (! isset(self::SERVERS[$region])) {
             throw new Exception("Invalid region: {$region}");
         }
 
-        $server     = self::SERVERS[$region];
+        $server = self::SERVERS[$region];
         $cookieFile = $this->getCookieFile($account);
 
         // Clear old cookies to start fresh (like C# client does with new CookieCollection())
@@ -66,12 +68,12 @@ class TsoAuthService
             // Try CipSoft migrated login first (simple form POST, matching C# CipMigratedAuth)
             $params = $this->loginLegacy($account, $cookieFile, $server);
         } catch (Exception $e) {
-            \Illuminate\Support\Facades\Log::warning("CipMigrated login failed for account {$account->id}: " . $e->getMessage());
+            \Illuminate\Support\Facades\Log::warning("CipMigrated login failed for account {$account->id}: ".$e->getMessage());
             // If CipMigrated failed, try Ubisoft OAuth flow (C# CipAuth) as fallback
             try {
                 $params = $this->loginOAuth($account, $cookieFile, $server);
             } catch (Exception $e2) {
-                \Illuminate\Support\Facades\Log::warning("OAuth login also failed for account {$account->id}: " . $e2->getMessage());
+                \Illuminate\Support\Facades\Log::warning("OAuth login also failed for account {$account->id}: ".$e2->getMessage());
                 // Re-throw the original CipMigrated error as it's more likely relevant
                 throw $e;
             }
@@ -79,11 +81,11 @@ class TsoAuthService
 
         // Update account with fresh tokens
         $account->update([
-            'dso_auth_user'  => $params['dsoAuthUser'],
+            'dso_auth_user' => $params['dsoAuthUser'],
             'dso_auth_token' => $params['dsoAuthToken'],
-            'bb_url'         => $params['bburl'],
-            'nickname'       => $params['nickName'],
-            'status'         => 'online',
+            'bb_url' => $params['bburl'],
+            'nickname' => $params['nickName'],
+            'status' => 'online',
         ]);
 
         return $params;
@@ -91,7 +93,7 @@ class TsoAuthService
 
     /**
      * Legacy form-based login (CipMigratedAuth).
-     * 
+     *
      * Exactly mirrors the C# client's CipMigratedAuth() flow:
      * 1. POST /ru/api/user/login with name + password
      * 2. POST /ru/главная-страница with start=1
@@ -105,27 +107,27 @@ class TsoAuthService
     public function loginLegacy(Account $account, string $cookieFile, array $server): array
     {
         // Step 1: POST Login
-        $loginUrl = $server['domain'] . str_replace('uplay', 'login', $server['uplay']);
+        $loginUrl = $server['domain'].str_replace('uplay', 'login', $server['uplay']);
         $loginRes = $this->cipMigratedRequest($loginUrl, [
-            'name'     => $account->username,
+            'name' => $account->username,
             'password' => $account->password,
         ], $cookieFile);
 
-        \Illuminate\Support\Facades\Log::info("CipMigratedAuth login response: " . substr($loginRes, 0, 500));
+        \Illuminate\Support\Facades\Log::info('CipMigratedAuth login response: '.substr($loginRes, 0, 500));
 
         if (strpos($loginRes, 'OKAY') === false) {
             if (str_contains($loginRes, 'CAPTCHA') || str_contains($loginRes, 'captcha') || str_contains($loginRes, 'Captcha')) {
-                throw new Exception("Ubisoft требует прохождения CAPTCHA. Пожалуйста, обновите сессию вручную в настройках аккаунта.");
+                throw new Exception('Ubisoft требует прохождения CAPTCHA. Пожалуйста, обновите сессию вручную в настройках аккаунта.');
             }
-            throw new Exception("Login failed: " . $loginRes);
+            throw new Exception('Login failed: '.$loginRes);
         }
 
         // Step 2: POST Main page with start=1
-        $mainUrl = $server['domain'] . $server['main'];
+        $mainUrl = $server['domain'].$server['main'];
         $this->cipMigratedRequest($mainUrl, ['start' => '1'], $cookieFile);
 
         // Step 3: GET Play page
-        $playUrl  = $server['domain'] . $server['play'];
+        $playUrl = $server['domain'].$server['play'];
         $playHtml = $this->cipMigratedRequest($playUrl, null, $cookieFile);
 
         return $this->extractParams($playHtml);
@@ -133,14 +135,14 @@ class TsoAuthService
 
     /**
      * HTTP request that exactly mimics the C# PostSubmitter with useBC=true.
-     * 
+     *
      * BouncyCastle mode sends minimal headers:
      * - Host (automatic)
      * - Content-Type: application/x-www-form-urlencoded
      * - Cookie (from cookie jar)
      * - Connection: close
      * - Content-Length (for POST)
-     * 
+     *
      * NO User-Agent, NO Referer, NO Accept, NO Accept-Language.
      * Manual redirect handling (returns Location header content on redirect).
      */
@@ -178,28 +180,29 @@ class TsoAuthService
             }
 
             $response = curl_exec($ch);
-            $error    = curl_error($ch);
+            $error = curl_error($ch);
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
             curl_close($ch);
 
             if ($error) {
-                throw new Exception("cURL Error: " . $error);
+                throw new Exception('cURL Error: '.$error);
             }
 
             $headerText = substr($response, 0, $headerSize);
-            $body       = substr($response, $headerSize);
+            $body = substr($response, $headerSize);
 
             // Check for redirect (3xx)
             if ($httpCode >= 300 && $httpCode < 400) {
                 if (preg_match('/^Location:\s*([^\r\n]+)/mi', $headerText, $matches)) {
                     $location = trim($matches[1]);
                     // Handle relative redirects
-                    if (!str_starts_with($location, 'http')) {
+                    if (! str_starts_with($location, 'http')) {
                         $parsed = parse_url($currentUrl);
-                        $location = $parsed['scheme'] . '://' . $parsed['host'] . $location;
+                        $location = $parsed['scheme'].'://'.$parsed['host'].$location;
                     }
                     $currentUrl = $location;
+
                     continue;
                 }
             }
@@ -208,7 +211,7 @@ class TsoAuthService
             return $body;
         }
 
-        throw new Exception("Too many redirects for URL: " . $url);
+        throw new Exception('Too many redirects for URL: '.$url);
     }
 
     /**
@@ -217,29 +220,29 @@ class TsoAuthService
     public function loginOAuth(Account $account, string $cookieFile, array $server): array
     {
         // 1. GET /oauth/start
-        $oauthStartUrl = $server['domain'] . '/oauth/start';
+        $oauthStartUrl = $server['domain'].'/oauth/start';
         $redirectUrl = $this->curlRequest($oauthStartUrl, null, $cookieFile, true);
 
         // GET the first redirect URL to establish cookies and get the final authorize URL
         $redirectUrl2 = $this->curlRequest($redirectUrl, null, $cookieFile, true);
 
         $urlParts = parse_url($redirectUrl2);
-        if (!isset($urlParts['query'])) {
-            throw new Exception("OAuth redirect URL query parameters missing: " . $redirectUrl2);
+        if (! isset($urlParts['query'])) {
+            throw new Exception('OAuth redirect URL query parameters missing: '.$redirectUrl2);
         }
         parse_str($urlParts['query'], $redirectUrlOpts);
         $clientId = $redirectUrlOpts['client_id'] ?? null;
-        if (!$clientId) {
-            throw new Exception("Could not find client_id in Ubisoft redirect URL");
+        if (! $clientId) {
+            throw new Exception('Could not find client_id in Ubisoft redirect URL');
         }
 
         // 2. POST to get Ubisoft accessToken
-        $oauthTokenUrl = "https://connect.ubisoft.com/v2/webauth/public/ubiservices/oauthToken";
+        $oauthTokenUrl = 'https://connect.ubisoft.com/v2/webauth/public/ubiservices/oauthToken';
         $oauthTokenBody = json_encode([
             'headers' => [
                 'Content-Type' => 'application/json',
-                'Accept' => 'application/json'
-            ]
+                'Accept' => 'application/json',
+            ],
         ]);
         $oauthTokenHeaders = [
             'Content-Type: application/json',
@@ -248,46 +251,46 @@ class TsoAuthService
         $oauthTokenRes = $this->curlRequest($oauthTokenUrl, $oauthTokenBody, $cookieFile, false, $oauthTokenHeaders);
         $oauthTokenData = json_decode($oauthTokenRes, true);
         $accessToken = $oauthTokenData['accessToken'] ?? null;
-        if (!$accessToken) {
-            throw new Exception("Ubisoft login failed (could not get oauthToken): " . $oauthTokenRes);
+        if (! $accessToken) {
+            throw new Exception('Ubisoft login failed (could not get oauthToken): '.$oauthTokenRes);
         }
 
         // 3. POST to authenticate token using Basic Authorization header
-        $authTokenUrl = "https://api.partners.ubisoft.com/v1/profiles/authentication/token";
+        $authTokenUrl = 'https://api.partners.ubisoft.com/v1/profiles/authentication/token';
         $authTokenBody = json_encode(['rememberMe' => true]);
-        $credentials = base64_encode(trim($account->username) . ':' . trim($account->password));
+        $credentials = base64_encode(trim($account->username).':'.trim($account->password));
         $authTokenHeaders = [
             'Content-Type: application/json',
             'Ubi-RequestedPlatformType: uplay',
-            'Authorization: Bearer ' . $accessToken,
-            'Ubi-Profile-Authorization: Basic ' . $credentials,
+            'Authorization: Bearer '.$accessToken,
+            'Ubi-Profile-Authorization: Basic '.$credentials,
         ];
         $authTokenRes = $this->curlRequest($authTokenUrl, $authTokenBody, $cookieFile, false, $authTokenHeaders);
         $authTokenData = json_decode($authTokenRes, true);
 
         if (isset($authTokenData['twoFactorAuthenticationTicket'])) {
-            throw new Exception("Учетная запись требует двухфакторной аутентификации (2FA).");
+            throw new Exception('Учетная запись требует двухфакторной аутентификации (2FA).');
         }
 
         $token = $authTokenData['token'] ?? null;
-        if (!$token) {
-            throw new Exception("Ubisoft authentication failed (could not get token): " . $authTokenRes);
+        if (! $token) {
+            throw new Exception('Ubisoft authentication failed (could not get token): '.$authTokenRes);
         }
 
         // 4. GET authorize callback with the token to get the consents callback URL redirect
         $redirectUrlOpts['token'] = $token;
-        $authorizeCallbackUrl = "https://api.partners.ubisoft.com/v1/oauth/authorize/callback?" . http_build_query($redirectUrlOpts);
+        $authorizeCallbackUrl = 'https://api.partners.ubisoft.com/v1/oauth/authorize/callback?'.http_build_query($redirectUrlOpts);
         $callbackRedirect = $this->curlRequest($authorizeCallbackUrl, null, $cookieFile, true);
 
         // Extract redirectUrl from callbackRedirect URL
         $callbackParts = parse_url($callbackRedirect);
-        if (!isset($callbackParts['query'])) {
-            throw new Exception("Authorize callback query missing: " . $callbackRedirect);
+        if (! isset($callbackParts['query'])) {
+            throw new Exception('Authorize callback query missing: '.$callbackRedirect);
         }
         parse_str($callbackParts['query'], $callbackOpts);
         $consentRedirectUrl = $callbackOpts['redirectUrl'] ?? null;
-        if (!$consentRedirectUrl) {
-            throw new Exception("Consent redirectUrl missing in callback redirect: " . $callbackRedirect);
+        if (! $consentRedirectUrl) {
+            throw new Exception('Consent redirectUrl missing in callback redirect: '.$callbackRedirect);
         }
         $consentRedirectParts = parse_url($consentRedirectUrl);
         parse_str($consentRedirectParts['query'] ?? '', $consentOpts);
@@ -296,16 +299,16 @@ class TsoAuthService
         // 5. POST consents to get authorization code callback URL
         unset($redirectUrlOpts['token']);
         $redirectUrlOpts['profile_token'] = $profileToken;
-        $consentUrl = "https://api.partners.ubisoft.com/v1/oauth/consents";
+        $consentUrl = 'https://api.partners.ubisoft.com/v1/oauth/consents';
         $consentBody = json_encode([
             'scopesConsented' => ['offline_access', 'openid', 'profile', 'email'],
             'isConsented' => true,
-            'redirectUrl' => "https://api.partners.ubisoft.com/v1/oauth/authorize/callback?" . http_build_query($redirectUrlOpts)
+            'redirectUrl' => 'https://api.partners.ubisoft.com/v1/oauth/authorize/callback?'.http_build_query($redirectUrlOpts),
         ]);
         $consentHeaders = [
             'Content-Type: application/json',
             'Ubi-RequestedPlatformType: uplay',
-            'ClientId: ' . $clientId,
+            'ClientId: '.$clientId,
         ];
         $consentRes = $this->curlRequest($consentUrl, $consentBody, $cookieFile, true, $consentHeaders);
 
@@ -323,11 +326,11 @@ class TsoAuthService
         $this->curlRequest($afterLogin2Url, null, $cookieFile);
 
         // 8. Go to main homepage to ensure session cookies are set correctly
-        $mainUrl = $server['domain'] . $server['main'];
+        $mainUrl = $server['domain'].$server['main'];
         $this->curlRequest($mainUrl, null, $cookieFile);
 
         // 9. Get the play page and extract tokens
-        $playUrl = $server['domain'] . $server['play'];
+        $playUrl = $server['domain'].$server['play'];
         $playHtml = $this->curlRequest($playUrl, null, $cookieFile);
 
         return $this->extractParams($playHtml);
@@ -338,7 +341,7 @@ class TsoAuthService
      */
     public function isAuthenticated(Account $account): bool
     {
-        return !empty($account->dso_auth_token) && !empty($account->dso_auth_user) && !empty($account->bb_url);
+        return ! empty($account->dso_auth_token) && ! empty($account->dso_auth_user) && ! empty($account->bb_url);
     }
 
     /**
@@ -368,7 +371,7 @@ class TsoAuthService
         // Save debug HTML in storage
         Storage::disk('local')->put('debug/play_page.html', $html);
 
-        if (empty($params) || !isset($params['dsoAuthToken'])) {
+        if (empty($params) || ! isset($params['dsoAuthToken'])) {
             throw new Exception('Could not extract auth tokens from play page. Possible captcha or maintenance.');
         }
 
@@ -376,10 +379,10 @@ class TsoAuthService
 
         return [
             'dsoAuthToken' => $params['dsoAuthToken'],
-            'dsoAuthUser'  => $params['dsoAuthUser'],
-            'bburl'        => $params['bb'],
-            'zoneId'       => $params['zoneID'] ?? null,
-            'nickName'     => $nickName,
+            'dsoAuthUser' => $params['dsoAuthUser'],
+            'bburl' => $params['bb'],
+            'zoneId' => $params['zoneID'] ?? null,
+            'nickName' => $nickName,
         ];
     }
 
@@ -422,12 +425,12 @@ class TsoAuthService
         }
 
         $response = curl_exec($ch);
-        $error    = curl_error($ch);
-        $info     = curl_getinfo($ch);
+        $error = curl_error($ch);
+        $info = curl_getinfo($ch);
         curl_close($ch);
 
         if ($error) {
-            throw new Exception("cURL Error: " . $error);
+            throw new Exception('cURL Error: '.$error);
         }
 
         if ($returnRedirect) {
@@ -437,6 +440,7 @@ class TsoAuthService
             if (isset($info['redirect_url']) && $info['redirect_url']) {
                 return $info['redirect_url'];
             }
+
             return $response;
         }
 

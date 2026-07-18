@@ -13,7 +13,7 @@ class LangParserService
         }
 
         $langPath = base_path('../lang.txt');
-        if (!file_exists($langPath)) {
+        if (! file_exists($langPath)) {
             return [];
         }
 
@@ -40,6 +40,7 @@ class LangParserService
         }
 
         self::$resTranslations = $translations;
+
         return $translations;
     }
 }

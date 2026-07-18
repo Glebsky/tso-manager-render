@@ -1,12 +1,12 @@
 <?php
 
-use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AccountController;
-use App\Http\Controllers\ScheduledTaskController;
-use App\Http\Controllers\LogController;
-use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LangController;
+use App\Http\Controllers\LogController;
 use App\Http\Controllers\MarketAnalyticsController;
+use App\Http\Controllers\ScheduledTaskController;
+use App\Http\Controllers\SettingsController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -33,6 +33,7 @@ Route::prefix('api')->group(function () {
     Route::post('tasks', [ScheduledTaskController::class, 'store']);
     Route::delete('tasks/{task}', [ScheduledTaskController::class, 'destroy']);
     Route::post('tasks/{task}/toggle', [ScheduledTaskController::class, 'toggle']);
+    Route::post('tasks/{task}/execute', [ScheduledTaskController::class, 'execute']);
 
     // Logs
     Route::get('logs', [LogController::class, 'index']);

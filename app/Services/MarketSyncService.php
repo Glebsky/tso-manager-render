@@ -3,33 +3,35 @@
 namespace App\Services;
 
 use App\Models\Account;
-use App\Models\MarketOffer;
 use App\Models\MarketHistory;
+use App\Models\MarketOffer;
 use App\Models\MarketSyncLog;
+use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Exception;
 
 class MarketSyncService
 {
-    private TsoAuthService    $authService;
-    private TsoAmfService     $amfService;
+    private TsoAuthService $authService;
+
+    private TsoAmfService $amfService;
+
     private LangParserService $langParser;
 
     public function __construct(TsoAuthService $authService, TsoAmfService $amfService, LangParserService $langParser)
     {
         $this->authService = $authService;
-        $this->amfService  = $amfService;
-        $this->langParser  = $langParser;
+        $this->amfService = $amfService;
+        $this->langParser = $langParser;
     }
 
     private function findPython(): string
     {
         $candidates = ['python', 'python3', 'py'];
         foreach ($candidates as $bin) {
-            $out  = [];
+            $out = [];
             $code = 0;
-            exec(escapeshellarg($bin) . ' --version 2>&1', $out, $code);
+            exec(escapeshellarg($bin).' --version 2>&1', $out, $code);
             if ($code === 0) {
                 return $bin;
             }
@@ -39,14 +41,14 @@ class MarketSyncService
 
     public function sync(Account $account): array
     {
-        $action      = 'Market synchronized';
+        $action = 'Market synchronized';
         $collectedAt = now();
 
         try {
             $this->logEvent($account, $action, 'INFO', 'Starting market synchronization');
 
             // 1. Authenticate if needed
-            if (!$this->authService->isAuthenticated($account)) {
+            if (! $this->authService->isAuthenticated($account)) {
                 $this->authService->login($account);
                 $account->refresh();
             }
@@ -64,20 +66,20 @@ class MarketSyncService
                     $rawAmf = $this->amfService->getMarketOffers($account);
 
                     $scriptPath = storage_path('app/parse_market.py');
-                    if (!file_exists($scriptPath)) {
+                    if (! file_exists($scriptPath)) {
                         throw new Exception('parse_market.py not found in storage/app/');
                     }
 
-                    $tmpFile = storage_path('app/temp_market_' . uniqid() . '.amf');
+                    $tmpFile = storage_path('app/temp_market_'.uniqid().'.amf');
                     file_put_contents($tmpFile, $rawAmf);
 
                     try {
                         $pythonBin = $this->findPython();
-                        $command   = escapeshellarg($pythonBin) . ' ' . escapeshellarg($scriptPath) . ' ' . escapeshellarg($tmpFile);
-                        $output    = [];
-                        $exitCode  = 0;
+                        $command = escapeshellarg($pythonBin).' '.escapeshellarg($scriptPath).' '.escapeshellarg($tmpFile);
+                        $output = [];
+                        $exitCode = 0;
 
-                        exec($command . ' 2>&1', $output, $exitCode);
+                        exec($command.' 2>&1', $output, $exitCode);
                         $outputStr = implode("\n", $output);
 
                         if ($exitCode !== 0) {
@@ -86,7 +88,7 @@ class MarketSyncService
 
                         $parsed = json_decode($outputStr, true);
                         if (json_last_error() !== JSON_ERROR_NONE) {
-                            throw new Exception("Failed to decode JSON from parser: " . json_last_error_msg());
+                            throw new Exception('Failed to decode JSON from parser: '.json_last_error_msg());
                         }
                     } finally {
                         @unlink($tmpFile);
@@ -97,6 +99,7 @@ class MarketSyncService
                     if ($errorCode === 1012) {
                         $this->logEvent($account, $action, 'WARNING', "Received error 1012 (Zone loading). Waiting {$retryDelay}s and retrying...");
                         sleep($retryDelay);
+
                         continue;
                     }
 
@@ -111,13 +114,14 @@ class MarketSyncService
                         $account->refresh();
                         $hasResetSession = true;
                         sleep(2);
+
                         continue;
                     }
 
                     // Success or other unhandled code
                     break;
                 } catch (Exception $attemptEx) {
-                    $this->logEvent($account, $action, 'WARNING', "Attempt {$attempt}/{$maxRetries} failed: " . $attemptEx->getMessage());
+                    $this->logEvent($account, $action, 'WARNING', "Attempt {$attempt}/{$maxRetries} failed: ".$attemptEx->getMessage());
                     if ($attempt === $maxRetries) {
                         throw $attemptEx;
                     }
@@ -129,12 +133,12 @@ class MarketSyncService
                 throw new Exception("Server returned error code {$errorCode} during market sync.");
             }
 
-            $rawOffers   = $parsed['offers'] ?? [];
+            $rawOffers = $parsed['offers'] ?? [];
 
             // 4. Translate resource names
             $translations = $this->langParser->getResTranslations();
 
-            $offersToInsert  = [];
+            $offersToInsert = [];
             $historyToInsert = [];
 
             foreach ($rawOffers as $raw) {
@@ -172,49 +176,49 @@ class MarketSyncService
                     continue;
                 }
 
-                $price         = (double) $targetAmount / $amount;
+                $price = (float) $targetAmount / $amount;
                 $lotsRemaining = (int) ($raw['lotsRemaining'] ?? 1);
-                $volume        = $amount * $lotsRemaining;
+                $volume = $amount * $lotsRemaining;
 
                 // Human-readable names
-                $itemName       = $translations[$itemId] ?? $itemId;
+                $itemName = $translations[$itemId] ?? $itemId;
                 $targetItemName = $translations[$targetItemId] ?? $targetItemId;
 
                 // Game created timestamp (created is in ms)
                 $gameCreatedMs = $raw['created'] ?? 0;
-                $gameCreatedAt = $gameCreatedMs > 0 ? date('Y-m-d H:i:s', (int)($gameCreatedMs / 1000)) : $collectedAt;
+                $gameCreatedAt = $gameCreatedMs > 0 ? date('Y-m-d H:i:s', (int) ($gameCreatedMs / 1000)) : $collectedAt;
 
                 $offerData = [
-                    'offer_id'         => (int) $raw['id'],
-                    'player_id'        => (int) $raw['senderID'],
-                    'sender_name'      => $raw['senderName'] ?? 'Unknown',
-                    'item_id'          => $itemId,
-                    'item_name'        => $itemName,
-                    'amount'           => $amount,
-                    'target_item_id'   => $targetItemId,
+                    'offer_id' => (int) $raw['id'],
+                    'player_id' => (int) $raw['senderID'],
+                    'sender_name' => $raw['senderName'] ?? 'Unknown',
+                    'item_id' => $itemId,
+                    'item_name' => $itemName,
+                    'amount' => $amount,
+                    'target_item_id' => $targetItemId,
                     'target_item_name' => $targetItemName,
-                    'target_amount'    => $targetAmount,
-                    'price'            => $price,
-                    'volume'           => $volume,
-                    'lots_remaining'   => $lotsRemaining,
-                    'created_at'       => $gameCreatedAt,
-                    'collected_at'     => $collectedAt,
+                    'target_amount' => $targetAmount,
+                    'price' => $price,
+                    'volume' => $volume,
+                    'lots_remaining' => $lotsRemaining,
+                    'created_at' => $gameCreatedAt,
+                    'collected_at' => $collectedAt,
                 ];
 
                 $offersToInsert[] = $offerData;
 
                 $historyData = [
-                    'offer_id'         => (int) $raw['id'],
-                    'player_id'        => (int) $raw['senderID'],
-                    'item_id'          => $itemId,
-                    'item_name'        => $itemName,
-                    'amount'           => $amount,
-                    'target_item_id'   => $targetItemId,
+                    'offer_id' => (int) $raw['id'],
+                    'player_id' => (int) $raw['senderID'],
+                    'item_id' => $itemId,
+                    'item_name' => $itemName,
+                    'amount' => $amount,
+                    'target_item_id' => $targetItemId,
                     'target_item_name' => $targetItemName,
-                    'target_amount'    => $targetAmount,
-                    'price'            => $price,
-                    'volume'           => $volume,
-                    'collected_at'     => $collectedAt,
+                    'target_amount' => $targetAmount,
+                    'price' => $price,
+                    'volume' => $volume,
+                    'collected_at' => $collectedAt,
                 ];
 
                 $historyToInsert[] = $historyData;
@@ -233,7 +237,7 @@ class MarketSyncService
                 // Filter out history entries that already exist in market_history to avoid duplicates
                 $offerIds = array_column($historyToInsert, 'offer_id');
                 $existingIds = [];
-                if (!empty($offerIds)) {
+                if (! empty($offerIds)) {
                     foreach (array_chunk($offerIds, 500) as $idChunk) {
                         $chunkExisting = MarketHistory::whereIn('offer_id', $idChunk)
                             ->pluck('offer_id')
@@ -245,19 +249,19 @@ class MarketSyncService
                 $existingIdsSet = array_flip($existingIds);
                 $filteredHistory = [];
                 foreach ($historyToInsert as $h) {
-                    if (!isset($existingIdsSet[$h['offer_id']])) {
+                    if (! isset($existingIdsSet[$h['offer_id']])) {
                         $filteredHistory[] = $h;
                     }
                 }
 
-                if (!empty($filteredHistory)) {
+                if (! empty($filteredHistory)) {
                     foreach (array_chunk($filteredHistory, 200) as $chunk) {
                         MarketHistory::insert($chunk);
                     }
                 }
             });
 
-            $count   = count($offersToInsert);
+            $count = count($offersToInsert);
             $message = "{$count} offers received";
 
             $this->logEvent($account, $action, 'SUCCESS', $message);
@@ -265,7 +269,7 @@ class MarketSyncService
             return [
                 'success' => true,
                 'message' => $message,
-                'count'   => $count,
+                'count' => $count,
             ];
 
         } catch (Exception $e) {
@@ -290,13 +294,13 @@ class MarketSyncService
         try {
             MarketSyncLog::create([
                 'account_id' => $account->id,
-                'action'     => $action,
-                'status'     => $status,
-                'message'    => $message,
+                'action' => $action,
+                'status' => $status,
+                'message' => $message,
                 'created_at' => now(),
             ]);
         } catch (Exception $dbEx) {
-            Log::error("Failed to write market sync log to database: " . $dbEx->getMessage());
+            Log::error('Failed to write market sync log to database: '.$dbEx->getMessage());
         }
     }
 }

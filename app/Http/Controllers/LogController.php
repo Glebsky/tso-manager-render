@@ -23,11 +23,11 @@ class LogController extends Controller
             $query->where('level', $request->input('level'));
         }
 
-        $logs     = $query->paginate(100);
+        $logs = $query->paginate(100);
         $accounts = Account::orderBy('username')->get();
 
         return response()->json([
-            'logs'     => $logs,
+            'logs' => $logs,
             'accounts' => $accounts,
         ]);
     }

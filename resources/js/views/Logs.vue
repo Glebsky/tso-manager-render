@@ -90,7 +90,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import axios from 'axios';
 import LogEntry from '../components/LogEntry.vue';
 import { showToast } from '../toast';
@@ -110,9 +110,10 @@ export default {
             current_page: 1,
             last_page: 1
         });
+        let timer = null;
 
-        const loadLogs = async (page = 1) => {
-            loading.value = true;
+        const loadLogs = async (page = 1, background = false) => {
+            if (!background) loading.value = true;
             try {
                 const res = await axios.get('/api/logs', {
                     params: {
@@ -129,9 +130,9 @@ export default {
                     last_page: res.data.logs.last_page || 1
                 };
             } catch (e) {
-                showToast('Failed to load logs.', 'error');
+                if (!background) showToast('Failed to load logs.', 'error');
             } finally {
-                loading.value = false;
+                if (!background) loading.value = false;
             }
         };
 
@@ -141,6 +142,13 @@ export default {
 
         onMounted(() => {
             loadLogs(1);
+            timer = setInterval(() => {
+                loadLogs(pagination.value.current_page, true);
+            }, 10000);
+        });
+
+        onUnmounted(() => {
+            if (timer) clearInterval(timer);
         });
 
         return {

@@ -3,15 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Account;
-use App\Models\MarketOffer;
 use App\Models\MarketHistory;
+use App\Models\MarketOffer;
 use App\Models\MarketSyncLog;
 use App\Services\MarketSyncService;
+use Carbon\Carbon;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Carbon\Carbon;
-use Exception;
 
 class MarketAnalyticsController extends Controller
 {
@@ -32,9 +32,10 @@ class MarketAnalyticsController extends Controller
         if (Storage::disk('local')->exists($this->getSettingsPath())) {
             return json_decode(Storage::disk('local')->get($this->getSettingsPath()), true) ?? [];
         }
+
         return [
-            'account_id'              => null,
-            'sync_interval'           => '15',
+            'account_id' => null,
+            'sync_interval' => '15',
             'custom_interval_minutes' => 15,
         ];
     }
@@ -71,18 +72,18 @@ class MarketAnalyticsController extends Controller
         }
 
         return response()->json([
-            'settings'          => $settings,
-            'accounts'          => $accounts,
+            'settings' => $settings,
+            'accounts' => $accounts,
             'connection_status' => $connectionStatus,
-            'last_sync'         => $lastSyncStr,
+            'last_sync' => $lastSyncStr,
         ]);
     }
 
     public function updateSettings(Request $request)
     {
         $validated = $request->validate([
-            'account_id'              => 'nullable|integer|exists:accounts,id',
-            'sync_interval'           => 'required|string|in:5,15,30,60,custom',
+            'account_id' => 'nullable|integer|exists:accounts,id',
+            'sync_interval' => 'required|string|in:5,15,30,60,custom',
             'custom_interval_minutes' => 'nullable|integer|min:1',
         ]);
 
@@ -107,7 +108,7 @@ class MarketAnalyticsController extends Controller
         }
 
         $account = Account::find($accountId);
-        if (!$account) {
+        if (! $account) {
             return response()->json([
                 'success' => false,
                 'message' => 'Configured account not found.',
@@ -116,11 +117,12 @@ class MarketAnalyticsController extends Controller
 
         try {
             $result = $this->syncService->sync($account);
+
             return response()->json($result);
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Synchronization failed: ' . $e->getMessage(),
+                'message' => 'Synchronization failed: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -211,8 +213,8 @@ class MarketAnalyticsController extends Controller
             ->get();
 
         if (empty($itemId) || empty($targetItemId)) {
-            $limit = (int)$request->input('limit', 100);
-            $page = (int)$request->input('page', 1);
+            $limit = (int) $request->input('limit', 100);
+            $page = (int) $request->input('page', 1);
             $offset = ($page - 1) * $limit;
 
             $activeOffersQuery = MarketOffer::where('created_at', '>=', now()->subHours(6))
@@ -226,30 +228,31 @@ class MarketAnalyticsController extends Controller
                     $now = now();
                     $expiresAt = $offer->created_at->copy()->addHours(6);
                     $timeLeft = $now->diffInSeconds($expiresAt, false);
+
                     return [
-                        'id'               => $offer->id,
-                        'offer_id'         => $offer->offer_id,
-                        'sender_name'      => $offer->sender_name,
-                        'item_id'          => $offer->item_id,
-                        'item_name'        => $offer->item_name,
-                        'amount'           => $offer->amount,
-                        'target_item_id'   => $offer->target_item_id,
+                        'id' => $offer->id,
+                        'offer_id' => $offer->offer_id,
+                        'sender_name' => $offer->sender_name,
+                        'item_id' => $offer->item_id,
+                        'item_name' => $offer->item_name,
+                        'amount' => $offer->amount,
+                        'target_item_id' => $offer->target_item_id,
                         'target_item_name' => $offer->target_item_name,
-                        'target_amount'    => $offer->target_amount,
-                        'price'            => round($offer->price, 4),
-                        'volume'           => $offer->volume,
-                        'lots_remaining'   => $offer->lots_remaining,
-                        'created_at'       => $offer->created_at->format('d.m.Y H:i'),
-                        'time_left'        => $timeLeft > 0 ? $timeLeft : 0,
+                        'target_amount' => $offer->target_amount,
+                        'price' => round($offer->price, 4),
+                        'volume' => $offer->volume,
+                        'lots_remaining' => $offer->lots_remaining,
+                        'created_at' => $offer->created_at->format('d.m.Y H:i'),
+                        'time_left' => $timeLeft > 0 ? $timeLeft : 0,
                     ];
                 });
 
             return response()->json([
-                'popular'            => $popular,
-                'active_offers'      => $activeOffers,
+                'popular' => $popular,
+                'active_offers' => $activeOffers,
                 'total_active_count' => $totalActive,
-                'page'               => $page,
-                'has_more'           => ($offset + $limit) < $totalActive,
+                'page' => $page,
+                'has_more' => ($offset + $limit) < $totalActive,
             ]);
         }
 
@@ -337,11 +340,11 @@ class MarketAnalyticsController extends Controller
                 }
 
                 return [
-                    'collected_at'  => $formattedDate,
-                    'price'         => round($item->price, 2),
-                    'volume'        => (int)$item->volume,
-                    'sellers_count' => (int)$item->sellers_count,
-                    'offers_count'  => (int)$item->offers_count,
+                    'collected_at' => $formattedDate,
+                    'price' => round($item->price, 2),
+                    'volume' => (int) $item->volume,
+                    'sellers_count' => (int) $item->sellers_count,
+                    'offers_count' => (int) $item->offers_count,
                 ];
             });
         };
@@ -364,15 +367,15 @@ class MarketAnalyticsController extends Controller
         }
 
         return response()->json([
-            'popular'          => $popular,
-            'stats'            => [
+            'popular' => $popular,
+            'stats' => [
                 'average' => round($stats->average_price ?? 0, 2),
                 'minimum' => round($stats->min_price ?? 0, 2),
                 'maximum' => round($stats->max_price ?? 0, 2),
                 'current' => round($current ?? 0, 2),
             ],
-            'history'          => $history,
-            'mirrored_stats'   => $mirroredStatsData,
+            'history' => $history,
+            'mirrored_stats' => $mirroredStatsData,
             'mirrored_history' => $mirroredHistory->isEmpty() ? null : $mirroredHistory,
         ]);
     }
@@ -384,9 +387,9 @@ class MarketAnalyticsController extends Controller
             ->get()
             ->map(function ($log) {
                 return [
-                    'date'    => $log->created_at->format('d.m.Y H:i:s'),
-                    'action'  => $log->action,
-                    'status'  => $log->status,
+                    'date' => $log->created_at->format('d.m.Y H:i:s'),
+                    'action' => $log->action,
+                    'status' => $log->status,
                     'message' => $log->message,
                 ];
             });
@@ -403,15 +406,15 @@ class MarketAnalyticsController extends Controller
             $from = $offer->target_item_id;
             $to = $offer->item_id;
             $byPair[$from][$to][] = [
-                'offer_id'         => $offer->offer_id,
-                'sender_name'      => $offer->sender_name,
-                'item_id'          => $offer->item_id,
-                'item_name'        => $offer->item_name,
-                'amount'           => $offer->amount,
-                'target_item_id'   => $offer->target_item_id,
+                'offer_id' => $offer->offer_id,
+                'sender_name' => $offer->sender_name,
+                'item_id' => $offer->item_id,
+                'item_name' => $offer->item_name,
+                'amount' => $offer->amount,
+                'target_item_id' => $offer->target_item_id,
                 'target_item_name' => $offer->target_item_name,
-                'target_amount'    => $offer->target_amount,
-                'lots_remaining'   => $offer->lots_remaining,
+                'target_amount' => $offer->target_amount,
+                'lots_remaining' => $offer->lots_remaining,
             ];
         }
 
@@ -419,10 +422,14 @@ class MarketAnalyticsController extends Controller
         $resources = array_keys($byPair);
 
         foreach ($resources as $A) {
-            if (!isset($byPair[$A])) continue;
+            if (! isset($byPair[$A])) {
+                continue;
+            }
 
             foreach ($byPair[$A] as $B => $t1List) {
-                if ($B === $A) continue;
+                if ($B === $A) {
+                    continue;
+                }
 
                 // 1. 2-step loops: A -> B -> A
                 if (isset($byPair[$B][$A])) {
@@ -435,7 +442,7 @@ class MarketAnalyticsController extends Controller
 
                             for ($y = 1; $y <= $t2['lots_remaining']; $y++) {
                                 $neededB = $y * $t2['target_amount'];
-                                $x = (int)ceil($neededB / $t1['amount']);
+                                $x = (int) ceil($neededB / $t1['amount']);
                                 if ($x > $t1['lots_remaining']) {
                                     continue;
                                 }
@@ -479,7 +486,7 @@ class MarketAnalyticsController extends Controller
                                             'receive_amount' => $best_y * $t2['amount'],
                                             'receive_per_lot' => $t2['amount'],
                                             'lots' => $best_y,
-                                        ]
+                                        ],
                                     ],
                                     'profit' => [
                                         'item_id' => $A,
@@ -491,7 +498,7 @@ class MarketAnalyticsController extends Controller
                                             'item_id' => $B,
                                             'item_name' => $t1['item_name'],
                                             'amount' => $leftoverB,
-                                        ]
+                                        ],
                                     ] : [],
                                 ];
                             }
@@ -502,7 +509,9 @@ class MarketAnalyticsController extends Controller
                 // 2. 3-step loops: A -> B -> C -> A
                 if (isset($byPair[$B])) {
                     foreach ($byPair[$B] as $C => $t2List) {
-                        if ($C === $A || $C === $B) continue;
+                        if ($C === $A || $C === $B) {
+                            continue;
+                        }
 
                         if (isset($byPair[$C][$A])) {
                             $t3List = $byPair[$C][$A];
@@ -516,12 +525,12 @@ class MarketAnalyticsController extends Controller
 
                                         for ($z = 1; $z <= $t3['lots_remaining']; $z++) {
                                             $neededC = $z * $t3['target_amount'];
-                                            $y = (int)ceil($neededC / $t2['amount']);
+                                            $y = (int) ceil($neededC / $t2['amount']);
                                             if ($y > $t2['lots_remaining']) {
                                                 continue;
                                             }
                                             $neededB = $y * $t2['target_amount'];
-                                            $x = (int)ceil($neededB / $t1['amount']);
+                                            $x = (int) ceil($neededB / $t1['amount']);
                                             if ($x > $t1['lots_remaining']) {
                                                 continue;
                                             }
@@ -598,7 +607,7 @@ class MarketAnalyticsController extends Controller
                                                         'receive_amount' => $best_z * $t3['amount'],
                                                         'receive_per_lot' => $t3['amount'],
                                                         'lots' => $best_z,
-                                                    ]
+                                                    ],
                                                 ],
                                                 'profit' => [
                                                     'item_id' => $A,

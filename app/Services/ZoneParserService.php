@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Storage;
 use Exception;
 
 class ZoneParserService
@@ -13,29 +12,30 @@ class ZoneParserService
      * Writes the raw AMF to a temp file, shells out to Python (pyamf),
      * and returns the parsed data as an array.
      *
-     * @param  string $rawAmf  Raw AMF binary response
-     * @return array           ['buildings' => [...], 'specialists' => [...], 'buffs' => [...]]
+     * @param  string  $rawAmf  Raw AMF binary response
+     * @return array ['buildings' => [...], 'specialists' => [...], 'buffs' => [...]]
+     *
      * @throws Exception
      */
     public function parse(string $rawAmf): array
     {
         // Ensure the Python script exists
         $scriptPath = storage_path('app/parse_zone.py');
-        if (!file_exists($scriptPath)) {
+        if (! file_exists($scriptPath)) {
             throw new Exception('parse_zone.py not found in storage/app/. Please deploy the script.');
         }
 
         // Write raw AMF to a temp file
-        $tmpFile = storage_path('app/temp_zone_' . uniqid() . '.amf');
+        $tmpFile = storage_path('app/temp_zone_'.uniqid().'.amf');
         file_put_contents($tmpFile, $rawAmf);
 
         try {
             $pythonBin = $this->findPython();
-            $command   = escapeshellarg($pythonBin) . ' ' . escapeshellarg($scriptPath) . ' ' . escapeshellarg($tmpFile);
-            $output    = [];
-            $exitCode  = 0;
+            $command = escapeshellarg($pythonBin).' '.escapeshellarg($scriptPath).' '.escapeshellarg($tmpFile);
+            $output = [];
+            $exitCode = 0;
 
-            exec($command . ' 2>&1', $output, $exitCode);
+            exec($command.' 2>&1', $output, $exitCode);
 
             $outputStr = implode("\n", $output);
 
@@ -45,7 +45,7 @@ class ZoneParserService
 
             $result = json_decode($outputStr, true);
             if (json_last_error() !== JSON_ERROR_NONE) {
-                throw new Exception('Failed to parse zone JSON: ' . json_last_error_msg() . '. Raw output: ' . substr($outputStr, 0, 500));
+                throw new Exception('Failed to parse zone JSON: '.json_last_error_msg().'. Raw output: '.substr($outputStr, 0, 500));
             }
 
             if (isset($result['resources']) && is_array($result['resources'])) {
@@ -72,16 +72,16 @@ class ZoneParserService
         $lowerName = strtolower(trim($name));
 
         // Explicit event patterns (e.g. balloons, eggs, presents, pumpkins)
-        if (str_contains($lowerName, 'balloon') || 
-            str_contains($lowerName, 'egg') || 
-            str_contains($lowerName, 'gift') || 
-            str_contains($lowerName, 'pumpkin') || 
+        if (str_contains($lowerName, 'balloon') ||
+            str_contains($lowerName, 'egg') ||
+            str_contains($lowerName, 'gift') ||
+            str_contains($lowerName, 'pumpkin') ||
             str_contains($lowerName, 'present')) {
             return 'WarehouseTab6';
         }
 
         // Explicit collection patterns (starts with or contains "collectible")
-        if (str_starts_with($lowerName, 'collectible') || 
+        if (str_starts_with($lowerName, 'collectible') ||
             str_contains($lowerName, 'collectible')) {
             return 'WarehouseTab7';
         }
@@ -223,9 +223,9 @@ class ZoneParserService
         // Try common locations
         $candidates = ['python', 'python3', 'py'];
         foreach ($candidates as $bin) {
-            $out  = [];
+            $out = [];
             $code = 0;
-            exec(escapeshellarg($bin) . ' --version 2>&1', $out, $code);
+            exec(escapeshellarg($bin).' --version 2>&1', $out, $code);
             if ($code === 0) {
                 return $bin;
             }
