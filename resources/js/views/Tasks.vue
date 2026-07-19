@@ -110,11 +110,22 @@
                                 <div class="text-xs">
                                     <p class="font-semibold text-white/90">{{ typeLabels[act.task_type] }}</p>
                                     <p class="text-white/40 text-[10px] mt-0.5">
-                                        <span v-if="['stop_production', 'start_production', 'apply_buff'].includes(act.task_type)">
+                                        <span v-if="['stop_production', 'start_production'].includes(act.task_type)">
                                             Здание: {{ act.meta.building ? getBuildingName(act.meta.building) : `Сетка #${act.payload.grid}` }}
                                         </span>
-                                        <span v-if="act.task_type === 'apply_buff' && act.meta.buff">
-                                            • Бафф: {{ getStarBuffName(act.meta.buff) }}
+                                        <span v-if="act.task_type === 'apply_buff'">
+                                            <span v-if="(act.payload.target_scope || 'self') === 'friend'">
+                                                → Друг: {{ act.payload.target_player_name || 'Неизвестный друг' }} / {{ act.meta.building ? getBuildingName(act.meta.building) : `Сетка #${act.payload.grid}` }}
+                                            </span>
+                                            <span v-else>
+                                                → Моя зона / {{ act.meta.building ? getBuildingName(act.meta.building) : `Сетка #${act.payload.grid}` }}
+                                            </span>
+                                            <span v-if="act.meta.buff">
+                                                • Бафф: {{ getStarBuffName(act.meta.buff) }}
+                                            </span>
+                                            <span>
+                                                • Количество: {{ act.payload.amount || 1 }}
+                                            </span>
                                         </span>
                                         <span v-if="['send_geologist', 'send_explorer'].includes(act.task_type)">
                                             Специалист: {{ act.meta.specialist ? (act.meta.specialist.name || getSpecialistTypeName(act.meta.specialist.type)) : `Тип #${act.payload.unique_id1}` }}
@@ -166,22 +177,94 @@
                             <div class="md:col-span-2">
                                 <label class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">Параметры шага</label>
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                    <!-- Здание -->
-                                    <div v-if="['stop_production', 'start_production', 'apply_buff'].includes(stepActionType)" class="col-span-2">
-                                        <button type="button" @click="openBuildingModal" class="glass-select w-full flex items-center justify-between text-left text-xs py-2 bg-dark-900/40">
-                                            <span v-if="selectedBuilding" class="flex items-center gap-2">
-                                                <img v-if="getBuildingIcon(selectedBuilding)" :src="getBuildingIcon(selectedBuilding)" class="w-5 h-5 object-contain" @error="handleBuildingIconError($event, selectedBuilding)" />
-                                                <span class="truncate">{{ getBuildingName(selectedBuilding) }} (Grid #{{ selectedBuilding.buildingGrid }})</span>
-                                            </span>
-                                            <span v-else class="text-white/30">Выберите здание... ({{ totalBuildingsCount }} дост.)</span>
-                                            <svg class="w-3.5 h-3.5 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                                            </svg>
-                                        </button>
+                                    <!-- Селекторы целевой зоны и зданий/друзей -->
+                                    <div class="col-span-2">
+                                        <!-- Переключатель: Моя зона / Зона друга (только для баффа) -->
+                                        <div v-if="stepActionType === 'apply_buff'" class="mb-3">
+                                            <label class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">Где применить</label>
+                                            <div class="grid grid-cols-2 gap-2">
+                                                <button type="button" @click="stepTargetScope = 'self'; onTargetScopeChange()" 
+                                                        class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all duration-300"
+                                                        :class="stepTargetScope === 'self' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
+                                                    Моя зона
+                                                </button>
+                                                <button type="button" @click="stepTargetScope = 'friend'; onTargetScopeChange()" 
+                                                        class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all duration-300"
+                                                        :class="stepTargetScope === 'friend' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
+                                                    Зона друга
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Друг (только если выбрана зона друга) -->
+                                        <div v-if="stepActionType === 'apply_buff' && stepTargetScope === 'friend'" class="mb-3">
+                                            <label class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">Друг</label>
+                                            <div class="relative">
+                                                <button type="button" @click.stop="activeDropdown = activeDropdown === 'friendList' ? null : 'friendList'" class="glass-select w-full flex items-center justify-between text-left text-xs py-2 bg-dark-900/40">
+                                                    <span v-if="selectedFriend" class="flex items-center gap-2">
+                                                        <span>👤 {{ selectedFriend.nickname || selectedFriend.username }} (уровень {{ selectedFriend.playerLevel }})</span>
+                                                    </span>
+                                                    <span v-else class="text-white/30">Выберите друга...</span>
+                                                    <svg class="w-3.5 h-3.5 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                                    </svg>
+                                                </button>
+                                                <div v-if="activeDropdown === 'friendList'" class="absolute z-50 mt-1.5 w-full glass-card border border-white/10 shadow-2xl rounded-xl py-1 max-h-60 overflow-y-auto">
+                                                    <button v-for="friend in friendsList" :key="friend.id" type="button" @click="selectFriend(friend); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors flex justify-between items-center">
+                                                        <span>👤 {{ friend.nickname || friend.username }} (уровень {{ friend.playerLevel }})</span>
+                                                        <span class="text-[9px]" :class="friend.onlineStatus ? 'text-green-400' : 'text-white/30'">
+                                                            {{ friend.onlineStatus ? 'в сети' : 'не в сети' }}
+                                                        </span>
+                                                    </button>
+                                                    <div v-if="friendsList.length === 0" class="px-3 py-1.5 text-xs text-white/40">
+                                                        Список друзей пуст. Выполните синхронизацию аккаунта.
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Здание друга (только если выбрана зона друга) -->
+                                        <div v-if="stepActionType === 'apply_buff' && stepTargetScope === 'friend'" class="mb-3">
+                                            <label class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">Здание друга</label>
+                                            <div v-if="loadingFriendZone" class="text-xs text-emerald-400/80 flex items-center gap-2 py-2">
+                                                <svg class="animate-spin h-3.5 w-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                                <span>Загружаем зону {{ selectedFriend?.nickname || selectedFriend?.username }}…</span>
+                                            </div>
+                                            <div v-else-if="friendZoneError" class="text-xs text-red-400 flex items-center justify-between py-1 bg-red-500/10 px-3 rounded-lg border border-red-500/20">
+                                                <span>Не удалось загрузить зону друга</span>
+                                                <button type="button" @click="fetchFriendZoneBuildings" class="text-[10px] uppercase font-bold text-white bg-white/10 hover:bg-white/20 px-2 py-0.5 rounded transition-all">Повторить</button>
+                                            </div>
+                                            <button v-else type="button" @click="openFriendBuildingModal" :disabled="!selectedFriend" class="glass-select w-full flex items-center justify-between text-left text-xs py-2 bg-dark-900/40 disabled:opacity-50">
+                                                <span v-if="selectedFriendBuilding" class="flex items-center gap-2">
+                                                    <span>🏭 {{ getBuildingName(selectedFriendBuilding) }} (Grid #{{ selectedFriendBuilding.buildingGrid }})</span>
+                                                </span>
+                                                <span v-else class="text-white/30">Выберите здание друга... ({{ filteredFriendBuildings.length }} дост.)</span>
+                                                <svg class="w-3.5 h-3.5 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                                </svg>
+                                            </button>
+                                        </div>
+
+                                        <!-- Собственное здание (для остановки/запуска или для баффа на себя) -->
+                                        <div v-if="['stop_production', 'start_production'].includes(stepActionType) || (stepActionType === 'apply_buff' && stepTargetScope === 'self')">
+                                            <button type="button" @click="openBuildingModal" class="glass-select w-full flex items-center justify-between text-left text-xs py-2 bg-dark-900/40">
+                                                <span v-if="selectedBuilding" class="flex items-center gap-2">
+                                                    <img v-if="getBuildingIcon(selectedBuilding)" :src="getBuildingIcon(selectedBuilding)" class="w-5 h-5 object-contain" @error="handleBuildingIconError($event, selectedBuilding)" />
+                                                    <span class="truncate">{{ getBuildingName(selectedBuilding) }} (Grid #{{ selectedBuilding.buildingGrid }})</span>
+                                                </span>
+                                                <span v-else class="text-white/30">Выберите здание... ({{ totalBuildingsCount }} дост.)</span>
+                                                <svg class="w-3.5 h-3.5 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                                </svg>
+                                            </button>
+                                        </div>
                                     </div>
 
-                                    <!-- Бафф -->
-                                    <div v-if="stepActionType === 'apply_buff'" class="col-span-2 mt-1">
+                                    <!-- Бафф и количество (только для apply_buff) -->
+                                    <div v-if="stepActionType === 'apply_buff'" class="col-span-2 mt-1 space-y-2">
                                         <button type="button" @click="openBuffModal" class="glass-select w-full flex items-center justify-between text-left text-xs py-2 bg-dark-900/40">
                                             <span v-if="selectedBuff" class="flex items-center gap-2">
                                                 <img v-if="getBuffIcon(selectedBuff)" :src="getBuffIcon(selectedBuff)" class="w-5 h-5 object-contain" @error="handleBuffIconError($event, selectedBuff)" />
@@ -192,6 +275,11 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                                             </svg>
                                         </button>
+
+                                        <div>
+                                            <label class="block text-[10px] font-medium text-white/40 mb-1 uppercase">Количество</label>
+                                            <input type="number" min="1" required v-model.number="stepAmount" class="glass-input w-full text-xs py-1.5">
+                                        </div>
                                     </div>
 
                                     <!-- Специалист -->
@@ -459,6 +547,43 @@
             </div>
         </div>
 
+        <!-- МОДАЛЬНОЕ ОКНО: ВЫБОР ЗДАНИЯ ДРУГА -->
+        <div v-if="showFriendBuildingModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+            <div class="glass-card max-w-2xl w-full flex flex-col max-h-[80vh] shadow-2xl border border-white/10">
+                <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between">
+                    <h3 class="text-base font-semibold text-white">Выбор здания друга</h3>
+                    <button type="button" @click="closeFriendBuildingModal" class="text-white/40 hover:text-white transition-colors">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="p-4 border-b border-white/5 bg-white/[0.01]">
+                    <input v-model="friendBuildingSearch" type="text" placeholder="Поиск здания по названию или сетке..." class="glass-input w-full text-xs py-2 pl-4">
+                </div>
+                <div class="p-6 overflow-y-auto flex-1 bg-dark-950/20">
+                    <div v-if="searchedFriendBuildings.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div v-for="b in searchedFriendBuildings" :key="b.buildingGrid" 
+                             @click="selectFriendBuilding(b)"
+                             class="glass-card p-3 cursor-pointer hover:border-emerald-500/40 hover:scale-[1.01] transition-all duration-200 flex items-center gap-3"
+                             :class="payload.grid === b.buildingGrid ? 'border-emerald-500/50 bg-emerald-500/10' : 'border-transparent'">
+                            <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-dark-900/50 border border-white/5">
+                                <img v-if="getBuildingIcon(b)" :src="getBuildingIcon(b)" :alt="getBuildingName(b)" class="w-7 h-7 object-contain" @error="handleBuildingIconError($event, b)">
+                                <span v-else class="text-sm">🏭</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-xs font-semibold text-white/90 truncate">{{ getBuildingName(b) }}</p>
+                                <p class="text-[10px] text-white/40 mt-0.5">Сетка #{{ b.buildingGrid }} • Ур. {{ b.upgradeLevel || 1 }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-else class="text-center py-8 text-white/30 text-xs">
+                        Здания не найдены.
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- МОДАЛЬНОЕ ОКНО: ВЫБОР СПЕЦИАЛИСТА -->
         <div v-if="showSpecialistModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
             <div class="glass-card max-w-2xl w-full flex flex-col max-h-[80vh] shadow-2xl border border-white/10">
@@ -618,6 +743,100 @@ export default {
         const selectedSpecialist = ref(null);
         const selectedBuff = ref(null);
 
+        const stepTargetScope = ref('self');
+        const selectedFriend = ref(null);
+        const selectedFriendBuilding = ref(null);
+        const friendBuildings = ref([]);
+        const loadingFriendZone = ref(false);
+        const friendZoneError = ref(false);
+        const stepAmount = ref(1);
+        const showFriendBuildingModal = ref(false);
+        const friendBuildingSearch = ref('');
+
+        const friendsList = computed(() => {
+            return zone.value?.friends || [];
+        });
+
+        const isBuffable = (b) => {
+            if (!b) return false;
+            const name = (b.buildingName_string || b.buildingName || '').toLowerCase();
+            const nonBuffable = [
+                'decoration', 'mountain', 'mine_02', 'wall', 'gate',
+                'ruin', 'rubble', 'wreckage', 'depleted', 'deposit',
+                'collectible', 'bandit'
+            ];
+            return !nonBuffable.some(word => name.includes(word));
+        };
+
+        const filteredFriendBuildings = computed(() => {
+            return friendBuildings.value.filter(b => isBuffable(b));
+        });
+
+        const searchedFriendBuildings = computed(() => {
+            let list = filteredFriendBuildings.value;
+            if (friendBuildingSearch.value) {
+                const q = friendBuildingSearch.value.toLowerCase();
+                list = list.filter(b => getBuildingName(b).toLowerCase().includes(q) || String(b.buildingGrid).includes(q));
+            }
+            return list;
+        });
+
+        const selectFriend = (friend) => {
+            selectedFriend.value = friend;
+            selectedFriendBuilding.value = null;
+            payload.value.grid = '';
+            friendBuildings.value = [];
+            if (friend) {
+                if (!friend.id) {
+                    showToast('У этого друга отсутствует ID. Пожалуйста, выполните синхронизацию (Sync) в разделе Accounts.', 'error');
+                    return;
+                }
+                fetchFriendZoneBuildings();
+            }
+        };
+
+        const fetchFriendZoneBuildings = async () => {
+            if (!selectedAccountId.value || !selectedFriend.value) return;
+            loadingFriendZone.value = true;
+            friendZoneError.value = false;
+            try {
+                const res = await axios.get(`/api/accounts/${selectedAccountId.value}/friends/${selectedFriend.value.id}/zone`);
+                if (res.data.success) {
+                    friendBuildings.value = res.data.buildings || [];
+                } else {
+                    friendZoneError.value = true;
+                }
+            } catch (e) {
+                friendZoneError.value = true;
+            } finally {
+                loadingFriendZone.value = false;
+            }
+        };
+
+        const openFriendBuildingModal = () => {
+            if (!selectedFriend.value) {
+                showToast('Сначала выберите друга.', 'warning');
+                return;
+            }
+            friendBuildingSearch.value = '';
+            showFriendBuildingModal.value = true;
+        };
+        const closeFriendBuildingModal = () => { showFriendBuildingModal.value = false; };
+        const selectFriendBuilding = (b) => {
+            selectedFriendBuilding.value = b;
+            payload.value.grid = b.buildingGrid;
+            closeFriendBuildingModal();
+        };
+
+        const onTargetScopeChange = () => {
+            selectedFriend.value = null;
+            selectedFriendBuilding.value = null;
+            selectedBuilding.value = null;
+            payload.value.grid = '';
+            friendBuildings.value = [];
+            friendZoneError.value = false;
+        };
+
         const buildingCategories = ['Все', 'Дерево', 'Рудники', 'Металл', 'Еда', 'Другие'];
 
         const typeIcons = {
@@ -680,6 +899,12 @@ export default {
             selectedBuilding.value = null;
             selectedSpecialist.value = null;
             selectedBuff.value = null;
+            selectedFriend.value = null;
+            selectedFriendBuilding.value = null;
+            stepTargetScope.value = 'self';
+            stepAmount.value = 1;
+            friendBuildings.value = [];
+            friendZoneError.value = false;
 
             const acc = accounts.value.find(a => Number(a.id) === Number(selectedAccountId.value));
             if (acc && acc.zone_data) {
@@ -719,6 +944,12 @@ export default {
 
         const onStepActionTypeChange = () => {
             resetPayload(stepActionType.value);
+            stepTargetScope.value = 'self';
+            selectedFriend.value = null;
+            selectedFriendBuilding.value = null;
+            friendBuildings.value = [];
+            stepAmount.value = 1;
+            friendZoneError.value = false;
         };
 
         const onSearchTypeChange = () => {
@@ -726,7 +957,20 @@ export default {
         };
 
         const addStepToSequence = () => {
-            if (['stop_production', 'start_production', 'apply_buff'].includes(stepActionType.value)) {
+            if (stepActionType.value === 'apply_buff' && stepTargetScope.value === 'friend') {
+                if (loadingFriendZone.value) {
+                    showToast('Подождите, пока загрузится зона друга.', 'warning');
+                    return;
+                }
+                if (!selectedFriend.value) {
+                    showToast('Сначала выберите друга.', 'warning');
+                    return;
+                }
+                if (!payload.value.grid) {
+                    showToast('Сначала выберите здание друга.', 'warning');
+                    return;
+                }
+            } else if (['stop_production', 'start_production', 'apply_buff'].includes(stepActionType.value)) {
                 if (!payload.value.grid) {
                     showToast('Сначала выберите целевое здание.', 'warning');
                     return;
@@ -746,11 +990,19 @@ export default {
             }
 
             // Create step payload
-            const actionPayload = { ...payload.value };
+            const actionPayload = { 
+                ...payload.value,
+                target_scope: stepTargetScope.value,
+                target_player_id: stepTargetScope.value === 'friend' ? selectedFriend.value?.id : null,
+                target_player_name: stepTargetScope.value === 'friend' ? (selectedFriend.value?.nickname || selectedFriend.value?.username) : null,
+                amount: stepActionType.value === 'apply_buff' ? stepAmount.value : 1
+            };
 
             // Save meta for frontend rendering
             const meta = {
-                building: selectedBuilding.value ? { ...selectedBuilding.value } : null,
+                building: stepTargetScope.value === 'friend' 
+                    ? (selectedFriendBuilding.value ? { ...selectedFriendBuilding.value } : null)
+                    : (selectedBuilding.value ? { ...selectedBuilding.value } : null),
                 specialist: selectedSpecialist.value ? { ...selectedSpecialist.value } : null,
                 buff: selectedBuff.value ? { ...selectedBuff.value } : null,
                 subTaskLabel: selectedSpecialist.value 
@@ -767,8 +1019,13 @@ export default {
 
             // Reset temp step variables
             selectedBuilding.value = null;
+            selectedFriendBuilding.value = null;
+            selectedFriend.value = null;
             selectedSpecialist.value = null;
             selectedBuff.value = null;
+            stepTargetScope.value = 'self';
+            stepAmount.value = 1;
+            friendBuildings.value = [];
             resetPayload(stepActionType.value);
             stepDelay.value = 5;
 
@@ -1319,6 +1576,26 @@ export default {
             executingTasks,
             formatDateTime,
             formatInterval,
+
+            // target scope and friends state
+            stepTargetScope,
+            selectedFriend,
+            selectedFriendBuilding,
+            friendBuildings,
+            loadingFriendZone,
+            friendZoneError,
+            stepAmount,
+            showFriendBuildingModal,
+            friendBuildingSearch,
+            friendsList,
+            searchedFriendBuildings,
+            filteredFriendBuildings,
+            selectFriend,
+            fetchFriendZoneBuildings,
+            openFriendBuildingModal,
+            closeFriendBuildingModal,
+            selectFriendBuilding,
+            onTargetScopeChange,
 
             // Состояние модальных окон
             showBuildingModal,

@@ -20,11 +20,14 @@ class ExecuteScheduledTasks extends Command
 
     private TsoAmfService $amfService;
 
-    public function __construct(TsoAuthService $authService, TsoAmfService $amfService)
+    private \App\Services\ZoneParserService $zoneParser;
+
+    public function __construct(TsoAuthService $authService, TsoAmfService $amfService, \App\Services\ZoneParserService $zoneParser)
     {
         parent::__construct();
         $this->authService = $authService;
         $this->amfService = $amfService;
+        $this->zoneParser = $zoneParser;
     }
 
     public function handle(): int
@@ -211,8 +214,59 @@ class ExecuteScheduledTasks extends Command
                 $grid = $payload['grid'] ?? 0;
                 $uniqueId1 = $payload['unique_id1'] ?? 0;
                 $uniqueId2 = $payload['unique_id2'] ?? 0;
+                $amount = $payload['amount'] ?? 1;
+                $targetScope = $payload['target_scope'] ?? 'self';
+                $targetPlayerId = $payload['target_player_id'] ?? null;
 
-                return $this->amfService->applyBuff($account, (int) $grid, (int) $uniqueId1, (int) $uniqueId2);
+                if ($targetScope === 'friend') {
+                    $zoneData = $account->zone_data ? json_decode($account->zone_data, true) : [];
+                    $friends = $zoneData['friends'] ?? [];
+                    $friend = null;
+                    $targetPlayerId = (int) $targetPlayerId;
+                    foreach ($friends as $f) {
+                        if (isset($f['id']) && (int) $f['id'] === $targetPlayerId) {
+                            $friend = $f;
+                            break;
+                        }
+                    }
+                    if (! $friend) {
+                        throw new Exception('Шаг пропущен: игрок больше не находится в списке друзей');
+                    }
+
+                    $this->info("  → Fetching friend zone fresh for target player [{$targetPlayerId}]");
+                    $friendZoneAmf = $this->amfService->getZone($account, $targetPlayerId);
+                    $friendZoneData = $this->zoneParser->parse($friendZoneAmf);
+                    $err = $friendZoneData['errorCode'] ?? 0;
+                    if ($err !== 0) {
+                        throw new Exception("Не удалось загрузить зону друга (код ошибки сервера: {$err})");
+                    }
+
+                    $buildings = $friendZoneData['buildings'] ?? [];
+                    $gridFound = false;
+                    foreach ($buildings as $building) {
+                        if (($building['buildingGrid'] ?? null) == $grid) {
+                            $gridFound = true;
+                            break;
+                        }
+                    }
+                    if (! $gridFound) {
+                        $friendName = $friend['username'] ?? $friend['nickname'] ?? $payload['target_player_name'] ?? 'Unknown';
+                        throw new Exception("Шаг не выполнен: здание Grid #{$grid} не найдено в зоне {$friendName}");
+                    }
+
+                    $result = $this->amfService->applyBuff($account, (int) $grid, (int) $uniqueId1, (int) $uniqueId2, (int) $amount, (int) $targetPlayerId);
+                } else {
+                    $result = $this->amfService->applyBuff($account, (int) $grid, (int) $uniqueId1, (int) $uniqueId2, (int) $amount);
+                }
+
+                $parsed = $this->zoneParser->parse($result);
+                $errorCode = $parsed['errorCode'] ?? 0;
+                if ($errorCode !== 0) {
+                    $errorMsg = $this->getBuffErrorMessage($errorCode);
+                    throw new Exception("Код ошибки сервера {$errorCode}: {$errorMsg}");
+                }
+
+                return $result;
 
             case 'send_geologist':
             case 'send_explorer':
@@ -226,5 +280,21 @@ class ExecuteScheduledTasks extends Command
             default:
                 throw new Exception("Unknown action type: {$taskType}");
         }
+    }
+
+    /**
+     * Map buff error code to message.
+     */
+    private function getBuffErrorMessage(int $errorCode): string
+    {
+        return match ($errorCode) {
+            22 => 'Баф нельзя применить к этому типу здания на чужой зоне',
+            25 => 'На здании достигнут лимит бафов',
+            27 => 'Баф можно применять только на домашней зоне владельца',
+            28 => 'Применение временно заблокировано',
+            46 => 'Баф нельзя применить в зоне этого типа',
+            52 => 'Не выполнены условия применения',
+            default => "Неизвестная ошибка сервера (код {$errorCode})",
+        };
     }
 }

@@ -190,12 +190,12 @@ function wrapAmf0Remoting(string $targetUri, string $responseUri, string $amf3Bo
 
 // ── Load-balancer resolver ──────────────────────────────────────────────────────
 
-function getRealAmfUrl(string $bbUrl, string $dsoAuthUser, string $dsoAuthToken, string $cookieFile, ?string &$dsId = null): string
+function getRealAmfUrl(string $bbUrl, string $dsoAuthUser, string $dsoAuthToken, string $cookieFile, int $targetZoneId = 0, ?string &$dsId = null): string
 {
     $lsUrl = $bbUrl;
     $amfServerUrl = '';
 
-    \Illuminate\Support\Facades\Log::info("getRealAmfUrl: bbUrl={$lsUrl}, user={$dsoAuthUser}");
+    \Illuminate\Support\Facades\Log::info("getRealAmfUrl: bbUrl={$lsUrl}, user={$dsoAuthUser}, targetZoneId={$targetZoneId}");
 
     // 1. Authenticate session on Load Server (as in C# FastAuth / game boot sequence)
     $authUrl = rtrim($lsUrl, '/').'/authenticate';
@@ -240,14 +240,14 @@ function getRealAmfUrl(string $bbUrl, string $dsoAuthUser, string $dsoAuthToken,
     $maxRetries = 20;
     for ($i = 0; $i < $maxRetries; $i++) {
         $ch = curl_init();
-        $requestUrl = rtrim($lsUrl, '/').'/Z'.(time() * 1000);
+        $requestUrl = rtrim($lsUrl, '/').'/Z'.(int) round(microtime(true) * 1000);
         curl_setopt($ch, CURLOPT_URL, $requestUrl);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_POST, true);
 
         $data = http_build_query([
-            'zoneID' => 0,
+            'zoneID' => $targetZoneId,
             'DSOAUTHTOKEN' => $dsoAuthToken,
             'DSOAUTHUSER' => $dsoAuthUser,
         ]);
@@ -400,7 +400,8 @@ class TsoAmfService
 
     private TsoAuthService $authService;
 
-    private ?TsoAmfClient $client = null;
+    /** @var array<string, TsoAmfClient> */
+    private array $clients = [];
 
     private string $dsId = 'nil';
 
@@ -416,20 +417,20 @@ class TsoAmfService
     public function setDsId(string $dsId): void
     {
         $this->dsId = $dsId;
-        if ($this->client) {
-            $this->client->setDsId($dsId);
+        foreach ($this->clients as $client) {
+            $client->setDsId($dsId);
         }
     }
 
     /**
      * Build a dServerCall for the given account.
      */
-    private function buildServerCall(Account $account, int $type, $actionData): defaultGame_Communication_VO_dServerCall
+    private function buildServerCall(Account $account, int $type, $actionData, ?int $targetZoneId = null): defaultGame_Communication_VO_dServerCall
     {
         $call = new defaultGame_Communication_VO_dServerCall;
         $call->dsoAuthToken = $account->dso_auth_token;
         $call->dsoAuthUser = (int) $account->dso_auth_user;
-        $call->zoneID = (int) $account->dso_auth_user;
+        $call->zoneID = $targetZoneId ?? (int) $account->dso_auth_user;
         $call->type = $type;
         $call->dsoAuthRandomClientID = $this->dsoAuthRandomClientID;
         $call->data = $actionData;
@@ -454,9 +455,10 @@ class TsoAmfService
     /**
      * Get an AMF client connected to the real game server.
      */
-    private function getClient(Account $account): TsoAmfClient
+    private function getClient(Account $account, int $targetZoneId = 0): TsoAmfClient
     {
-        if ($this->client === null) {
+        $clientKey = $account->id.':'.$targetZoneId;
+        if (! isset($this->clients[$clientKey])) {
             $cookieFile = $this->authService->getCookieFile($account);
             $dsId = 'nil';
             $amfServerUrl = getRealAmfUrl(
@@ -464,14 +466,15 @@ class TsoAmfService
                 $account->dso_auth_user,
                 $account->dso_auth_token,
                 $cookieFile,
+                $targetZoneId,
                 $dsId
             );
 
-            $this->client = new TsoAmfClient($amfServerUrl, $cookieFile);
-            $this->client->setDsId($dsId);
+            $this->clients[$clientKey] = new TsoAmfClient($amfServerUrl, $cookieFile);
+            $this->clients[$clientKey]->setDsId($dsId);
         }
 
-        return $this->client;
+        return $this->clients[$clientKey];
     }
 
     /**
@@ -479,17 +482,18 @@ class TsoAmfService
      */
     public function resetClient(): void
     {
-        $this->client = null;
+        $this->clients = [];
     }
 
     /**
      * Send a server call via AMF.
      */
-    private function sendServerCall(Account $account, int $commandType, $actionData, string $destination = 'SMC', string $operation = 'ExecuteServerCall', ?string $source = 'com.bluebyte.game.servlet.EventHandler'): string
+    private function sendServerCall(Account $account, int $commandType, $actionData, string $destination = 'SMC', string $operation = 'ExecuteServerCall', ?string $source = 'com.bluebyte.game.servlet.EventHandler', ?int $targetZoneId = null): string
     {
+        $zoneId = $targetZoneId ?? 0;
         try {
-            $client = $this->getClient($account);
-            $call = $this->buildServerCall($account, $commandType, $actionData);
+            $client = $this->getClient($account, $zoneId);
+            $call = $this->buildServerCall($account, $commandType, $actionData, $targetZoneId);
 
             return $client->sendCommand($call, $destination, $operation, $source);
         } catch (Exception $e) {
@@ -504,8 +508,8 @@ class TsoAmfService
                     $this->resetClient();
 
                     // Re-try the request with fresh tokens
-                    $client = $this->getClient($account);
-                    $call = $this->buildServerCall($account, $commandType, $actionData);
+                    $client = $this->getClient($account, $zoneId);
+                    $call = $this->buildServerCall($account, $commandType, $actionData, $targetZoneId);
 
                     return $client->sendCommand($call, $destination, $operation, $source);
                 } catch (Exception $retryException) {
@@ -521,9 +525,17 @@ class TsoAmfService
     /**
      * GET_ZONE – retrieve the full zone data.
      */
-    public function getZone(Account $account): string
+    public function getZone(Account $account, ?int $targetZoneId = null): string
     {
-        return $this->sendServerCall($account, self::CMD_GET_ZONE, false);
+        return $this->sendServerCall(
+            $account,
+            self::CMD_GET_ZONE,
+            false,
+            'SMC',
+            'ExecuteServerCall',
+            'com.bluebyte.game.servlet.EventHandler',
+            $targetZoneId
+        );
     }
 
     /**
@@ -548,7 +560,7 @@ class TsoAmfService
     {
         $getFriends = new defaultGame_Communication_VO_dGetFriendsVO;
         //        $getFriends->version = '1843-Release_queen';
-//        $getFriends->version = '9361-Release_lugia_air';
+        //        $getFriends->version = '9361-Release_lugia_air';
         $getFriends->version = '3edc5514e7e5177d38fa82e605f59519e25fcb42';
 
         return $this->sendServerCall(
@@ -588,15 +600,23 @@ class TsoAmfService
      * @param  int  $uniqueId1  Buff dUniqueID part 1
      * @param  int  $uniqueId2  Buff dUniqueID part 2
      */
-    public function applyBuff(Account $account, int $grid, int $uniqueId1, int $uniqueId2): string
+    public function applyBuff(Account $account, int $grid, int $uniqueId1, int $uniqueId2, int $amount = 1, ?int $targetZoneId = null): string
     {
         $buffUid = new defaultGame_Communication_VO_dUniqueID;
         $buffUid->uniqueID1 = $uniqueId1;
         $buffUid->uniqueID2 = $uniqueId2;
 
-        $action = $this->buildServerAction(0, $grid, 0, $buffUid);
+        $action = $this->buildServerAction(0, $grid, $amount, $buffUid);
 
-        return $this->sendServerCall($account, self::CMD_APPLY_BUFF, $action);
+        return $this->sendServerCall(
+            $account,
+            self::CMD_APPLY_BUFF,
+            $action,
+            'SMC',
+            'ExecuteServerCall',
+            'com.bluebyte.game.servlet.EventHandler',
+            $targetZoneId
+        );
     }
 
     /**

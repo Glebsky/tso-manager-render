@@ -9,6 +9,7 @@ use App\Services\TsoAuthService;
 use App\Services\ZoneParserService;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class AccountController extends Controller
@@ -159,17 +160,19 @@ class AccountController extends Controller
                                 $ownerUid = $zoneData['userID'] ?? null;
 
                                 foreach ($parsedPlayers as $p) {
-                                    $puid = $p['userID'] ?? null;
+                                    $puid = $p['id'] ?? $p['userID'] ?? null;
                                     if ($puid && $ownerUid && $puid == $ownerUid) {
                                         continue;
                                     }
                                     $friendsList[] = [
+                                        'id' => $puid,
                                         'username' => $p['username_string'] ?? $p['username'] ?? $p['nickname'] ?? 'Unknown',
                                         'nickname' => $p['nickname'] ?? $p['username_string'] ?? $p['username'] ?? 'Unknown',
                                         'playerLevel' => $p['playerLevel'] ?? $p['level'] ?? 1,
                                         'level' => $p['playerLevel'] ?? $p['level'] ?? 1,
                                         'avatarId' => $p['avatarId'] ?? 1,
                                         'onlineStatus' => $p['onlineStatus'] ?? false,
+                                        'friendSince' => $p['friendSince'] ?? null,
                                     ];
                                 }
                                 $zoneData['friends'] = $friendsList;
@@ -292,6 +295,11 @@ class AccountController extends Controller
                         (int) $request->input('unique_id1'),
                         (int) $request->input('unique_id2')
                     );
+                    $parsed = $this->zoneParser->parse($result);
+                    $errorCode = $parsed['errorCode'] ?? 0;
+                    if ($errorCode !== 0) {
+                        throw new Exception("Код ошибки сервера {$errorCode}: ".$this->getBuffErrorMessage($errorCode));
+                    }
                     break;
 
                 case 'send_specialist':
@@ -367,5 +375,108 @@ class AccountController extends Controller
             'message' => 'Сессия успешно обновлена вручную.',
             'account' => $account,
         ]);
+    }
+
+    /**
+     * Get target friend's zone data.
+     */
+    public function friendZone(Account $account, $friendId)
+    {
+        $friendId = (int) $friendId;
+        if ($friendId <= 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Некорректный ID друга. Пожалуйста, выполните синхронизацию аккаунта.',
+            ], 400);
+        }
+
+        $zoneData = $account->zone_data ? json_decode($account->zone_data, true) : [];
+        $friends = $zoneData['friends'] ?? [];
+        $friend = null;
+        foreach ($friends as $f) {
+            if (isset($f['id']) && (int) $f['id'] === $friendId) {
+                $friend = $f;
+                break;
+            }
+        }
+
+        if (! $friend) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Игрок отсутствует в вашем списке друзей.',
+            ], 403);
+        }
+
+        $cacheKey = "friend-zone:{$account->id}:{$friendId}";
+        $cachedZone = Cache::get($cacheKey);
+
+        if ($cachedZone) {
+            $friendZoneData = json_decode($cachedZone, true);
+        } else {
+            try {
+                if (! $this->authService->isAuthenticated($account)) {
+                    $this->authService->login($account);
+                    $account->refresh();
+                }
+
+                Log::info("Fetching friend zone AMF for account {$account->id}, friend {$friendId}");
+                $rawAmf = $this->amfService->getZone($account, $friendId);
+                $friendZoneData = $this->zoneParser->parse($rawAmf);
+
+                $errorCode = $friendZoneData['errorCode'] ?? 0;
+                if ($errorCode !== 0) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Ошибка сервера игры: {$errorCode}",
+                    ], 500);
+                }
+
+                Cache::put($cacheKey, json_encode($friendZoneData), 300);
+            } catch (Exception $e) {
+                Log::error("Failed to fetch zone of friend {$friendId} for account {$account->id}: ".$e->getMessage());
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Не удалось загрузить зону друга: '.$e->getMessage(),
+                ], 500);
+            }
+        }
+
+        $buildings = [];
+        foreach ($friendZoneData['buildings'] ?? [] as $b) {
+            $buildings[] = [
+                'buildingName_string' => $b['buildingName_string'] ?? $b['buildingName'] ?? 'Building',
+                'buildingName' => $b['buildingName'] ?? $b['buildingName_string'] ?? 'Building',
+                'buildingGrid' => $b['buildingGrid'] ?? $b['grid'] ?? 0,
+                'upgradeLevel' => $b['upgradeLevel'] ?? $b['level'] ?? 1,
+                'isProductionActive' => $b['isProductionActive'] ?? false,
+                'buildingMode' => $b['buildingMode'] ?? 0,
+            ];
+        }
+
+        return response()->json([
+            'success' => true,
+            'friend' => [
+                'id' => $friendId,
+                'username' => $friend['username'] ?? $friend['nickname'] ?? 'Unknown',
+            ],
+            'buildings' => $buildings,
+        ]);
+    }
+
+    /**
+     * Map buff error code to message.
+     */
+    private function getBuffErrorMessage(int $errorCode): string
+    {
+        return match ($errorCode) {
+            22 => 'Баф нельзя применить к этому типу здания на чужой зоне',
+            25 => 'На здании достигнут лимит бафов',
+            27 => 'Баф можно применять только на домашней зоне владельца',
+            28 => 'Применение временно заблокировано',
+            46 => 'Баф нельзя применить в зоне этого типа',
+            52 => 'Не выполнены условия применения',
+            default => "Неизвестная ошибка сервера (код {$errorCode})",
+        };
     }
 }

@@ -27,6 +27,7 @@ Route::prefix('api')->group(function () {
     Route::post('accounts/{account}/sync', [AccountController::class, 'sync']);
     Route::post('accounts/{account}/action', [AccountController::class, 'action']);
     Route::put('accounts/{account}/session', [AccountController::class, 'updateSession']);
+    Route::get('accounts/{account}/friends/{friendId}/zone', [AccountController::class, 'friendZone'])->where('friendId', '[0-9]+');
 
     // Tasks
     Route::get('tasks', [ScheduledTaskController::class, 'index']);

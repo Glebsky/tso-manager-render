@@ -49,6 +49,19 @@ class ScheduledTaskController extends Controller
             ]);
         }
 
+        $account = Account::findOrFail($request->input('account_id'));
+
+        if ($request->input('task_type') === 'apply_buff') {
+            $this->validateBuffPayload($account, $request->input('payload'));
+        } elseif ($request->input('task_type') === 'sequence') {
+            $actions = $request->input('payload.actions', []);
+            foreach ($actions as $index => $action) {
+                if (($action['task_type'] ?? '') === 'apply_buff') {
+                    $this->validateBuffPayload($account, $action['payload'] ?? [], "payload.actions.{$index}.payload.");
+                }
+            }
+        }
+
         if ($request->input('schedule_type') === 'interval') {
             $hours = (int) $request->input('interval_hours', 0);
             $mins = (int) $request->input('interval_minutes', 0);
@@ -138,5 +151,98 @@ class ScheduledTaskController extends Controller
             'task' => $task,
             'message' => $task->last_result,
         ]);
+    }
+
+    /**
+     * Validate payload for apply_buff action/step.
+     */
+    private function validateBuffPayload(Account $account, array $payload, string $prefix = 'payload.'): void
+    {
+        $rules = [
+            $prefix.'target_scope' => 'nullable|in:self,friend',
+            $prefix.'grid' => 'required|integer|min:1',
+            $prefix.'unique_id1' => 'required|integer',
+            $prefix.'unique_id2' => 'required|integer',
+            $prefix.'amount' => 'nullable|integer|min:1',
+            $prefix.'target_player_id' => 'required_if:'.$prefix.'target_scope,friend|nullable|integer|min:1',
+            $prefix.'target_player_name' => 'nullable|string|max:255',
+        ];
+
+        request()->validate($rules);
+
+        $targetScope = $payload['target_scope'] ?? 'self';
+        $amount = $payload['amount'] ?? 1;
+
+        $zoneData = $account->zone_data ? json_decode($account->zone_data, true) : [];
+        $buffs = $zoneData['availableBuffs'] ?? $zoneData['buffs'] ?? [];
+        $buffFound = false;
+        foreach ($buffs as $buff) {
+            $u1 = $buff['uniqueId1'] ?? $buff['uniqueID1'] ?? null;
+            $u2 = $buff['uniqueId2'] ?? $buff['uniqueID2'] ?? null;
+            if ($u1 == $payload['unique_id1'] && $u2 == $payload['unique_id2']) {
+                $buffFound = true;
+                $availableAmount = $buff['amount'] ?? 0;
+                if ($availableAmount < $amount) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        $prefix.'amount' => ["Недостаточно баффов в звездном меню (доступно: {$availableAmount}, требуется: {$amount})."],
+                    ]);
+                }
+                break;
+            }
+        }
+
+        if (! $buffFound) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                $prefix.'unique_id1' => ['Указанный бафф не найден в инвентаре звездного меню.'],
+            ]);
+        }
+
+        if ($targetScope === 'friend') {
+            $friendId = (int) $payload['target_player_id'];
+
+            if ($friendId < 1) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    $prefix.'target_player_id' => ['Неверный ID друга.'],
+                ]);
+            }
+
+            $friends = $zoneData['friends'] ?? [];
+            $friendFound = false;
+            foreach ($friends as $friend) {
+                if (isset($friend['id']) && (int) $friend['id'] === $friendId) {
+                    $friendFound = true;
+                    break;
+                }
+            }
+
+            if (! $friendFound) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    $prefix.'target_player_id' => ['Игрок отсутствует в вашем списке друзей.'],
+                ]);
+            }
+
+            $cacheKey = "friend-zone:{$account->id}:{$friendId}";
+            $cachedZone = \Illuminate\Support\Facades\Cache::get($cacheKey);
+            if ($cachedZone) {
+                $friendZoneData = json_decode($cachedZone, true);
+                $buildings = $friendZoneData['buildings'] ?? [];
+                $gridFound = false;
+                foreach ($buildings as $building) {
+                    if (($building['buildingGrid'] ?? null) == $payload['grid']) {
+                        $gridFound = true;
+                        break;
+                    }
+                }
+                if (! $gridFound) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        $prefix.'grid' => ["Здание с сеткой #{$payload['grid']} не найдено в зоне друга."],
+                    ]);
+                }
+            } else {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    $prefix.'target_player_id' => ['Зона друга не загружена или истек срок кеша. Пожалуйста, обновите ее в интерфейсе.'],
+                ]);
+            }
+        }
     }
 }
