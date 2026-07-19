@@ -30,6 +30,7 @@ class ScheduledTaskController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'name' => 'nullable|string|max:255',
             'account_id' => 'required|exists:accounts,id',
             'task_type' => 'required|string|in:stop_production,start_production,apply_buff,send_geologist,send_explorer,sequence',
             'payload' => 'required|array',

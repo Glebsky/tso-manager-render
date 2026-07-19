@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ScheduledTask extends Model
 {
     protected $fillable = [
+        'name',
         'account_id',
         'task_type',
         'payload',

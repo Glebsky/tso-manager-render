@@ -20,7 +20,13 @@
             </div>
 
             <form @submit.prevent="scheduleTask">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <!-- Название серии -->
+                    <div>
+                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">Название серии задач</label>
+                        <input type="text" v-model="taskName" placeholder="Напр. Бафф ратуши друга" class="glass-input w-full text-xs py-2.5">
+                    </div>
+
                     <!-- Выбор аккаунта -->
                     <div>
                         <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">Игровой аккаунт</label>
@@ -43,17 +49,17 @@
                     <div>
                         <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">Тип планирования</label>
                         <div class="grid grid-cols-3 gap-2">
-                            <button type="button" @click="scheduleType = 'daily'" 
+                            <button type="button" @click="scheduleType = 'daily'"
                                     class="px-3 py-2 rounded-lg text-xs font-semibold border transition-all duration-300"
                                     :class="scheduleType === 'daily' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
                                 Ежедневно
                             </button>
-                            <button type="button" @click="scheduleType = 'once'" 
+                            <button type="button" @click="scheduleType = 'once'"
                                     class="px-3 py-2 rounded-lg text-xs font-semibold border transition-all duration-300"
                                     :class="scheduleType === 'once' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
                                 Одноразово
                             </button>
-                            <button type="button" @click="scheduleType = 'interval'" 
+                            <button type="button" @click="scheduleType = 'interval'"
                                     class="px-3 py-2 rounded-lg text-xs font-semibold border transition-all duration-300"
                                     :class="scheduleType === 'interval' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
                                 Интервал
@@ -183,12 +189,12 @@
                                         <div v-if="stepActionType === 'apply_buff'" class="mb-3">
                                             <label class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">Где применить</label>
                                             <div class="grid grid-cols-2 gap-2">
-                                                <button type="button" @click="stepTargetScope = 'self'; onTargetScopeChange()" 
+                                                <button type="button" @click="stepTargetScope = 'self'; onTargetScopeChange()"
                                                         class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all duration-300"
                                                         :class="stepTargetScope === 'self' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
                                                     Моя зона
                                                 </button>
-                                                <button type="button" @click="stepTargetScope = 'friend'; onTargetScopeChange()" 
+                                                <button type="button" @click="stepTargetScope = 'friend'; onTargetScopeChange()"
                                                         class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all duration-300"
                                                         :class="stepTargetScope === 'friend' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
                                                     Зона друга
@@ -398,8 +404,9 @@
 
                                 <!-- Информация о задаче -->
                                 <div class="min-w-0">
-                                    <p class="text-sm font-medium text-white/80 group-hover:text-white transition-colors">
-                                        <span v-if="t.task_type === 'sequence'">Серия шагов ({{ t.payload?.actions?.length || 0 }})</span>
+                                    <p class="text-sm font-medium text-white/80 group-hover:text-white transition-colors flex items-center gap-2">
+                                        <span v-if="t.name" class="font-semibold text-emerald-400/90">{{ t.name }}</span>
+                                        <span v-else-if="t.task_type === 'sequence'">Серия шагов ({{ t.payload?.actions?.length || 0 }})</span>
                                         <span v-else>{{ typeLabels[t.task_type] || t.task_type }}</span>
                                     </p>
                                     <div class="flex flex-wrap items-center gap-2 mt-0.5 text-[10px] text-white/40">
@@ -441,7 +448,7 @@
                                 </div>
 
                                 <!-- Последний результат выполнения -->
-                                <span v-if="t.last_result" 
+                                <span v-if="t.last_result"
                                       class="badge text-[10px] flex-shrink-0 max-w-[120px] truncate"
                                       :class="t.last_result.includes('OK') ? 'badge-success' : 'badge-danger'"
                                       :title="t.last_result">
@@ -449,7 +456,7 @@
                                 </span>
 
                                 <!-- Кнопка ручного запуска -->
-                                <button @click="runTaskNow(t)" 
+                                <button @click="runTaskNow(t)"
                                         :disabled="executingTasks[t.id]"
                                         class="btn-secondary btn-sm flex items-center justify-center gap-1.5 flex-shrink-0"
                                         :class="executingTasks[t.id] ? 'opacity-50 cursor-not-allowed' : 'hover:border-emerald-500/30 text-emerald-400/80 hover:text-emerald-400'"
@@ -465,7 +472,7 @@
                                 </button>
 
                                 <!-- Тумблер активации -->
-                                <button @click="toggleTask(t)" 
+                                <button @click="toggleTask(t)"
                                         class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 flex-shrink-0"
                                         :class="t.is_active ? 'bg-emerald-500' : 'bg-white/10'">
                                     <span class="inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform duration-300"
@@ -473,7 +480,7 @@
                                 </button>
 
                                 <!-- Кнопка удаления -->
-                                <button @click="deleteTask(t.id)" 
+                                <button @click="deleteTask(t.id)"
                                         class="btn-secondary btn-sm text-red-400/60 hover:text-red-400 hover:border-red-500/30 flex-shrink-0">
                                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
@@ -523,7 +530,7 @@
                 </div>
                 <div class="p-6 overflow-y-auto flex-1 bg-dark-950/20">
                     <div v-if="filteredBuildings.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div v-for="b in filteredBuildings" :key="b.buildingGrid" 
+                        <div v-for="b in filteredBuildings" :key="b.buildingGrid"
                              @click="selectBuilding(b)"
                              class="glass-card p-3 cursor-pointer hover:border-emerald-500/40 hover:scale-[1.01] transition-all duration-200 flex items-center gap-3"
                              :class="payload.grid === b.buildingGrid ? 'border-emerald-500/50 bg-emerald-500/10' : 'border-transparent'">
@@ -563,7 +570,7 @@
                 </div>
                 <div class="p-6 overflow-y-auto flex-1 bg-dark-950/20">
                     <div v-if="searchedFriendBuildings.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div v-for="b in searchedFriendBuildings" :key="b.buildingGrid" 
+                        <div v-for="b in searchedFriendBuildings" :key="b.buildingGrid"
                              @click="selectFriendBuilding(b)"
                              class="glass-card p-3 cursor-pointer hover:border-emerald-500/40 hover:scale-[1.01] transition-all duration-200 flex items-center gap-3"
                              :class="payload.grid === b.buildingGrid ? 'border-emerald-500/50 bg-emerald-500/10' : 'border-transparent'">
@@ -600,7 +607,7 @@
                 </div>
                 <div class="p-6 overflow-y-auto flex-1 bg-dark-950/20">
                     <div v-if="filteredSpecialistsModal.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div v-for="s in filteredSpecialistsModal" :key="s.uniqueId1 + '-' + s.uniqueId2" 
+                        <div v-for="s in filteredSpecialistsModal" :key="s.uniqueId1 + '-' + s.uniqueId2"
                              @click="selectSpecialist(s)"
                              class="glass-card p-3 cursor-pointer hover:border-emerald-500/40 hover:scale-[1.01] transition-all duration-200 flex items-center gap-3"
                              :class="payload.unique_id1 === s.uniqueId1 ? 'border-emerald-500/50 bg-emerald-500/10' : 'border-transparent'">
@@ -637,7 +644,7 @@
                 </div>
                 <div class="p-6 overflow-y-auto flex-1 bg-dark-950/20">
                     <div v-if="filteredBuffsModal.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div v-for="bf in filteredBuffsModal" :key="bf.uniqueId1 + '-' + bf.uniqueId2" 
+                        <div v-for="bf in filteredBuffsModal" :key="bf.uniqueId1 + '-' + bf.uniqueId2"
                              @click="selectBuff(bf)"
                              class="glass-card p-3 cursor-pointer hover:border-emerald-500/40 hover:scale-[1.01] transition-all duration-200 flex items-center gap-3"
                              :class="payload.unique_id1 === bf.uniqueId1 ? 'border-emerald-500/50 bg-emerald-500/10' : 'border-transparent'">
@@ -674,6 +681,7 @@ export default {
         const executingTasks = ref({});
 
         const selectedAccountId = ref('');
+        const taskName = ref('');
         const activeDropdown = ref(null);
         const taskType = ref('sequence');
         const runAtTime = ref('');
@@ -919,7 +927,7 @@ export default {
             } else {
                 zone.value = { buildings: [], specialists: [], buffs: [] };
             }
-            resetPayload(taskType.value);
+            resetPayload(stepActionType.value);
         };
 
         const resetPayload = (type) => {
@@ -937,7 +945,7 @@ export default {
                     unique_id1: '',
                     unique_id2: '',
                     task_type: type === 'send_geologist' ? 0 : 1,
-                    sub_task_id: 1
+                    sub_task_id: 0
                 };
             }
         };
@@ -953,7 +961,7 @@ export default {
         };
 
         const onSearchTypeChange = () => {
-            payload.value.sub_task_id = 1;
+            payload.value.sub_task_id = 0;
         };
 
         const addStepToSequence = () => {
@@ -990,7 +998,7 @@ export default {
             }
 
             // Create step payload
-            const actionPayload = { 
+            const actionPayload = {
                 ...payload.value,
                 target_scope: stepTargetScope.value,
                 target_player_id: stepTargetScope.value === 'friend' ? selectedFriend.value?.id : null,
@@ -1000,12 +1008,12 @@ export default {
 
             // Save meta for frontend rendering
             const meta = {
-                building: stepTargetScope.value === 'friend' 
+                building: stepTargetScope.value === 'friend'
                     ? (selectedFriendBuilding.value ? { ...selectedFriendBuilding.value } : null)
                     : (selectedBuilding.value ? { ...selectedBuilding.value } : null),
                 specialist: selectedSpecialist.value ? { ...selectedSpecialist.value } : null,
                 buff: selectedBuff.value ? { ...selectedBuff.value } : null,
-                subTaskLabel: selectedSpecialist.value 
+                subTaskLabel: selectedSpecialist.value
                     ? getSubTaskLabel(stepActionType.value, payload.value.task_type, payload.value.sub_task_id)
                     : ''
             };
@@ -1169,22 +1177,46 @@ export default {
         };
 
         const filteredSpecialistsModal = computed(() => {
-            if (!zone.value || !zone.value.specialists) return [];
-            let list = zone.value.specialists.filter(sp => {
-                const category = getSpecialistCategory(sp.type);
-                if (taskType.value === 'send_geologist') return category === 'Geologist';
-                if (taskType.value === 'send_explorer') return category === 'Explorer';
+            const specialists = zone.value?.specialists;
+
+            if (!Array.isArray(specialists)) {
+                return [];
+            }
+
+            let list = specialists.filter(sp => {
+                const category = getSpecialistCategory(
+                    Number(sp.type)
+                );
+
+                if (stepActionType.value === 'send_geologist') {
+                    return category === 'Geologist';
+                }
+
+                if (stepActionType.value === 'send_explorer') {
+                    return category === 'Explorer';
+                }
+
                 return false;
             });
 
-            if (specialistSearch.value) {
-                const query = specialistSearch.value.toLowerCase();
+            const query = specialistSearch.value
+                .trim()
+                .toLowerCase();
+
+            if (query) {
                 list = list.filter(sp => {
-                    const name = (sp.name || '').toLowerCase();
-                    const typeName = getSpecialistTypeName(sp.type).toLowerCase();
-                    return name.includes(query) || typeName.includes(query);
+                    const name = String(sp.name || '')
+                        .toLowerCase();
+
+                    const typeName = getSpecialistTypeName(
+                        Number(sp.type)
+                    ).toLowerCase();
+
+                    return name.includes(query)
+                        || typeName.includes(query);
                 });
             }
+
             return list;
         });
 
@@ -1336,33 +1368,70 @@ export default {
         };
 
         const availableSubTasks = computed(() => {
-            if (taskType.value === 'send_geologist') {
+            if (stepActionType.value === 'send_geologist') {
                 return [
+                    { id: 0, name: 'Камень' },
                     { id: 1, name: 'Медная руда' },
-                    { id: 2, name: 'Камень' },
-                    { id: 3, name: 'Каменный уголь' },
+                    { id: 2, name: 'Мрамор' },
+                    { id: 3, name: 'Железная руда' },
                     { id: 4, name: 'Золотая руда' },
-                    { id: 5, name: 'Железная руда' },
-                    { id: 6, name: 'Мрамор' }
+                    { id: 5, name: 'Каменный уголь' },
+                    { id: 6, name: 'Гранит' },
+                    { id: 7, name: 'Титановая руда' },
+                    { id: 8, name: 'Селитра' }
                 ];
-            } else if (taskType.value === 'send_explorer') {
-                if (payload.value.task_type === 1) { // Treasure
+            }
+
+            if (stepActionType.value === 'send_explorer') {
+                if (payload.value.task_type === 1) {
+                    // Поиск сокровищ
                     return [
-                        { id: 1, name: 'Короткий поиск сокровищ (6ч)' },
-                        { id: 2, name: 'Средний поиск сокровищ (12ч)' },
-                        { id: 3, name: 'Длинный поиск сокровищ (24ч)' },
-                        { id: 4, name: 'Очень длинный поиск сокровищ (36ч)' },
-                        { id: 5, name: 'Экстрадлинный поиск сокровищ (48ч)' }
+                        {
+                            id: 0,
+                            name: 'Короткий поиск сокровищ (6ч)'
+                        },
+                        {
+                            id: 1,
+                            name: 'Средний поиск сокровищ (12ч)'
+                        },
+                        {
+                            id: 2,
+                            name: 'Длинный поиск сокровищ (24ч)'
+                        },
+                        {
+                            id: 3,
+                            name: 'Очень длинный поиск сокровищ (36ч)'
+                        },
+                        {
+                            id: 6,
+                            name: 'Экстрадлинный поиск сокровищ (48ч)'
+                        }
                     ];
-                } else { // Adventure
+                }
+
+                if (payload.value.task_type === 2) {
+                    // Поиск приключений
                     return [
-                        { id: 1, name: 'Короткий поиск приключений' },
-                        { id: 2, name: 'Средний поиск приключений' },
-                        { id: 3, name: 'Длинный поиск приключений' },
-                        { id: 4, name: 'Очень длинный поиск приключений' }
+                        {
+                            id: 0,
+                            name: 'Короткий поиск приключений'
+                        },
+                        {
+                            id: 1,
+                            name: 'Средний поиск приключений'
+                        },
+                        {
+                            id: 2,
+                            name: 'Длинный поиск приключений'
+                        },
+                        {
+                            id: 3,
+                            name: 'Очень длинный поиск приключений'
+                        }
                     ];
                 }
             }
+
             return [];
         });
 
@@ -1376,14 +1445,53 @@ export default {
             return groups;
         });
 
-        const getSubTaskLabel = (coreTaskType, category, subId) => {
+        const getSubTaskLabel = (
+            coreTaskType,
+            category,
+            subId
+        ) => {
             const stNames = {
-                0: { 1: 'Медь', 2: 'Камень', 3: 'Уголь', 4: 'Золото', 5: 'Железо', 6: 'Мрамор' },
-                1: { 1: 'Кор. сокровища', 2: 'Ср. сокровища', 3: 'Дл. сокровища', 4: 'Очень дл. сокровища', 5: 'Доп. сокровища' },
-                2: { 1: 'Кор. приключение', 2: 'Ср. приключение', 3: 'Дл. приключение', 4: 'Очень дл. приключение' }
+                // Геолог
+                0: {
+                    0: 'Камень',
+                    1: 'Медь',
+                    2: 'Мрамор',
+                    3: 'Железо',
+                    4: 'Золото',
+                    5: 'Уголь',
+                    6: 'Гранит',
+                    7: 'Титановая руда',
+                    8: 'Селитра'
+                },
+
+                // Разведчик: сокровища
+                1: {
+                    0: 'Кор. сокровища',
+                    1: 'Ср. сокровища',
+                    2: 'Дл. сокровища',
+                    3: 'Очень дл. сокровища',
+                    4: 'Особый поиск Erudite',
+                    5: 'Особый поиск Bean A Collada',
+                    6: 'Экстрадл. сокровища'
+                },
+
+                // Разведчик: приключения
+                2: {
+                    0: 'Кор. приключение',
+                    1: 'Ср. приключение',
+                    2: 'Дл. приключение',
+                    3: 'Очень дл. приключение'
+                }
             };
-            const cat = category !== undefined ? category : (coreTaskType === 'send_geologist' ? 0 : 1);
-            return stNames[cat]?.[subId] || 'Задача #' + subId;
+
+            const cat = category !== undefined
+                ? Number(category)
+                : coreTaskType === 'send_geologist'
+                    ? 0
+                    : 1;
+
+            return stNames[cat]?.[Number(subId)]
+                || `Задача #${subId}`;
         };
 
         const formatDateTime = (dtStr) => {
@@ -1423,6 +1531,7 @@ export default {
             scheduling.value = true;
             try {
                 const postData = {
+                    name: taskName.value || null,
                     account_id: selectedAccountId.value,
                     task_type: 'sequence',
                     payload: {
@@ -1448,12 +1557,13 @@ export default {
 
                 if (res.data.success) {
                     showToast('Серия задач успешно запланирована.');
+                    taskName.value = '';
                     sequenceActions.value = [];
                     selectedBuilding.value = null;
                     selectedSpecialist.value = null;
                     selectedBuff.value = null;
                     resetPayload(stepActionType.value);
-                    
+
                     runAtTime.value = '';
                     runAtDatetime.value = '';
                     intervalHours.value = 0;
@@ -1537,6 +1647,7 @@ export default {
             accounts,
             scheduling,
             selectedAccountId,
+            taskName,
             taskType,
             runAtTime,
             scheduleType,

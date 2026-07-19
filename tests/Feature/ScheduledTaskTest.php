@@ -56,6 +56,7 @@ class ScheduledTaskTest extends TestCase
         ];
 
         $response = $this->postJson('/api/tasks', [
+            'name' => 'Test Sequence Name',
             'account_id' => $account->id,
             'task_type' => 'sequence',
             'payload' => $payload,
@@ -65,6 +66,7 @@ class ScheduledTaskTest extends TestCase
 
         $response->assertStatus(201);
         $this->assertDatabaseHas('scheduled_tasks', [
+            'name' => 'Test Sequence Name',
             'account_id' => $account->id,
             'task_type' => 'sequence',
             'schedule_type' => 'daily',
