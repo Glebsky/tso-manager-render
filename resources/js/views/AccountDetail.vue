@@ -1,21 +1,22 @@
 <template>
-    <div v-if="loading" class="flex items-center justify-center min-h-[60vh]">
-        <div class="text-center">
-            <svg class="w-12 h-12 text-emerald-400 animate-spin mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182" />
-            </svg>
-            <p class="text-white/40">Loading account data...</p>
+    <transition name="page" mode="out-in">
+        <div v-if="loading" key="loading" class="flex items-center justify-center min-h-[60vh]">
+            <div class="text-center">
+                <svg class="w-12 h-12 text-emerald-400 animate-spin mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182" />
+                </svg>
+                <p class="text-white/40">Загрузка данных аккаунта...</p>
+            </div>
         </div>
-    </div>
 
-    <div v-else-if="account">
-        <!-- Back Button -->
-        <router-link to="/accounts" class="inline-flex items-center gap-2 text-white/40 hover:text-white mb-6 transition-colors">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
-            </svg>
-            Back to Accounts
-        </router-link>
+        <div v-else-if="account" key="content">
+            <!-- Back Button -->
+            <router-link to="/accounts" class="inline-flex items-center gap-2 text-white/40 hover:text-white mb-6 transition-colors">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                </svg>
+                Back to Accounts
+            </router-link>
 
         <!-- Profile Header -->
         <div class="glass-card overflow-hidden mb-8">
@@ -645,6 +646,7 @@ if (match) {
     <div v-else class="text-center py-12">
         <p class="text-white/30 text-sm">Account not found.</p>
     </div>
+    </transition>
 </template>
 
 <script>

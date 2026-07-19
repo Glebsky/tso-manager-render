@@ -42,6 +42,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Scheduled tasks
     Route::get('/tasks', [ScheduledTaskController::class, 'index']);
     Route::post('/tasks', [ScheduledTaskController::class, 'store']);
+    Route::put('/tasks/{task}', [ScheduledTaskController::class, 'update']);
     Route::delete('/tasks/{task}', [ScheduledTaskController::class, 'destroy']);
     Route::post('/tasks/{task}/toggle', [ScheduledTaskController::class, 'toggle']);
     Route::post('/tasks/{task}/execute', [ScheduledTaskController::class, 'execute']);

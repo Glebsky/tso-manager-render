@@ -28,10 +28,18 @@
             <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
                 <p class="px-4 text-[10px] font-semibold uppercase tracking-widest text-white/20 mb-3">Main Menu</p>
 
+                <!-- Main Public Site -->
+                <router-link to="/" class="nav-link" :class="{ active: $route.path === '/' }">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+                    </svg>
+                    <span class="font-medium">Главная страница</span>
+                </router-link>
+
                 <!-- Dashboard -->
                 <router-link to="/admin" class="nav-link" :class="{ active: $route.path === '/admin' }">
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25A2.25 2.25 0 0 1 13.5 8.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
                     </svg>
                     <span class="font-medium">Dashboard</span>
                 </router-link>
@@ -101,18 +109,10 @@
                         </svg>
                     </button>
                 </div>
-                <div class="glass-card p-3 space-y-2">
-                    <div class="flex items-center justify-between text-[11px]">
-                        <span class="text-white/40">Локальное:</span>
-                        <span class="text-white font-mono font-medium">{{ localTimeStr }}</span>
-                    </div>
-                    <div class="flex items-center justify-between text-[11px] border-t border-white/5 pt-1.5">
-                        <span class="text-white/40">Серверное:</span>
-                        <span class="text-emerald-400 font-mono font-medium">{{ serverTimeStr }}</span>
-                    </div>
-                    <div class="flex items-center gap-2 border-t border-white/5 pt-1.5">
-                        <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50 animate-pulse"></div>
-                        <span class="text-[9px] text-white/20">Система в сети</span>
+                <div class="glass-card p-2.5">
+                    <div class="flex items-center justify-center gap-2">
+                        <div class="w-2 h-2 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50 animate-pulse"></div>
+                        <span class="text-xs font-medium text-emerald-400">Система в сети</span>
                     </div>
                 </div>
             </div>
@@ -120,14 +120,10 @@
 
         <!-- MAIN CONTENT -->
         <main :class="[showSidebar ? 'ml-64' : '', 'flex-1 min-h-full flex flex-col']">
-            <!-- Header clock bar -->
+            <!-- Header bar -->
             <header v-if="showSidebar" class="h-16 border-b border-white/5 flex items-center justify-between px-8 bg-dark-950/20 backdrop-blur-md sticky top-0 z-20">
                 <div>
                     <span class="text-xs text-white/40">Панель управления TSO</span>
-                </div>
-                <div class="flex items-center gap-2 text-xs text-white/60">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span class="font-medium text-emerald-400">Система в сети</span>
                 </div>
             </header>
 

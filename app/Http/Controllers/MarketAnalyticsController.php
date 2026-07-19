@@ -439,21 +439,24 @@ class MarketAnalyticsController extends Controller
         ]);
     }
 
-    public function getLogs()
+    public function getLogs(Request $request)
     {
-        $logs = MarketSyncLog::orderBy('created_at', 'desc')
-            ->limit(100)
-            ->get()
-            ->map(function ($log) {
+        $limit = (int) $request->input('limit', 10);
+        $paginator = MarketSyncLog::orderBy('created_at', 'desc')->paginate($limit);
+
+        return response()->json([
+            'data' => collect($paginator->items())->map(function ($log) {
                 return [
                     'date' => $log->created_at->format('d.m.Y H:i:s'),
                     'action' => $log->action,
                     'status' => $log->status,
                     'message' => $log->message,
                 ];
-            });
-
-        return response()->json($logs);
+            }),
+            'current_page' => $paginator->currentPage(),
+            'last_page' => $paginator->lastPage(),
+            'total' => $paginator->total(),
+        ]);
     }
 
     public function getArbitrage()

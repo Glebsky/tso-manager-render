@@ -831,6 +831,29 @@
                         </tbody>
                     </table>
                 </div>
+
+                <!-- Pagination Controls -->
+                <div v-if="logsPagination.last_page > 1" class="flex items-center justify-between mt-4 pt-4 border-t border-white/5">
+                    <p class="text-xs text-white/30">
+                        Showing Page {{ logsPagination.current_page }} of {{ logsPagination.last_page }} (Total {{ logsPagination.total }})
+                    </p>
+                    <div class="flex items-center gap-2">
+                        <button :disabled="logsPagination.current_page === 1 || loadingSyncLogs" @click="loadSyncLogs(logsPagination.current_page - 1)"
+                                class="btn-secondary btn-sm flex items-center gap-1 hover:border-emerald-500/30 hover:text-emerald-400 disabled:opacity-50 text-xs">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                            </svg>
+                            Previous
+                        </button>
+                        <button :disabled="logsPagination.current_page === logsPagination.last_page || loadingSyncLogs" @click="loadSyncLogs(logsPagination.current_page + 1)"
+                                class="btn-secondary btn-sm flex items-center gap-1 hover:border-emerald-500/30 hover:text-emerald-400 disabled:opacity-50 text-xs">
+                            Next
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -868,6 +891,36 @@ export default {
         const hoveredPoint = ref(null);
         const accounts = ref([]);
         const logs = ref([]);
+        const logsPagination = ref({
+            current_page: 1,
+            last_page: 1,
+            total: 0
+        });
+        const loadingSyncLogs = ref(false);
+
+        const loadSyncLogs = async (page = 1) => {
+            loadingSyncLogs.value = true;
+            try {
+                const logsRes = await axios.get('/api/market/logs', {
+                    params: { page, limit: 10 }
+                });
+                if (logsRes.data && logsRes.data.data) {
+                    logs.value = logsRes.data.data;
+                    logsPagination.value = {
+                        current_page: logsRes.data.current_page || 1,
+                        last_page: logsRes.data.last_page || 1,
+                        total: logsRes.data.total || 0
+                    };
+                } else {
+                    logs.value = Array.isArray(logsRes.data) ? logsRes.data : [];
+                    logsPagination.value = { current_page: 1, last_page: 1, total: logs.value.length };
+                }
+            } catch (e) {
+                console.error('Failed to load sync logs:', e);
+            } finally {
+                loadingSyncLogs.value = false;
+            }
+        };
 
         // New Mirrored Trade and period variables
         const selectionMode = ref('visual'); // 'dropdown' or 'visual'
@@ -1179,8 +1232,7 @@ export default {
                 lastSync.value = settingsRes.data.last_sync || 'Never';
 
                 // Fetch logs
-                const logsRes = await axios.get('/api/market/logs');
-                logs.value = logsRes.data || [];
+                await loadSyncLogs(1);
 
                 // Fetch popular items & goods
                 const goodsRes = await axios.get('/api/market/goods');
@@ -1395,6 +1447,9 @@ export default {
             stats,
             accounts,
             logs,
+            logsPagination,
+            loadingSyncLogs,
+            loadSyncLogs,
             selectedItem,
             selectedTarget,
             calcAmount,

@@ -186,4 +186,63 @@ class ScheduledTaskTest extends TestCase
         $this->assertNotNull($task->last_run_at);
         $this->assertEquals('OK: manual_amf_response', $task->last_result);
     }
+
+    public function test_can_update_scheduled_task()
+    {
+        $account = Account::create([
+            'username' => 'updateuser',
+            'password' => 'secret',
+            'region' => 'ru',
+            'nickname' => 'updateuser',
+            'zone_data' => json_encode(['buildings' => []]),
+        ]);
+
+        $task = ScheduledTask::create([
+            'name' => 'Original Name',
+            'account_id' => $account->id,
+            'task_type' => 'sequence',
+            'payload' => [
+                'actions' => [
+                    [
+                        'task_type' => 'stop_production',
+                        'payload' => ['grid' => 101],
+                        'delay_seconds' => 0,
+                    ],
+                ],
+            ],
+            'schedule_type' => 'daily',
+            'run_at_time' => '08:00',
+            'is_active' => true,
+        ]);
+
+        $response = $this->putJson("/api/tasks/{$task->id}", [
+            'name' => 'Updated Sequence Name',
+            'account_id' => $account->id,
+            'task_type' => 'sequence',
+            'payload' => [
+                'actions' => [
+                    [
+                        'task_type' => 'stop_production',
+                        'payload' => ['grid' => 101],
+                        'delay_seconds' => 5,
+                    ],
+                    [
+                        'task_type' => 'start_production',
+                        'payload' => ['grid' => 101],
+                        'delay_seconds' => 0,
+                    ],
+                ],
+            ],
+            'schedule_type' => 'daily',
+            'run_at_time' => '09:30',
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJsonPath('success', true);
+        $this->assertDatabaseHas('scheduled_tasks', [
+            'id' => $task->id,
+            'name' => 'Updated Sequence Name',
+            'run_at_time' => '09:30',
+        ]);
+    }
 }

@@ -93,6 +93,74 @@ class ScheduledTaskController extends Controller
     }
 
     /**
+     * Update an existing scheduled task.
+     */
+    public function update(Request $request, ScheduledTask $task)
+    {
+        $validated = $request->validate([
+            'name' => 'nullable|string|max:255',
+            'account_id' => 'required|exists:accounts,id',
+            'task_type' => 'required|string|in:stop_production,start_production,apply_buff,send_geologist,send_explorer,sequence',
+            'payload' => 'required|array',
+            'schedule_type' => 'required|string|in:daily,once,interval',
+            'run_at_time' => 'required_if:schedule_type,daily|nullable|date_format:H:i',
+            'run_at_datetime' => 'required_if:schedule_type,once|nullable|date',
+            'interval_hours' => 'required_if:schedule_type,interval|nullable|integer|min:0',
+            'interval_minutes' => 'required_if:schedule_type,interval|nullable|integer|min:0',
+        ]);
+
+        if ($request->input('task_type') === 'sequence') {
+            $request->validate([
+                'payload.actions' => 'required|array|min:1',
+                'payload.actions.*.task_type' => 'required|string|in:stop_production,start_production,apply_buff,send_geologist,send_explorer',
+                'payload.actions.*.payload' => 'required|array',
+                'payload.actions.*.delay_seconds' => 'required|integer|min:0',
+            ]);
+        }
+
+        $account = Account::findOrFail($request->input('account_id'));
+
+        if ($request->input('task_type') === 'apply_buff') {
+            $this->validateBuffPayload($account, $request->input('payload'));
+        } elseif ($request->input('task_type') === 'sequence') {
+            $actions = $request->input('payload.actions', []);
+            foreach ($actions as $index => $action) {
+                if (($action['task_type'] ?? '') === 'apply_buff') {
+                    $this->validateBuffPayload($account, $action['payload'] ?? [], "payload.actions.{$index}.payload.");
+                }
+            }
+        }
+
+        if ($request->input('schedule_type') === 'interval') {
+            $hours = (int) $request->input('interval_hours', 0);
+            $mins = (int) $request->input('interval_minutes', 0);
+            if ($hours === 0 && $mins === 0) {
+                return response()->json([
+                    'message' => 'The given data was invalid.',
+                    'errors' => [
+                        'interval_hours' => ['Interval must be at least 1 minute.'],
+                    ],
+                ], 422);
+            }
+        }
+
+        $task->update($validated);
+
+        BotLog::create([
+            'account_id' => $task->account_id,
+            'level' => 'info',
+            'message' => "Task #{$task->id} [{$task->task_type}] updated.",
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Task updated.',
+            'task' => $task->fresh(),
+            'server_time' => now()->toIso8601String(),
+        ]);
+    }
+
+    /**
      * Toggle is_active on/off.
      */
     public function toggle(ScheduledTask $task)

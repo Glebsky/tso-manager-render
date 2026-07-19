@@ -54,6 +54,29 @@
             </div>
         </div>
 
+        <!-- Top Pagination Controls -->
+        <div v-if="pagination.last_page > 1" class="flex items-center justify-between mb-4">
+            <p class="text-xs text-white/30">
+                Showing Page {{ pagination.current_page }} of {{ pagination.last_page }}
+            </p>
+            <div class="flex items-center gap-2">
+                <button :disabled="pagination.current_page === 1 || loading" @click="loadLogs(pagination.current_page - 1)"
+                        class="btn-secondary btn-sm flex items-center gap-1 hover:border-emerald-500/30 hover:text-emerald-400 disabled:opacity-50">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                    </svg>
+                    Previous
+                </button>
+                <button :disabled="pagination.current_page === pagination.last_page || loading" @click="loadLogs(pagination.current_page + 1)"
+                        class="btn-secondary btn-sm flex items-center gap-1 hover:border-emerald-500/30 hover:text-emerald-400 disabled:opacity-50">
+                    Next
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
         <!-- Logs Listing -->
         <div class="glass-card overflow-hidden mb-6">
             <div v-if="logs.length > 0" class="divide-y divide-white/5">
