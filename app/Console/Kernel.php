@@ -12,8 +12,10 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->command('tso:execute-tasks')->everyMinute();
-        $schedule->command('tso:sync-market')->everyMinute();
+        $schedule->command('tso:run-scheduler')
+            ->everyMinute()
+            ->withoutOverlapping(10)
+            ->onOneServer();
     }
 
     /**
