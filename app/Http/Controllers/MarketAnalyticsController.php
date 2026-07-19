@@ -176,29 +176,57 @@ class MarketAnalyticsController extends Controller
         // 3. Date filter calculation (moved up so stats queries can use it)
         $now = Carbon::now();
         $dateFilter = null;
-        $groupByExpression = 'day';
 
         switch ($period) {
             case '1d':
                 $dateFilter = $now->copy()->subDay();
-                $groupByExpression = 'hour';
                 break;
             case '7d':
                 $dateFilter = $now->copy()->subDays(7);
-                $groupByExpression = 'day';
                 break;
             case '30d':
                 $dateFilter = $now->copy()->subDays(30);
-                $groupByExpression = 'day';
                 break;
             case '1y':
                 $dateFilter = $now->copy()->subYear();
-                $groupByExpression = 'week';
                 break;
             case 'all':
             default:
-                $groupByExpression = 'day';
+                $dateFilter = null;
                 break;
+        }
+
+        // Determine dynamic group-by expression based on dataset date span
+        $groupByExpression = 'day';
+        if ($itemId && $targetItemId) {
+            $minDateStr = MarketHistory::where('item_id', $itemId)
+                ->where('target_item_id', $targetItemId)
+                ->when($dateFilter, function ($q) use ($dateFilter) {
+                    $q->where('collected_at', '>=', $dateFilter);
+                })
+                ->min('collected_at');
+
+            $maxDateStr = MarketHistory::where('item_id', $itemId)
+                ->where('target_item_id', $targetItemId)
+                ->when($dateFilter, function ($q) use ($dateFilter) {
+                    $q->where('collected_at', '>=', $dateFilter);
+                })
+                ->max('collected_at');
+
+            if ($minDateStr && $maxDateStr) {
+                $daysSpan = Carbon::parse($minDateStr)->diffInDays(Carbon::parse($maxDateStr));
+                if ($period === '1d') {
+                    $groupByExpression = 'hour';
+                } elseif ($daysSpan <= 90) {
+                    $groupByExpression = 'day';
+                } elseif ($daysSpan <= 730) {
+                    $groupByExpression = 'week';
+                } else {
+                    $groupByExpression = 'month';
+                }
+            } else {
+                $groupByExpression = ($period === '1d') ? 'hour' : 'day';
+            }
         }
 
         // 1. Most popular items (from history, both active and closed)
@@ -289,8 +317,34 @@ class MarketAnalyticsController extends Controller
             ->orderBy('collected_at', 'desc')
             ->value('price');
 
-        // 3. Historical data
+        // Real-time live active market info for the selected pair
+        $activeOffersForPair = MarketOffer::where('item_id', $itemId)
+            ->where('target_item_id', $targetItemId)
+            ->where('created_at', '>=', now()->subHours(6))
+            ->get();
 
+        $activeInfo = [
+            'volume' => (int) $activeOffersForPair->sum('volume'),
+            'offers_count' => $activeOffersForPair->count(),
+            'sellers_count' => $activeOffersForPair->pluck('player_id')->unique()->count(),
+        ];
+
+        // Period aggregate summary for the selected pair over dateFilter
+        $periodSummary = MarketHistory::where('item_id', $itemId)
+            ->where('target_item_id', $targetItemId)
+            ->when($dateFilter, function ($q) use ($dateFilter) {
+                $q->where('collected_at', '>=', $dateFilter);
+            })
+            ->selectRaw('sum(volume) as total_volume, count(*) as offers_count, count(distinct player_id) as sellers_count')
+            ->first();
+
+        $periodInfo = [
+            'volume' => (int) ($periodSummary->total_volume ?? 0),
+            'offers_count' => (int) ($periodSummary->offers_count ?? 0),
+            'sellers_count' => (int) ($periodSummary->sellers_count ?? 0),
+        ];
+
+        // 3. Historical data
         $driver = DB::connection()->getDriverName();
 
         $buildHistoryQuery = function ($item, $target, $dateFilter, $groupByExpression, $driver) {
@@ -303,28 +357,34 @@ class MarketAnalyticsController extends Controller
 
             if ($driver === 'pgsql') {
                 $trunc = "date_trunc('{$groupByExpression}', collected_at)";
-                $query->selectRaw("{$trunc} as time_bucket, avg(price) as price, sum(volume) as volume, count(distinct player_id) as sellers_count, count(*) as offers_count")
+                $query->selectRaw("{$trunc} as time_bucket, avg(price) as price, sum(volume) as volume, count(distinct player_id) as sellers_count, count(*) as offers_count, round(avg(amount)) as avg_amount, round(avg(target_amount)) as avg_target_amount")
                     ->groupBy('time_bucket')
                     ->orderBy('time_bucket', 'asc');
             } elseif ($driver === 'mysql') {
                 if ($groupByExpression === 'hour') {
-                    $format = '%Y-%m-%d %H:00:00';
+                    $selectBucket = "DATE_FORMAT(collected_at, '%Y-%m-%d %H:00:00')";
                 } elseif ($groupByExpression === 'week') {
-                    $format = '%Y-%u';
+                    $selectBucket = "DATE_FORMAT(DATE_SUB(collected_at, INTERVAL WEEKDAY(collected_at) DAY), '%Y-%m-%d')";
+                } elseif ($groupByExpression === 'month') {
+                    $selectBucket = "DATE_FORMAT(collected_at, '%Y-%m-01')";
                 } else {
-                    $format = '%Y-%m-%d';
+                    $selectBucket = "DATE_FORMAT(collected_at, '%Y-%m-%d')";
                 }
-                $query->selectRaw("DATE_FORMAT(collected_at, '{$format}') as time_bucket, avg(price) as price, sum(volume) as volume, count(distinct player_id) as sellers_count, count(*) as offers_count")
+                $query->selectRaw("{$selectBucket} as time_bucket, avg(price) as price, sum(volume) as volume, count(distinct player_id) as sellers_count, count(*) as offers_count, round(avg(amount)) as avg_amount, round(avg(target_amount)) as avg_target_amount")
                     ->groupBy('time_bucket')
                     ->orderBy('time_bucket', 'asc');
             } else {
                 // sqlite or fallback
                 if ($groupByExpression === 'hour') {
-                    $format = '%Y-%m-%d %H:00:00';
+                    $selectBucket = "strftime('%Y-%m-%d %H:00:00', collected_at)";
+                } elseif ($groupByExpression === 'week') {
+                    $selectBucket = "date(collected_at, 'weekday 0', '-6 days')";
+                } elseif ($groupByExpression === 'month') {
+                    $selectBucket = "strftime('%Y-%m-01', collected_at)";
                 } else {
-                    $format = '%Y-%m-%d';
+                    $selectBucket = "strftime('%Y-%m-%d', collected_at)";
                 }
-                $query->selectRaw("strftime('{$format}', collected_at) as time_bucket, avg(price) as price, sum(volume) as volume, count(distinct player_id) as sellers_count, count(*) as offers_count")
+                $query->selectRaw("{$selectBucket} as time_bucket, avg(price) as price, sum(volume) as volume, count(distinct player_id) as sellers_count, count(*) as offers_count, round(avg(amount)) as avg_amount, round(avg(target_amount)) as avg_target_amount")
                     ->groupBy('time_bucket')
                     ->orderBy('time_bucket', 'asc');
             }
@@ -333,18 +393,20 @@ class MarketAnalyticsController extends Controller
                 $dateVal = is_string($item->time_bucket) ? Carbon::parse($item->time_bucket) : new Carbon($item->time_bucket);
                 if ($groupByExpression === 'hour') {
                     $formattedDate = $dateVal->format('d.m.Y H:i');
-                } elseif ($groupByExpression === 'week') {
-                    $formattedDate = $dateVal->format('d.m.Y (\W\e\e\k W)');
+                } elseif ($groupByExpression === 'month') {
+                    $formattedDate = $dateVal->format('m.Y');
                 } else {
                     $formattedDate = $dateVal->format('d.m.Y');
                 }
 
                 return [
                     'collected_at' => $formattedDate,
-                    'price' => round($item->price, 2),
+                    'price' => round($item->price, 4),
                     'volume' => (int) $item->volume,
                     'sellers_count' => (int) $item->sellers_count,
                     'offers_count' => (int) $item->offers_count,
+                    'avg_amount' => (int) round($item->avg_amount ?? 1),
+                    'avg_target_amount' => (int) round($item->avg_target_amount ?? 1),
                 ];
             });
         };
@@ -375,6 +437,8 @@ class MarketAnalyticsController extends Controller
                 'current' => round($current ?? 0, 2),
             ],
             'history' => $history,
+            'active_info' => $activeInfo,
+            'period_info' => $periodInfo,
             'mirrored_stats' => $mirroredStatsData,
             'mirrored_history' => $mirroredHistory->isEmpty() ? null : $mirroredHistory,
         ]);

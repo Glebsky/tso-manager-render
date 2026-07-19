@@ -246,21 +246,68 @@
                                     <line x1="40" :y1="chartMeanY" x2="590" :y2="chartMeanY"
                                           stroke="rgba(255,255,255,0.2)" stroke-dasharray="4,4" stroke-width="1.5"/>
 
-                                    <!-- Data Dots -->
-                                    <circle v-for="(p, idx) in chartPoints" :key="'dot-'+idx"
-                                            :cx="p.x" :cy="p.y" r="3.5"
-                                            fill="#10b981" stroke="#0b171c" stroke-width="1.5"
-                                            class="cursor-pointer hover-jitter transition-all"
-                                            :title="'Price: ' + p.price"/>
+                                    <!-- Data Dots with Stable Invisible Hit Targets -->
+                                    <g v-for="(p, idx) in chartPoints" :key="'dot-group-'+idx"
+                                       class="cursor-pointer"
+                                       @mouseenter="hoveredPoint = { ...p, index: idx }"
+                                       @mouseleave="hoveredPoint = null">
+                                        <!-- Invisible 14px Hit Target area -->
+                                        <circle :cx="p.x" :cy="p.y" r="14" fill="transparent" />
+                                        <!-- Visible Point -->
+                                        <circle :cx="p.x" :cy="p.y" :r="hoveredPoint?.index === idx ? 5.5 : 3.5"
+                                                :fill="hoveredPoint?.index === idx ? '#34d399' : '#10b981'"
+                                                stroke="#0b171c" stroke-width="1.5"
+                                                class="transition-all duration-200" />
+                                    </g>
                                 </svg>
+
+                                <!-- Floating Interactive Glassmorphism Tooltip -->
+                                <div v-if="hoveredPoint"
+                                     class="absolute z-30 pointer-events-none transition-all duration-150 ease-out transform -translate-x-1/2 -translate-y-full mb-3"
+                                     :style="{ left: (hoveredPoint.x / 600 * 100) + '%', top: (hoveredPoint.y / 220 * 100) + '%' }">
+                                    <div class="glass-card p-3 shadow-2xl border border-white/20 bg-dark-900/95 backdrop-blur-md rounded-xl text-xs space-y-2 min-w-[210px] animate-fade-in">
+                                        <!-- Tooltip Header: Date & Rate -->
+                                        <div class="flex items-center justify-between border-b border-white/10 pb-1.5 text-[10px] text-white/50 font-mono">
+                                            <span>{{ hoveredPoint.collected_at }}</span>
+                                            <span class="text-emerald-400 font-bold">Price: {{ hoveredPoint.price }}</span>
+                                        </div>
+
+                                        <!-- Exchange Details: Amount Selling -> Amount Buying -->
+                                        <div class="flex items-center justify-between gap-2 py-1.5 bg-white/5 rounded-lg px-2 border border-white/5">
+                                            <!-- Selling Item -->
+                                            <div class="flex items-center gap-1.5">
+                                                <img :src="getResourceIcon(selectedItem)" @error="handleIconError($event, selectedItem)" class="w-4 h-4 object-contain" />
+                                                <span class="font-mono font-bold text-white text-xs">{{ formatVolume(hoveredPoint.avg_amount) }}</span>
+                                                <span class="text-[10px] text-white/60 truncate max-w-[60px]" :title="selectedItemName">{{ selectedItemName }}</span>
+                                            </div>
+
+                                            <!-- Arrow -->
+                                            <svg class="w-3.5 h-3.5 text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                                            </svg>
+
+                                            <!-- Buying Item -->
+                                            <div class="flex items-center gap-1.5">
+                                                <img :src="getResourceIcon(selectedTarget)" @error="handleIconError($event, selectedTarget)" class="w-4 h-4 object-contain" />
+                                                <span class="font-mono font-bold text-emerald-400 text-xs">{{ formatVolume(hoveredPoint.avg_target_amount) }}</span>
+                                                <span class="text-[10px] text-emerald-400/80 truncate max-w-[60px]" :title="selectedTargetName">{{ selectedTargetName }}</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Point Stats Summary -->
+                                        <div class="flex items-center justify-between text-[10px] text-white/40 font-mono pt-0.5">
+                                            <span>Offers: <strong class="text-white/80">{{ hoveredPoint.offers_count }}</strong></span>
+                                            <span>Sellers: <strong class="text-white/80">{{ hoveredPoint.sellers_count }}</strong></span>
+                                            <span>Vol: <strong class="text-white/80">{{ formatVolume(hoveredPoint.volume) }}</strong></span>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <!-- X-Axis Labels (Timeline) -->
                                 <div class="flex justify-between text-[8px] text-white/30 px-9 mt-1 font-mono">
                                     <span>{{ history[0]?.collected_at }}</span>
                                     <span>{{ history[Math.floor(history.length / 2)]?.collected_at }}</span>
                                     <span>{{ history[history.length - 1]?.collected_at }}</span>
-                                    <span>{{ history[0].collected_at }}</span>
-                                    <span>{{ history[Math.floor(history.length / 2)].collected_at }}</span>
-                                    <span>{{ history[history.length - 1].collected_at }}</span>
                                 </div>
                             </template>
                             <div v-else class="absolute inset-0 flex items-center justify-center text-xs text-white/20">
@@ -315,9 +362,6 @@
                                     <span>{{ history[0]?.collected_at }}</span>
                                     <span>{{ history[Math.floor(history.length / 2)]?.collected_at }}</span>
                                     <span>{{ history[history.length - 1]?.collected_at }}</span>
-                                    <span>{{ history[0].collected_at }}</span>
-                                    <span>{{ history[Math.floor(history.length / 2)].collected_at }}</span>
-                                    <span>{{ history[history.length - 1].collected_at }}</span>
                                 </div>
                             </template>
                             <div v-else class="absolute inset-0 flex items-center justify-center text-xs text-white/20">
@@ -819,6 +863,9 @@ export default {
         const popular = ref([]);
         const history = ref([]);
         const stats = ref(null);
+        const activeInfo = ref(null);
+        const periodInfo = ref(null);
+        const hoveredPoint = ref(null);
         const accounts = ref([]);
         const logs = ref([]);
 
@@ -883,16 +930,34 @@ export default {
 
         // Market detail helpers
         const activeVolume = computed(() => {
+            if (periodInfo.value) {
+                return periodInfo.value.volume;
+            }
+            if (activeInfo.value && activeInfo.value.offers_count > 0) {
+                return activeInfo.value.volume;
+            }
             if (!history.value || history.value.length === 0) return 0;
-            return history.value[history.value.length - 1].volume;
+            return history.value.reduce((sum, h) => sum + (h.volume || 0), 0);
         });
 
         const activeOffersCount = computed(() => {
+            if (periodInfo.value) {
+                return periodInfo.value.offers_count;
+            }
+            if (activeInfo.value && activeInfo.value.offers_count > 0) {
+                return activeInfo.value.offers_count;
+            }
             if (!history.value || history.value.length === 0) return 0;
-            return history.value[history.value.length - 1].offers_count;
+            return history.value.reduce((sum, h) => sum + (h.offers_count || 0), 0);
         });
 
         const activeSellersCount = computed(() => {
+            if (periodInfo.value) {
+                return periodInfo.value.sellers_count;
+            }
+            if (activeInfo.value && activeInfo.value.offers_count > 0) {
+                return activeInfo.value.sellers_count;
+            }
             if (!history.value || history.value.length === 0) return 0;
             return history.value[history.value.length - 1].sellers_count;
         });
@@ -1016,7 +1081,16 @@ export default {
                 // Y for volume bar (vy starts at 220 and goes up)
                 const vy = 220 - (d.volume / maxVolume) * 180 - 10;
 
-                return { x, y: py, sy, oy, vy, price: d.price };
+                return {
+                    x, y: py, sy, oy, vy,
+                    price: d.price,
+                    volume: d.volume,
+                    sellers_count: d.sellers_count,
+                    offers_count: d.offers_count,
+                    avg_amount: d.avg_amount || 1,
+                    avg_target_amount: d.avg_target_amount || 1,
+                    collected_at: d.collected_at
+                };
             });
         });
 
@@ -1175,6 +1249,8 @@ export default {
             if (!selectedItem.value || !selectedTarget.value) {
                 stats.value = null;
                 history.value = [];
+                activeInfo.value = null;
+                periodInfo.value = null;
                 mirroredStats.value = null;
                 mirroredHistory.value = null;
                 return;
@@ -1190,6 +1266,8 @@ export default {
                 });
                 stats.value = res.data.stats || null;
                 history.value = res.data.history || [];
+                activeInfo.value = res.data.active_info || null;
+                periodInfo.value = res.data.period_info || null;
                 mirroredStats.value = res.data.mirrored_stats || null;
                 mirroredHistory.value = res.data.mirrored_history || null;
             } catch (e) {
@@ -1252,6 +1330,8 @@ export default {
             targets.value = [];
             stats.value = null;
             history.value = [];
+            activeInfo.value = null;
+            periodInfo.value = null;
             mirroredStats.value = null;
             mirroredHistory.value = null;
             visualTab.value = 1;
@@ -1370,31 +1450,16 @@ export default {
             showActiveListings,
             togglePopularItems,
             toggleArbitrageSchemes,
-            toggleActiveListings
+            toggleActiveListings,
+            hoveredPoint
         };
     }
 };
 </script>
 
 <style scoped>
-@keyframes jitter {
-  0% { transform: translate(0, 0) scale(1.5); }
-  20% { transform: translate(-1.5px, 1.5px) scale(1.5); }
-  40% { transform: translate(1.5px, -1.5px) scale(1.5); }
-  60% { transform: translate(-1.5px, -1.5px) scale(1.5); }
-  80% { transform: translate(1.5px, 1.5px) scale(1.5); }
-  100% { transform: translate(0, 0) scale(1.5); }
-}
-
-.hover-jitter {
-  transform-box: fill-box;
-  transform-origin: center;
-  transition: r 0.1s ease;
-}
-
-.hover-jitter:hover {
-  r: 6;
-  animation: jitter 0.12s infinite linear;
-  fill: #34d399 !important;
+/* Smooth dot transitions without jittering */
+circle {
+  transition: r 0.2s ease, fill 0.2s ease;
 }
 </style>
