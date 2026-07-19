@@ -6,12 +6,12 @@ use App\Models\Account;
 use App\Models\MarketHistory;
 use App\Models\MarketOffer;
 use App\Models\MarketSyncLog;
+use App\Models\Setting;
 use App\Services\MarketSyncService;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 
 class MarketAnalyticsController extends Controller
 {
@@ -22,27 +22,22 @@ class MarketAnalyticsController extends Controller
         $this->syncService = $syncService;
     }
 
-    private function getSettingsPath(): string
-    {
-        return 'market_settings.json';
-    }
-
     private function loadSettings(): array
     {
-        if (Storage::disk('local')->exists($this->getSettingsPath())) {
-            return json_decode(Storage::disk('local')->get($this->getSettingsPath()), true) ?? [];
-        }
+        $accountIdVal = Setting::get('market_account_id', null);
 
         return [
-            'account_id' => null,
-            'sync_interval' => '15',
-            'custom_interval_minutes' => 15,
+            'account_id' => $accountIdVal !== null ? (int) $accountIdVal : null,
+            'sync_interval' => (string) Setting::get('market_sync_interval', '15'),
+            'custom_interval_minutes' => (int) Setting::get('market_custom_interval_minutes', 15),
         ];
     }
 
     private function saveSettings(array $settings): void
     {
-        Storage::disk('local')->put($this->getSettingsPath(), json_encode($settings, JSON_PRETTY_PRINT));
+        Setting::set('market_account_id', $settings['account_id']);
+        Setting::set('market_sync_interval', $settings['sync_interval']);
+        Setting::set('market_custom_interval_minutes', $settings['custom_interval_minutes'] ?? null);
     }
 
     public function getSettings()

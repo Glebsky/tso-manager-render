@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Jobs;
 
 use App\Models\Account;
+use App\Models\BotLog;
 use App\Models\MarketSyncLog;
 use App\Services\MarketSyncService;
 use Illuminate\Bus\Queueable;
@@ -66,6 +67,17 @@ class MarketSyncJob implements ShouldQueue
             'status' => 'ERROR',
             'message' => "Market sync job failed permanently: {$exception->getMessage()}",
         ]);
+
+        try {
+            BotLog::create([
+                'account_id' => $this->account->id,
+                'level' => 'error',
+                'message' => "[Market] Sync Market: Market sync job failed permanently: {$exception->getMessage()}",
+                'created_at' => now(),
+            ]);
+        } catch (Throwable $dbEx) {
+            Log::error('Failed to write bot log for market sync failure: '.$dbEx->getMessage());
+        }
 
         Cache::forget("market_sync_lock:{$this->account->id}");
     }

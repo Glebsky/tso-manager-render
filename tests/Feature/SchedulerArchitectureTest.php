@@ -6,6 +6,7 @@ use App\Jobs\ExecuteScheduledTaskJob;
 use App\Jobs\MarketSyncJob;
 use App\Models\Account;
 use App\Models\ScheduledTask;
+use App\Models\Setting;
 use App\Services\TaskExecutionService;
 use App\Services\TsoAmfService;
 use App\Services\TsoAuthService;
@@ -13,7 +14,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Queue;
-use Illuminate\Support\Facades\Storage;
 use Mockery;
 use Tests\TestCase;
 
@@ -194,10 +194,8 @@ class SchedulerArchitectureTest extends TestCase
             'nickname' => 'market_user',
         ]);
 
-        Storage::disk('local')->put('market_settings.json', json_encode([
-            'account_id' => $account->id,
-            'sync_interval' => '15',
-        ]));
+        Setting::set('market_account_id', $account->id);
+        Setting::set('market_sync_interval', '15');
 
         // Pre-acquire lock to simulate another process executing market sync
         Cache::lock("market_sync_lock:{$account->id}", 180)->get();

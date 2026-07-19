@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\MarketHistory;
 use App\Models\MarketOffer;
+use App\Models\Setting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
@@ -56,10 +57,7 @@ class MarketAnalyticsTest extends TestCase
         $response->assertStatus(200)
             ->assertJson(['success' => true]);
 
-        Storage::disk('local')->assertExists('market_settings.json');
-
-        $settings = json_decode(Storage::disk('local')->get('market_settings.json'), true);
-        $this->assertEquals('30', $settings['sync_interval']);
+        $this->assertEquals('30', Setting::get('market_sync_interval'));
     }
 
     public function test_get_analytics_returns_historical_and_active_data(): void

@@ -10,6 +10,7 @@ use App\Jobs\MarketSyncJob;
 use App\Models\Account;
 use App\Models\MarketSyncLog;
 use App\Models\ScheduledTask;
+use App\Models\Setting;
 use App\Services\AccountSyncService;
 use App\Services\MarketSyncService;
 use App\Services\TaskExecutionService;
@@ -20,7 +21,6 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class RunSchedulerCommand extends Command
@@ -216,26 +216,19 @@ class RunSchedulerCommand extends Command
      */
     private function processMarketAnalytics(Carbon $now, string $mode): bool
     {
-        $settingsPath = 'market_settings.json';
-        if (! Storage::disk('local')->exists($settingsPath)) {
+        $accountIdVal = Setting::get('market_account_id');
+        if (empty($accountIdVal)) {
             return false;
         }
 
-        $settings = json_decode(Storage::disk('local')->get($settingsPath), true) ?? [];
-        $accountId = $settings['account_id'] ?? null;
-
-        if (empty($accountId)) {
-            return false;
-        }
-
-        $account = Account::find($accountId);
+        $account = Account::find((int) $accountIdVal);
         if (! $account) {
             return false;
         }
 
-        $syncIntervalStr = (string) ($settings['sync_interval'] ?? '15');
+        $syncIntervalStr = (string) Setting::get('market_sync_interval', '15');
         $interval = ($syncIntervalStr === 'custom')
-            ? (int) ($settings['custom_interval_minutes'] ?? 15)
+            ? (int) Setting::get('market_custom_interval_minutes', 15)
             : (int) $syncIntervalStr;
 
         if ($interval <= 0) {
@@ -288,13 +281,7 @@ class RunSchedulerCommand extends Command
      */
     private function processAccountSync(Carbon $now, string $mode): int
     {
-        $settingsPath = 'settings.json';
-        if (! Storage::disk('local')->exists($settingsPath)) {
-            return 0;
-        }
-
-        $settings = json_decode(Storage::disk('local')->get($settingsPath), true) ?? [];
-        $syncInterval = (int) ($settings['sync_interval'] ?? 30);
+        $syncInterval = (int) Setting::get('sync_interval', 30);
 
         if ($syncInterval <= 0) {
             return 0;

@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\BotLog;
 use App\Models\ScheduledTask;
+use App\Models\Setting;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class SettingsController extends Controller
 {
@@ -36,27 +36,20 @@ class SettingsController extends Controller
         'Pacific/Auckland',
     ];
 
-    private function getSettingsPath(): string
-    {
-        return 'settings.json';
-    }
-
     private function loadSettings(): array
     {
-        if (Storage::disk('local')->exists($this->getSettingsPath())) {
-            return json_decode(Storage::disk('local')->get($this->getSettingsPath()), true) ?? [];
-        }
-
         return [
-            'sync_interval' => 30,
-            'log_retention_days' => 30,
-            'timezone' => 'UTC',
+            'sync_interval' => (int) Setting::get('sync_interval', 30),
+            'log_retention_days' => (int) Setting::get('log_retention_days', 30),
+            'timezone' => (string) Setting::get('timezone', 'UTC'),
         ];
     }
 
     private function saveSettings(array $settings): void
     {
-        Storage::disk('local')->put($this->getSettingsPath(), json_encode($settings, JSON_PRETTY_PRINT));
+        Setting::set('sync_interval', $settings['sync_interval']);
+        Setting::set('log_retention_days', $settings['log_retention_days']);
+        Setting::set('timezone', $settings['timezone']);
     }
 
     public function index()

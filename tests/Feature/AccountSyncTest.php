@@ -6,6 +6,7 @@ namespace Tests\Feature;
 
 use App\Jobs\AccountSyncJob;
 use App\Models\Account;
+use App\Models\Setting;
 use App\Services\AccountSyncService;
 use App\Services\TsoAmfService;
 use App\Services\TsoAuthService;
@@ -40,13 +41,10 @@ class AccountSyncTest extends TestCase
     public function test_scheduler_dispatches_account_sync_job_when_due()
     {
         Queue::fake();
-        Storage::fake('local');
 
-        Storage::disk('local')->put('settings.json', json_encode([
-            'sync_interval' => 15,
-            'log_retention_days' => 30,
-            'timezone' => 'UTC',
-        ]));
+        Setting::set('sync_interval', 15);
+        Setting::set('log_retention_days', 30);
+        Setting::set('timezone', 'UTC');
 
         $account = Account::create([
             'username' => 'sync_user',
@@ -66,13 +64,10 @@ class AccountSyncTest extends TestCase
     public function test_scheduler_skips_account_sync_when_not_due()
     {
         Queue::fake();
-        Storage::fake('local');
 
-        Storage::disk('local')->put('settings.json', json_encode([
-            'sync_interval' => 15,
-            'log_retention_days' => 30,
-            'timezone' => 'UTC',
-        ]));
+        Setting::set('sync_interval', 15);
+        Setting::set('log_retention_days', 30);
+        Setting::set('timezone', 'UTC');
 
         $account = Account::create([
             'username' => 'sync_user',
@@ -90,13 +85,10 @@ class AccountSyncTest extends TestCase
     public function test_scheduler_skips_account_sync_when_interval_is_zero()
     {
         Queue::fake();
-        Storage::fake('local');
 
-        Storage::disk('local')->put('settings.json', json_encode([
-            'sync_interval' => 0, // Manual only
-            'log_retention_days' => 30,
-            'timezone' => 'UTC',
-        ]));
+        Setting::set('sync_interval', 0);
+        Setting::set('log_retention_days', 30);
+        Setting::set('timezone', 'UTC');
 
         $account = Account::create([
             'username' => 'sync_user',
@@ -114,13 +106,10 @@ class AccountSyncTest extends TestCase
     public function test_scheduler_atomic_lock_prevents_duplicate_account_sync()
     {
         Queue::fake();
-        Storage::fake('local');
 
-        Storage::disk('local')->put('settings.json', json_encode([
-            'sync_interval' => 15,
-            'log_retention_days' => 30,
-            'timezone' => 'UTC',
-        ]));
+        Setting::set('sync_interval', 15);
+        Setting::set('log_retention_days', 30);
+        Setting::set('timezone', 'UTC');
 
         $account = Account::create([
             'username' => 'sync_user',
@@ -140,7 +129,7 @@ class AccountSyncTest extends TestCase
 
     public function test_account_sync_job_executes_successfully_and_releases_lock()
     {
-        Storage::fake('local');
+        // No storage fake needed
 
         $account = Account::create([
             'username' => 'sync_user',

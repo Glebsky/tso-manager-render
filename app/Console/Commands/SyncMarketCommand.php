@@ -7,12 +7,12 @@ namespace App\Console\Commands;
 use App\Jobs\MarketSyncJob;
 use App\Models\Account;
 use App\Models\MarketSyncLog;
+use App\Models\Setting;
 use App\Services\MarketSyncService;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Storage;
 
 class SyncMarketCommand extends Command
 {
@@ -28,21 +28,14 @@ class SyncMarketCommand extends Command
         $this->syncService = $syncService;
     }
 
-    private function getSettingsPath(): string
-    {
-        return 'market_settings.json';
-    }
-
     private function loadSettings(): array
     {
-        if (Storage::disk('local')->exists($this->getSettingsPath())) {
-            return json_decode(Storage::disk('local')->get($this->getSettingsPath()), true) ?? [];
-        }
+        $accountIdVal = Setting::get('market_account_id', null);
 
         return [
-            'account_id' => null,
-            'sync_interval' => '15',
-            'custom_interval_minutes' => 15,
+            'account_id' => $accountIdVal !== null ? (int) $accountIdVal : null,
+            'sync_interval' => (string) Setting::get('market_sync_interval', '15'),
+            'custom_interval_minutes' => (int) Setting::get('market_custom_interval_minutes', 15),
         ];
     }
 

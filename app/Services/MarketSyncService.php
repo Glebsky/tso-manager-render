@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Account;
+use App\Models\BotLog;
 use App\Models\MarketHistory;
 use App\Models\MarketOffer;
 use App\Models\MarketSyncLog;
@@ -290,13 +291,27 @@ class MarketSyncService
             Log::info($logMessage);
         }
 
-        // 2. Write to the database table (MarketSyncLog model)
+        // 2. Write to the database table (MarketSyncLog model) and BotLog
         try {
             MarketSyncLog::create([
                 'account_id' => $account->id,
                 'action' => $action,
                 'status' => $status,
                 'message' => $message,
+                'created_at' => now(),
+            ]);
+
+            $botLogLevel = match (strtoupper($status)) {
+                'FAILED', 'ERROR' => 'error',
+                'WARNING' => 'warning',
+                'SUCCESS' => 'success',
+                default => 'info',
+            };
+
+            BotLog::create([
+                'account_id' => $account->id,
+                'level' => $botLogLevel,
+                'message' => "[Market] {$action}: {$message}",
                 'created_at' => now(),
             ]);
         } catch (Exception $dbEx) {
