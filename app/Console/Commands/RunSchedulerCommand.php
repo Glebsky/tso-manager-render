@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Jobs\AccountSyncJob;
 use App\Jobs\ExecuteScheduledTaskJob;
 use App\Jobs\MarketSyncJob;
 use App\Models\Account;
 use App\Models\MarketSyncLog;
 use App\Models\ScheduledTask;
+use App\Services\AccountSyncService;
 use App\Services\MarketSyncService;
 use App\Services\TaskExecutionService;
 use Carbon\Carbon;
@@ -23,8 +25,8 @@ use Illuminate\Support\Str;
 
 class RunSchedulerCommand extends Command
 {
-    protected $signature = 'tso:run-scheduler 
-                            {--mode= : Override execution mode (queue|cron|sync)} 
+    protected $signature = 'tso:run-scheduler
+                            {--mode= : Override execution mode (queue|cron|sync)}
                             {--work : Run inline queue worker for tso-tasks and tso-market after scheduling}';
 
     protected $description = 'Run TSO master scheduler to process Task Planner tasks and Market Analytics atomically.';
@@ -33,13 +35,17 @@ class RunSchedulerCommand extends Command
 
     private MarketSyncService $marketSyncService;
 
+    private AccountSyncService $accountSyncService;
+
     public function __construct(
         TaskExecutionService $taskExecutionService,
-        MarketSyncService $marketSyncService
+        MarketSyncService $marketSyncService,
+        AccountSyncService $accountSyncService
     ) {
         parent::__construct();
         $this->taskExecutionService = $taskExecutionService;
         $this->marketSyncService = $marketSyncService;
+        $this->accountSyncService = $accountSyncService;
     }
 
     public function handle(): int
@@ -70,7 +76,10 @@ class RunSchedulerCommand extends Command
         // 3. Schedule Market Analytics sync
         $marketProcessed = $this->processMarketAnalytics($now, $mode);
 
-        $this->info("Scheduler cycle completed. Tasks reserved/dispatched: {$tasksProcessed}, Market sync triggered: ".($marketProcessed ? 'Yes' : 'No'));
+        // 4. Schedule Account internal sync based on settings
+        $accountSyncProcessed = $this->processAccountSync($now, $mode);
+
+        $this->info("Scheduler cycle completed. Tasks reserved/dispatched: {$tasksProcessed}, Market sync triggered: ".($marketProcessed ? 'Yes' : 'No').', Account sync triggered: '.($accountSyncProcessed > 0 ? "Yes ({$accountSyncProcessed})" : 'No'));
 
         // 4. If --work flag is specified (or cron mode with work requested), process TSO queues inline
         if ($this->option('work') || ($mode === 'cron' && $this->option('work'))) {
@@ -272,5 +281,64 @@ class RunSchedulerCommand extends Command
         }
 
         return true;
+    }
+
+    /**
+     * Evaluate Account Sync and dispatch atomically.
+     */
+    private function processAccountSync(Carbon $now, string $mode): int
+    {
+        $settingsPath = 'settings.json';
+        if (! Storage::disk('local')->exists($settingsPath)) {
+            return 0;
+        }
+
+        $settings = json_decode(Storage::disk('local')->get($settingsPath), true) ?? [];
+        $syncInterval = (int) ($settings['sync_interval'] ?? 30);
+
+        if ($syncInterval <= 0) {
+            return 0;
+        }
+
+        $accounts = Account::all();
+        $count = 0;
+
+        foreach ($accounts as $account) {
+            if ($account->last_sync_at) {
+                $elapsedMinutes = $now->diffInMinutes($account->last_sync_at);
+                if ($elapsedMinutes < $syncInterval) {
+                    continue;
+                }
+            }
+
+            // Atomic lock check to prevent duplicate dispatches
+            $lockKey = "account_sync_lock:{$account->id}";
+            $acquired = Cache::lock($lockKey, 300)->get();
+
+            if (! $acquired) {
+                $this->info("Account sync lock for account #{$account->id} already held. Skipping.");
+
+                continue;
+            }
+
+            $this->info("Triggering Account Sync for account [{$account->username}]...");
+            $count++;
+
+            if ($mode === 'sync') {
+                try {
+                    $this->accountSyncService->sync($account);
+                } catch (Exception $e) {
+                    $this->error("Sync account #{$account->id} failed: {$e->getMessage()}");
+                } finally {
+                    Cache::lock($lockKey)->forceRelease();
+                }
+            } else {
+                DB::afterCommit(function () use ($account) {
+                    AccountSyncJob::dispatch($account);
+                });
+            }
+        }
+
+        return $count;
     }
 }
