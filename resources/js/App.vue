@@ -88,18 +88,10 @@
 
             <!-- Sidebar footer -->
             <div class="px-4 py-4 border-t border-white/5 mt-auto">
-                <div class="glass-card p-3 space-y-2">
-                    <div class="flex items-center justify-between text-[11px]">
-                        <span class="text-white/40">Локальное:</span>
-                        <span class="text-white font-mono font-medium">{{ localTimeStr }}</span>
-                    </div>
-                    <div class="flex items-center justify-between text-[11px] border-t border-white/5 pt-1.5">
-                        <span class="text-white/40">Серверное:</span>
-                        <span class="text-emerald-400 font-mono font-medium">{{ serverTimeStr }}</span>
-                    </div>
-                    <div class="flex items-center gap-2 border-t border-white/5 pt-1.5">
-                        <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50 animate-pulse"></div>
-                        <span class="text-[9px] text-white/20">Система в сети</span>
+                <div class="glass-card p-3">
+                    <div class="flex items-center gap-2">
+                        <div class="w-2 h-2 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50 animate-pulse"></div>
+                        <span class="text-xs text-white/60 font-medium">Система в сети</span>
                     </div>
                 </div>
             </div>
@@ -112,15 +104,9 @@
                 <div>
                     <span class="text-xs text-white/40">Панель управления TSO</span>
                 </div>
-                <div class="flex items-center gap-6 text-xs text-white/60">
-                    <div class="flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-                        <span>Локальное время: <strong class="text-white font-mono">{{ localTimeStr }}</strong></span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span>Время сервера: <strong class="text-white font-mono">{{ serverTimeStr }}</strong></span>
-                    </div>
+                <div class="flex items-center gap-2 text-xs text-white/60">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="font-medium text-emerald-400">Система в сети</span>
                 </div>
             </header>
 
@@ -188,7 +174,7 @@ export default {
         const updateClocks = () => {
             try {
                 const now = new Date();
-                
+
                 // Local Time Formatting
                 localTimeStr.value = now.toLocaleDateString('ru-RU', {
                     day: '2-digit',
@@ -205,9 +191,9 @@ export default {
                 if (typeof offset !== 'number' || isNaN(offset)) {
                     offset = 0;
                 }
-                
+
                 const serverTime = new Date(now.getTime() + offset);
-                
+
                 if (isNaN(serverTime.getTime())) {
                     serverTimeStr.value = localTimeStr.value;
                 } else {
