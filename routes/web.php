@@ -1,69 +1,57 @@
 <?php
 
-use App\Http\Controllers\AccountController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\LangController;
-use App\Http\Controllers\LogController;
-use App\Http\Controllers\MarketAnalyticsController;
-use App\Http\Controllers\ScheduledTaskController;
-use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| SPA API Routes
+| Public Market Portal (Root /)
 |--------------------------------------------------------------------------
 */
+Route::get('/', function () {
+    return view('app');
+})->name('public.market');
 
-Route::prefix('api')->group(function () {
-    // Dashboard Stats
-    Route::get('dashboard', [DashboardController::class, 'index']);
+Route::get('/market/public', function () {
+    return redirect('/');
+});
 
-    // Accounts
-    Route::get('accounts', [AccountController::class, 'index']);
-    Route::post('accounts', [AccountController::class, 'store']);
-    Route::get('accounts/{account}', [AccountController::class, 'show']);
-    Route::delete('accounts/{account}', [AccountController::class, 'destroy']);
-    Route::post('accounts/{account}/sync', [AccountController::class, 'sync']);
-    Route::post('accounts/{account}/action', [AccountController::class, 'action']);
-    Route::put('accounts/{account}/session', [AccountController::class, 'updateSession']);
-    Route::get('accounts/{account}/friends/{friendId}/zone', [AccountController::class, 'friendZone'])->where('friendId', '[0-9]+');
-
-    // Tasks
-    Route::get('tasks', [ScheduledTaskController::class, 'index']);
-    Route::post('tasks', [ScheduledTaskController::class, 'store']);
-    Route::delete('tasks/{task}', [ScheduledTaskController::class, 'destroy']);
-    Route::post('tasks/{task}/toggle', [ScheduledTaskController::class, 'toggle']);
-    Route::post('tasks/{task}/execute', [ScheduledTaskController::class, 'execute']);
-
-    // Logs
-    Route::get('logs', [LogController::class, 'index']);
-
-    // Translations
-    Route::get('lang/res', [LangController::class, 'res']);
-
-    // Settings
-    Route::get('settings', [SettingsController::class, 'index']);
-    Route::put('settings', [SettingsController::class, 'update']);
-    Route::delete('settings/logs', [SettingsController::class, 'clearLogs']);
-    Route::post('settings/tasks/stop', [SettingsController::class, 'stopAllTasks']);
-
-    // Market Analytics
-    Route::get('market/settings', [MarketAnalyticsController::class, 'getSettings']);
-    Route::put('market/settings', [MarketAnalyticsController::class, 'updateSettings']);
-    Route::post('market/sync', [MarketAnalyticsController::class, 'syncNow']);
-    Route::get('market/goods', [MarketAnalyticsController::class, 'getGoods']);
-    Route::get('market/targets', [MarketAnalyticsController::class, 'getTargets']);
-    Route::get('market/analytics', [MarketAnalyticsController::class, 'getAnalytics']);
-    Route::get('market/arbitrage', [MarketAnalyticsController::class, 'getArbitrage']);
-    Route::get('market/logs', [MarketAnalyticsController::class, 'getLogs']);
+Route::get('/public/market', function () {
+    return redirect('/');
 });
 
 /*
 |--------------------------------------------------------------------------
-| SPA Fallback
+| Administration Routes (/admin/*)
 |--------------------------------------------------------------------------
 */
-Route::get('{any}', function () {
-    return view('app');
-})->where('any', '.*');
+Route::prefix('admin')->group(function () {
+    Route::middleware('guest')->group(function () {
+        Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+        Route::post('/login', [AuthController::class, 'login'])
+            ->middleware('throttle:5,1')
+            ->name('login.store');
+
+        Route::get('/register', [AuthController::class, 'showRegistration'])->name('register');
+        Route::post('/register', [AuthController::class, 'register'])
+            ->middleware('throttle:5,1')
+            ->name('register.store');
+    });
+
+    Route::post('/logout', [AuthController::class, 'logout'])
+        ->middleware('auth')
+        ->name('logout');
+
+    Route::middleware('auth')->get('/{any?}', function () {
+        return view('app');
+    })->where('any', '.*');
+});
+
+// Legacy redirects
+Route::get('/login', function () {
+    return redirect('/admin/login');
+});
+
+Route::get('/register', function () {
+    return redirect('/admin/register');
+});

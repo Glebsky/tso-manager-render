@@ -275,4 +275,29 @@ class MarketAnalyticsTest extends TestCase
         $this->assertEquals(301, $activeOffers[0]['offer_id']);
         $this->assertEquals(1, $response->json('total_active_count'));
     }
+
+    public function test_public_market_api_endpoints_are_accessible_without_auth(): void
+    {
+        MarketOffer::create([
+            'offer_id' => 401,
+            'player_id' => 1,
+            'sender_name' => 'PublicSeller',
+            'item_id' => 'Bread',
+            'item_name' => 'Bread',
+            'amount' => 100,
+            'target_item_id' => 'Water',
+            'target_item_name' => 'Water',
+            'target_amount' => 50,
+            'price' => 0.5,
+            'volume' => 1000,
+            'lots_remaining' => 10,
+            'created_at' => now(),
+            'collected_at' => now(),
+        ]);
+
+        $this->getJson('/api/public/market/goods')->assertStatus(200);
+        $this->getJson('/api/public/market/targets?item_id=Bread')->assertStatus(200);
+        $this->getJson('/api/public/market/analytics')->assertStatus(200);
+        $this->getJson('/api/public/market/arbitrage')->assertStatus(200);
+    }
 }
