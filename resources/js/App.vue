@@ -125,15 +125,9 @@
                 <div>
                     <span class="text-xs text-white/40">Панель управления TSO</span>
                 </div>
-                <div class="flex items-center gap-6 text-xs text-white/60">
-                    <div class="flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-                        <span>Локальное время: <strong class="text-white font-mono">{{ localTimeStr }}</strong></span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span>Время сервера: <strong class="text-white font-mono">{{ serverTimeStr }}</strong></span>
-                    </div>
+                <div class="flex items-center gap-2 text-xs text-white/60">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="font-medium text-emerald-400">Система в сети</span>
                 </div>
             </header>
 
@@ -227,7 +221,7 @@ export default {
         const updateClocks = () => {
             try {
                 const now = new Date();
-                
+
                 // Local Time Formatting
                 localTimeStr.value = now.toLocaleDateString('ru-RU', {
                     day: '2-digit',
@@ -244,9 +238,9 @@ export default {
                 if (typeof offset !== 'number' || isNaN(offset)) {
                     offset = 0;
                 }
-                
+
                 const serverTime = new Date(now.getTime() + offset);
-                
+
                 if (isNaN(serverTime.getTime())) {
                     serverTimeStr.value = localTimeStr.value;
                 } else {

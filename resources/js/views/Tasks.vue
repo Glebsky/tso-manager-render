@@ -395,97 +395,191 @@
 
                     <!-- Список задач -->
                     <div class="divide-y divide-white/5">
-                        <div v-for="t in groupTasks" :key="t.id" class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-5 py-4 hover:bg-white/[0.02] transition-all duration-200 group">
-                            <div class="flex items-center gap-3">
-                                <!-- Иконка действия -->
-                                <div class="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center text-lg flex-shrink-0">
-                                    {{ t.task_type === 'sequence' ? '⛓️' : (typeIcons[t.task_type] || '📋') }}
+                        <div v-for="t in groupTasks" :key="t.id" class="p-5 hover:bg-white/[0.01] transition-all duration-200 group">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div class="flex items-center gap-3">
+                                    <!-- Иконка действия -->
+                                    <div class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-xl flex-shrink-0 border border-white/5">
+                                        {{ t.task_type === 'sequence' ? '⛓️' : (typeIcons[t.task_type] || '📋') }}
+                                    </div>
+
+                                    <!-- Информация о задаче -->
+                                    <div class="min-w-0">
+                                        <div class="flex items-center gap-2 flex-wrap">
+                                            <p class="text-sm font-semibold text-white/90 group-hover:text-white transition-colors">
+                                                <span v-if="t.name" class="text-emerald-400/90">{{ t.name }}</span>
+                                                <span v-else-if="t.task_type === 'sequence'">Серия задач ({{ getTaskActionsList(t).length }})</span>
+                                                <span v-else>{{ typeLabels[t.task_type] || t.task_type }}</span>
+                                            </p>
+                                            <span class="badge badge-neutral text-[9px] uppercase">
+                                                {{ t.schedule_type === 'once' ? 'Одноразово' : t.schedule_type === 'interval' ? 'Интервал' : 'Ежедневно' }}
+                                            </span>
+                                        </div>
+
+                                        <div class="flex flex-wrap items-center gap-2 mt-1.5 text-[11px]">
+                                            <!-- Кнопка раскрывающегося списка всех действий -->
+                                            <button type="button"
+                                                    @click="toggleTaskExpanded(t.id)"
+                                                    class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-medium bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/20 transition-all duration-200">
+                                                <span>{{ expandedTasks[t.id] ? '📖 Скрыть действия' : '📘 Действия задачи' }} ({{ getTaskActionsList(t).length }})</span>
+                                                <svg class="w-3 h-3 transition-transform duration-300" :class="{ 'rotate-180': expandedTasks[t.id] }" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                                </svg>
+                                            </button>
+
+                                            <span v-if="t.task_type !== 'sequence' && t.payload && t.payload.grid" class="font-mono text-white/40">
+                                                Сетка #{{ t.payload.grid }}
+                                            </span>
+                                            <span v-if="t.task_type !== 'sequence' && t.payload && t.payload.sub_task_id !== undefined" class="text-white/40">
+                                                {{ getSubTaskLabel(t.task_type, t.payload.task_type, t.payload.sub_task_id) }}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <!-- Информация о задаче -->
-                                <div class="min-w-0">
-                                    <p class="text-sm font-medium text-white/80 group-hover:text-white transition-colors flex items-center gap-2">
-                                        <span v-if="t.name" class="font-semibold text-emerald-400/90">{{ t.name }}</span>
-                                        <span v-else-if="t.task_type === 'sequence'">Серия шагов ({{ t.payload?.actions?.length || 0 }})</span>
-                                        <span v-else>{{ typeLabels[t.task_type] || t.task_type }}</span>
-                                    </p>
-                                    <div class="flex flex-wrap items-center gap-2 mt-0.5 text-[10px] text-white/40">
-                                        <span v-if="t.task_type !== 'sequence' && t.payload && t.payload.grid" class="font-mono">
-                                            Сетка #{{ t.payload.grid }}
-                                        </span>
-                                        <span v-if="t.task_type !== 'sequence' && t.payload && t.payload.sub_task_id !== undefined">
-                                            {{ getSubTaskLabel(t.task_type, t.payload.task_type, t.payload.sub_task_id) }}
-                                        </span>
-                                        <span class="badge badge-neutral text-[9px] uppercase">
-                                            {{ t.schedule_type === 'once' ? 'Одноразово' : t.schedule_type === 'interval' ? 'Интервал' : 'Ежедневно' }}
-                                        </span>
+                                <!-- Правая секция: До следующего запуска, Расписание, Статус и Действия -->
+                                <div class="flex items-center justify-end gap-4 ml-auto sm:ml-0">
+                                    <!-- Время до следующего запуска задачи -->
+                                    <div class="text-right px-3 py-1.5 rounded-xl bg-white/[0.02] border border-white/5 min-w-[130px]">
+                                        <div v-if="!t.is_active" class="flex items-center justify-end gap-1.5 text-xs text-amber-400/80 font-medium">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                                            <span>Пауза</span>
+                                        </div>
+                                        <div v-else-if="t.schedule_type === 'once' && t.last_run_at" class="flex items-center justify-end gap-1.5 text-xs text-white/40">
+                                            <span>Завершена</span>
+                                        </div>
+                                        <div v-else class="flex flex-col items-end">
+                                            <span class="text-xs font-mono font-bold text-emerald-400 flex items-center gap-1.5">
+                                                <svg class="w-3 h-3 text-emerald-400 animate-pulse" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                                </svg>
+                                                {{ getTaskNextRunText(t).label }}
+                                            </span>
+                                            <span class="text-[9px] text-white/30 font-mono" v-if="getTaskNextRunText(t).nextRunTime">
+                                                (в {{ getTaskNextRunText(t).nextRunTime }})
+                                            </span>
+                                        </div>
+                                        <p class="text-[9px] text-white/30 uppercase tracking-wider mt-0.5 text-right font-medium">До запуска</p>
                                     </div>
-                                    <div v-if="t.task_type === 'sequence' && t.payload && t.payload.actions" class="flex flex-wrap items-center gap-1.5 mt-1.5">
-                                        <span v-for="(act, aIdx) in t.payload.actions" :key="aIdx" class="text-[9px] bg-white/5 border border-white/5 text-white/70 px-1.5 py-0.5 rounded flex items-center gap-1">
-                                            <span class="text-[8px] text-white/30 font-bold font-mono">#{{ aIdx + 1 }}</span>
-                                            <span>{{ typeIcons[act.task_type] }}</span>
-                                            <span class="font-mono text-white/50" v-if="act.payload.grid">#{{ act.payload.grid }}</span>
-                                            <span v-if="act.delay_seconds > 0" class="text-[8px] text-amber-400 font-mono">⏳{{ act.delay_seconds }}с</span>
-                                        </span>
+
+                                    <!-- Расписание -->
+                                    <div class="text-right hidden md:block">
+                                        <p v-if="t.schedule_type === 'once'" class="text-xs text-white/60 font-mono">
+                                            {{ formatDateTime(t.run_at_datetime) }}
+                                        </p>
+                                        <p v-else-if="t.schedule_type === 'interval'" class="text-xs text-white/60 font-mono">
+                                            Каждые {{ formatInterval(t.interval_hours, t.interval_minutes) }}
+                                        </p>
+                                        <p v-else class="text-xs text-white/60 font-mono">
+                                            Ежедневно в {{ t.run_at_time ? t.run_at_time.substring(0, 5) : '—' }}
+                                        </p>
+                                        <p class="text-[9px] text-white/20 uppercase tracking-wider">Расписание</p>
                                     </div>
+
+                                    <!-- Последний результат выполнения -->
+                                    <span v-if="t.last_result"
+                                          class="badge text-[10px] flex-shrink-0 max-w-[100px] truncate"
+                                          :class="t.last_result.includes('OK') ? 'badge-success' : 'badge-danger'"
+                                          :title="t.last_result">
+                                        {{ t.last_result.includes('OK') ? 'Успешно' : 'Ошибка' }}
+                                    </span>
+
+                                    <!-- Кнопка ручного запуска -->
+                                    <button @click="runTaskNow(t)"
+                                            :disabled="executingTasks[t.id]"
+                                            class="btn-secondary btn-sm flex items-center justify-center gap-1.5 flex-shrink-0"
+                                            :class="executingTasks[t.id] ? 'opacity-50 cursor-not-allowed' : 'hover:border-emerald-500/30 text-emerald-400/80 hover:text-emerald-400'"
+                                            title="Запустить сейчас">
+                                        <svg v-if="executingTasks[t.id]" class="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        <svg v-else class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
+                                        </svg>
+                                        <span class="text-[9px] uppercase font-semibold">{{ executingTasks[t.id] ? 'Запуск...' : 'Пуск' }}</span>
+                                    </button>
+
+                                    <!-- Тумблер активации -->
+                                    <button @click="toggleTask(t)"
+                                            class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 flex-shrink-0"
+                                            :class="t.is_active ? 'bg-emerald-500' : 'bg-white/10'">
+                                        <span class="inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform duration-300"
+                                              :class="t.is_active ? 'translate-x-6' : 'translate-x-1'"></span>
+                                    </button>
+
+                                    <!-- Кнопка удаления -->
+                                    <button @click="deleteTask(t.id)"
+                                            class="btn-secondary btn-sm text-red-400/60 hover:text-red-400 hover:border-red-500/30 flex-shrink-0">
+                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                        </svg>
+                                    </button>
                                 </div>
                             </div>
 
-                            <!-- Правая секция: Расписание, Статус и Действия -->
-                            <div class="flex items-center justify-end gap-4 ml-auto sm:ml-0">
-                                <!-- Время/Интервал запуска -->
-                                <div class="text-right">
-                                    <p v-if="t.schedule_type === 'once'" class="text-xs text-white/60 font-mono">
-                                        {{ formatDateTime(t.run_at_datetime) }}
+                            <!-- Раскрывающийся список действий задачи -->
+                            <div v-if="expandedTasks[t.id]" class="mt-4 pt-4 border-t border-white/5 space-y-2 animate-fade-in">
+                                <div class="flex items-center justify-between mb-2">
+                                    <p class="text-[10px] uppercase font-semibold text-white/40 tracking-wider flex items-center gap-1.5">
+                                        <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm0 5.25h.007v.008H3.75V12Zm0 5.25h.007v.008H3.75v-.008Z" />
+                                        </svg>
+                                        Действия в задаче (всего {{ getTaskActionsList(t).length }})
                                     </p>
-                                    <p v-else-if="t.schedule_type === 'interval'" class="text-xs text-white/60 font-mono">
-                                        Каждые {{ formatInterval(t.interval_hours, t.interval_minutes) }}
-                                    </p>
-                                    <p v-else class="text-xs text-white/60 font-mono">
-                                        Ежедневно в {{ t.run_at_time ? t.run_at_time.substring(0, 5) : '—' }}
-                                    </p>
-                                    <p class="text-[9px] text-white/20 uppercase tracking-wider">Расписание</p>
                                 </div>
 
-                                <!-- Последний результат выполнения -->
-                                <span v-if="t.last_result"
-                                      class="badge text-[10px] flex-shrink-0 max-w-[120px] truncate"
-                                      :class="t.last_result.includes('OK') ? 'badge-success' : 'badge-danger'"
-                                      :title="t.last_result">
-                                    {{ t.last_result.includes('OK') ? 'Успешно' : 'Ошибка' }}
-                                </span>
+                                <div class="grid grid-cols-1 gap-2">
+                                    <div v-for="(act, aIdx) in getTaskActionsList(t)" :key="aIdx"
+                                         class="glass-card p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-white/5 hover:border-white/10 transition-all bg-white/[0.01]">
+                                        <div class="flex items-start sm:items-center gap-3">
+                                            <span class="w-6 h-6 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xs font-bold font-mono flex-shrink-0 mt-0.5 sm:mt-0">
+                                                {{ aIdx + 1 }}
+                                            </span>
+                                            <span class="text-xl flex-shrink-0">{{ typeIcons[act.task_type] || '📋' }}</span>
+                                            <div class="min-w-0 text-xs">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="font-semibold text-white/90">{{ typeLabels[act.task_type] || act.task_type }}</span>
+                                                    <span v-if="act.payload?.target_scope === 'friend'" class="badge badge-warning text-[9px]">Зона друга</span>
+                                                    <span v-else-if="act.payload?.target_scope === 'self'" class="badge badge-neutral text-[9px]">Моя зона</span>
+                                                </div>
 
-                                <!-- Кнопка ручного запуска -->
-                                <button @click="runTaskNow(t)"
-                                        :disabled="executingTasks[t.id]"
-                                        class="btn-secondary btn-sm flex items-center justify-center gap-1.5 flex-shrink-0"
-                                        :class="executingTasks[t.id] ? 'opacity-50 cursor-not-allowed' : 'hover:border-emerald-500/30 text-emerald-400/80 hover:text-emerald-400'"
-                                        title="Запустить сейчас">
-                                    <svg v-if="executingTasks[t.id]" class="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    <svg v-else class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
-                                    </svg>
-                                    <span class="text-[9px] uppercase font-semibold">{{ executingTasks[t.id] ? 'Запуск...' : 'Пуск' }}</span>
-                                </button>
+                                                <!-- Подробные параметры действия -->
+                                                <div class="text-white/60 text-[11px] mt-1 space-y-0.5">
+                                                    <!-- Здание -->
+                                                    <div v-if="['stop_production', 'start_production', 'apply_buff'].includes(act.task_type)" class="flex items-center gap-1.5 flex-wrap">
+                                                        <span class="text-white/40">Здание:</span>
+                                                        <span class="font-mono text-emerald-300 font-medium">
+                                                            {{ getBuildingDisplayName(t, act) }}
+                                                        </span>
+                                                    </div>
 
-                                <!-- Тумблер активации -->
-                                <button @click="toggleTask(t)"
-                                        class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 flex-shrink-0"
-                                        :class="t.is_active ? 'bg-emerald-500' : 'bg-white/10'">
-                                    <span class="inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform duration-300"
-                                          :class="t.is_active ? 'translate-x-6' : 'translate-x-1'"></span>
-                                </button>
+                                                    <!-- Бафф -->
+                                                    <div v-if="act.task_type === 'apply_buff'" class="flex items-center gap-1.5 flex-wrap">
+                                                        <span class="text-white/40">Бафф:</span>
+                                                        <span class="font-medium text-amber-300">{{ getBuffDisplayName(t, act) }}</span>
+                                                        <span class="text-white/40">• Количество: <strong class="text-white font-mono">{{ act.payload?.amount || 1 }}</strong></span>
+                                                        <span v-if="act.payload?.target_player_name" class="text-emerald-400">• Друг: <strong>{{ act.payload.target_player_name }}</strong></span>
+                                                    </div>
 
-                                <!-- Кнопка удаления -->
-                                <button @click="deleteTask(t.id)"
-                                        class="btn-secondary btn-sm text-red-400/60 hover:text-red-400 hover:border-red-500/30 flex-shrink-0">
-                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                                    </svg>
-                                </button>
+                                                    <!-- Специалист -->
+                                                    <div v-if="['send_geologist', 'send_explorer'].includes(act.task_type)" class="flex items-center gap-1.5 flex-wrap">
+                                                        <span class="text-white/40">Тип/Цель поиска:</span>
+                                                        <span class="font-medium text-teal-300">
+                                                            {{ getSubTaskLabel(act.task_type, act.payload?.task_type, act.payload?.sub_task_id) }}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Задержка после шага -->
+                                        <div v-if="act.delay_seconds > 0" class="flex items-center gap-1 text-[10px] text-amber-400 bg-amber-400/10 px-2 py-1 rounded-lg border border-amber-400/20 font-mono self-end sm:self-center">
+                                            <span>⏱️ Задержка после шага:</span>
+                                            <span class="font-bold">{{ act.delay_seconds }} сек.</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1622,6 +1716,150 @@ export default {
             }
         };
 
+        const currentTimeMs = ref(Date.now());
+        const expandedTasks = ref({});
+        let countdownTimer = null;
+
+        const toggleTaskExpanded = (taskId) => {
+            expandedTasks.value[taskId] = !expandedTasks.value[taskId];
+        };
+
+        const getTaskActionsList = (t) => {
+            if (!t) return [];
+            if (t.task_type === 'sequence' && Array.isArray(t.payload?.actions)) {
+                return t.payload.actions;
+            }
+            return [{
+                task_type: t.task_type,
+                payload: t.payload || {},
+                delay_seconds: 0
+            }];
+        };
+
+        const getNextRunDate = (t) => {
+            if (!t) return null;
+
+            if (t.schedule_type === 'once') {
+                if (!t.run_at_datetime) return null;
+                const d = new Date(t.run_at_datetime);
+                return isNaN(d.getTime()) ? null : d;
+            }
+
+            if (t.schedule_type === 'daily') {
+                if (!t.run_at_time) return null;
+                const parts = t.run_at_time.split(':');
+                if (parts.length < 2) return null;
+                const hours = parseInt(parts[0], 10);
+                const minutes = parseInt(parts[1], 10);
+
+                const now = new Date(currentTimeMs.value);
+                const next = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0, 0);
+
+                if (next.getTime() <= now.getTime()) {
+                    next.setDate(next.getDate() + 1);
+                }
+                return next;
+            }
+
+            if (t.schedule_type === 'interval') {
+                const h = Number(t.interval_hours || 0);
+                const m = Number(t.interval_minutes || 0);
+                const intervalMs = (h * 3600 + m * 60) * 1000;
+                if (intervalMs <= 0) return null;
+
+                const baseStr = t.last_run_at || t.created_at;
+                if (!baseStr) return null;
+                const base = new Date(baseStr);
+                if (isNaN(base.getTime())) return null;
+
+                let nextMs = base.getTime() + intervalMs;
+                const nowMs = currentTimeMs.value;
+                if (nextMs < nowMs) {
+                    const passed = Math.ceil((nowMs - base.getTime()) / intervalMs);
+                    nextMs = base.getTime() + (passed * intervalMs);
+                }
+                return new Date(nextMs);
+            }
+
+            return null;
+        };
+
+        const getTaskNextRunText = (t) => {
+            if (!t.is_active) {
+                return { status: 'paused', label: 'Приостановлена', detail: '' };
+            }
+
+            if (t.schedule_type === 'once' && t.last_run_at) {
+                return { status: 'completed', label: 'Завершена', detail: '' };
+            }
+
+            const nextDate = getNextRunDate(t);
+            if (!nextDate) {
+                return { status: 'none', label: '—', detail: '' };
+            }
+
+            const diffMs = nextDate.getTime() - currentTimeMs.value;
+
+            if (diffMs <= 0) {
+                return { status: 'due', label: 'Запуск...', detail: 'Выполняется или ожидает очереди' };
+            }
+
+            const totalSec = Math.floor(diffMs / 1000);
+            const days = Math.floor(totalSec / 86400);
+            const hours = Math.floor((totalSec % 86400) / 3600);
+            const mins = Math.floor((totalSec % 3600) / 60);
+            const secs = totalSec % 60;
+
+            let parts = [];
+            if (days > 0) parts.push(`${days}д`);
+            if (hours > 0 || days > 0) parts.push(`${hours}ч`);
+            if (mins > 0 || hours > 0 || days > 0) parts.push(`${mins}м`);
+            parts.push(`${secs}с`);
+
+            return {
+                status: 'active',
+                label: `через ${parts.join(' ')}`,
+                nextRunTime: nextDate.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+            };
+        };
+
+        const getBuildingDisplayName = (t, action) => {
+            if (action.meta?.building) {
+                return getBuildingName(action.meta.building);
+            }
+            const grid = action.payload?.grid;
+            if (!grid) return 'Здание не указано';
+
+            const acc = accounts.value.find(a => Number(a.id) === Number(t.account_id));
+            if (acc && acc.zone_data) {
+                try {
+                    const zd = typeof acc.zone_data === 'string' ? JSON.parse(acc.zone_data) : acc.zone_data;
+                    const b = zd.buildings?.find(b => Number(b.buildingGrid) === Number(grid));
+                    if (b) return getBuildingName(b);
+                } catch (e) {}
+            }
+            return `Сетка #${grid}`;
+        };
+
+        const getBuffDisplayName = (t, action) => {
+            if (action.meta?.buff) {
+                return getStarBuffName(action.meta.buff);
+            }
+            const u1 = action.payload?.unique_id1;
+            if (!u1) return 'Бафф из меню';
+
+            const acc = accounts.value.find(a => Number(a.id) === Number(t.account_id));
+            if (acc && acc.zone_data) {
+                try {
+                    const zd = typeof acc.zone_data === 'string' ? JSON.parse(acc.zone_data) : acc.zone_data;
+                    const buffs = zd.availableBuffs || zd.buffs || [];
+                    const bf = buffs.find(b => (b.uniqueId1 || b.uniqueID1) == u1);
+                    if (bf) return getStarBuffName(bf);
+                } catch (e) {}
+            }
+            return `Бафф #${u1}`;
+        };
+
         const closeAllDropdowns = (e) => {
             if (!e.target.closest('.relative')) {
                 activeDropdown.value = null;
@@ -1635,10 +1873,14 @@ export default {
                 .then(data => { translations.value = data; })
                 .catch(() => {});
             document.addEventListener('click', closeAllDropdowns);
+            countdownTimer = setInterval(() => {
+                currentTimeMs.value = Date.now();
+            }, 1000);
         });
 
         onUnmounted(() => {
             document.removeEventListener('click', closeAllDropdowns);
+            if (countdownTimer) clearInterval(countdownTimer);
         });
 
         return {
@@ -1687,6 +1929,16 @@ export default {
             executingTasks,
             formatDateTime,
             formatInterval,
+
+            // Next run time and expandable actions
+            currentTimeMs,
+            expandedTasks,
+            toggleTaskExpanded,
+            getTaskActionsList,
+            getNextRunDate,
+            getTaskNextRunText,
+            getBuildingDisplayName,
+            getBuffDisplayName,
 
             // target scope and friends state
             stepTargetScope,
