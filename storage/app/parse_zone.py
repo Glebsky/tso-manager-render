@@ -78,7 +78,7 @@ def recursive_extract(obj, buildings, specialists, buffs, resources, friends, pl
 
         elif 'dSpecialistVO' in full_name or 'SpecialistVO' in full_name:
             specialist = {}
-            
+
             # Extract type
             spec_type = None
             for attr in ['specialistType', 'type']:
@@ -106,7 +106,7 @@ def recursive_extract(obj, buildings, specialists, buffs, resources, friends, pl
                     uid_obj = getattr(obj, attr)
                 elif isinstance(obj, dict) and attr in obj:
                     uid_obj = obj[attr]
-            
+
             uid1, uid2 = None, None
             if uid_obj is not None:
                 for attr in ['uniqueID1', 'uniqueId1']:
@@ -119,7 +119,7 @@ def recursive_extract(obj, buildings, specialists, buffs, resources, friends, pl
                         uid2 = getattr(uid_obj, attr)
                     elif isinstance(uid_obj, dict) and attr in uid_obj:
                         uid2 = uid_obj[attr]
-            
+
             # Fallback to direct fields
             if uid1 is None:
                 for attr in ['uniqueID1', 'uniqueId1']:
@@ -133,7 +133,7 @@ def recursive_extract(obj, buildings, specialists, buffs, resources, friends, pl
                         uid2 = getattr(obj, attr)
                     elif isinstance(obj, dict) and attr in obj:
                         uid2 = obj[attr]
-            
+
             if uid1 is not None:
                 specialist['uniqueId1'] = uid1
             if uid2 is not None:
@@ -148,7 +148,7 @@ def recursive_extract(obj, buildings, specialists, buffs, resources, friends, pl
                     task_obj = getattr(obj, attr)
                 elif isinstance(obj, dict) and attr in obj:
                     task_obj = obj[attr]
-            
+
             if task_obj is not None:
                 for attr in ['taskType', 'type']:
                     if hasattr(task_obj, attr):
@@ -165,7 +165,7 @@ def recursive_extract(obj, buildings, specialists, buffs, resources, friends, pl
                         specialist['taskEndTime'] = getattr(task_obj, attr)
                     elif isinstance(task_obj, dict) and attr in task_obj:
                         specialist['taskEndTime'] = task_obj[attr]
-            
+
             # Fallback to direct fields
             for attr in ['taskType', 'taskSubType', 'taskEndTime']:
                 if attr not in specialist:
@@ -208,6 +208,56 @@ def recursive_extract(obj, buildings, specialists, buffs, resources, friends, pl
                     resource[attr] = val
             if resource:
                 resources.append(resource)
+
+        elif 'dPlayerListItemVO' in full_name or 'PlayerListItemVO' in full_name:
+            # GET_FRIEND_LIST returns dPlayerListVO.players containing
+            # dPlayerListItemVO objects rather than dPlayerVO objects.
+            friend = {}
+            for attr in [
+                'id', 'avatarId', 'username', 'username_string', 'nickname',
+                'playerLevel', 'level', 'friendSince', 'onlineStatus',
+                'adventureVO'
+            ]:
+                val = None
+                if hasattr(obj, attr):
+                    val = getattr(obj, attr)
+                elif isinstance(obj, dict) and attr in obj:
+                    val = obj[attr]
+
+                if val is not None:
+                    friend[attr] = val
+
+            # Entries with a negative ID represent adventures, not friends.
+            friend_id = friend.get('id')
+            is_adventure = (
+                isinstance(friend_id, (int, float))
+                and not isinstance(friend_id, bool)
+                and friend_id < 0
+            )
+
+            if friend and not is_adventure:
+                friend_name = (
+                    friend.get('username')
+                    or friend.get('username_string')
+                    or friend.get('nickname')
+                )
+                exists = False
+                for existing in friends:
+                    existing_id = existing.get('id')
+                    existing_name = (
+                        existing.get('username')
+                        or existing.get('username_string')
+                        or existing.get('nickname')
+                    )
+                    if friend_id is not None and existing_id == friend_id:
+                        exists = True
+                        break
+                    if friend_name and existing_name == friend_name:
+                        exists = True
+                        break
+
+                if not exists:
+                    friends.append(friend)
 
         elif 'dPlayerVO' in full_name or 'PlayerVO' in full_name:
             player = {}
@@ -263,7 +313,7 @@ def recursive_extract(obj, buildings, specialists, buffs, resources, friends, pl
                         items = friends_list.source
                     elif isinstance(friends_list, (list, tuple)):
                         items = friends_list
-                    
+
                     for friend_obj in items:
                         if friend_obj is None:
                             continue
@@ -279,6 +329,19 @@ def recursive_extract(obj, buildings, specialists, buffs, resources, friends, pl
                                 friend[fattr] = fval
                         if friend:
                             friends.append(friend)
+
+    # Recurse into Flex ArrayCollection. PyAMF exposes its contents through
+    # the source property, which is not guaranteed to be present in __dict__.
+    if hasattr(obj, 'source') and not isinstance(obj, (str, bytes)):
+        try:
+            source = obj.source
+            if source is not None and source is not obj:
+                recursive_extract(
+                    source, buildings, specialists, buffs, resources,
+                    friends, players, zone_info, visited
+                )
+        except Exception:
+            pass
 
     # Recurse into attributes
     if hasattr(obj, '__dict__'):
@@ -304,12 +367,12 @@ def make_serializable(obj, visited=None):
     """Convert pyamf types to JSON-serializable Python types, handling circular references."""
     if visited is None:
         visited = set()
-        
+
     obj_id = id(obj)
     if obj_id in visited:
         alias = getattr(obj, 'alias', '') or obj.__class__.__name__
         return f"<circular reference to {alias} id={obj_id}>"
-        
+
     is_mutable = isinstance(obj, (dict, list, tuple)) or hasattr(obj, '__dict__') or hasattr(obj, 'source')
     if is_mutable:
         visited.add(obj_id)
@@ -421,12 +484,12 @@ def main():
 
     # Calculate storage capacity (resourceLimit) based on Mayorhouse and Storehouse upgrades
     calc_limit = 500 # default base limit
-    
+
     for b in buildings:
         bname = b.get('buildingName_string') or b.get('buildingName', '')
         bname_lower = bname.lower()
         level_val = int(b.get('upgradeLevel') or b.get('level') or 1)
-        
+
         if 'mayorhouse' in bname_lower or 'townhall' in bname_lower:
             caps = [0, 500, 2100, 3600, 6500, 10500, 16500, 25500]
             idx = min(level_val, len(caps) - 1)

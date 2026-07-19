@@ -547,7 +547,9 @@ class TsoAmfService
     public function getFriendList(Account $account): string
     {
         $getFriends = new defaultGame_Communication_VO_dGetFriendsVO;
-        $getFriends->version = '1843-Release_queen';
+        //        $getFriends->version = '1843-Release_queen';
+//        $getFriends->version = '9361-Release_lugia_air';
+        $getFriends->version = '3edc5514e7e5177d38fa82e605f59519e25fcb42';
 
         return $this->sendServerCall(
             $account,
@@ -588,7 +590,7 @@ class TsoAmfService
      */
     public function applyBuff(Account $account, int $grid, int $uniqueId1, int $uniqueId2): string
     {
-        $buffUid = new Communication_VO_dUniqueID;
+        $buffUid = new defaultGame_Communication_VO_dUniqueID;
         $buffUid->uniqueID1 = $uniqueId1;
         $buffUid->uniqueID2 = $uniqueId2;
 
@@ -607,11 +609,11 @@ class TsoAmfService
      */
     public function sendSpecialist(Account $account, int $taskType, int $subTaskId, int $uniqueId1, int $uniqueId2): string
     {
-        $specUid = new Communication_VO_dUniqueID;
+        $specUid = new defaultGame_Communication_VO_dUniqueID;
         $specUid->uniqueID1 = $uniqueId1;
         $specUid->uniqueID2 = $uniqueId2;
 
-        $taskVo = new Communication_VO_dStartSpecialistTaskVO;
+        $taskVo = new defaultGame_Communication_VO_dStartSpecialistTaskVO;
         $taskVo->uniqueID = $specUid;
         $taskVo->subTaskID = $subTaskId;
         $taskVo->paramString = '';
@@ -622,14 +624,14 @@ class TsoAmfService
     }
 }
 
-class Communication_VO_dUniqueID
+class defaultGame_Communication_VO_dUniqueID
 {
     public $uniqueID1;
 
     public $uniqueID2;
 }
 
-class Communication_VO_dStartSpecialistTaskVO
+class defaultGame_Communication_VO_dStartSpecialistTaskVO
 {
     public $uniqueID;
 

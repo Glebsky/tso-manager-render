@@ -149,9 +149,10 @@ class AccountController extends Controller
                         try {
                             Log::info("Fetching friend list AMF for account {$account->id}");
                             $rawFriendsAmf = $this->amfService->getFriendList($account);
+                            file_put_contents(storage_path('app/debug_friends_list.amf'), $rawFriendsAmf);
                             $friendsData = $this->zoneParser->parse($rawFriendsAmf);
 
-                            $parsedPlayers = $friendsData['players'] ?? [];
+                            $parsedPlayers = $friendsData['friends'] ?? [];
                             if (! empty($parsedPlayers)) {
                                 Log::info('Successfully fetched '.count($parsedPlayers)." players from friends list for account {$account->id}");
                                 $friendsList = [];
