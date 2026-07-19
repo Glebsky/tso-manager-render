@@ -28,7 +28,8 @@
                 <!-- Main Info Section -->
                 <div class="flex items-start gap-6">
                     <!-- Avatar -->
-                    <div class="w-20 h-20 rounded-2xl overflow-hidden bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20 flex-shrink-0">
+                    <div class="w-20 h-20 rounded-2xl overflow-hidden bg-gradient-to-br flex items-center justify-center shadow-lg flex-shrink-0"
+                         :class="statusClass.gradient">
                         <img v-if="avatarUrl" :src="avatarUrl" :alt="playerNickname" class="w-full h-full object-cover" @error="avatarError = true">
                         <span v-else class="text-2xl font-bold text-white">{{ avatarLetters }}</span>
                     </div>

@@ -11,7 +11,7 @@
                 <div class="flex items-center gap-3">
                     <!-- Avatar -->
                     <div class="w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center text-white font-bold text-sm shadow-lg overflow-hidden flex-shrink-0"
-                         :class="statusClass">
+                         :class="statusClass.gradient">
                         <img v-if="avatarUrl" :src="avatarUrl" :alt="localAccount.nickname || localAccount.username" class="w-full h-full object-cover" @error="$event.target.style.display='none'">
                         <span v-else>{{ avatarLetters }}</span>
                     </div>
