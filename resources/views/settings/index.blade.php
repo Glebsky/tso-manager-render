@@ -79,20 +79,7 @@
                         </div>
                     </div>
 
-                    <div class="border-t border-white/5"></div>
 
-                    {{-- Timezone --}}
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
-                        <div>
-                            <label class="block text-sm font-medium text-white/60">Timezone</label>
-                            <p class="text-xs text-white/30 mt-0.5">Timezone for scheduled tasks and logs</p>
-                        </div>
-                        <div class="md:col-span-2">
-                            <input type="text" name="timezone" value="{{ $settings['timezone'] ?? config('app.timezone', 'UTC') }}"
-                                   placeholder="e.g. Europe/Moscow"
-                                   class="glass-input max-w-xs w-full">
-                        </div>
-                    </div>
                 </div>
 
                 <div class="mt-6 pt-5 border-t border-white/5 flex justify-end">

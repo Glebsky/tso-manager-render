@@ -21,7 +21,7 @@
             </div>
 
             <form @submit.prevent="saveSettings">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <!-- Sync Interval -->
                     <div>
                         <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">Sync Interval (Minutes)</label>
@@ -58,24 +58,6 @@
                                 </svg>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Timezone -->
-                    <div>
-                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">Timezone</label>
-                        <div class="relative">
-                            <select v-model="form.timezone" class="glass-select w-full">
-                                <option v-for="tz in timezones" :key="tz" :value="tz" class="bg-dark-900">{{ tz }}</option>
-                            </select>
-                            <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-                                <svg class="w-4 h-4 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                                </svg>
-                            </div>
-                        </div>
-                        <p v-if="currentTime" class="text-xs text-emerald-400 mt-2 font-mono">
-                            Current time: {{ currentTime }}
-                        </p>
                     </div>
                 </div>
 
@@ -129,7 +111,7 @@
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import { showToast } from '../toast';
 
@@ -139,36 +121,10 @@ export default {
         const saving = ref(false);
         const clearingLogs = ref(false);
         const stoppingTasks = ref(false);
-        const now = ref(new Date());
-        let timer = null;
-
-        const timezones = [
-            'UTC', 'Europe/Moscow', 'Europe/Kiev', 'Europe/London', 'Europe/Berlin',
-            'Europe/Paris', 'Europe/Rome', 'Europe/Madrid', 'Europe/Warsaw',
-            'Europe/Bucharest', 'Europe/Athens', 'Europe/Istanbul',
-            'America/New_York', 'America/Chicago', 'America/Denver',
-            'America/Los_Angeles', 'America/Sao_Paulo',
-            'Asia/Tokyo', 'Asia/Shanghai', 'Asia/Seoul', 'Asia/Kolkata', 'Asia/Dubai',
-            'Australia/Sydney', 'Pacific/Auckland',
-        ];
 
         const form = ref({
             sync_interval: 30,
-            log_retention_days: 30,
-            timezone: 'UTC'
-        });
-
-        const currentTime = computed(() => {
-            try {
-                return now.value.toLocaleTimeString('en-GB', {
-                    timeZone: form.value.timezone,
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit',
-                });
-            } catch (e) {
-                return '';
-            }
+            log_retention_days: 30
         });
 
         const loadSettings = async () => {
@@ -176,8 +132,7 @@ export default {
                 const res = await axios.get('/api/settings');
                 form.value = res.data || {
                     sync_interval: 30,
-                    log_retention_days: 30,
-                    timezone: 'UTC'
+                    log_retention_days: 30
                 };
             } catch (e) {
                 showToast('Failed to load settings.', 'error');
@@ -230,11 +185,6 @@ export default {
 
         onMounted(() => {
             loadSettings();
-            timer = setInterval(() => { now.value = new Date(); }, 1000);
-        });
-
-        onUnmounted(() => {
-            if (timer) clearInterval(timer);
         });
 
         return {
@@ -242,8 +192,6 @@ export default {
             clearingLogs,
             stoppingTasks,
             form,
-            timezones,
-            currentTime,
             saveSettings,
             clearLogs,
             stopAllTasks
