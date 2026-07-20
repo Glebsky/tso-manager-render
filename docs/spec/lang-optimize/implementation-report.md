@@ -27,7 +27,7 @@
 - `app/Console/Commands/LangFrontendExportCommand.php` — `php artisan tso:lang:export-frontend`: JSON-бандлы (секции LAB/RES/SPE + ui) в `resources/js/lang/generated/{en,ru}.json` (детерминированный вывод). Сгенерированы: en — 4 417 игровых записей, ru — 4 203, ui — 39.
 - `resources/js/lang/index.js` — `t()`, `game()`, `gameAny()`, `gameAnyLookup()`, `intlLocale`; fallback ru→en→ключ; та же семантика плейсхолдеров.
 - `app.js` — глобальные `t/game/gameAny/$lang` для шаблонов.
-- Мигрированы: `App.vue`, `Register.vue`, `Tasks.vue` (игровые лукапы: баффы, ресурсы, `intlLocale`), `AccountDetail.vue` (вкладки склада `WarehouseTab*`, баффы, специалисты, задачи разведки/геологии, фильтры, плейсхолдеры), `PublicMarketAnalytics.vue` (`getItemName` через каталог).
+- Мигрированы: `App.vue`, `Register.vue`, `Tasks.vue` (полностью: все UI-строки формы/списка задач/модалок/тостов через `tasks.*`, плюс игровые лукапы: баффы, ресурсы, `intlLocale`; внутри цикла `v-for="t in groupTasks"` используется `$lang.t(...)`, т.к. переменная цикла затеняет глобальный `t()`), `AccountDetail.vue` (вкладки склада `WarehouseTab*`, баффы, специалисты, задачи разведки/геологии, фильтры, плейсхолдеры), `PublicMarketAnalytics.vue` (`getItemName` через каталог).
 - Проверка: в `resources/js` и `routes/` не осталось обращений к `/api/lang/res`, `/api/public/market/lang/res`, `translations.value`.
 
 ### 6. Удаление легаси (Этап 7)
@@ -53,7 +53,8 @@
 | R7 Детерминированная регенерация | writer/export, атомарная запись | GameLangFileWriterTest | ✅ |
 
 ## Осознанный остаток (staged debt)
-- Длинный хвост русских UI-строк в `Tasks.vue` (заголовки/тосты/модалки) и RU-fallback-карты подтипов задач в `AccountDetail.vue` — работают как раньше; вынести в `ui.php`/бандл следующим этапом (Этап 5/7 допускает последовательную миграцию).
+- `Tasks.vue` полностью мигрирован на `tasks.*` (шаблон, тосты, модалки, справочники целей геолога/разведчика, фильтр категорий зданий переведён на id `all/wood/mines/metal/food/other`); кириллица осталась только в комментариях для разработчиков.
+- RU-fallback-карты подтипов задач в `AccountDetail.vue` оставлены как последний fallback (срабатывают, только если id нет в игровом каталоге); английские тексты ошибок в `MarketAnalyticsController` можно перевести через `__()` следующим этапом.
 - Сообщения `MarketAnalyticsController` (англ. строки ошибок) — при желании вынести в `lang/*/errors.php`.
 
 ## Ограничения окружения (важно)
