@@ -1291,9 +1291,9 @@ export default {
             if (nameMapping[clean]) clean = nameMapping[clean];
 
             if (img.src.includes('/images/buildings/') && img.src.endsWith('.webp')) {
-                img.src = `/images/buildings/${clean}.png`;
-            } else if (img.src.includes('/images/buildings/') && img.src.endsWith('.png')) {
-                img.src = `/images/resources/${clean}.png`;
+                img.src = `/images/buildings/${clean}.webp`;
+            } else if (img.src.includes('/images/buildings/') && img.src.endsWith('.webp')) {
+                img.src = `/images/resources/${clean}.webp`;
             } else {
                 img.style.display = 'none';
             }
@@ -1455,7 +1455,7 @@ export default {
                 'buff_secretsanta': 'buff_secretsanta'
             };
             if (buffMap[clean]) clean = buffMap[clean];
-            return `/images/resources/${clean}.png`;
+            return `/images/other/${clean}.webp`;
         };
 
         const handleBuffIconError = (event, b) => {
@@ -1480,10 +1480,10 @@ export default {
 
             if (buffMap[clean]) clean = buffMap[clean];
 
-            if (img.src.includes('/images/resources/') && img.src.endsWith('.png')) {
+            if (img.src.includes('/images/other/') && img.src.endsWith('.webp')) {
                 img.src = `/images/buildings/${clean}.webp`;
             } else if (img.src.includes('/images/buildings/') && img.src.endsWith('.webp')) {
-                img.src = `/images/buildings/${clean}.png`;
+                img.src = `/images/buildings/${clean}.webp`;
             } else {
                 img.style.display = 'none';
             }

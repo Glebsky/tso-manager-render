@@ -857,46 +857,22 @@ export default {
 
         // Resource Icons helper
         const getResourceIcon = (itemId) => {
-            if (!itemId) return '/images/resources/addresource.png';
-            const lower = itemId.toLowerCase();
-
-            const webpResources = [
-                'advancedtools', 'adventurerelics', 'adventuretale', 'archebuse', 'battlehorse', 'battlelance',
-                'beer', 'bow', 'bread', 'cannon', 'coal', 'compositebow', 'crossbow', 'crystal', 'deadtreewood',
-                'fish', 'flour', 'gold', 'goldore', 'granite', 'iron', 'ironore', 'marble', 'meat', 'mortar',
-                'oil', 'pike', 'plank', 'platinumore', 'platinumsword', 'realwood', 'saddlecloth', 'steel', 'steelsword',
-                'stone', 'titaniumsword', 'water', 'wood', 'wool'
-            ];
-
-            const pngResources = [
-                'beer', 'bow', 'bread', 'bronze', 'bronzeore', 'bronzesword', 'clock', 'cloth', 'codex', 'coin',
-                'crystal', 'crystalshard', 'exoticwood', 'flour', 'granite', 'gunpowder', 'iron', 'ironsword',
-                'mahoganywood', 'meat', 'platinumore', 'saddlecloth', 'stone', 'titaniumsword', 'tool', 'water', 'wood'
-            ];
-
-            if (pngResources.includes(lower)) {
-                return `/images/resources/${lower}.png`;
-            }
-            if (webpResources.includes(lower)) {
-                return `/images/resources/${lower}.webp`;
-            }
-            return `/images/resources/${lower}.webp`;
+            if (!itemId) return '/images/resources/addresource.webp';
+            return `/images/resources/${itemId.toLowerCase()}.webp`;
         };
 
         const handleIconError = (event, itemId) => {
             const img = event.target;
             if (!img || !itemId) return;
-
-            const src = img.getAttribute('src') || '';
             const lower = itemId.toLowerCase();
-            if (src.endsWith('.webp')) {
-                img.src = `/images/resources/${lower}.png`;
-            } else if (src.endsWith('.png') && !src.includes('addresource.png')) {
-                img.src = '/images/resources/addresource.png';
+            const src = img.getAttribute('src') || '';
+            if (src.includes('/images/resources/')) {
+                img.src = `/images/other/${lower}.webp`;
+            } else if (!src.includes('addresource.webp')) {
+                img.src = '/images/resources/addresource.webp';
             }
         };
 
-        // Real-time Countdown formatting
         const formatTimeLeft = (seconds) => {
             if (seconds <= 0) return 'Expired';
             const h = Math.floor(seconds / 3600);

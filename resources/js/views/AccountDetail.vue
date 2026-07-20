@@ -892,9 +892,9 @@ export default {
             if (!avatarId) return null;
             const idNum = parseInt(avatarId);
             if (idNum >= 1 && idNum <= 60) {
-                return `/images/avatars/${idNum}.png`;
+                return `/images/avatars/${idNum}.webp`;
             }
-            return `https://settlersonlinewiki.eu/images/avatars/avatar_${avatarId}.png`;
+            return `https://settlersonlinewiki.eu/images/avatars/avatar_${avatarId}.webp`;
         };
 
         const avatarUrl = computed(() => {
@@ -1140,7 +1140,7 @@ export default {
                 clean = buffMap[clean];
             }
 
-            return `/images/resources/${clean}.png`;
+            return `/images/other/${clean}.webp`;
         };
 
         const handleBuffIconError = (event, b) => {
@@ -1166,12 +1166,12 @@ export default {
                 clean = buffMap[clean];
             }
 
-            if (img.src.includes('/images/resources/') && img.src.endsWith('.png')) {
+            if (img.src.includes('/images/other/') && img.src.endsWith('.webp')) {
                 // Step 1: PNG in resources failed, try WebP in buildings (from TSO Wiki)
                 img.src = `/images/buildings/${clean}.webp`;
             } else if (img.src.includes('/images/buildings/') && img.src.endsWith('.webp')) {
                 // Step 2: WebP failed too, try PNG in buildings
-                img.src = `/images/buildings/${clean}.png`;
+                img.src = `/images/buildings/${clean}.webp`;
             } else {
                 // Step 3: Hide image and show sibling emoji/SVG
                 img.style.display = 'none';
@@ -1231,10 +1231,10 @@ export default {
 
             if (img.src.includes('/images/buildings/') && img.src.endsWith('.webp')) {
                 // Step 1: WebP failed in buildings, try PNG in buildings
-                img.src = `/images/buildings/${clean}.png`;
-            } else if (img.src.includes('/images/buildings/') && img.src.endsWith('.png')) {
+                img.src = `/images/buildings/${clean}.webp`;
+            } else if (img.src.includes('/images/buildings/') && img.src.endsWith('.webp')) {
                 // Step 2: PNG failed in buildings, try PNG in resources
-                img.src = `/images/resources/${clean}.png`;
+                img.src = `/images/resources/${clean}.webp`;
             } else {
                 // Step 3: All failed, hide
                 img.style.display = 'none';
@@ -1418,26 +1418,18 @@ export default {
         const getResourceIcon = (name) => {
             if (!name) return null;
             const clean = name.trim().toLowerCase().replace(/\s+/g, '');
-            // We map some clean resource names to their actual image names in the directory
-            const map = {
-                'wheat': 'grain',
-                'corn': 'grain',
-                'coal': 'charcoal',
-                'coin': 'coin',
-                'coins': 'coin'
-            };
-            const target = map[clean] || clean;
-            return `/images/resources/${target}.png`;
+            const map = { wheat: 'grain', corn: 'grain', coal: 'charcoal', coin: 'coin', coins: 'coin' };
+            return `/images/resources/${map[clean] || clean}.webp`;
         };
 
         const handleIconError = (event, name) => {
             const img = event.target;
             const clean = name.trim().toLowerCase().replace(/\s+/g, '');
-            if (img.src.endsWith('.png')) {
-                // If PNG fails, try WebP
-                img.src = `/images/resources/${clean}.webp`;
-            } else if (img.src.endsWith('.webp')) {
-                // If WebP fails, hide the image and let the emoji be visible
+            const target = ({ wheat: 'grain', corn: 'grain', coal: 'charcoal', coin: 'coin', coins: 'coin' })[clean] || clean;
+            const src = img.getAttribute('src') || '';
+            if (src.includes('/images/resources/')) {
+                img.src = `/images/other/${target}.webp`;
+            } else {
                 img.style.display = 'none';
             }
         };
@@ -1465,9 +1457,9 @@ export default {
             if (f.avatarId) {
                 const idNum = parseInt(f.avatarId);
                 if (idNum >= 1 && idNum <= 60) {
-                    return `/images/avatars/${idNum}.png`;
+                    return `/images/avatars/${idNum}.webp`;
                 }
-                return `https://settlersonlinewiki.eu/images/avatars/avatar_${f.avatarId}.png`;
+                return `https://settlersonlinewiki.eu/images/avatars/avatar_${f.avatarId}.webp`;
             }
             return null;
         };

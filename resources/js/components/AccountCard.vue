@@ -157,9 +157,9 @@ export default {
             if (!avatarId) return null;
             const idNum = parseInt(avatarId);
             if (idNum >= 1 && idNum <= 60) {
-                return `/images/avatars/${idNum}.png`;
+                return `/images/avatars/${idNum}.webp`;
             }
-            return `https://settlersonlinewiki.eu/images/avatars/avatar_${avatarId}.png`;
+            return `https://settlersonlinewiki.eu/images/avatars/avatar_${avatarId}.webp`;
         });
 
         const zoneObject = computed(() => {
