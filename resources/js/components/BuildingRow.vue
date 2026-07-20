@@ -39,6 +39,7 @@
 
 <script>
 import { ref, computed } from 'vue';
+import { buildingName } from '../lang/gameNames';
 import axios from 'axios';
 import { showToast } from '../toast';
 
@@ -63,12 +64,7 @@ export default {
             return !!props.building.isProductionActive;
         });
 
-        const formattedName = computed(() => {
-            const name = props.building.buildingName_string || props.building.buildingName || 'Building';
-            let formatted = name.replace(/(?<!^)(?=[A-Z])/g, ' ');
-            formatted = formatted.replace(/_/g, ' ');
-            return formatted.replace(/\w\S*/g, (w) => w.replace(/^\w/, (c) => c.toUpperCase()));
-        });
+        const formattedName = computed(() => buildingName(props.building.buildingName_string || props.building.buildingName || 'Building'));
 
         const toggleProduction = async () => {
             loading.value = true;

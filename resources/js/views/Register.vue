@@ -28,11 +28,11 @@
                     </div>
 
                     <h1 class="text-2xl font-bold tracking-tight text-white">
-                        Создание администратора
+                        {{ t('register.title') }}
                     </h1>
 
                     <p class="mt-2 text-sm text-white/55">
-                        Первоначальная настройка TSO Manager
+                        {{ t('register.subtitle') }}
                     </p>
                 </header>
 
@@ -53,8 +53,7 @@
                     </svg>
 
                     <p class="text-sm leading-5 text-amber-100/80">
-                        Регистрация доступна только один раз. После создания
-                        администратора эта страница будет закрыта.
+                        {{ t('register.notice') }}
                     </p>
                 </div>
 
@@ -64,7 +63,7 @@
                             for="name"
                             class="mb-2 block text-sm font-medium text-white/70"
                         >
-                            Имя
+                            {{ t('register.name') }}
                         </label>
 
                         <input
@@ -74,7 +73,7 @@
                             required
                             autofocus
                             autocomplete="name"
-                            placeholder="Введите ваше имя"
+                            :placeholder="t('register.name_placeholder')"
                             class="liquid-input"
                             :class="{ 'liquid-input--error': errors.name }"
                         >
@@ -110,7 +109,7 @@
                             for="password"
                             class="mb-2 block text-sm font-medium text-white/70"
                         >
-                            Пароль
+                            {{ t('register.password') }}
                         </label>
 
                         <input
@@ -119,7 +118,7 @@
                             type="password"
                             required
                             autocomplete="new-password"
-                            placeholder="Введите пароль"
+                            :placeholder="t('register.password_placeholder')"
                             class="liquid-input"
                             :class="{ 'liquid-input--error': errors.password }"
                         >
@@ -132,7 +131,7 @@
                             for="password_confirmation"
                             class="mb-2 block text-sm font-medium text-white/70"
                         >
-                            Повторите пароль
+                            {{ t('register.password_confirm') }}
                         </label>
 
                         <input
@@ -141,7 +140,7 @@
                             type="password"
                             required
                             autocomplete="new-password"
-                            placeholder="Повторите пароль"
+                            :placeholder="t('register.password_confirm_placeholder')"
                             class="liquid-input"
                         >
                     </div>
@@ -151,7 +150,7 @@
                         :disabled="loading"
                         class="liquid-button flex w-full items-center justify-center gap-2 px-4 py-3 text-sm font-semibold text-white disabled:opacity-50"
                     >
-                        <span class="relative z-10">{{ loading ? 'Создание...' : 'Создать администратора' }}</span>
+                        <span class="relative z-10">{{ loading ? t('register.creating') : t('register.submit') }}</span>
 
                         <svg
                             v-if="!loading"
@@ -173,7 +172,7 @@
             </div>
 
             <p class="mt-5 text-center text-xs text-white/30">
-                TSO Manager · Безопасная первоначальная настройка
+                TSO Manager · {{ t('register.footer') }}
             </p>
         </main>
     </div>

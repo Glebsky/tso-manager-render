@@ -5,7 +5,7 @@
                 <svg class="w-12 h-12 text-emerald-400 animate-spin mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182" />
                 </svg>
-                <p class="text-white/40">Загрузка данных аккаунта...</p>
+                <p class="text-white/40">{{ t('account.loading') }}</p>
             </div>
         </div>
 
@@ -43,7 +43,7 @@
                                 <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 0 0-2.455 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
                                 </svg>
-                                Уровень {{ level || '?' }}
+                                {{ t('account.level') }} {{ level || '?' }}
                             </span>
                             <span v-if="pvpLevel" class="flex items-center gap-1 text-rose-400">
                                 ⚔️ PvP {{ pvpLevel }}
@@ -51,29 +51,29 @@
                             <span v-if="account.region" class="badge badge-info uppercase text-[10px]">{{ account.region }}</span>
                             <span v-if="serverName" class="badge badge-success bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px]">{{ serverName }}</span>
                             <span v-if="currentMaximumBuildingsCountAll" class="flex items-center gap-1 text-white/50 text-xs">
-                                🏰 Макс. зданий: {{ currentMaximumBuildingsCountAll }}
+                                🏰 {{ t('account.max_buildings') }}: {{ currentMaximumBuildingsCountAll }}
                             </span>
                             <span v-if="account.last_sync_at" class="flex items-center gap-1">
                                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                 </svg>
-                                Синхронизировано {{ formatSyncTime(account.last_sync_at) }}
+                                {{ t('account.synced_at') }} {{ formatSyncTime(account.last_sync_at) }}
                             </span>
                         </div>
 
                         <!-- Specialists overview -->
                         <div class="flex gap-4 mt-3 text-xs text-white/50 border-t border-white/5 pt-3">
-                            <span title="Генералы">🎖️ Генералы: <strong class="text-white">{{ generalsAmount || 0 }}</strong></span>
-                            <span title="Исследователи">🧭 Разведчики: <strong class="text-white">{{ explorersAmount || 0 }}</strong></span>
-                            <span title="Геологи">🔨 Геологи: <strong class="text-white">{{ geologistsAmount || 0 }}</strong></span>
+                            <span :title="t('account.generals')">🎖️ {{ t('account.generals') }}: <strong class="text-white">{{ generalsAmount || 0 }}</strong></span>
+                            <span :title="t('account.explorers')">🧭 {{ t('account.explorers') }}: <strong class="text-white">{{ explorersAmount || 0 }}</strong></span>
+                            <span :title="t('account.geologists')">🔨 {{ t('account.geologists') }}: <strong class="text-white">{{ geologistsAmount || 0 }}</strong></span>
                         </div>
 
                         <!-- XP Progress Bar -->
                         <div v-if="xp !== null" class="mt-4">
                             <div class="flex items-center justify-between text-xs text-white/30 mb-1">
-                                <span>Опыт: <strong class="text-white/70">{{ formatNumber(xp) }} XP</strong></span>
-                                <span v-if="level && level >= 80">Максимальный уровень</span>
-                                <span v-else-if="xpNextTarget">До {{ level + 1 }} уровня: {{ formatNumber(xpNextTarget - xp) }} XP (Всего {{ formatNumber(xpNextTarget) }})</span>
+                                <span>{{ t('account.xp') }}: <strong class="text-white/70">{{ formatNumber(xp) }} XP</strong></span>
+                                <span v-if="level && level >= 80">{{ t('account.max_level') }}</span>
+                                <span v-else-if="xpNextTarget">{{ t('account.xp_to_next', { level: level + 1, xp: formatNumber(xpNextTarget - xp), total: formatNumber(xpNextTarget) }) }}</span>
                             </div>
                             <div class="h-2 bg-white/5 rounded-full overflow-hidden">
                                 <div class="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full transition-all duration-500"
@@ -87,7 +87,7 @@
                 <div class="flex items-center justify-end gap-4 mt-6 pt-4 border-t border-white/5 flex-wrap">
                     <!-- Visitors list -->
                     <div v-if="visitors.length > 0" class="flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-2.5 rounded-2xl">
-                        <span class="text-xs text-white/40 font-medium">Гости:</span>
+                        <span class="text-xs text-white/40 font-medium">{{ t('account.guests') }}:</span>
                         <div class="flex -space-x-2">
                             <div v-for="visitor in visitors" :key="visitor.nickname" class="relative group">
                                 <div class="w-8 h-8 rounded-full border-2 border-dark-900 overflow-hidden bg-gradient-to-br from-indigo-500/80 to-purple-600/80 flex items-center justify-center cursor-help">
@@ -97,7 +97,7 @@
                                 <!-- Tooltip -->
                                 <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block bg-dark-950 border border-white/10 px-3 py-1.5 rounded-xl text-xs text-white whitespace-nowrap shadow-2xl z-50">
                                     <div class="font-bold text-white">{{ visitor.nickname }}</div>
-                                    <div class="text-[10px] text-white/50">Уровень {{ visitor.level }}</div>
+                                    <div class="text-[10px] text-white/50">{{ t('account.level') }} {{ visitor.level }}</div>
                                 </div>
                             </div>
                         </div>
@@ -109,7 +109,7 @@
                         <svg class="w-4 h-4" :class="{ 'animate-spin': syncing }" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
                         </svg>
-                        {{ syncing ? 'Синхронизация...' : 'Синхронизировать' }}
+                        {{ syncing ? t('account.syncing') : t('account.sync') }}
                     </button>
                 </div>
             </div>
@@ -140,7 +140,7 @@
                                 :class="buildingFilter === cat
                                     ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                                     : 'bg-white/5 text-white/40 border border-transparent hover:bg-white/10'">
-                            {{ cat }}
+                            {{ t('account.building_filter.' + cat.toLowerCase()) }}
                         </button>
                     </div>
                     <div class="flex-1 relative">
@@ -149,7 +149,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                             </svg>
                         </div>
-                        <input v-model="buildingSearch" type="text" placeholder="Search buildings..." class="glass-input w-full pl-11">
+                        <input v-model="buildingSearch" type="text" :placeholder="t('account.search_buildings')" class="glass-input w-full pl-11">
                     </div>
                 </div>
 
@@ -166,8 +166,8 @@
                             <div class="flex-1 min-w-0">
                                 <p class="text-sm font-medium text-white/80 truncate" :title="getBuildingName(b)">{{ getBuildingName(b) }}</p>
                                 <div class="flex items-center gap-2 mt-1">
-                                    <span class="text-[10px] text-white/30 font-mono">Grid #{{ b.buildingGrid }}</span>
-                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400">Lvl {{ b.upgradeLevel || 1 }}</span>
+                                    <span class="text-[10px] text-white/30 font-mono">{{ t('account.grid_number', { id: b.buildingGrid }) }}</span>
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400">{{ t('account.lvl_short') }} {{ b.upgradeLevel || 1 }}</span>
                                 </div>
                                 <div v-if="b.buffs && b.buffs.length > 0" class="mt-2 flex flex-wrap gap-1">
                                     <span v-for="(bf, idx) in b.buffs" :key="idx"
@@ -179,13 +179,13 @@
                             </div>
                             <div class="flex flex-col items-end gap-2 flex-shrink-0">
                                 <span v-if="b.upgradeIsInProgress" class="badge bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px]">
-                                    🔨 Улучшается
+                                    🔨 {{ t('account.upgrading') }}
                                 </span>
                                 <span v-else-if="isStoppable(b)" class="badge text-[10px]" :class="isBuildingActive(b) ? 'badge-success' : 'badge-neutral'">
-                                    {{ isBuildingActive(b) ? 'Producing' : 'Stopped' }}
+                                    {{ isBuildingActive(b) ? t('account.producing') : t('account.stopped') }}
                                 </span>
                                 <span v-else class="badge badge-neutral text-[10px]">
-                                    Built
+                                    {{ t('account.built') }}
                                 </span>
 
                                 <button v-if="isStoppable(b) && !b.upgradeIsInProgress" @click="toggleBuilding(b)" :disabled="actionLoading"
@@ -200,7 +200,7 @@
                     </div>
                 </div>
                 <div v-else class="text-center py-12">
-                    <p class="text-white/30 text-sm">No buildings found.</p>
+                    <p class="text-white/30 text-sm">{{ t('account.no_buildings') }}</p>
                 </div>
             </div>
 
@@ -214,7 +214,7 @@
                                 :class="specialistFilter === cat
                                     ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/10 text-emerald-400 border-emerald-500/30'
                                     : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
-                            {{ cat === 'All' ? 'Все' : cat === 'General' ? 'Генералы' : cat === 'Explorer' ? 'Разведчики' : 'Геологи' }}
+                            {{ t('account.specialist_filter.' + cat.toLowerCase()) }}
                             <span class="ml-1.5 px-1.5 py-0.5 rounded-full text-[9px]" :class="specialistFilter === cat ? 'bg-emerald-500/20' : 'bg-white/5'">
                                 {{ getSpecialistCategoryCount(cat) }}
                             </span>
@@ -226,7 +226,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                             </svg>
                         </div>
-                        <input v-model="specialistSearch" type="text" placeholder="Поиск специалистов..." class="glass-input w-full pl-11">
+                        <input v-model="specialistSearch" type="text" :placeholder="t('account.search_specialists')" class="glass-input w-full pl-11">
                     </div>
                 </div>
 
@@ -263,7 +263,7 @@
                                     </span>
                                     <span class="badge text-[8px] px-1 py-0.5"
                                           :class="getSpecialistCategory(s.type) === 'General' ? 'bg-rose-500/10 text-rose-400' : getSpecialistCategory(s.type) === 'Explorer' ? 'bg-teal-500/10 text-teal-400' : 'bg-amber-500/10 text-amber-400'">
-                                        {{ getSpecialistCategory(s.type) === 'General' ? 'Генерал' : getSpecialistCategory(s.type) === 'Explorer' ? 'Разведчик' : 'Геолог' }}
+                                        {{ getSpecialistCategory(s.type) === 'General' ? t('account.spec.general') : getSpecialistCategory(s.type) === 'Explorer' ? t('account.spec.explorer') : t('account.spec.geologist') }}
                                     </span>
                                 </div>
                             </div>
@@ -273,8 +273,8 @@
                         <div class="mt-4 pt-3 border-t border-white/5 relative z-10">
                             <div v-if="s.taskType || s.taskSubType" class="flex flex-col gap-1.5">
                                 <div class="flex items-center justify-between text-[10px]">
-                                    <span class="text-white/40">Текущая задача:</span>
-                                    <span class="badge badge-warning text-[9px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">В пути</span>
+                                    <span class="text-white/40">{{ t('account.current_task') }}:</span>
+                                    <span class="badge badge-warning text-[9px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">{{ t('account.on_the_way') }}</span>
                                 </div>
                                 <p class="text-xs font-medium text-white/80 flex items-center gap-1.5">
                                     <span>🚶‍♂️</span>
@@ -282,10 +282,10 @@
                                 </p>
                             </div>
                             <div v-else class="flex items-center justify-between text-xs">
-                                <span class="text-white/30 text-[10px]">Статус:</span>
+                                <span class="text-white/30 text-[10px]">{{ t('account.status') }}:</span>
                                 <span class="badge badge-success text-[9px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
                                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                                    Свободен
+                                    {{ t('account.free') }}
                                 </span>
                             </div>
                         </div>
@@ -293,7 +293,7 @@
                 </div>
 
                 <div v-else class="text-center py-12">
-                    <p class="text-white/30 text-sm">Специалисты не найдены.</p>
+                    <p class="text-white/30 text-sm">{{ t('account.no_specialists') }}</p>
                 </div>
             </div>
 
@@ -303,7 +303,7 @@
                 <div class="mb-8">
                     <h3 class="text-sm font-semibold text-white/50 uppercase tracking-wider mb-4 flex items-center gap-2">
                         <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-                        Звездное меню (Buffs in Star Menu)
+                        {{ t('account.star_menu') }}
                     </h3>
                     <div v-if="availableBuffs.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                         <div v-for="(b, idx) in availableBuffs" :key="idx" class="glass-card p-4 hover:border-white/20 hover:scale-[1.02] transition-all duration-300">
@@ -330,7 +330,7 @@
                         </div>
                     </div>
                     <div v-else class="text-center py-6 glass-card border-dashed">
-                        <p class="text-white/30 text-sm">В звездном меню нет баффов.</p>
+                        <p class="text-white/30 text-sm">{{ t('account.no_star_buffs') }}</p>
                     </div>
                 </div>
 
@@ -342,8 +342,8 @@
                 <!-- Storage limit info -->
                 <div v-if="resourceLimit" class="glass-card p-4 mb-6 flex justify-between items-center">
                     <div>
-                        <h3 class="text-sm font-semibold text-white/80">Вместимость склада</h3>
-                        <p class="text-xs text-white/40 mt-0.5">Вместимость склада распространяется на каждый ресурс отдельно.</p>
+                        <h3 class="text-sm font-semibold text-white/80">{{ t('account.warehouse_capacity') }}</h3>
+                        <p class="text-xs text-white/40 mt-0.5">{{ t('account.warehouse_capacity_hint') }}</p>
                     </div>
                     <div class="px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
                         <span class="text-lg font-bold text-emerald-400">{{ formatNumber(resourceLimit) }}</span>
@@ -356,7 +356,7 @@
                     <div v-if="basicResources.length > 0">
                         <h4 class="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3 flex items-center gap-2">
                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                            {{ translations['WarehouseTab1'] || 'Basic Resources (Базовые)' }}
+                            {{ gameAny('WarehouseTab1', null, t('account.warehouse.basic')) }}
                         </h4>
                         <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
                             <div v-for="r in basicResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
@@ -365,7 +365,7 @@
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
                                 </div>
                                 <div class="flex-1 min-w-0">
-                                    <p class="text-[10px] font-medium text-white/50 truncate" :title="r.name">{{ formatResourceName(r.name) }}</p>
+                                    <p class="text-[10px] font-medium text-white/50 truncate" :title="r.name">{{ resourceDisplayName(r.name) }}</p>
                                     <p class="text-xs font-bold text-white leading-none mt-0.5">{{ formatNumber(r.amount) }}</p>
                                 </div>
                             </div>
@@ -376,7 +376,7 @@
                     <div v-if="improvedResources.length > 0">
                         <h4 class="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3 flex items-center gap-2">
                             <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
-                            {{ translations['WarehouseTab2'] || 'Improved Resources (Улучшенные)' }}
+                            {{ gameAny('WarehouseTab2', null, t('account.warehouse.improved')) }}
                         </h4>
                         <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
                             <div v-for="r in improvedResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
@@ -385,7 +385,7 @@
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
                                 </div>
                                 <div class="flex-1 min-w-0">
-                                    <p class="text-[10px] font-medium text-white/50 truncate" :title="r.name">{{ formatResourceName(r.name) }}</p>
+                                    <p class="text-[10px] font-medium text-white/50 truncate" :title="r.name">{{ resourceDisplayName(r.name) }}</p>
                                     <p class="text-xs font-bold text-white leading-none mt-0.5">{{ formatNumber(r.amount) }}</p>
                                 </div>
                             </div>
@@ -396,7 +396,7 @@
                     <div v-if="advancedResources.length > 0">
                         <h4 class="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3 flex items-center gap-2">
                             <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-                            {{ translations['WarehouseTab3'] || 'Advanced Resources (Усовершенствованные)' }}
+                            {{ gameAny('WarehouseTab3', null, t('account.warehouse.advanced')) }}
                         </h4>
                         <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
                             <div v-for="r in advancedResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
@@ -405,7 +405,7 @@
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
                                 </div>
                                 <div class="flex-1 min-w-0">
-                                    <p class="text-[10px] font-medium text-white/50 truncate" :title="r.name">{{ formatResourceName(r.name) }}</p>
+                                    <p class="text-[10px] font-medium text-white/50 truncate" :title="r.name">{{ resourceDisplayName(r.name) }}</p>
                                     <p class="text-xs font-bold text-white leading-none mt-0.5">{{ formatNumber(r.amount) }}</p>
                                 </div>
                             </div>
@@ -416,7 +416,7 @@
                     <div v-if="masterResources.length > 0">
                         <h4 class="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3 flex items-center gap-2">
                             <span class="w-1.5 h-1.5 rounded-full bg-orange-400"></span>
-                            {{ translations['WarehouseTab4'] || 'Master Resources (Искусные)' }}
+                            {{ gameAny('WarehouseTab4', null, t('account.warehouse.master')) }}
                         </h4>
                         <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
                             <div v-for="r in masterResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
@@ -425,7 +425,7 @@
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
                                 </div>
                                 <div class="flex-1 min-w-0">
-                                    <p class="text-[10px] font-medium text-white/50 truncate" :title="r.name">{{ formatResourceName(r.name) }}</p>
+                                    <p class="text-[10px] font-medium text-white/50 truncate" :title="r.name">{{ resourceDisplayName(r.name) }}</p>
                                     <p class="text-xs font-bold text-white leading-none mt-0.5">{{ formatNumber(r.amount) }}</p>
                                 </div>
                             </div>
@@ -436,7 +436,7 @@
                     <div v-if="eliteResources.length > 0">
                         <h4 class="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3 flex items-center gap-2">
                             <span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
-                            {{ translations['WarehouseTab8'] || 'Elite Resources (Элита)' }}
+                            {{ gameAny('WarehouseTab8', null, t('account.warehouse.elite')) }}
                         </h4>
                         <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
                             <div v-for="r in eliteResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
@@ -445,7 +445,7 @@
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
                                 </div>
                                 <div class="flex-1 min-w-0">
-                                    <p class="text-[10px] font-medium text-white/50 truncate" :title="r.name">{{ formatResourceName(r.name) }}</p>
+                                    <p class="text-[10px] font-medium text-white/50 truncate" :title="r.name">{{ resourceDisplayName(r.name) }}</p>
                                     <p class="text-xs font-bold text-white leading-none mt-0.5">{{ formatNumber(r.amount) }}</p>
                                 </div>
                             </div>
@@ -456,7 +456,7 @@
                     <div v-if="eventResources.length > 0">
                         <h4 class="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3 flex items-center gap-2">
                             <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
-                            {{ translations['WarehouseTab6'] || 'Event Resources (Событие)' }}
+                            {{ gameAny('WarehouseTab6', null, t('account.warehouse.event')) }}
                         </h4>
                         <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
                             <div v-for="r in eventResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
@@ -465,7 +465,7 @@
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
                                 </div>
                                 <div class="flex-1 min-w-0">
-                                    <p class="text-[10px] font-medium text-white/50 truncate" :title="r.name">{{ formatResourceName(r.name) }}</p>
+                                    <p class="text-[10px] font-medium text-white/50 truncate" :title="r.name">{{ resourceDisplayName(r.name) }}</p>
                                     <p class="text-xs font-bold text-white leading-none mt-0.5">{{ formatNumber(r.amount) }}</p>
                                 </div>
                             </div>
@@ -476,7 +476,7 @@
                     <div v-if="collectibleResources.length > 0">
                         <h4 class="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3 flex items-center gap-2">
                             <span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>
-                            {{ translations['WarehouseTab7'] || 'Collections (Коллекции)' }}
+                            {{ gameAny('WarehouseTab7', null, t('account.warehouse.collections')) }}
                         </h4>
                         <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
                             <div v-for="r in collectibleResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
@@ -485,7 +485,7 @@
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
                                 </div>
                                 <div class="flex-1 min-w-0">
-                                    <p class="text-[10px] font-medium text-white/50 truncate" :title="r.name">{{ formatResourceName(r.name) }}</p>
+                                    <p class="text-[10px] font-medium text-white/50 truncate" :title="r.name">{{ resourceDisplayName(r.name) }}</p>
                                     <p class="text-xs font-bold text-white leading-none mt-0.5">{{ formatNumber(r.amount) }}</p>
                                 </div>
                             </div>
@@ -496,7 +496,7 @@
                     <div v-if="militaryResources.length > 0">
                         <h4 class="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3 flex items-center gap-2">
                             <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
-                            {{ translations['WarehouseTab5'] || 'Military (Войска)' }}
+                            {{ gameAny('WarehouseTab5', null, t('account.warehouse.military')) }}
                         </h4>
                         <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
                             <div v-for="r in militaryResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
@@ -505,7 +505,7 @@
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
                                 </div>
                                 <div class="flex-1 min-w-0">
-                                    <p class="text-[10px] font-medium text-white/50 truncate" :title="r.name">{{ formatResourceName(r.name) }}</p>
+                                    <p class="text-[10px] font-medium text-white/50 truncate" :title="r.name">{{ resourceDisplayName(r.name) }}</p>
                                     <p class="text-xs font-bold text-white leading-none mt-0.5">{{ formatNumber(r.amount) }}</p>
                                 </div>
                             </div>
@@ -516,7 +516,7 @@
                     <div v-if="otherResources.length > 0">
                         <h4 class="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3 flex items-center gap-2">
                             <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
-                            Other (Другие)
+                            {{ t('account.other_resources') }}
                         </h4>
                         <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
                             <div v-for="r in otherResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
@@ -525,7 +525,7 @@
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
                                 </div>
                                 <div class="flex-1 min-w-0">
-                                    <p class="text-[10px] font-medium text-white/50 truncate" :title="r.name">{{ formatResourceName(r.name) }}</p>
+                                    <p class="text-[10px] font-medium text-white/50 truncate" :title="r.name">{{ resourceDisplayName(r.name) }}</p>
                                     <p class="text-xs font-bold text-white leading-none mt-0.5">{{ formatNumber(r.amount) }}</p>
                                 </div>
                             </div>
@@ -533,7 +533,7 @@
                     </div>
                 </div>
                 <div v-else class="text-center py-12">
-                    <p class="text-white/30 text-sm">No resources found.</p>
+                    <p class="text-white/30 text-sm">{{ t('account.no_resources') }}</p>
                 </div>
             </div>
 
@@ -546,17 +546,17 @@
                             <span v-else class="text-sm font-bold text-white">{{ (f.username || '?').substring(0, 2).toUpperCase() }}</span>
                         </div>
                         <div class="flex-1 min-w-0">
-                            <p class="text-sm font-medium text-white/80 truncate">{{ f.username || f.nickname || 'Unknown' }}</p>
-                            <p class="text-[10px] text-white/30">Level {{ f.level || f.playerLevel || '?' }}</p>
+                            <p class="text-sm font-medium text-white/80 truncate">{{ f.username || f.nickname || t('common.unknown') }}</p>
+                            <p class="text-[10px] text-white/30">{{ t('account.level') }} {{ f.level || f.playerLevel || '?' }}</p>
                         </div>
                         <div class="flex items-center gap-2">
                             <div class="w-2.5 h-2.5 rounded-full" :class="f.onlineStatus ? 'bg-emerald-500 shadow-lg shadow-emerald-500/50' : 'bg-gray-500'"></div>
-                            <span class="text-[10px] text-white/30">{{ f.onlineStatus ? 'Online' : 'Offline' }}</span>
+                            <span class="text-[10px] text-white/30">{{ f.onlineStatus ? t('common.online') : t('common.offline') }}</span>
                         </div>
                     </div>
                 </div>
                 <div v-else class="text-center py-12">
-                    <p class="text-white/30 text-sm">No friends found.</p>
+                    <p class="text-white/30 text-sm">{{ t('account.no_friends') }}</p>
                 </div>
             </div>
 
@@ -569,16 +569,16 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z" />
                             </svg>
                         </div>
-                        <h3 class="text-lg font-semibold text-white">Ручное управление сессией</h3>
+                        <h3 class="text-lg font-semibold text-white">{{ t('account.session_title') }}</h3>
                     </div>
 
                     <div class="glass-card p-5 mb-6 border-amber-500/20 bg-amber-500/[0.02]">
                         <div class="flex gap-3">
                             <span class="text-xl">⚠️</span>
                             <div>
-                                <h4 class="text-xs font-bold text-amber-400 uppercase tracking-wider mb-1">Решение проблемы с капчей</h4>
+                                <h4 class="text-xs font-bold text-amber-400 uppercase tracking-wider mb-1">{{ t('account.captcha_title') }}</h4>
                                 <p class="text-xs text-white/60 leading-relaxed">
-                                    Если Ubisoft требует ввести капчу при синхронизации, вы можете войти в игру в обычном браузере, скопировать токены сессии и вставить их вручную. Менеджер будет использовать эти данные напрямую без выполнения автоматического входа.
+                                    {{ t('account.captcha_text') }}
                                 </p>
                             </div>
                         </div>
@@ -587,17 +587,17 @@
                     <form @submit.prevent="saveSession" class="space-y-4">
                         <div>
                             <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">DSO Auth Token</label>
-                            <input type="text" required v-model="sessionForm.dso_auth_token" placeholder="Вставьте токен (например, IaMl0gKY9uxg...)" class="glass-input w-full font-mono text-sm">
+                            <input type="text" required v-model="sessionForm.dso_auth_token" :placeholder="t('account.token_placeholder')" class="glass-input w-full font-mono text-sm">
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">DSO Auth User ID</label>
-                                <input type="text" required v-model="sessionForm.dso_auth_user" placeholder="Числовой ID (например, 2425303)" class="glass-input w-full font-mono text-sm">
+                                <input type="text" required v-model="sessionForm.dso_auth_user" :placeholder="t('account.user_id_placeholder')" class="glass-input w-full font-mono text-sm">
                             </div>
 
                             <div>
-                                <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">BB URL (Сервер авторизации)</label>
+                                <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('account.bb_url_label') }}</label>
                                 <select required v-model="sessionForm.bb_url" class="glass-select w-full text-sm">
                                     <option value="https://r02-ls.thesettlersonline.ru/">RU (https://r02-ls.thesettlersonline.ru/)</option>
                                     <option value="https://r01-ls.thesettlersonline.com/">EN/US (https://r01-ls.thesettlersonline.com/)</option>
@@ -613,18 +613,18 @@
                                 <svg v-if="sessionSubmitting" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182" />
                                 </svg>
-                                Сохранить и обновить сессию
+                                {{ t('account.save_session') }}
                             </button>
                         </div>
                     </form>
 
                     <!-- Instruction section -->
                     <div class="mt-8 border-t border-white/5 pt-6">
-                        <h4 class="text-sm font-semibold text-white mb-3">Как скопировать эти данные в браузере?</h4>
+                        <h4 class="text-sm font-semibold text-white mb-3">{{ t('account.howto_title') }}</h4>
                         <ol class="list-decimal pl-5 text-xs text-white/50 space-y-2 leading-relaxed">
-                            <li>Перейдите на страницу игры, где идет загрузка самой карты (например, <code class="bg-white/5 px-1 py-0.5 rounded text-white/70">thesettlersonline.ru/ru/play</code>).</li>
-                            <li>Откройте консоль разработчика (нажмите клавишу <code class="bg-white/5 px-1 py-0.5 rounded text-white/70">F12</code> и перейдите на вкладку <strong>Console</strong>).</li>
-                            <li>Скопируйте и вставьте следующий JS-код, затем нажмите <code class="bg-white/5 px-1 py-0.5 rounded text-white/70">Enter</code>:
+                            <li>{{ t('account.howto_step1') }} <code class="bg-white/5 px-1 py-0.5 rounded text-white/70">thesettlersonline.ru/ru/play</code>).</li>
+                            <li>{{ t('account.howto_step2_a') }} <code class="bg-white/5 px-1 py-0.5 rounded text-white/70">F12</code> {{ t('account.howto_step2_b') }} <strong>Console</strong>).</li>
+                            <li>{{ t('account.howto_step3') }} <code class="bg-white/5 px-1 py-0.5 rounded text-white/70">Enter</code>:
                                 <pre class="bg-dark-950 border border-white/10 p-3 rounded-lg mt-2 text-white/90 font-mono overflow-x-auto text-[10px] select-all">const match = document.body.innerHTML.match(/(dsoAuthToken=[^&quot;]+)/);
 if (match) {
     const params = new URLSearchParams(match[1]);
@@ -632,10 +632,10 @@ if (match) {
     console.log(&quot;DSO Auth User ID:&quot;, params.get(&quot;dsoAuthUser&quot;));
     console.log(&quot;BB URL:&quot;, params.get(&quot;bb&quot;));
 } else {
-    console.log(&quot;Не удалось найти параметры. Убедитесь, что вы на странице загрузки игры (play)!&quot;);
+    console.log(&quot;{{ t('account.howto_console_error') }}&quot;);
 }</pre>
                             </li>
-                            <li>Скопируйте полученные значения в поля выше и нажмите Сохранить.</li>
+                            <li>{{ t('account.howto_step4') }}</li>
                         </ol>
                     </div>
                 </div>
@@ -644,7 +644,7 @@ if (match) {
     </div>
 
     <div v-else class="text-center py-12">
-        <p class="text-white/30 text-sm">Account not found.</p>
+        <p class="text-white/30 text-sm">{{ t('account.not_found') }}</p>
     </div>
     </transition>
 </template>
@@ -654,6 +654,8 @@ import { ref, computed, onMounted, h, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 import { showToast } from '../toast';
+import { t, gameAny, gameAnyLookup } from '../lang';
+import { humanizeGameId, resourceName, buildingName } from '../lang/gameNames';
 
 // Icon components
 const BuildingIcon = { render() { return h('svg', { class: 'w-4 h-4', fill: 'none', viewBox: '0 0 24 24', 'stroke-width': '1.5', stroke: 'currentColor' }, [h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', d: 'M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z' })]); } };
@@ -758,15 +760,14 @@ export default {
         const buildingModeFilter = ref('all');
         const specialistSearch = ref('');
         const specialistFilter = ref('All');
-        const translations = ref({});
 
         const tabs = computed(() => [
-            { id: 'buildings', label: 'Buildings', icon: BuildingIcon, count: parsedBuildings.value.length },
-            { id: 'specialists', label: 'Specialists', icon: SpecialistIcon, count: parsedSpecialists.value.length },
-            { id: 'buffs', label: 'Buffs', icon: BuffIcon, count: availableBuffs.value.length },
-            { id: 'resources', label: 'Resources', icon: ResourceIcon, count: parsedResources.value.length },
-            { id: 'friends', label: 'Friends', icon: FriendIcon, count: parsedFriends.value.length },
-            { id: 'session', label: 'Сессия', icon: SettingsIcon, count: null },
+            { id: 'buildings', label: t('account.tab.buildings'), icon: BuildingIcon, count: parsedBuildings.value.length },
+            { id: 'specialists', label: t('account.tab.specialists'), icon: SpecialistIcon, count: parsedSpecialists.value.length },
+            { id: 'buffs', label: t('account.tab.buffs'), icon: BuffIcon, count: availableBuffs.value.length },
+            { id: 'resources', label: t('account.tab.resources'), icon: ResourceIcon, count: parsedResources.value.length },
+            { id: 'friends', label: t('account.tab.friends'), icon: FriendIcon, count: parsedFriends.value.length },
+            { id: 'session', label: t('account.tab.session'), icon: SettingsIcon, count: null },
         ]);
 
         const buildingCategories = ['All', 'Basic', 'Improved', 'Advanced', 'Elite', 'Decorations'];
@@ -1067,7 +1068,7 @@ export default {
         });
 
         const getBuffName = (buffId) => {
-            if (!buffId) return 'Неизвестный бафф';
+            if (!buffId) return t('account.unknown_buff');
             const buffIdMap = {
                 1: 'ProductivityBuffLvl1',
                 2: 'ProductivityBuffLvl3',
@@ -1080,35 +1081,38 @@ export default {
                 12: 'ProductivityBuffLvl5',
             };
             const mapped = buffIdMap[buffId];
-            if (mapped && translations.value[mapped]) {
-                return translations.value[mapped];
+            if (mapped) {
+                return gameAny(mapped, null, mapped);
             }
-            if (mapped) return mapped;
-            return `Бафф #${buffId}`;
+            return t('tasks.buff_number', { id: buffId });
         };
 
+        // Central game-catalog lookup with legacy prettifier fallback.
+        const resourceDisplayName = resourceName;
+
         const getStarBuffName = (b) => {
-            if (!b || !b.buffName_string) return 'Неизвестный бафф';
+            if (!b || !b.buffName_string) return t('tasks.unknown_buff');
 
             const name = b.buffName_string;
+            const template = gameAnyLookup(name);
 
-            if (translations.value[name]) {
-                let tpl = translations.value[name];
+            if (template) {
+                let tpl = template;
                 if (tpl.includes('{0}')) {
-                    tpl = tpl.replace('{0}', formatResourceName(b.resourceName_string));
+                    tpl = tpl.replace('{0}', resourceDisplayName(b.resourceName_string));
                 }
                 tpl = tpl.replace(/\{1,\w+\}/g, '').replace(/[:\s]+$/, '').replace(/\s+/g, ' ').trim();
                 return tpl;
             }
 
             if (name === 'AddResource') {
-                return `Добавить ресурс: ${formatResourceName(b.resourceName_string)}`;
+                return `${t('tasks.buff_add_resource')}: ${resourceDisplayName(b.resourceName_string)}`;
             }
             if (name === 'BuildBuilding') {
-                return `Лицензия: ${formatResourceName(b.resourceName_string)}`;
+                return `${t('tasks.buff_build_license')}: ${resourceDisplayName(b.resourceName_string)}`;
             }
             if (name === 'Adventure') {
-                return `Приключение: ${formatResourceName(b.resourceName_string)}`;
+                return `${t('tasks.buff_adventure')}: ${resourceDisplayName(b.resourceName_string)}`;
             }
 
             return name.replace(/(?<!^)(?=[A-Z])/g, ' ').replace(/_/g, ' ');
@@ -1180,10 +1184,7 @@ export default {
             }
         };
 
-        const getBuildingName = (b) => {
-            const name = b.buildingName_string || b.buildingName || 'Building';
-            return name.replace(/(?<!^)(?=[A-Z])/g, ' ').replace(/_/g, ' ');
-        };
+        const getBuildingName = (b) => buildingName(b.buildingName_string || b.buildingName || 'Building');
 
         const getBuildingIcon = (b) => {
             const name = b.buildingName_string || b.buildingName || '';
@@ -1303,9 +1304,10 @@ export default {
         const getSpecialistTypeName = (type) => {
             const rawName = SPECIALIST_TYPES[type] || `Specialist #${type}`;
 
-            // Check translation in lang.txt
-            if (translations.value[rawName]) {
-                return translations.value[rawName];
+            const translated = gameAnyLookup(rawName);
+
+            if (translated) {
+                return translated;
             }
 
             return rawName
@@ -1367,21 +1369,22 @@ export default {
                     9: 'FindAdventureLootMapFragmentMailSubject',
                 };
                 const key = subTypeKeys[taskSubType];
-                if (key && translations.value[key]) {
-                    return translations.value[key];
+                const translated = key ? gameAnyLookup(key) : null;
+                if (translated) {
+                    return translated;
                 }
                 const fallbackSubTypes = {
-                    1: 'Поиск приключений (Короткий)',
-                    2: 'Поиск приключений (Средний)',
-                    3: 'Поиск приключений (Длинный)',
-                    4: 'Поиск сокровищ (Короткий)',
-                    5: 'Поиск сокровищ (Средний)',
-                    6: 'Поиск сокровищ (Длинный)',
-                    7: 'Поиск сокровищ (Очень длинный)',
-                    8: 'Поиск сокровищ (Путешествие)',
-                    9: 'Поиск приключений (Очень длинный)',
+                    1: t('account.explorer_fallback.1'),
+                    2: t('account.explorer_fallback.2'),
+                    3: t('account.explorer_fallback.3'),
+                    4: t('account.explorer_fallback.4'),
+                    5: t('account.explorer_fallback.5'),
+                    6: t('account.explorer_fallback.6'),
+                    7: t('account.explorer_fallback.7'),
+                    8: t('account.explorer_fallback.8'),
+                    9: t('account.explorer_fallback.9'),
                 };
-                return fallbackSubTypes[taskSubType] || `Разведка #${taskSubType}`;
+                return fallbackSubTypes[taskSubType] || t('account.scouting_number', { id: taskSubType });
             }
             if (category === 'Geologist') {
                 const subTypeKeys = {
@@ -1396,23 +1399,24 @@ export default {
                     9: 'FindDepositAlloy',
                 };
                 const key = subTypeKeys[taskSubType];
-                if (key && translations.value[key]) {
-                    return translations.value[key];
+                const translated = key ? gameAnyLookup(key) : null;
+                if (translated) {
+                    return translated;
                 }
                 const fallbackSubTypes = {
-                    1: 'Поиск каменных залежей',
-                    2: 'Поиск медных залежей',
-                    3: 'Поиск мраморных залежей',
-                    4: 'Поиск железных залежей',
-                    5: 'Поиск угольных залежей',
-                    6: 'Поиск золотых залежей',
-                    7: 'Поиск гранитных залежей',
-                    8: 'Поиск селитры',
-                    9: 'Поиск титановой руды',
+                    1: t('account.geologist_fallback.1'),
+                    2: t('account.geologist_fallback.2'),
+                    3: t('account.geologist_fallback.3'),
+                    4: t('account.geologist_fallback.4'),
+                    5: t('account.geologist_fallback.5'),
+                    6: t('account.geologist_fallback.6'),
+                    7: t('account.geologist_fallback.7'),
+                    8: t('account.geologist_fallback.8'),
+                    9: t('account.geologist_fallback.9'),
                 };
-                return fallbackSubTypes[taskSubType] || `Поиск залежей #${taskSubType}`;
+                return fallbackSubTypes[taskSubType] || t('account.deposit_search_number', { id: taskSubType });
             }
-            return `Задача #${taskSubType}`;
+            return t('account.task_number', { id: taskSubType });
         };
 
         const getResourceIcon = (name) => {
@@ -1434,13 +1438,7 @@ export default {
             }
         };
 
-        const formatResourceName = (name) => {
-            if (!name) return '';
-            // Insert space before capital letters and strip underscores
-            let formatted = name.replace(/(?<!^)(?=[A-Z])/g, ' ').replace(/_/g, ' ').trim();
-            // Capitalize first letter of each word
-            return formatted.replace(/\w\S*/g, (w) => w.replace(/^\w/, (c) => c.toUpperCase()));
-        };
+        const formatResourceName = humanizeGameId;
 
         const getResourceEmoji = (name) => {
             const emojis = {
@@ -1539,15 +1537,15 @@ export default {
             try {
                 const res = await axios.put(`/api/accounts/${account.value.id}/session`, sessionForm.value);
                 if (res.data.success) {
-                    showToast('Сессия успешно обновлена!');
+                    showToast(t('account.session_updated'));
                     if (res.data.account) {
                         account.value = res.data.account;
                     }
                 } else {
-                    showToast(res.data.message || 'Ошибка сохранения сессии.', 'error');
+                    showToast(res.data.message || t('account.session_save_failed'), 'error');
                 }
             } catch (e) {
-                showToast(e.response?.data?.message || 'Ошибка сохранения сессии.', 'error');
+                showToast(e.response?.data?.message || t('account.session_save_failed'), 'error');
             } finally {
                 sessionSubmitting.value = false;
             }
@@ -1555,10 +1553,6 @@ export default {
 
         onMounted(() => {
             loadAccount();
-            fetch('/api/lang/res')
-                .then(r => r.json())
-                .then(data => { translations.value = data; })
-                .catch(() => {});
         });
 
         return {
@@ -1632,13 +1626,13 @@ export default {
             toggleBuilding,
             handleIconError,
             formatResourceName,
+            resourceDisplayName,
             serverName,
             buildingModeFilter,
             syncing,
             syncAccount,
             visitors,
             getAvatarById,
-            translations,
             sessionForm,
             sessionSubmitting,
             saveSession,

@@ -13,16 +13,16 @@
                     <div>
                         <div class="flex items-center gap-2">
                             <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">TSO Market Analytics</h1>
-                            <span class="badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] uppercase font-bold px-2.5 py-0.5 rounded-full">Public Portal</span>
+                            <span class="badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] uppercase font-bold px-2.5 py-0.5 rounded-full">{{ t('market.public_portal') }}</span>
                         </div>
-                        <p class="text-white/50 text-xs sm:text-sm mt-1">Real-time trade prices, demand history, popular items, and arbitrage opportunities</p>
+                        <p class="text-white/50 text-xs sm:text-sm mt-1">{{ t('market.public_subtitle') }}</p>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-3">
                     <div class="flex items-center gap-2 bg-white/5 border border-white/10 px-3.5 py-2 rounded-xl text-xs text-white/70 transition-all duration-300 hover:bg-white/10">
                         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span>Live Market Analytics</span>
+                        <span>{{ t('market.live_title') }}</span>
                     </div>
                 </div>
             </div>
@@ -33,7 +33,7 @@
             <!-- Selector Header: Mode Switch & Mirror Button -->
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-white/5 pb-4">
                 <div class="flex items-center gap-2">
-                    <span class="text-xs font-semibold text-white/40 uppercase tracking-wider">Selection Mode:</span>
+                    <span class="text-xs font-semibold text-white/40 uppercase tracking-wider">{{ t('market.selection_mode') }}</span>
                     <div class="flex items-center gap-1 bg-white/5 border border-white/10 p-0.5 rounded-lg">
                         <button @click="selectionMode = 'dropdown'"
                                 class="px-3 py-1 rounded text-[10px] font-bold uppercase transition-all duration-300"
@@ -67,10 +67,10 @@
                 <div v-if="selectionMode === 'dropdown'" key="dropdown" class="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
                     <!-- Selling Item Selection -->
                     <div>
-                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">Selling Item</label>
+                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('market.selling_item') }}</label>
                         <div class="relative">
                             <select v-model="selectedItem" @change="onItemChange" class="glass-select w-full transition-all duration-300">
-                                <option value="" class="bg-dark-900">Select selling item...</option>
+                                <option value="" class="bg-dark-900">{{ t('market.select_selling') }}</option>
                                 <option v-for="good in goods" :key="good.item_id" :value="good.item_id" class="bg-dark-900">
                                     {{ getItemName(good.item_name, good.item_id) }} ({{ good.item_id }})
                                 </option>
@@ -85,10 +85,10 @@
 
                     <!-- Target Item Selection -->
                     <div>
-                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">Target Item</label>
+                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('market.target_item') }}</label>
                         <div class="relative">
                             <select v-model="selectedTarget" :disabled="!selectedItem" @change="fetchAnalytics" class="glass-select w-full disabled:opacity-40 transition-all duration-300">
-                                <option value="" class="bg-dark-900">Select target item...</option>
+                                <option value="" class="bg-dark-900">{{ t('market.select_target') }}</option>
                                 <option v-for="target in targets" :key="target.target_item_id" :value="target.target_item_id" class="bg-dark-900">
                                     {{ getItemName(target.target_item_name, target.target_item_id) }} ({{ target.target_item_id }})
                                 </option>
@@ -176,25 +176,25 @@
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
                         <!-- Current Price -->
                         <div class="glass-card p-4 transition-all duration-300 hover:scale-[1.02]">
-                            <span class="text-[10px] font-semibold text-white/30 uppercase tracking-wider block">Current Price</span>
+                            <span class="text-[10px] font-semibold text-white/30 uppercase tracking-wider block">{{ t('market.current_price') }}</span>
                             <span class="text-xl font-bold text-white mt-1 block">{{ stats.current }}</span>
                             <span class="text-[10px] text-white/40 block mt-0.5">{{ selectedTargetName }}</span>
                         </div>
                         <!-- Average Price -->
                         <div class="glass-card p-4 transition-all duration-300 hover:scale-[1.02]">
-                            <span class="text-[10px] font-semibold text-white/30 uppercase tracking-wider block">Average Price</span>
+                            <span class="text-[10px] font-semibold text-white/30 uppercase tracking-wider block">{{ t('market.average_price') }}</span>
                             <span class="text-xl font-bold text-emerald-400 mt-1 block">{{ stats.average }}</span>
                             <span class="text-[10px] text-white/40 block mt-0.5">{{ selectedTargetName }}</span>
                         </div>
                         <!-- Min Price -->
                         <div class="glass-card p-4 transition-all duration-300 hover:scale-[1.02]">
-                            <span class="text-[10px] font-semibold text-white/30 uppercase tracking-wider block">Minimum Price</span>
+                            <span class="text-[10px] font-semibold text-white/30 uppercase tracking-wider block">{{ t('market.min_price') }}</span>
                             <span class="text-xl font-bold text-blue-400 mt-1 block">{{ stats.minimum }}</span>
                             <span class="text-[10px] text-white/40 block mt-0.5">{{ selectedTargetName }}</span>
                         </div>
                         <!-- Max Price -->
                         <div class="glass-card p-4 transition-all duration-300 hover:scale-[1.02]">
-                            <span class="text-[10px] font-semibold text-white/30 uppercase tracking-wider block">Maximum Price</span>
+                            <span class="text-[10px] font-semibold text-white/30 uppercase tracking-wider block">{{ t('market.max_price') }}</span>
                             <span class="text-xl font-bold text-red-400 mt-1 block">{{ stats.maximum }}</span>
                             <span class="text-[10px] text-white/40 block mt-0.5">{{ selectedTargetName }}</span>
                         </div>
@@ -219,11 +219,11 @@
                                 <div class="flex items-center gap-4 text-[10px] text-white/40">
                                     <div class="flex items-center gap-1.5">
                                         <span class="w-2.5 h-0.5 bg-emerald-500 inline-block"></span>
-                                        <span>Average Price</span>
+                                        <span>{{ t('market.average_price') }}</span>
                                     </div>
                                     <div class="flex items-center gap-1.5">
                                         <span class="w-2.5 h-0.5 bg-white/20 border-dashed border inline-block"></span>
-                                        <span>Global Mean</span>
+                                        <span>{{ t('market.global_mean') }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -299,9 +299,9 @@
 
                                         <!-- Point Stats Summary -->
                                         <div class="flex items-center justify-between text-[10px] text-white/40 font-mono pt-0.5">
-                                            <span>Offers: <strong class="text-white/80">{{ hoveredPoint.offers_count }}</strong></span>
-                                            <span>Sellers: <strong class="text-white/80">{{ hoveredPoint.sellers_count }}</strong></span>
-                                            <span>Vol: <strong class="text-white/80">{{ formatVolume(hoveredPoint.volume) }}</strong></span>
+                                            <span>{{ t('market.offers') }} <strong class="text-white/80">{{ hoveredPoint.offers_count }}</strong></span>
+                                            <span>{{ t('market.sellers') }} <strong class="text-white/80">{{ hoveredPoint.sellers_count }}</strong></span>
+                                            <span>{{ t('market.vol') }} <strong class="text-white/80">{{ formatVolume(hoveredPoint.volume) }}</strong></span>
                                         </div>
                                     </div>
                                 </div>
@@ -321,15 +321,15 @@
                     <!-- Demand Dynamic Chart Card -->
                     <div class="glass-card p-6 transition-all duration-300">
                         <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-sm font-semibold text-white">Market Volume & Active Offers</h3>
+                            <h3 class="text-sm font-semibold text-white">{{ t('market.volume_offers') }}</h3>
                             <div class="flex items-center gap-4 text-[10px] text-white/40">
                                 <div class="flex items-center gap-1.5">
                                     <span class="w-2.5 h-2.5 bg-blue-500/20 border border-blue-500 rounded-sm inline-block"></span>
-                                    <span>Sellers Count</span>
+                                    <span>{{ t('market.sellers_count') }}</span>
                                 </div>
                                 <div class="flex items-center gap-1.5">
                                     <span class="w-2.5 h-2.5 bg-indigo-500/20 border border-indigo-500 rounded-sm inline-block"></span>
-                                    <span>Active Offers</span>
+                                    <span>{{ t('market.active_offers') }}</span>
                                 </div>
                             </div>
                         </div>
@@ -376,7 +376,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 15.75V18m-3-3v3m-3-3v3M9 3h12a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 21 21H9a2.25 2.25 0 0 1-2.25-2.25V5.25A2.25 2.25 0 0 1 9 3Zm2.25 3h7.5a.75.75 0 0 0 .75-.75V4.5a.75.75 0 0 0-.75-.75h-7.5a.75.75 0 0 0-.75.75v.75a.75.75 0 0 0 .75.75Z" />
                                 </svg>
                             </div>
-                            <h3 class="text-sm font-semibold text-white">Cost Calculator</h3>
+                            <h3 class="text-sm font-semibold text-white">{{ t('market.cost_calculator') }}</h3>
                         </div>
 
                         <div class="space-y-5">
@@ -387,7 +387,7 @@
 
                             <!-- Direct estimated revenue -->
                             <div class="p-4 rounded-xl border border-emerald-500/10 bg-emerald-500/[0.02] transition-all duration-300">
-                                <span class="text-[10px] font-semibold text-emerald-400/70 uppercase tracking-wider block">Estimated Revenue (Direct Trade: Sell A for B)</span>
+                                <span class="text-[10px] font-semibold text-emerald-400/70 uppercase tracking-wider block">{{ t('market.estimated_revenue') }}</span>
                                 <div class="flex items-baseline gap-2 mt-1">
                                     <span class="text-2xl font-bold text-emerald-400 font-mono">{{ calculatedCost }}</span>
                                     <span class="text-xs text-white/40">{{ selectedTargetName }}</span>
@@ -397,7 +397,7 @@
 
                             <!-- Mirrored estimated cost -->
                             <div v-if="mirroredStats" class="p-4 rounded-xl border border-blue-500/10 bg-blue-500/[0.02] transition-all duration-300">
-                                <span class="text-[10px] font-semibold text-blue-400/70 uppercase tracking-wider block">Estimated Cost (Mirrored Trade: Buy A by selling B)</span>
+                                <span class="text-[10px] font-semibold text-blue-400/70 uppercase tracking-wider block">{{ t('market.estimated_cost') }}</span>
                                 <div class="flex items-baseline gap-2 mt-1">
                                     <span class="text-2xl font-bold text-blue-400 font-mono">{{ calculatedMirroredCost }}</span>
                                     <span class="text-xs text-white/40">{{ selectedTargetName }}</span>
@@ -412,22 +412,22 @@
 
                     <!-- Selected pair market details -->
                     <div class="glass-card p-6 transition-all duration-300">
-                        <h3 class="text-sm font-semibold text-white mb-4">Market Information</h3>
+                        <h3 class="text-sm font-semibold text-white mb-4">{{ t('market.info') }}</h3>
                         <div class="space-y-3 text-xs">
                             <div class="flex justify-between py-2 border-b border-white/5">
-                                <span class="text-white/40">Total Active Volume:</span>
+                                <span class="text-white/40">{{ t('market.total_volume') }}</span>
                                 <span class="text-white font-mono font-medium">{{ activeVolume }} {{ selectedItemName }}</span>
                             </div>
                             <div class="flex justify-between py-2 border-b border-white/5">
-                                <span class="text-white/40">Active Offers Count:</span>
+                                <span class="text-white/40">{{ t('market.offers_count') }}</span>
                                 <span class="text-white font-mono font-medium">{{ activeOffersCount }}</span>
                             </div>
                             <div class="flex justify-between py-2 border-b border-white/5">
-                                <span class="text-white/40">Active Sellers:</span>
+                                <span class="text-white/40">{{ t('market.active_sellers') }}</span>
                                 <span class="text-white font-mono font-medium">{{ activeSellersCount }}</span>
                             </div>
                             <div class="flex justify-between py-2 last:border-0">
-                                <span class="text-white/40">Current Trend:</span>
+                                <span class="text-white/40">{{ t('market.trend') }}</span>
                                 <span class="font-semibold" :class="priceTrendClass">{{ priceTrendText }}</span>
                             </div>
                         </div>
@@ -447,7 +447,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18 9 11.25l4.306 4.307a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-3.75-1.002m3.75 1.002-1.002 3.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                             </svg>
                         </div>
-                        <h2 class="text-lg font-semibold text-white">Most Popular Items</h2>
+                        <h2 class="text-lg font-semibold text-white">{{ t('market.popular_items') }}</h2>
                     </div>
                     <button @click="togglePopularItems" class="text-white/40 hover:text-white transition-colors duration-300">
                         <svg v-if="showPopularItems" class="w-5 h-5 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -464,11 +464,11 @@
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="border-b border-white/5 text-[10px] font-semibold text-white/30 uppercase tracking-wider">
-                                    <th class="py-3 px-4">Item Name</th>
-                                    <th class="py-3 px-4">Item Code</th>
-                                    <th class="py-3 px-4 text-right">Active Offers</th>
-                                    <th class="py-3 px-4 text-right">Unique Sellers</th>
-                                    <th class="py-3 px-4 text-right">Active Volume</th>
+                                    <th class="py-3 px-4">{{ t('market.item_name') }}</th>
+                                    <th class="py-3 px-4">{{ t('market.item_code') }}</th>
+                                    <th class="py-3 px-4 text-right">{{ t('market.active_offers') }}</th>
+                                    <th class="py-3 px-4 text-right">{{ t('market.unique_sellers') }}</th>
+                                    <th class="py-3 px-4 text-right">{{ t('market.active_volume') }}</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-white/5 text-sm text-white/70">
@@ -505,8 +505,8 @@
                             </svg>
                         </div>
                         <div class="flex flex-col">
-                            <h2 class="text-lg font-semibold text-white">Profitable Exchange Schemes</h2>
-                            <span class="text-xs text-white/40">Real-time market arbitrage detection</span>
+                            <h2 class="text-lg font-semibold text-white">{{ t('market.schemes') }}</h2>
+                            <span class="text-xs text-white/40">{{ t('market.schemes_hint') }}</span>
                         </div>
                     </div>
                     <div class="flex items-center gap-4">
@@ -539,7 +539,7 @@
                                 <div class="flex items-center gap-3">
                                     <!-- Leftovers -->
                                     <div v-if="scheme.leftovers && scheme.leftovers.length" class="flex items-center gap-2 text-xs text-blue-400">
-                                        <span class="text-white/30">Leftovers:</span>
+                                        <span class="text-white/30">{{ t('market.leftovers') }}</span>
                                         <span v-for="leftover in scheme.leftovers" :key="leftover.item_id" class="flex items-center gap-1 text-white/70">
                                             <img :src="getResourceIcon(leftover.item_id)" @error="handleIconError($event, leftover.item_id)" class="w-3.5 h-3.5 object-contain" />
                                             +{{ formatVolume(leftover.amount) }}
@@ -547,7 +547,7 @@
                                     </div>
                                     <!-- Net Profit -->
                                     <div class="flex items-center gap-2">
-                                        <span class="text-xs text-white/40">Net Profit:</span>
+                                        <span class="text-xs text-white/40">{{ t('market.net_profit') }}</span>
                                         <div class="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg py-1 px-2">
                                             <img :src="getResourceIcon(scheme.profit.item_id)" @error="handleIconError($event, scheme.profit.item_id)" class="w-4 h-4 object-contain" />
                                             <span class="font-mono text-sm font-bold text-emerald-400">+{{ formatVolume(scheme.profit.amount) }}</span>
@@ -565,20 +565,20 @@
 
                                         <div class="flex flex-col gap-1.5">
                                             <div class="flex items-center gap-1.5 text-xs">
-                                                <span class="text-white/40 w-8">Give:</span>
+                                                <span class="text-white/40 w-8">{{ t('market.give') }}</span>
                                                 <img :src="getResourceIcon(step.give_item)" @error="handleIconError($event, step.give_item)" class="w-4.5 h-4.5 object-contain" />
                                                 <span class="font-mono font-semibold text-white/90">{{ formatVolume(step.give_per_lot) }}</span>
                                                 <span class="text-[10px] text-white/30">(total: {{ formatVolume(step.give_amount) }})</span>
                                             </div>
                                             <div class="flex items-center gap-1.5 text-xs">
-                                                <span class="text-white/40 w-8">Get:</span>
+                                                <span class="text-white/40 w-8">{{ t('market.get') }}</span>
                                                 <img :src="getResourceIcon(step.receive_item)" @error="handleIconError($event, step.receive_item)" class="w-4.5 h-4.5 object-contain" />
                                                 <span class="font-mono font-semibold text-emerald-400">{{ formatVolume(step.receive_per_lot) }}</span>
                                                 <span class="text-[10px] text-emerald-400/40">(total: {{ formatVolume(step.receive_amount) }})</span>
                                             </div>
                                             <div class="text-[10px] text-white/30 mt-1 border-t border-white/5 pt-1 flex justify-between">
-                                                <span>Lots: <strong class="text-white/80">{{ step.lots }}</strong></span>
-                                                <span class="truncate max-w-[100px]" :title="step.sender">By: <strong class="text-white/85">{{ step.sender }}</strong></span>
+                                                <span>{{ t('market.lots') }} <strong class="text-white/80">{{ step.lots }}</strong></span>
+                                                <span class="truncate max-w-[100px]" :title="step.sender">{{ t('market.by') }} <strong class="text-white/85">{{ step.sender }}</strong></span>
                                             </div>
                                         </div>
                                     </div>
@@ -610,7 +610,7 @@
                             </svg>
                         </div>
                         <div class="flex flex-col">
-                            <h2 class="text-lg font-semibold text-white">Current Active Market Listings</h2>
+                            <h2 class="text-lg font-semibold text-white">{{ t('market.listings') }}</h2>
                             <span class="text-xs text-white/40">{{ totalActiveCount }} active trades</span>
                         </div>
                     </div>
@@ -629,13 +629,13 @@
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="border-b border-white/5 text-[10px] font-semibold text-white/30 uppercase tracking-wider">
-                                    <th class="py-3 px-4">Player</th>
-                                    <th class="py-3 px-4">Selling Resource</th>
-                                    <th class="py-3 px-4">Buying Resource</th>
-                                    <th class="py-3 px-4 text-right">Price</th>
-                                    <th class="py-3 px-4 text-right">Lots Remaining</th>
-                                    <th class="py-3 px-4 text-right">Time Left</th>
-                                    <th class="py-3 px-4 text-right">Sync Time</th>
+                                    <th class="py-3 px-4">{{ t('market.player') }}</th>
+                                    <th class="py-3 px-4">{{ t('market.selling_resource') }}</th>
+                                    <th class="py-3 px-4">{{ t('market.buying_resource') }}</th>
+                                    <th class="py-3 px-4 text-right">{{ t('market.price') }}</th>
+                                    <th class="py-3 px-4 text-right">{{ t('market.lots_remaining') }}</th>
+                                    <th class="py-3 px-4 text-right">{{ t('market.time_left') }}</th>
+                                    <th class="py-3 px-4 text-right">{{ t('market.sync_time') }}</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-white/5 text-sm text-white/70">
@@ -691,6 +691,8 @@
 <script>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { showToast } from '../toast';
+import { t,gameAnyLookup } from '../lang';
+import { humanizeGameId } from '../lang/gameNames';
 import axios from 'axios';
 
 export default {
@@ -714,7 +716,6 @@ export default {
         const activeInfo = ref(null);
         const periodInfo = ref(null);
         const hoveredPoint = ref(null);
-        const translations = ref({});
 
         // Selection & Filter variables
         const selectionMode = ref('visual'); // 'dropdown' or 'visual'
@@ -730,11 +731,11 @@ export default {
         const arbitrageLoops = ref([]);
 
         const periods = [
-            { value: '1d', label: '24h' },
-            { value: '7d', label: '7d' },
-            { value: '30d', label: '30d' },
-            { value: '1y', label: '1y' },
-            { value: 'all', label: 'All' }
+            { value: '1d', label: t('market.range_24h') },
+            { value: '7d', label: t('market.range_7d') },
+            { value: '30d', label: t('market.range_30d') },
+            { value: '1y', label: t('market.range_1y') },
+            { value: 'all', label: t('market.range_all') }
         ];
 
         // Form state
@@ -742,33 +743,17 @@ export default {
         const selectedTarget = ref('');
         const calcAmount = ref(100);
 
-        const normalizeKey = value =>
-            String(value || '')
-                .replace(/[\s_]+/g, '')
-                .toLowerCase();
-
         const getItemName = (name, id) => {
             const raw = name || id || '';
             if (!raw) return '';
 
-            const normalizedRaw = normalizeKey(raw);
-            const normalizedId = normalizeKey(id);
+            const translated = (id ? gameAnyLookup(String(id)) : null) ?? gameAnyLookup(String(raw));
 
-            const translationKey = Object.keys(translations.value).find(key => {
-                const normalizedKey = normalizeKey(key);
-
-                return normalizedKey === normalizedRaw ||
-                    normalizedKey === normalizedId;
-            });
-
-            if (translationKey) {
-                return translations.value[translationKey];
+            if (translated) {
+                return translated;
             }
 
-            return raw
-                .replace(/(?<!^)(?=[A-Z])/g, ' ')
-                .replace(/_/g, ' ')
-                .trim();
+            return humanizeGameId(raw);
         };
 
         // Dynamic translated names
@@ -992,14 +977,6 @@ export default {
         const loadInitialData = async () => {
             loading.value = true;
             try {
-                // Load translations first
-                try {
-                    const transRes = await axios.get('/api/public/market/lang/res');
-                    translations.value = transRes.data || {};
-                } catch (trErr) {
-                    console.warn('Could not load translations:', trErr);
-                }
-
                 const goodsRes = await axios.get('/api/public/market/goods');
                 goods.value = goodsRes.data || [];
 
@@ -1015,7 +992,7 @@ export default {
 
                 startCountdown();
             } catch (e) {
-                showToast('Failed to load market statistics.', 'error');
+                showToast(t('market.stats_failed'), 'error');
             } finally {
                 loading.value = false;
             }
@@ -1037,7 +1014,7 @@ export default {
                 });
                 targets.value = res.data || [];
             } catch (e) {
-                showToast('Failed to load target items.', 'error');
+                showToast(t('market.targets_failed'), 'error');
             }
         };
 
@@ -1054,7 +1031,7 @@ export default {
                 activeOffersPage.value = nextPage;
                 hasMoreActiveOffers.value = res.data.has_more || false;
             } catch (e) {
-                showToast('Failed to load more listings.', 'error');
+                showToast(t('market.listings_failed'), 'error');
             } finally {
                 loadingMore.value = false;
             }
@@ -1086,7 +1063,7 @@ export default {
                 mirroredStats.value = res.data.mirrored_stats || null;
                 mirroredHistory.value = res.data.mirrored_history || null;
             } catch (e) {
-                showToast('Failed to load analytics charts.', 'error');
+                showToast(t('market.charts_failed'), 'error');
             }
         };
 
@@ -1217,7 +1194,6 @@ export default {
             togglePopularItems,
             toggleArbitrageSchemes,
             toggleActiveListings,
-            translations,
             getItemName,
             hoveredPoint
         };

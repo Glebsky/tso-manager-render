@@ -28,7 +28,7 @@
                 <!-- Status -->
                 <div class="flex items-center gap-2">
                     <div class="w-2 h-2 rounded-full" :class="statusDotClass"></div>
-                    <span class="text-xs text-white/40 capitalize">{{ localAccount.status || 'offline' }}</span>
+                    <span class="text-xs text-white/40 capitalize">{{ t('card.status.' + (localAccount.status || 'offline')) }}</span>
                 </div>
             </div>
 
@@ -55,7 +55,7 @@
                     <svg class="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />
                     </svg>
-                    {{ buildingCount }} buildings
+                    {{ t('card.buildings_count', { count: buildingCount }) }}
                 </span>
 
                 <!-- Last sync -->
@@ -75,7 +75,7 @@
                     <svg class="w-3.5 h-3.5" :class="{ 'animate-spin': syncing }" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182" />
                     </svg>
-                    {{ syncing ? 'Syncing...' : 'Sync' }}
+                    {{ syncing ? t('card.syncing') : t('card.sync') }}
                 </button>
 
                 <button @click="goToDetail"
@@ -83,7 +83,7 @@
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
                     </svg>
-                    Detail Page
+                    {{ t('card.detail') }}
                 </button>
 
                 <button @click="deleteAccount"
@@ -99,6 +99,7 @@
 
 <script>
 import { ref, computed, watch } from 'vue';
+import { t } from '../lang';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import { showToast } from '../toast';
@@ -186,10 +187,10 @@ export default {
             const diffMs = now - date;
             const diffMins = Math.floor(diffMs / 60000);
 
-            if (diffMins < 1) return 'just now';
-            if (diffMins < 60) return `${diffMins}m ago`;
+            if (diffMins < 1) return t('card.just_now');
+            if (diffMins < 60) return t('card.minutes_ago', { count: diffMins });
             const diffHours = Math.floor(diffMins / 60);
-            if (diffHours < 24) return `${diffHours}h ago`;
+            if (diffHours < 24) return t('card.hours_ago', { count: diffHours });
             return date.toLocaleDateString();
         };
 
@@ -199,14 +200,14 @@ export default {
             try {
                 const res = await axios.post(`/api/accounts/${localAccount.value.id}/sync`);
                 if (res.data.success) {
-                    showToast('Account synced successfully!');
+                    showToast(t('card.synced'));
                     if (res.data.account) {
                         localAccount.value = res.data.account;
                     }
                     emit('sync-success', res.data.account || localAccount.value);
                 } else {
                     localAccount.value.status = 'error';
-                    showToast(res.data.message || 'Sync failed.', 'error');
+                    showToast(res.data.message || t('card.sync_failed'), 'error');
                     emit('sync-success');
                 }
             } catch (e) {
@@ -215,7 +216,7 @@ export default {
                 } else {
                     localAccount.value.status = 'error';
                 }
-                showToast(e.response?.data?.message || 'Sync request failed.', 'error');
+                showToast(e.response?.data?.message || t('card.sync_request_failed'), 'error');
                 emit('sync-success');
             } finally {
                 syncing.value = false;
@@ -223,15 +224,15 @@ export default {
         };
 
         const deleteAccount = async () => {
-            if (!confirm('Are you sure you want to delete this account?')) return;
+            if (!confirm(t('card.confirm_delete'))) return;
             try {
                 const res = await axios.delete(`/api/accounts/${localAccount.value.id}`);
                 if (res.data.success) {
-                    showToast('Account deleted.');
+                    showToast(t('card.deleted'));
                     emit('delete-success');
                 }
             } catch (e) {
-                showToast('Failed to delete account.', 'error');
+                showToast(t('card.delete_failed'), 'error');
             }
         };
 

@@ -3,8 +3,8 @@
         <!-- Page Header -->
         <div class="flex items-center justify-between mb-8">
             <div>
-                <h1 class="text-3xl font-bold text-white">System Settings</h1>
-                <p class="text-white/40 mt-1">Configure global synchronization parameters and manage database states</p>
+                <h1 class="text-3xl font-bold text-white">{{ t('settings.title') }}</h1>
+                <p class="text-white/40 mt-1">{{ t('settings.subtitle') }}</p>
             </div>
         </div>
 
@@ -17,21 +17,21 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                     </svg>
                 </div>
-                <h2 class="text-lg font-semibold text-white">General Parameters</h2>
+                <h2 class="text-lg font-semibold text-white">{{ t('settings.general') }}</h2>
             </div>
 
             <form @submit.prevent="saveSettings">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <!-- Sync Interval -->
                     <div>
-                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">Sync Interval (Minutes)</label>
+                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('settings.sync_interval') }}</label>
                         <div class="relative">
                             <select v-model.number="form.sync_interval" class="glass-select w-full">
-                                <option :value="0" class="bg-dark-900">Manual Sync Only</option>
-                                <option :value="5" class="bg-dark-900">Every 5 minutes</option>
-                                <option :value="15" class="bg-dark-900">Every 15 minutes</option>
-                                <option :value="30" class="bg-dark-900">Every 30 minutes</option>
-                                <option :value="60" class="bg-dark-900">Every hour</option>
+                                <option :value="0" class="bg-dark-900">{{ t('settings.manual_sync') }}</option>
+                                <option :value="5" class="bg-dark-900">{{ t('settings.every_5') }}</option>
+                                <option :value="15" class="bg-dark-900">{{ t('settings.every_15') }}</option>
+                                <option :value="30" class="bg-dark-900">{{ t('settings.every_30') }}</option>
+                                <option :value="60" class="bg-dark-900">{{ t('settings.every_hour') }}</option>
                             </select>
                             <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
                                 <svg class="w-4 h-4 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -43,14 +43,14 @@
 
                     <!-- Log Retention -->
                     <div>
-                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">Log Retention Policy</label>
+                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('settings.log_retention') }}</label>
                         <div class="relative">
                             <select v-model.number="form.log_retention_days" class="glass-select w-full">
-                                <option :value="0" class="bg-dark-900">Keep Forever</option>
-                                <option :value="7" class="bg-dark-900">Delete older than 7 days</option>
-                                <option :value="14" class="bg-dark-900">Delete older than 14 days</option>
-                                <option :value="30" class="bg-dark-900">Delete older than 30 days</option>
-                                <option :value="90" class="bg-dark-900">Delete older than 90 days</option>
+                                <option :value="0" class="bg-dark-900">{{ t('settings.keep_forever') }}</option>
+                                <option :value="7" class="bg-dark-900">{{ t('settings.older_7') }}</option>
+                                <option :value="14" class="bg-dark-900">{{ t('settings.older_14') }}</option>
+                                <option :value="30" class="bg-dark-900">{{ t('settings.older_30') }}</option>
+                                <option :value="90" class="bg-dark-900">{{ t('settings.older_90') }}</option>
                             </select>
                             <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
                                 <svg class="w-4 h-4 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -65,7 +65,7 @@
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
                     </svg>
-                    {{ saving ? 'Saving...' : 'Save Settings' }}
+                    {{ saving ? t('settings.saving') : t('settings.save') }}
                 </button>
             </form>
         </div>
@@ -78,31 +78,31 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
                     </svg>
                 </div>
-                <h2 class="text-lg font-semibold text-white">Danger Zone</h2>
+                <h2 class="text-lg font-semibold text-white">{{ t('settings.danger_zone') }}</h2>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Clear Logs -->
                 <div class="p-4 rounded-xl border border-white/5 bg-white/[0.01] flex items-center justify-between">
                     <div>
-                        <h3 class="text-sm font-semibold text-white/90">Clear System Logs</h3>
-                        <p class="text-xs text-white/30 mt-1">This deletes all logged events from the database.</p>
+                        <h3 class="text-sm font-semibold text-white/90">{{ t('settings.clear_logs') }}</h3>
+                        <p class="text-xs text-white/30 mt-1">{{ t('settings.clear_logs_hint') }}</p>
                     </div>
                     <button @click="clearLogs" :disabled="clearingLogs"
                             class="btn-danger flex items-center gap-1.5">
-                        Clear All Logs
+                        {{ t('settings.clear_all_logs') }}
                     </button>
                 </div>
 
                 <!-- Deactivate Tasks -->
                 <div class="p-4 rounded-xl border border-white/5 bg-white/[0.01] flex items-center justify-between">
                     <div>
-                        <h3 class="text-sm font-semibold text-white/90">Pause All Scheduled Tasks</h3>
-                        <p class="text-xs text-white/30 mt-1">Temporarily turn off all queued activities.</p>
+                        <h3 class="text-sm font-semibold text-white/90">{{ t('settings.pause_tasks') }}</h3>
+                        <p class="text-xs text-white/30 mt-1">{{ t('settings.pause_tasks_hint') }}</p>
                     </div>
                     <button @click="stopAllTasks" :disabled="stoppingTasks"
                             class="btn-danger flex items-center gap-1.5">
-                        Deactivate All
+                        {{ t('settings.deactivate_all') }}
                     </button>
                 </div>
             </div>
@@ -112,6 +112,7 @@
 
 <script>
 import { ref, onMounted } from 'vue';
+import { t } from '../lang';
 import axios from 'axios';
 import { showToast } from '../toast';
 
@@ -135,7 +136,7 @@ export default {
                     log_retention_days: 30
                 };
             } catch (e) {
-                showToast('Failed to load settings.', 'error');
+                showToast(t('settings.load_failed'), 'error');
             }
         };
 
@@ -144,40 +145,40 @@ export default {
             try {
                 const res = await axios.put('/api/settings', form.value);
                 if (res.data.success) {
-                    showToast('Settings saved.');
+                    showToast(t('settings.saved'));
                 }
             } catch (e) {
-                showToast('Failed to save settings.', 'error');
+                showToast(t('settings.save_failed'), 'error');
             } finally {
                 saving.value = false;
             }
         };
 
         const clearLogs = async () => {
-            if (!confirm('This deletes all database logs permanently. Proceed?')) return;
+            if (!confirm(t('settings.confirm_clear_logs'))) return;
             clearingLogs.value = true;
             try {
                 const res = await axios.delete('/api/settings/logs');
                 if (res.data.success) {
-                    showToast('All system logs cleared successfully.');
+                    showToast(t('settings.logs_cleared'));
                 }
             } catch (e) {
-                showToast('Failed to clear logs.', 'error');
+                showToast(t('settings.clear_failed'), 'error');
             } finally {
                 clearingLogs.value = false;
             }
         };
 
         const stopAllTasks = async () => {
-            if (!confirm('This pauses all active tasks. Proceed?')) return;
+            if (!confirm(t('settings.confirm_pause_tasks'))) return;
             stoppingTasks.value = true;
             try {
                 const res = await axios.post('/api/settings/tasks/stop');
                 if (res.data.success) {
-                    showToast('All tasks deactivated.');
+                    showToast(t('settings.tasks_deactivated'));
                 }
             } catch (e) {
-                showToast('Failed to deactivate tasks.', 'error');
+                showToast(t('settings.deactivate_failed'), 'error');
             } finally {
                 stoppingTasks.value = false;
             }

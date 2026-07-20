@@ -33,7 +33,7 @@
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
                     </svg>
-                    <span class="font-medium">Главная страница</span>
+                    <span class="font-medium">{{ t('nav.home') }}</span>
                 </router-link>
 
                 <!-- Dashboard -->
@@ -103,7 +103,7 @@
                     </div>
                     <button type="button" @click="logout" :disabled="loggingOut"
                             class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-white/30 transition hover:bg-red-500/10 hover:text-red-400 disabled:opacity-50"
-                            title="Выйти">
+                            :title="t('nav.logout')">
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6A2.25 2.25 0 0 0 5.25 5.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3-3H9m0 0 3-3m-3 3 3 3" />
                         </svg>
@@ -112,7 +112,7 @@
                 <div class="glass-card p-2.5">
                     <div class="flex items-center justify-center gap-2">
                         <div class="w-2 h-2 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50 animate-pulse"></div>
-                        <span class="text-xs font-medium text-emerald-400">Система в сети</span>
+                        <span class="text-xs font-medium text-emerald-400">{{ t('nav.system_online') }}</span>
                     </div>
                 </div>
             </div>
@@ -123,7 +123,7 @@
             <!-- Header bar -->
             <header v-if="showSidebar" class="h-16 border-b border-white/5 flex items-center justify-between px-8 bg-dark-950/20 backdrop-blur-md sticky top-0 z-20">
                 <div>
-                    <span class="text-xs text-white/40">Панель управления TSO</span>
+                    <span class="text-xs text-white/40">{{ t('nav.control_panel') }}</span>
                 </div>
             </header>
 
@@ -179,6 +179,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { toasts } from './toast';
+import { intlLocale } from './lang';
 import axios from 'axios';
 
 export default {
@@ -219,11 +220,11 @@ export default {
                 const now = new Date();
 
                 // Local Time Formatting
-                localTimeStr.value = now.toLocaleDateString('ru-RU', {
+                localTimeStr.value = now.toLocaleDateString(intlLocale, {
                     day: '2-digit',
                     month: '2-digit',
                     year: 'numeric'
-                }) + ' ' + now.toLocaleTimeString('ru-RU', {
+                }) + ' ' + now.toLocaleTimeString(intlLocale, {
                     hour: '2-digit',
                     minute: '2-digit',
                     second: '2-digit'
@@ -240,11 +241,11 @@ export default {
                 if (isNaN(serverTime.getTime())) {
                     serverTimeStr.value = localTimeStr.value;
                 } else {
-                    serverTimeStr.value = serverTime.toLocaleDateString('ru-RU', {
+                    serverTimeStr.value = serverTime.toLocaleDateString(intlLocale, {
                         day: '2-digit',
                         month: '2-digit',
                         year: 'numeric'
-                    }) + ' ' + serverTime.toLocaleTimeString('ru-RU', {
+                    }) + ' ' + serverTime.toLocaleTimeString(intlLocale, {
                         hour: '2-digit',
                         minute: '2-digit',
                         second: '2-digit'

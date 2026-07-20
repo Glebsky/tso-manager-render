@@ -3,8 +3,8 @@
         <!-- Заголовок страницы -->
         <div class="flex items-center justify-between mb-8">
             <div>
-                <h1 class="text-3xl font-bold text-white">Планировщик задач</h1>
-                <p class="text-white/40 mt-1">Автоматизируйте действия на ваших аккаунтах</p>
+                <h1 class="text-3xl font-bold text-white">{{ t('tasks.title') }}</h1>
+                <p class="text-white/40 mt-1">{{ t('tasks.subtitle') }}</p>
             </div>
         </div>
 
@@ -21,14 +21,14 @@
                     </div>
                     <div>
                         <h2 class="text-lg font-semibold text-white">
-                            {{ editingTaskId ? `Редактирование задачи #${editingTaskId}` : 'Запланировать новую задачу' }}
+                            {{ editingTaskId ? t('tasks.editing_task', { id: editingTaskId }) : t('tasks.schedule_new') }}
                         </h2>
-                        <p v-if="editingTaskId" class="text-xs text-amber-400 font-medium">Вы редактируете существующую задачу. Добавляйте/удаляйте действия и нажмите «Сохранить изменения».</p>
+                        <p v-if="editingTaskId" class="text-xs text-amber-400 font-medium">{{ t('tasks.editing_hint') }}</p>
                     </div>
                 </div>
 
                 <button v-if="editingTaskId" type="button" @click="cancelEdit" class="btn-secondary btn-sm text-xs text-white/70 hover:text-white flex items-center gap-1 border-white/10 hover:border-white/20">
-                    ✕ Отменить редактирование
+                    ✕ {{ t('tasks.cancel_editing') }}
                 </button>
             </div>
 
@@ -36,13 +36,13 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <!-- Название серии -->
                     <div>
-                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">Название серии задач</label>
-                        <input type="text" v-model="taskName" placeholder="Напр. Бафф ратуши друга" class="glass-input w-full text-xs py-2.5">
+                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('tasks.series_name') }}</label>
+                        <input type="text" v-model="taskName" :placeholder="t('tasks.series_name_placeholder')" class="glass-input w-full text-xs py-2.5">
                     </div>
 
                     <!-- Выбор аккаунта -->
                     <div>
-                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">Игровой аккаунт</label>
+                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('tasks.game_account') }}</label>
                         <div class="relative">
                             <button type="button" @click.stop="activeDropdown = activeDropdown === 'account' ? null : 'account'" class="glass-select w-full flex items-center justify-between text-left">
                                 <span>{{ selectedAccountLabel }}</span>
@@ -60,22 +60,22 @@
 
                     <!-- Режим запуска (Тип планирования) -->
                     <div>
-                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">Тип планирования</label>
+                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('tasks.planning_type') }}</label>
                         <div class="grid grid-cols-3 gap-2">
                             <button type="button" @click="scheduleType = 'daily'"
                                     class="px-3 py-2 rounded-lg text-xs font-semibold border transition-all duration-300"
                                     :class="scheduleType === 'daily' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
-                                Ежедневно
+                                {{ t('tasks.daily') }}
                             </button>
                             <button type="button" @click="scheduleType = 'once'"
                                     class="px-3 py-2 rounded-lg text-xs font-semibold border transition-all duration-300"
                                     :class="scheduleType === 'once' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
-                                Одноразово
+                                {{ t('tasks.once') }}
                             </button>
                             <button type="button" @click="scheduleType = 'interval'"
                                     class="px-3 py-2 rounded-lg text-xs font-semibold border transition-all duration-300"
                                     :class="scheduleType === 'interval' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
-                                Интервал
+                                {{ t('tasks.interval') }}
                             </button>
                         </div>
                     </div>
@@ -85,27 +85,27 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5 border-t border-white/5 pt-4">
                     <!-- 1. Ежедневный запуск (Время) -->
                     <div v-if="scheduleType === 'daily'">
-                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">Время запуска (каждый день)</label>
+                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('tasks.run_time_daily') }}</label>
                         <input type="time" required v-model="runAtTime" class="glass-input w-full">
                     </div>
 
                     <!-- 2. Одноразовый запуск (Дата и время) -->
                     <div v-if="scheduleType === 'once'">
-                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">Дата и время запуска</label>
+                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('tasks.run_datetime') }}</label>
                         <input type="datetime-local" required v-model="runAtDatetime" class="glass-input w-full">
                     </div>
 
                     <!-- 3. Интервальный запуск (Каждые X часов Y минут) -->
                     <div v-if="scheduleType === 'interval'" class="col-span-2">
-                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">Запускать каждые</label>
+                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('tasks.run_every') }}</label>
                         <div class="flex gap-4">
                             <div class="flex items-center gap-2 flex-1">
                                 <input type="number" min="0" required v-model.number="intervalHours" class="glass-input w-full">
-                                <span class="text-xs text-white/40">час.</span>
+                                <span class="text-xs text-white/40">{{ t('tasks.hours_unit') }}</span>
                             </div>
                             <div class="flex items-center gap-2 flex-1">
                                 <input type="number" min="0" max="59" required v-model.number="intervalMinutes" class="glass-input w-full">
-                                <span class="text-xs text-white/40">мин.</span>
+                                <span class="text-xs text-white/40">{{ t('tasks.minutes_unit') }}</span>
                             </div>
                         </div>
                     </div>
@@ -119,13 +119,13 @@
                             <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
                             </svg>
-                            Конструктор серии действий
+                            {{ t('tasks.sequence_builder') }}
                         </h3>
                         <button v-if="sequenceActions.length > 0" type="button" @click="clearSequence" class="text-xs text-red-400/70 hover:text-red-400 transition-colors flex items-center gap-1 font-medium">
                             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                             </svg>
-                            Очистить серию
+                            {{ t('tasks.clear_series') }}
                         </button>
                     </div>
 
@@ -138,27 +138,27 @@
                                     <p class="font-semibold text-white/90 truncate">{{ typeLabels[act.task_type] }}</p>
                                     <p class="text-white/40 text-[10px] mt-0.5 truncate">
                                         <span v-if="['stop_production', 'start_production'].includes(act.task_type)">
-                                            Здание: {{ act.meta.building ? getBuildingName(act.meta.building) : `Сетка #${act.payload.grid}` }}
+                                            {{ t('tasks.building') }}: {{ act.meta.building ? getBuildingName(act.meta.building) : t('tasks.grid_number', { id: act.payload.grid }) }}
                                         </span>
                                         <span v-if="act.task_type === 'apply_buff'" class="inline-flex items-center gap-1.5 flex-wrap">
                                             <span class="text-emerald-400 font-semibold">
-                                                🏭 Здание: {{ (act.meta && act.meta.building) ? getBuildingName(act.meta.building) : `Сетка #${act.payload.grid}` }}
+                                                🏭 {{ t('tasks.building') }}: {{ (act.meta && act.meta.building) ? getBuildingName(act.meta.building) : t('tasks.grid_number', { id: act.payload.grid }) }}
                                             </span>
                                             <span v-if="(act.payload.target_scope || 'self') === 'friend'" class="text-amber-400">
-                                                • 👤 Друг: <strong>{{ act.payload.target_player_name || 'Неизвестный друг' }}</strong>
+                                                • 👤 {{ t('tasks.friend') }}: <strong>{{ act.payload.target_player_name || t('tasks.unknown_friend') }}</strong>
                                             </span>
                                             <span v-else class="text-white/50">
-                                                • 🏡 Моя зона
+                                                • 🏡 {{ t('tasks.my_zone') }}
                                             </span>
                                             <span v-if="act.meta && act.meta.buff" class="text-amber-300">
-                                                • ✨ Бафф: <strong>{{ getStarBuffName(act.meta.buff) }}</strong>
+                                                • ✨ {{ t('tasks.buff') }}: <strong>{{ getStarBuffName(act.meta.buff) }}</strong>
                                             </span>
                                             <span class="text-white/60">
-                                                • Кол-во: <strong>{{ act.payload.amount || 1 }}</strong>
+                                                • {{ t('tasks.qty_short') }}: <strong>{{ act.payload.amount || 1 }}</strong>
                                             </span>
                                         </span>
                                         <span v-if="['send_geologist', 'send_explorer'].includes(act.task_type)">
-                                            Специалист: {{ act.meta.specialist ? (act.meta.specialist.name || getSpecialistTypeName(act.meta.specialist.type)) : `Тип #${act.payload.unique_id1}` }}
+                                            {{ t('tasks.specialist') }}: {{ act.meta.specialist ? (act.meta.specialist.name || getSpecialistTypeName(act.meta.specialist.type)) : t('tasks.type_number', { id: act.payload.unique_id1 }) }}
                                             <span v-if="act.meta.subTaskLabel">• {{ act.meta.subTaskLabel }}</span>
                                         </span>
                                     </p>
@@ -166,21 +166,21 @@
                             </div>
                             <div class="flex items-center gap-2 flex-shrink-0">
                                 <!-- Move Up -->
-                                <button type="button" :disabled="idx === 0" @click="moveActionUp(idx)" class="text-white/30 hover:text-emerald-400 disabled:opacity-20 transition-colors p-1" title="Переместить вверх">
+                                <button type="button" :disabled="idx === 0" @click="moveActionUp(idx)" class="text-white/30 hover:text-emerald-400 disabled:opacity-20 transition-colors p-1" :title="t('tasks.move_up')">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
                                     </svg>
                                 </button>
                                 <!-- Move Down -->
-                                <button type="button" :disabled="idx === sequenceActions.length - 1" @click="moveActionDown(idx)" class="text-white/30 hover:text-emerald-400 disabled:opacity-20 transition-colors p-1" title="Переместить вниз">
+                                <button type="button" :disabled="idx === sequenceActions.length - 1" @click="moveActionDown(idx)" class="text-white/30 hover:text-emerald-400 disabled:opacity-20 transition-colors p-1" :title="t('tasks.move_down')">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                                     </svg>
                                 </button>
                                 <span class="text-[10px] text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20 font-mono ml-1">
-                                    задержка: {{ act.delay_seconds }} сек.
+                                    {{ t('tasks.delay') }}: {{ act.delay_seconds }} {{ t('tasks.seconds_unit') }}.
                                 </span>
-                                <button type="button" @click="removeAction(idx)" class="text-white/30 hover:text-red-400 transition-colors p-1" title="Удалить шаг">
+                                <button type="button" @click="removeAction(idx)" class="text-white/30 hover:text-red-400 transition-colors p-1" :title="t('tasks.remove_step')">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                                     </svg>
@@ -189,7 +189,7 @@
                         </div>
                     </div>
                     <div v-else class="text-xs text-white/30 py-4 text-center border border-dashed border-white/10 rounded-lg mb-4">
-                        Серия действий пуста. Добавьте шаги ниже.
+                        {{ t('tasks.empty_series') }}
                     </div>
 
                     <!-- Форма добавления нового шага -->
@@ -197,7 +197,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                             <!-- Выбор типа действия для нового шага -->
                             <div>
-                                <label class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">Тип действия шага</label>
+                                <label class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">{{ t('tasks.step_action_type') }}</label>
                                 <div class="relative">
                                     <button type="button" @click.stop="activeDropdown = activeDropdown === 'stepActionType' ? null : 'stepActionType'" class="glass-select w-full flex items-center justify-between text-left text-xs py-2">
                                         <span>{{ stepActionTypeLabel }}</span>
@@ -206,62 +206,62 @@
                                         </svg>
                                     </button>
                                     <div v-if="activeDropdown === 'stepActionType'" class="absolute z-50 mt-1.5 w-full glass-card border border-white/10 shadow-2xl rounded-xl py-1 max-h-60 overflow-y-auto">
-                                        <button type="button" @click="stepActionType = 'stop_production'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">🛑 Остановить производство</button>
-                                        <button type="button" @click="stepActionType = 'start_production'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">▶️ Запустить производство</button>
-                                        <button type="button" @click="stepActionType = 'apply_buff'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">⚡ Применить бафф</button>
-                                        <button type="button" @click="stepActionType = 'send_geologist'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">⛏️ Отправить геолога</button>
-                                        <button type="button" @click="stepActionType = 'send_explorer'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">🧭 Отправить разведчика</button>
+                                        <button type="button" @click="stepActionType = 'stop_production'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">🛑 {{ t('tasks.action.stop_production') }}</button>
+                                        <button type="button" @click="stepActionType = 'start_production'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">▶️ {{ t('tasks.action.start_production') }}</button>
+                                        <button type="button" @click="stepActionType = 'apply_buff'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">⚡ {{ t('tasks.action.apply_buff') }}</button>
+                                        <button type="button" @click="stepActionType = 'send_geologist'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">⛏️ {{ t('tasks.action.send_geologist') }}</button>
+                                        <button type="button" @click="stepActionType = 'send_explorer'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">🧭 {{ t('tasks.action.send_explorer') }}</button>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Кастомный выбор в зависимости от типа шага -->
                             <div class="md:col-span-2">
-                                <label class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">Параметры шага</label>
+                                <label class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">{{ t('tasks.step_params') }}</label>
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                     <!-- Селекторы целевой зоны и зданий/друзей -->
                                     <div class="col-span-2">
                                         <!-- Переключатель: Моя зона / Зона друга (только для баффа) -->
                                         <div v-if="stepActionType === 'apply_buff'" class="mb-3">
-                                            <label class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">Где применить</label>
+                                            <label class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">{{ t('tasks.where_apply') }}</label>
                                             <div class="grid grid-cols-2 gap-2">
                                                 <button type="button" @click="stepTargetScope = 'self'; onTargetScopeChange()"
                                                         class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all duration-300"
                                                         :class="stepTargetScope === 'self' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
-                                                    Моя зона
+                                                    {{ t('tasks.my_zone') }}
                                                 </button>
                                                 <button type="button" @click="stepTargetScope = 'friend'; onTargetScopeChange()"
                                                         class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all duration-300"
                                                         :class="stepTargetScope === 'friend' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
-                                                    Зона друга
+                                                    {{ t('tasks.friend_zone') }}
                                                 </button>
                                             </div>
                                         </div>
 
                                         <!-- Друг (только если выбрана зона друга) -->
                                         <div v-if="stepActionType === 'apply_buff' && stepTargetScope === 'friend'" class="mb-3">
-                                            <label class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">Друг</label>
+                                            <label class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">{{ t('tasks.friend') }}</label>
                                             <div class="relative">
                                                 <button type="button" @click.stop="activeDropdown = activeDropdown === 'friendList' ? null : 'friendList'"
                                                         class="glass-select w-full flex items-center justify-between text-left text-xs py-2 bg-dark-900/40 transition-all duration-300"
                                                         :class="{ 'border-amber-500/40 bg-amber-500/5': !selectedFriend }">
                                                     <span v-if="selectedFriend" class="flex items-center gap-2">
-                                                        <span>👤 {{ selectedFriend.nickname || selectedFriend.username }} (уровень {{ selectedFriend.playerLevel }})</span>
+                                                        <span>👤 {{ selectedFriend.nickname || selectedFriend.username }} ({{ t('tasks.level') }} {{ selectedFriend.playerLevel }})</span>
                                                     </span>
-                                                    <span v-else class="text-amber-400/80 font-medium">Выберите друга...</span>
+                                                    <span v-else class="text-amber-400/80 font-medium">{{ t('tasks.select_friend') }}</span>
                                                     <svg class="w-3.5 h-3.5 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                                                     </svg>
                                                 </button>
                                                 <div v-if="activeDropdown === 'friendList'" class="absolute z-50 mt-1.5 w-full glass-card border border-white/10 shadow-2xl rounded-xl py-1 max-h-60 overflow-y-auto">
                                                     <button v-for="friend in friendsList" :key="friend.id" type="button" @click="selectFriend(friend); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors flex justify-between items-center">
-                                                        <span>👤 {{ friend.nickname || friend.username }} (уровень {{ friend.playerLevel }})</span>
+                                                        <span>👤 {{ friend.nickname || friend.username }} ({{ t('tasks.level') }} {{ friend.playerLevel }})</span>
                                                         <span class="text-[9px]" :class="friend.onlineStatus ? 'text-green-400' : 'text-white/30'">
-                                                            {{ friend.onlineStatus ? 'в сети' : 'не в сети' }}
+                                                            {{ friend.onlineStatus ? t('tasks.online') : t('tasks.offline') }}
                                                         </span>
                                                     </button>
                                                     <div v-if="friendsList.length === 0" class="px-3 py-1.5 text-xs text-white/40">
-                                                        Список друзей пуст. Выполните синхронизацию аккаунта.
+                                                        {{ t('tasks.friends_empty') }}
                                                     </div>
                                                 </div>
                                             </div>
@@ -269,17 +269,17 @@
 
                                         <!-- Здание друга (только если выбрана зона друга) -->
                                         <div v-if="stepActionType === 'apply_buff' && stepTargetScope === 'friend'" class="mb-3">
-                                            <label class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">Здание друга</label>
+                                            <label class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">{{ t('tasks.friend_building') }}</label>
                                             <div v-if="loadingFriendZone" class="text-xs text-emerald-400/80 flex items-center gap-2 py-2">
                                                 <svg class="animate-spin h-3.5 w-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                                 </svg>
-                                                <span>Загружаем зону {{ selectedFriend?.nickname || selectedFriend?.username }}…</span>
+                                                <span>{{ t('tasks.loading_zone') }} {{ selectedFriend?.nickname || selectedFriend?.username }}…</span>
                                             </div>
                                             <div v-else-if="friendZoneError" class="text-xs text-red-400 flex items-center justify-between py-1 bg-red-500/10 px-3 rounded-lg border border-red-500/20">
-                                                <span>Не удалось загрузить зону друга</span>
-                                                <button type="button" @click="fetchFriendZoneBuildings" class="text-[10px] uppercase font-bold text-white bg-white/10 hover:bg-white/20 px-2 py-0.5 rounded transition-all">Повторить</button>
+                                                <span>{{ t('tasks.zone_load_failed') }}</span>
+                                                <button type="button" @click="fetchFriendZoneBuildings" class="text-[10px] uppercase font-bold text-white bg-white/10 hover:bg-white/20 px-2 py-0.5 rounded transition-all">{{ t('tasks.retry') }}</button>
                                             </div>
                                             <button v-else type="button" @click="openFriendBuildingModal" :disabled="!selectedFriend"
                                                     class="glass-select w-full flex items-center justify-between text-left text-xs py-2 bg-dark-900/40 disabled:opacity-50 transition-all duration-300"
@@ -287,7 +287,7 @@
                                                 <span v-if="selectedFriendBuilding" class="flex items-center gap-2">
                                                     <span>🏭 {{ getBuildingName(selectedFriendBuilding) }} (Grid #{{ selectedFriendBuilding.buildingGrid }})</span>
                                                 </span>
-                                                <span v-else class="text-amber-400/80 font-medium">Выберите здание друга... ({{ filteredFriendBuildings.length }} дост.)</span>
+                                                <span v-else class="text-amber-400/80 font-medium">{{ t('tasks.select_friend_building') }} ({{ filteredFriendBuildings.length }} {{ t('tasks.avail_short') }})</span>
                                                 <svg class="w-3.5 h-3.5 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                                                 </svg>
@@ -303,7 +303,7 @@
                                                     <img v-if="getBuildingIcon(selectedBuilding)" :src="getBuildingIcon(selectedBuilding)" class="w-5 h-5 object-contain" @error="handleBuildingIconError($event, selectedBuilding)" />
                                                     <span class="truncate">{{ getBuildingName(selectedBuilding) }} (Grid #{{ selectedBuilding.buildingGrid }})</span>
                                                 </span>
-                                                <span v-else class="text-amber-400/80 font-medium">Выберите здание... ({{ totalBuildingsCount }} дост.)</span>
+                                                <span v-else class="text-amber-400/80 font-medium">{{ t('tasks.select_building') }} ({{ totalBuildingsCount }} {{ t('tasks.avail_short') }})</span>
                                                 <svg class="w-3.5 h-3.5 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                                                 </svg>
@@ -320,14 +320,14 @@
                                                 <img v-if="getBuffIcon(selectedBuff)" :src="getBuffIcon(selectedBuff)" class="w-5 h-5 object-contain" @error="handleBuffIconError($event, selectedBuff)" />
                                                 <span class="truncate">{{ getStarBuffName(selectedBuff) }} ({{ selectedBuff.amount }})</span>
                                             </span>
-                                            <span v-else class="text-amber-400/80 font-medium">Выберите бафф... ({{ totalBuffsCount }} дост.)</span>
+                                            <span v-else class="text-amber-400/80 font-medium">{{ t('tasks.select_buff') }} ({{ totalBuffsCount }} {{ t('tasks.avail_short') }})</span>
                                             <svg class="w-3.5 h-3.5 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                                             </svg>
                                         </button>
 
                                         <div>
-                                            <label class="block text-[10px] font-medium text-white/40 mb-1 uppercase">Количество</label>
+                                            <label class="block text-[10px] font-medium text-white/40 mb-1 uppercase">{{ t('tasks.quantity') }}</label>
                                             <input type="number" min="1" required v-model.number="stepAmount" class="glass-input w-full text-xs py-1.5">
                                         </div>
                                     </div>
@@ -341,7 +341,7 @@
                                                 <img v-if="getSpecialistIcon(selectedSpecialist.type)" :src="getSpecialistIcon(selectedSpecialist.type)" class="w-5 h-5 object-contain" @error="handleSpecialistIconError($event, selectedSpecialist.type)" />
                                                 <span class="truncate">{{ selectedSpecialist.name || getSpecialistTypeName(selectedSpecialist.type) }}</span>
                                             </span>
-                                            <span v-else class="text-amber-400/80 font-medium">Выберите специалиста... ({{ totalSpecialistsCount }} дост.)</span>
+                                            <span v-else class="text-amber-400/80 font-medium">{{ t('tasks.select_specialist') }} ({{ totalSpecialistsCount }} {{ t('tasks.avail_short') }})</span>
                                             <svg class="w-3.5 h-3.5 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                                             </svg>
@@ -358,10 +358,10 @@
                                                 </svg>
                                             </button>
                                             <div v-if="activeDropdown === 'searchType'" class="absolute z-50 mt-1.5 w-full glass-card border border-white/10 shadow-2xl rounded-xl py-1 max-h-60 overflow-y-auto">
-                                                <button v-if="stepActionType === 'send_geologist'" type="button" @click="payload.task_type = 0; onSearchTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">Поиск залежей</button>
+                                                <button v-if="stepActionType === 'send_geologist'" type="button" @click="payload.task_type = 0; onSearchTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">{{ t('tasks.search_deposits') }}</button>
                                                 <template v-if="stepActionType === 'send_explorer'">
-                                                    <button type="button" @click="payload.task_type = 1; onSearchTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">Поиск сокровищ</button>
-                                                    <button type="button" @click="payload.task_type = 2; onSearchTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">Поиск приключений</button>
+                                                    <button type="button" @click="payload.task_type = 1; onSearchTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">{{ t('tasks.search_treasure') }}</button>
+                                                    <button type="button" @click="payload.task_type = 2; onSearchTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">{{ t('tasks.search_adventure') }}</button>
                                                 </template>
                                             </div>
                                         </div>
@@ -388,10 +388,10 @@
 
                             <!-- Задержка после шага -->
                             <div>
-                                <label class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">Задержка после шага</label>
+                                <label class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">{{ t('tasks.step_delay') }}</label>
                                 <div class="flex items-center gap-2">
                                     <input type="number" min="0" required v-model.number="stepDelay" class="glass-input w-full text-xs py-1.5">
-                                    <span class="text-[10px] text-white/40 font-semibold uppercase">сек</span>
+                                    <span class="text-[10px] text-white/40 font-semibold uppercase">{{ t('tasks.seconds_unit') }}</span>
                                 </div>
                             </div>
                         </div>
@@ -401,7 +401,7 @@
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                                 </svg>
-                                Добавить шаг в серию
+                                {{ t('tasks.add_step') }}
                             </button>
                         </div>
                     </div>
@@ -412,7 +412,7 @@
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                     </svg>
-                    {{ scheduling ? 'Сохранение...' : (editingTaskId ? 'Сохранить изменения' : 'Запланировать серию задач') }}
+                    {{ scheduling ? t('tasks.saving') : (editingTaskId ? t('tasks.save_changes') : t('tasks.schedule_series')) }}
                 </button>
             </form>
         </div>
@@ -423,7 +423,7 @@
                 <svg class="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                 </svg>
-                Запланированные задачи
+                {{ t('tasks.scheduled_tasks') }}
                 <span class="badge badge-neutral text-[10px]">{{ tasks.length }}</span>
             </h2>
 
@@ -436,49 +436,49 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                             </svg>
                             {{ accountName }}
-                            <span class="badge badge-neutral text-[10px]">{{ groupTasks.length }} задач</span>
+                            <span class="badge badge-neutral text-[10px]">{{ groupTasks.length }} {{ t('tasks.tasks_word') }}</span>
                         </h3>
                     </div>
 
                     <!-- Список задач -->
                     <div class="divide-y divide-white/5">
-                        <div v-for="t in groupTasks" :key="t.id" class="p-5 hover:bg-white/[0.01] transition-all duration-200 group">
+                        <div v-for="task in groupTasks" :key="task.id" class="p-5 hover:bg-white/[0.01] transition-all duration-200 group">
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                 <div class="flex items-center gap-3">
                                     <!-- Иконка действия -->
                                     <div class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-xl flex-shrink-0 border border-white/5">
-                                        {{ t.task_type === 'sequence' ? '⛓️' : (typeIcons[t.task_type] || '📋') }}
+                                        {{ task.task_type === 'sequence' ? '⛓️' : (typeIcons[task.task_type] || '📋') }}
                                     </div>
 
                                     <!-- Информация о задаче -->
                                     <div class="min-w-0">
                                         <div class="flex items-center gap-2 flex-wrap">
                                             <p class="text-sm font-semibold text-white/90 group-hover:text-white transition-colors">
-                                                <span v-if="t.name" class="text-emerald-400/90">{{ t.name }}</span>
-                                                <span v-else-if="t.task_type === 'sequence'">Серия задач ({{ getTaskActionsList(t).length }})</span>
-                                                <span v-else>{{ typeLabels[t.task_type] || t.task_type }}</span>
+                                                <span v-if="task.name" class="text-emerald-400/90">{{ task.name }}</span>
+                                                <span v-else-if="task.task_type === 'sequence'">{{ $lang.t('tasks.task_series') }} ({{ getTaskActionsList(task).length }})</span>
+                                                <span v-else>{{ typeLabels[task.task_type] || task.task_type }}</span>
                                             </p>
                                             <span class="badge badge-neutral text-[9px] uppercase">
-                                                {{ t.schedule_type === 'once' ? 'Одноразово' : t.schedule_type === 'interval' ? 'Интервал' : 'Ежедневно' }}
+                                                {{ task.schedule_type === 'once' ? $lang.t('tasks.once') : task.schedule_type === 'interval' ? $lang.t('tasks.interval') : $lang.t('tasks.daily') }}
                                             </span>
                                         </div>
 
                                         <div class="flex flex-wrap items-center gap-2 mt-1.5 text-[11px]">
                                             <!-- Кнопка раскрывающегося списка всех действий -->
                                             <button type="button"
-                                                    @click="toggleTaskExpanded(t.id)"
+                                                    @click="toggleTaskExpanded(task.id)"
                                                     class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-medium bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/20 transition-all duration-200">
-                                                <span>{{ expandedTasks[t.id] ? '📖 Скрыть действия' : '📘 Действия задачи' }} ({{ getTaskActionsList(t).length }})</span>
-                                                <svg class="w-3 h-3 transition-transform duration-300" :class="{ 'rotate-180': expandedTasks[t.id] }" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                <span>{{ expandedTasks[task.id] ? '📖 ' + $lang.t('tasks.hide_actions') : '📘 ' + $lang.t('tasks.show_actions') }} ({{ getTaskActionsList(task).length }})</span>
+                                                <svg class="w-3 h-3 transition-transform duration-300" :class="{ 'rotate-180': expandedTasks[task.id] }" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                                                 </svg>
                                             </button>
 
-                                            <span v-if="t.task_type !== 'sequence' && t.payload && t.payload.grid" class="font-mono text-white/40">
-                                                Сетка #{{ t.payload.grid }}
+                                            <span v-if="task.task_type !== 'sequence' && task.payload && task.payload.grid" class="font-mono text-white/40">
+                                                {{ $lang.t('tasks.grid_number', { id: task.payload.grid }) }}
                                             </span>
-                                            <span v-if="t.task_type !== 'sequence' && t.payload && t.payload.sub_task_id !== undefined" class="text-white/40">
-                                                {{ getSubTaskLabel(t.task_type, t.payload.task_type, t.payload.sub_task_id) }}
+                                            <span v-if="task.task_type !== 'sequence' && task.payload && task.payload.sub_task_id !== undefined" class="text-white/40">
+                                                {{ getSubTaskLabel(task.task_type, task.payload.task_type, task.payload.sub_task_id) }}
                                             </span>
                                         </div>
                                     </div>
@@ -488,86 +488,86 @@
                                 <div class="flex items-center justify-end gap-4 ml-auto sm:ml-0">
                                     <!-- Время до следующего запуска задачи -->
                                     <div class="text-right px-3 py-1.5 rounded-xl bg-white/[0.02] border border-white/5 min-w-[130px]">
-                                        <div v-if="!t.is_active" class="flex items-center justify-end gap-1.5 text-xs text-amber-400/80 font-medium">
+                                        <div v-if="!task.is_active" class="flex items-center justify-end gap-1.5 text-xs text-amber-400/80 font-medium">
                                             <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-                                            <span>Пауза</span>
+                                            <span>{{ $lang.t('tasks.status.pause_short') }}</span>
                                         </div>
-                                        <div v-else-if="t.schedule_type === 'once' && t.last_run_at" class="flex items-center justify-end gap-1.5 text-xs text-white/40">
-                                            <span>Завершена</span>
+                                        <div v-else-if="task.schedule_type === 'once' && task.last_run_at" class="flex items-center justify-end gap-1.5 text-xs text-white/40">
+                                            <span>{{ $lang.t('tasks.status.completed') }}</span>
                                         </div>
                                         <div v-else class="flex flex-col items-end">
                                             <span class="text-xs font-mono font-bold text-emerald-400 flex items-center gap-1.5">
                                                 <svg class="w-3 h-3 text-emerald-400 animate-pulse" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                                 </svg>
-                                                {{ getTaskNextRunText(t).label }}
+                                                {{ getTaskNextRunText(task).label }}
                                             </span>
-                                            <span class="text-[9px] text-white/30 font-mono" v-if="getTaskNextRunText(t).nextRunTime">
-                                                (в {{ getTaskNextRunText(t).nextRunTime }})
+                                            <span class="text-[9px] text-white/30 font-mono" v-if="getTaskNextRunText(task).nextRunTime">
+                                                ({{ $lang.t('tasks.at_time') }} {{ getTaskNextRunText(task).nextRunTime }})
                                             </span>
                                         </div>
-                                        <p class="text-[9px] text-white/30 uppercase tracking-wider mt-0.5 text-right font-medium">До запуска</p>
+                                        <p class="text-[9px] text-white/30 uppercase tracking-wider mt-0.5 text-right font-medium">{{ $lang.t('tasks.until_launch') }}</p>
                                     </div>
 
                                     <!-- Расписание -->
                                     <div class="text-right hidden md:block">
-                                        <p v-if="t.schedule_type === 'once'" class="text-xs text-white/60 font-mono">
-                                            {{ formatDateTime(t.run_at_datetime) }}
+                                        <p v-if="task.schedule_type === 'once'" class="text-xs text-white/60 font-mono">
+                                            {{ formatDateTime(task.run_at_datetime) }}
                                         </p>
-                                        <p v-else-if="t.schedule_type === 'interval'" class="text-xs text-white/60 font-mono">
-                                            Каждые {{ formatInterval(t.interval_hours, t.interval_minutes) }}
+                                        <p v-else-if="task.schedule_type === 'interval'" class="text-xs text-white/60 font-mono">
+                                            {{ $lang.t('tasks.every') }} {{ formatInterval(task.interval_hours, task.interval_minutes) }}
                                         </p>
                                         <p v-else class="text-xs text-white/60 font-mono">
-                                            Ежедневно в {{ t.run_at_time ? utcTimeToLocal(t.run_at_time.substring(0, 5)) : '—' }}
+                                            {{ $lang.t('tasks.daily_at') }} {{ task.run_at_time ? utcTimeToLocal(task.run_at_time.substring(0, 5)) : '—' }}
                                         </p>
-                                        <p class="text-[9px] text-white/20 uppercase tracking-wider">Расписание</p>
+                                        <p class="text-[9px] text-white/20 uppercase tracking-wider">{{ $lang.t('tasks.schedule') }}</p>
                                     </div>
 
                                     <!-- Последний результат выполнения -->
-                                    <span v-if="t.last_result"
+                                    <span v-if="task.last_result"
                                           class="badge text-[10px] flex-shrink-0 max-w-[100px] truncate"
-                                          :class="t.last_result.includes('OK') ? 'badge-success' : 'badge-danger'"
-                                          :title="t.last_result">
-                                        {{ t.last_result.includes('OK') ? 'Успешно' : 'Ошибка' }}
+                                          :class="task.last_result.includes('OK') ? 'badge-success' : 'badge-danger'"
+                                          :title="task.last_result">
+                                        {{ task.last_result.includes('OK') ? $lang.t('tasks.success') : $lang.t('tasks.error') }}
                                     </span>
 
                                     <!-- Кнопка ручного запуска -->
-                                    <button @click="runTaskNow(t)"
-                                            :disabled="executingTasks[t.id]"
+                                    <button @click="runTaskNow(task)"
+                                            :disabled="executingTasks[task.id]"
                                             class="btn-secondary btn-sm flex items-center justify-center gap-1.5 flex-shrink-0"
-                                            :class="executingTasks[t.id] ? 'opacity-50 cursor-not-allowed' : 'hover:border-emerald-500/30 text-emerald-400/80 hover:text-emerald-400'"
-                                            title="Запустить сейчас">
-                                        <svg v-if="executingTasks[t.id]" class="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            :class="executingTasks[task.id] ? 'opacity-50 cursor-not-allowed' : 'hover:border-emerald-500/30 text-emerald-400/80 hover:text-emerald-400'"
+                                            :title="$lang.t('tasks.run_now')">
+                                        <svg v-if="executingTasks[task.id]" class="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                         </svg>
                                         <svg v-else class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
                                         </svg>
-                                        <span class="text-[9px] uppercase font-semibold">{{ executingTasks[t.id] ? 'Запуск...' : 'Пуск' }}</span>
+                                        <span class="text-[9px] uppercase font-semibold">{{ executingTasks[task.id] ? $lang.t('tasks.status.launching') : $lang.t('tasks.run_short') }}</span>
                                     </button>
 
                                     <!-- Кнопка редактирования -->
-                                    <button @click="editTask(t)"
+                                    <button @click="editTask(task)"
                                             class="btn-secondary btn-sm flex items-center justify-center gap-1.5 flex-shrink-0"
-                                            :class="editingTaskId === t.id ? 'border-amber-500/50 bg-amber-500/20 text-amber-300' : 'hover:border-amber-500/30 text-amber-400/80 hover:text-amber-400'"
-                                            title="Редактировать задачу">
+                                            :class="editingTaskId === task.id ? 'border-amber-500/50 bg-amber-500/20 text-amber-300' : 'hover:border-amber-500/30 text-amber-400/80 hover:text-amber-400'"
+                                            :title="$lang.t('tasks.edit_task')">
                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                                         </svg>
-                                        <span class="text-[9px] uppercase font-semibold">Ред.</span>
+                                        <span class="text-[9px] uppercase font-semibold">{{ $lang.t('tasks.edit_short') }}</span>
                                     </button>
 
                                     <!-- Тумблер активации -->
-                                    <button @click="toggleTask(t)"
+                                    <button @click="toggleTask(task)"
                                             class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 flex-shrink-0"
-                                            :class="t.is_active ? 'bg-emerald-500' : 'bg-white/10'">
+                                            :class="task.is_active ? 'bg-emerald-500' : 'bg-white/10'">
                                         <span class="inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform duration-300"
-                                              :class="t.is_active ? 'translate-x-6' : 'translate-x-1'"></span>
+                                              :class="task.is_active ? 'translate-x-6' : 'translate-x-1'"></span>
                                     </button>
 
                                     <!-- Кнопка удаления -->
-                                    <button @click="deleteTask(t.id)"
+                                    <button @click="deleteTask(task.id)"
                                             class="btn-secondary btn-sm text-red-400/60 hover:text-red-400 hover:border-red-500/30 flex-shrink-0">
                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
@@ -577,18 +577,18 @@
                             </div>
 
                             <!-- Раскрывающийся список действий задачи -->
-                            <div v-if="expandedTasks[t.id]" class="mt-4 pt-4 border-t border-white/5 space-y-2 animate-fade-in">
+                            <div v-if="expandedTasks[task.id]" class="mt-4 pt-4 border-t border-white/5 space-y-2 animate-fade-in">
                                 <div class="flex items-center justify-between mb-2">
                                     <p class="text-[10px] uppercase font-semibold text-white/40 tracking-wider flex items-center gap-1.5">
                                         <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm0 5.25h.007v.008H3.75V12Zm0 5.25h.007v.008H3.75v-.008Z" />
                                         </svg>
-                                        Действия в задаче (всего {{ getTaskActionsList(t).length }})
+                                        {{ $lang.t('tasks.actions_in_task', { count: getTaskActionsList(task).length }) }}
                                     </p>
                                 </div>
 
                                 <div class="grid grid-cols-1 gap-2">
-                                    <div v-for="(act, aIdx) in getTaskActionsList(t)" :key="aIdx"
+                                    <div v-for="(act, aIdx) in getTaskActionsList(task)" :key="aIdx"
                                          class="glass-card p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-white/5 hover:border-white/10 transition-all bg-white/[0.01]">
                                         <div class="flex items-start sm:items-center gap-3">
                                             <span class="w-6 h-6 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xs font-bold font-mono flex-shrink-0 mt-0.5 sm:mt-0">
@@ -598,31 +598,31 @@
                                             <div class="min-w-0 text-xs">
                                                 <div class="flex items-center gap-2">
                                                     <span class="font-semibold text-white/90">{{ typeLabels[act.task_type] || act.task_type }}</span>
-                                                    <span v-if="act.payload?.target_scope === 'friend'" class="badge badge-warning text-[9px]">Зона друга</span>
-                                                    <span v-else-if="act.payload?.target_scope === 'self'" class="badge badge-neutral text-[9px]">Моя зона</span>
+                                                    <span v-if="act.payload?.target_scope === 'friend'" class="badge badge-warning text-[9px]">{{ $lang.t('tasks.friend_zone') }}</span>
+                                                    <span v-else-if="act.payload?.target_scope === 'self'" class="badge badge-neutral text-[9px]">{{ $lang.t('tasks.my_zone') }}</span>
                                                 </div>
 
                                                 <!-- Подробные параметры действия -->
                                                 <div class="text-white/60 text-[11px] mt-1 space-y-0.5">
                                                     <!-- Здание -->
                                                     <div v-if="['stop_production', 'start_production', 'apply_buff'].includes(act.task_type)" class="flex items-center gap-1.5 flex-wrap">
-                                                        <span class="text-white/40">Здание:</span>
+                                                        <span class="text-white/40">{{ $lang.t('tasks.building') }}:</span>
                                                         <span class="font-mono text-emerald-300 font-medium">
-                                                            {{ getBuildingDisplayName(t, act) }}
+                                                            {{ getBuildingDisplayName(task, act) }}
                                                         </span>
                                                     </div>
 
                                                     <!-- Бафф -->
                                                     <div v-if="act.task_type === 'apply_buff'" class="flex items-center gap-1.5 flex-wrap">
-                                                        <span class="text-white/40">Бафф:</span>
-                                                        <span class="font-medium text-amber-300">{{ getBuffDisplayName(t, act) }}</span>
-                                                        <span class="text-white/40">• Количество: <strong class="text-white font-mono">{{ act.payload?.amount || 1 }}</strong></span>
-                                                        <span v-if="act.payload?.target_player_name" class="text-emerald-400">• Друг: <strong>{{ act.payload.target_player_name }}</strong></span>
+                                                        <span class="text-white/40">{{ $lang.t('tasks.buff') }}:</span>
+                                                        <span class="font-medium text-amber-300">{{ getBuffDisplayName(task, act) }}</span>
+                                                        <span class="text-white/40">• {{ $lang.t('tasks.quantity') }}: <strong class="text-white font-mono">{{ act.payload?.amount || 1 }}</strong></span>
+                                                        <span v-if="act.payload?.target_player_name" class="text-emerald-400">• {{ $lang.t('tasks.friend') }}: <strong>{{ act.payload.target_player_name }}</strong></span>
                                                     </div>
 
                                                     <!-- Специалист -->
                                                     <div v-if="['send_geologist', 'send_explorer'].includes(act.task_type)" class="flex items-center gap-1.5 flex-wrap">
-                                                        <span class="text-white/40">Тип/Цель поиска:</span>
+                                                        <span class="text-white/40">{{ $lang.t('tasks.search_type_target') }}:</span>
                                                         <span class="font-medium text-teal-300">
                                                             {{ getSubTaskLabel(act.task_type, act.payload?.task_type, act.payload?.sub_task_id) }}
                                                         </span>
@@ -633,8 +633,8 @@
 
                                         <!-- Задержка после шага -->
                                         <div v-if="act.delay_seconds > 0" class="flex items-center gap-1 text-[10px] text-amber-400 bg-amber-400/10 px-2 py-1 rounded-lg border border-amber-400/20 font-mono self-end sm:self-center">
-                                            <span>⏱️ Задержка после шага:</span>
-                                            <span class="font-bold">{{ act.delay_seconds }} сек.</span>
+                                            <span>⏱️ {{ $lang.t('tasks.step_delay') }}:</span>
+                                            <span class="font-bold">{{ act.delay_seconds }} {{ $lang.t('tasks.seconds_unit') }}.</span>
                                         </div>
                                     </div>
                                 </div>
@@ -650,8 +650,8 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                     </svg>
                 </div>
-                <h3 class="text-white/60 font-medium mb-1">Нет запланированных задач</h3>
-                <p class="text-white/30 text-sm">Создайте свою первую автозадачу с помощью формы выше.</p>
+                <h3 class="text-white/60 font-medium mb-1">{{ t('tasks.no_tasks') }}</h3>
+                <p class="text-white/30 text-sm">{{ t('tasks.no_tasks_hint') }}</p>
             </div>
         </div>
 
@@ -659,7 +659,7 @@
         <div v-if="showBuildingModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
             <div class="glass-card max-w-2xl w-full flex flex-col max-h-[80vh] shadow-2xl border border-white/10">
                 <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between">
-                    <h3 class="text-base font-semibold text-white">Выбор здания на аккаунте</h3>
+                    <h3 class="text-base font-semibold text-white">{{ t('tasks.modal.select_building') }}</h3>
                     <button type="button" @click="closeBuildingModal" class="text-white/40 hover:text-white transition-colors">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
@@ -673,11 +673,11 @@
                                 :class="buildingFilter === cat
                                     ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                                     : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
-                            {{ cat }}
+                            {{ t('tasks.building_filter.' + cat) }}
                         </button>
                     </div>
                     <div class="relative">
-                        <input v-model="buildingSearch" type="text" placeholder="Поиск здания по названию или сетке..." class="glass-input w-full text-xs py-2 pl-4">
+                        <input v-model="buildingSearch" type="text" :placeholder="t('tasks.modal.search_building')" class="glass-input w-full text-xs py-2 pl-4">
                     </div>
                 </div>
                 <div class="p-6 overflow-y-auto flex-1 bg-dark-950/20">
@@ -692,15 +692,15 @@
                             </div>
                             <div class="flex-1 min-w-0">
                                 <p class="text-xs font-semibold text-white/90 truncate">{{ getBuildingName(b) }}</p>
-                                <p class="text-[10px] text-white/40 mt-0.5">Сетка #{{ b.buildingGrid }} • Ур. {{ b.upgradeLevel || 1 }}</p>
+                                <p class="text-[10px] text-white/40 mt-0.5">{{ t('tasks.grid_number', { id: b.buildingGrid }) }} • {{ t('tasks.level_short') }} {{ b.upgradeLevel || 1 }}</p>
                             </div>
                         </div>
                     </div>
                     <div v-else class="text-center py-8 text-white/30 text-xs">
                         <span v-if="!zone || !zone.buildings || zone.buildings.length === 0">
-                            Данные острова не загружены. Пожалуйста, сначала синхронизируйте этот игровой аккаунт в разделе Accounts.
+                            {{ t('tasks.modal.island_not_loaded') }}
                         </span>
-                        <span v-else>Здания не найдены.</span>
+                        <span v-else>{{ t('tasks.modal.no_buildings') }}</span>
                     </div>
                 </div>
             </div>
@@ -710,7 +710,7 @@
         <div v-if="showFriendBuildingModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
             <div class="glass-card max-w-2xl w-full flex flex-col max-h-[80vh] shadow-2xl border border-white/10">
                 <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between">
-                    <h3 class="text-base font-semibold text-white">Выбор здания друга</h3>
+                    <h3 class="text-base font-semibold text-white">{{ t('tasks.modal.select_friend_building') }}</h3>
                     <button type="button" @click="closeFriendBuildingModal" class="text-white/40 hover:text-white transition-colors">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
@@ -718,7 +718,7 @@
                     </button>
                 </div>
                 <div class="p-4 border-b border-white/5 bg-white/[0.01]">
-                    <input v-model="friendBuildingSearch" type="text" placeholder="Поиск здания по названию или сетке..." class="glass-input w-full text-xs py-2 pl-4">
+                    <input v-model="friendBuildingSearch" type="text" :placeholder="t('tasks.modal.search_building')" class="glass-input w-full text-xs py-2 pl-4">
                 </div>
                 <div class="p-6 overflow-y-auto flex-1 bg-dark-950/20">
                     <div v-if="searchedFriendBuildings.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -732,12 +732,12 @@
                             </div>
                             <div class="flex-1 min-w-0">
                                 <p class="text-xs font-semibold text-white/90 truncate">{{ getBuildingName(b) }}</p>
-                                <p class="text-[10px] text-white/40 mt-0.5">Сетка #{{ b.buildingGrid }} • Ур. {{ b.upgradeLevel || 1 }}</p>
+                                <p class="text-[10px] text-white/40 mt-0.5">{{ t('tasks.grid_number', { id: b.buildingGrid }) }} • {{ t('tasks.level_short') }} {{ b.upgradeLevel || 1 }}</p>
                             </div>
                         </div>
                     </div>
                     <div v-else class="text-center py-8 text-white/30 text-xs">
-                        Здания не найдены.
+                        {{ t('tasks.modal.no_buildings') }}
                     </div>
                 </div>
             </div>
@@ -747,7 +747,7 @@
         <div v-if="showSpecialistModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
             <div class="glass-card max-w-2xl w-full flex flex-col max-h-[80vh] shadow-2xl border border-white/10">
                 <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between">
-                    <h3 class="text-base font-semibold text-white">Выбор специалиста</h3>
+                    <h3 class="text-base font-semibold text-white">{{ t('tasks.modal.select_specialist') }}</h3>
                     <button type="button" @click="closeSpecialistModal" class="text-white/40 hover:text-white transition-colors">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
@@ -755,7 +755,7 @@
                     </button>
                 </div>
                 <div class="p-4 border-b border-white/5 bg-white/[0.01]">
-                    <input v-model="specialistSearch" type="text" placeholder="Поиск по имени или типу..." class="glass-input w-full text-xs py-2 pl-4">
+                    <input v-model="specialistSearch" type="text" :placeholder="t('tasks.modal.search_specialist')" class="glass-input w-full text-xs py-2 pl-4">
                 </div>
                 <div class="p-6 overflow-y-auto flex-1 bg-dark-950/20">
                     <div v-if="filteredSpecialistsModal.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -774,7 +774,7 @@
                         </div>
                     </div>
                     <div v-else class="text-center py-8 text-white/30 text-xs">
-                        Специалисты не найдены.
+                        {{ t('tasks.modal.no_specialists') }}
                     </div>
                 </div>
             </div>
@@ -784,7 +784,7 @@
         <div v-if="showBuffModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
             <div class="glass-card max-w-2xl w-full flex flex-col max-h-[80vh] shadow-2xl border border-white/10">
                 <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between">
-                    <h3 class="text-base font-semibold text-white">Выбор баффа из звездного меню</h3>
+                    <h3 class="text-base font-semibold text-white">{{ t('tasks.modal.select_buff') }}</h3>
                     <button type="button" @click="closeBuffModal" class="text-white/40 hover:text-white transition-colors">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
@@ -792,7 +792,7 @@
                     </button>
                 </div>
                 <div class="p-4 border-b border-white/5 bg-white/[0.01]">
-                    <input v-model="buffSearch" type="text" placeholder="Поиск баффа по названию..." class="glass-input w-full text-xs py-2 pl-4">
+                    <input v-model="buffSearch" type="text" :placeholder="t('tasks.modal.search_buff')" class="glass-input w-full text-xs py-2 pl-4">
                 </div>
                 <div class="p-6 overflow-y-auto flex-1 bg-dark-950/20">
                     <div v-if="filteredBuffsModal.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -806,12 +806,12 @@
                             </div>
                             <div class="flex-1 min-w-0">
                                 <p class="text-xs font-semibold text-white/90 truncate">{{ getStarBuffName(bf) }}</p>
-                                <p class="text-[10px] text-white/40 mt-0.5">В наличии: {{ bf.amount }}</p>
+                                <p class="text-[10px] text-white/40 mt-0.5">{{ t('tasks.modal.in_stock') }}: {{ bf.amount }}</p>
                             </div>
                         </div>
                     </div>
                     <div v-else class="text-center py-8 text-white/30 text-xs">
-                        Баффы не найдены.
+                        {{ t('tasks.modal.no_buffs') }}
                     </div>
                 </div>
             </div>
@@ -823,6 +823,8 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import axios from 'axios';
 import { showToast } from '../toast';
+import { t, gameAny, gameAnyLookup, intlLocale } from '../lang';
+import { humanizeGameId, resourceName, buildingName } from '../lang/gameNames';
 
 export default {
     name: 'Tasks',
@@ -855,34 +857,34 @@ export default {
 
         const selectedAccountLabel = computed(() => {
             const acc = selectedAccount.value;
-            if (!acc) return 'Выберите аккаунт';
+            if (!acc) return t('tasks.select_account');
             return `${acc.nickname || acc.username} (${(acc.region || '').toUpperCase()})`;
         });
 
         const stepActionTypeLabel = computed(() => {
             const labels = {
-                stop_production: '🛑 Остановить производство',
-                start_production: '▶️ Запустить производство',
-                apply_buff: '⚡ Применить бафф',
-                send_geologist: '⛏️ Отправить геолога',
-                send_explorer: '🧭 Отправить разведчика'
+                stop_production: '🛑 ' + t('tasks.action.stop_production'),
+                start_production: '▶️ ' + t('tasks.action.start_production'),
+                apply_buff: '⚡ ' + t('tasks.action.apply_buff'),
+                send_geologist: '⛏️ ' + t('tasks.action.send_geologist'),
+                send_explorer: '🧭 ' + t('tasks.action.send_explorer')
             };
-            return labels[stepActionType.value] || 'Выберите действие';
+            return labels[stepActionType.value] || t('tasks.select_action');
         });
 
         const specialistSearchTypeLabel = computed(() => {
             if (stepActionType.value === 'send_geologist') {
-                return 'Поиск залежей';
+                return t('tasks.search_deposits');
             }
             if (stepActionType.value === 'send_explorer') {
-                return payload.value.task_type === 2 ? 'Поиск приключений' : 'Поиск сокровищ';
+                return payload.value.task_type === 2 ? t('tasks.search_adventure') : t('tasks.search_treasure');
             }
-            return 'Выберите тип поиска';
+            return t('tasks.select_search_type');
         });
 
         const specialistSubTaskLabel = computed(() => {
             const st = availableSubTasks.value.find(s => s.id === payload.value.sub_task_id);
-            return st ? st.name : 'Выберите цель';
+            return st ? st.name : t('tasks.select_target');
         });
 
         const zone = ref({ buildings: [], specialists: [], buffs: [] });
@@ -894,7 +896,7 @@ export default {
         const showBuffModal = ref(false);
 
         const buildingSearch = ref('');
-        const buildingFilter = ref('Все');
+        const buildingFilter = ref('all');
 
         const specialistSearch = ref('');
         const buffSearch = ref('');
@@ -948,7 +950,7 @@ export default {
             friendBuildings.value = [];
             if (friend) {
                 if (!friend.id) {
-                    showToast('У этого друга отсутствует ID. Пожалуйста, выполните синхронизацию (Sync) в разделе Accounts.', 'error');
+                    showToast(t('tasks.toast.friend_no_id'), 'error');
                     return;
                 }
                 fetchFriendZoneBuildings();
@@ -975,7 +977,7 @@ export default {
 
         const openFriendBuildingModal = () => {
             if (!selectedFriend.value) {
-                showToast('Сначала выберите друга.', 'warning');
+                showToast(t('tasks.toast.select_friend_first'), 'warning');
                 return;
             }
             friendBuildingSearch.value = '';
@@ -997,7 +999,7 @@ export default {
             friendZoneError.value = false;
         };
 
-        const buildingCategories = ['Все', 'Дерево', 'Рудники', 'Металл', 'Еда', 'Другие'];
+        const buildingCategories = ['all', 'wood', 'mines', 'metal', 'food', 'other'];
 
         const typeIcons = {
             stop_production: '🛑',
@@ -1008,11 +1010,11 @@ export default {
         };
 
         const typeLabels = {
-            stop_production: 'Остановка производства',
-            start_production: 'Запуск производства',
-            apply_buff: 'Применение баффа',
-            send_geologist: 'Отправка геолога',
-            send_explorer: 'Отправка разведчика'
+            stop_production: t('tasks.type_label.stop_production'),
+            start_production: t('tasks.type_label.start_production'),
+            apply_buff: t('tasks.type_label.apply_buff'),
+            send_geologist: t('tasks.type_label.send_geologist'),
+            send_explorer: t('tasks.type_label.send_explorer')
         };
 
         const SPECIALIST_TYPES = {
@@ -1051,7 +1053,7 @@ export default {
                 tasks.value = res.data.tasks || [];
                 accounts.value = res.data.accounts || [];
             } catch (e) {
-                showToast('Не удалось загрузить данные планировщика.', 'error');
+                showToast(t('tasks.toast.load_failed'), 'error');
             }
         };
 
@@ -1119,32 +1121,32 @@ export default {
         const addStepToSequence = () => {
             if (stepActionType.value === 'apply_buff' && stepTargetScope.value === 'friend') {
                 if (loadingFriendZone.value) {
-                    showToast('Подождите, пока загрузится зона друга.', 'warning');
+                    showToast(t('tasks.toast.wait_friend_zone'), 'warning');
                     return;
                 }
                 if (!selectedFriend.value) {
-                    showToast('Сначала выберите друга.', 'warning');
+                    showToast(t('tasks.toast.select_friend_first'), 'warning');
                     return;
                 }
                 if (!payload.value.grid) {
-                    showToast('Сначала выберите здание друга.', 'warning');
+                    showToast(t('tasks.toast.select_friend_building_first'), 'warning');
                     return;
                 }
             } else if (['stop_production', 'start_production', 'apply_buff'].includes(stepActionType.value)) {
                 if (!payload.value.grid) {
-                    showToast('Сначала выберите целевое здание.', 'warning');
+                    showToast(t('tasks.toast.select_building_first'), 'warning');
                     return;
                 }
             }
             if (stepActionType.value === 'apply_buff') {
                 if (!payload.value.unique_id1) {
-                    showToast('Сначала выберите бафф.', 'warning');
+                    showToast(t('tasks.toast.select_buff_first'), 'warning');
                     return;
                 }
             }
             if (['send_geologist', 'send_explorer'].includes(stepActionType.value)) {
                 if (!selectedSpecialist.value) {
-                    showToast('Сначала выберите специалиста.', 'warning');
+                    showToast(t('tasks.toast.select_specialist_first'), 'warning');
                     return;
                 }
             }
@@ -1197,7 +1199,7 @@ export default {
             }
             stepDelay.value = 5;
 
-            showToast('Действие успешно добавлено в серию!');
+            showToast(t('tasks.toast.action_added'));
         };
 
         const moveActionUp = (idx) => {
@@ -1216,15 +1218,15 @@ export default {
 
         const clearSequence = () => {
             if (sequenceActions.value.length === 0) return;
-            if (confirm('Вы уверены, что хотите очистить всю серию шагов?')) {
+            if (confirm(t('tasks.confirm.clear_series'))) {
                 sequenceActions.value = [];
-                showToast('Серия шагов очищена.');
+                showToast(t('tasks.toast.series_cleared'));
             }
         };
 
         const removeAction = (idx) => {
             sequenceActions.value.splice(idx, 1);
-            showToast('Действие удалено из серии.');
+            showToast(t('tasks.toast.action_removed'));
         };
 
         resetPayload('stop_production');
@@ -1246,11 +1248,7 @@ export default {
             return !nonStoppable.some(word => name.includes(word));
         };
 
-        const getBuildingName = (b) => {
-            if (!b) return '';
-            const name = b.buildingName_string || b.buildingName || 'Building';
-            return name.replace(/(?<!^)(?=[A-Z])/g, ' ').replace(/_/g, ' ');
-        };
+        const getBuildingName = (b) => (b ? buildingName(b.buildingName_string || b.buildingName || 'Building') : '');
 
         const getBuildingIcon = (b) => {
             if (!b) return null;
@@ -1315,19 +1313,19 @@ export default {
                 list = list.filter(b => getBuildingName(b).toLowerCase().includes(query) || String(b.buildingGrid).includes(query));
             }
 
-            if (buildingFilter.value !== 'Все') {
+            if (buildingFilter.value !== 'all') {
                 list = list.filter(b => {
                     const name = (b.buildingName_string || b.buildingName || '').toLowerCase();
-                    if (buildingFilter.value === 'Дерево') {
+                    if (buildingFilter.value === 'wood') {
                         return name.includes('wood') || name.includes('sawmill') || name.includes('forester') || name.includes('cutter');
                     }
-                    if (buildingFilter.value === 'Рудники') {
+                    if (buildingFilter.value === 'mines') {
                         return name.includes('mine') || name.includes('quarry') || name.includes('cutter');
                     }
-                    if (buildingFilter.value === 'Металл') {
+                    if (buildingFilter.value === 'metal') {
                         return name.includes('iron') || name.includes('copper') || name.includes('gold') || name.includes('steel') || name.includes('smelter') || name.includes('weapon');
                     }
-                    if (buildingFilter.value === 'Еда') {
+                    if (buildingFilter.value === 'food') {
                         return name.includes('farm') || name.includes('brewery') || name.includes('butcher') || name.includes('mill') || name.includes('bakery') || name.includes('hunter') || name.includes('fish');
                     }
                     return !name.includes('wood') && !name.includes('sawmill') && !name.includes('forester') && !name.includes('mine') && !name.includes('quarry') && !name.includes('iron') && !name.includes('copper') && !name.includes('gold') && !name.includes('steel') && !name.includes('smelter') && !name.includes('weapon') && !name.includes('farm') && !name.includes('brewery') && !name.includes('butcher') && !name.includes('mill') && !name.includes('bakery') && !name.includes('hunter') && !name.includes('fish');
@@ -1402,36 +1400,34 @@ export default {
             return list;
         });
 
-        const translations = ref({});
+        const formatResourceName = humanizeGameId;
 
-        const formatResourceName = (name) => {
-            if (!name) return '';
-            let formatted = name.replace(/(?<!^)(?=[A-Z])/g, ' ').replace(/_/g, ' ').trim();
-            return formatted.replace(/\w\S*/g, (w) => w.replace(/^\w/, (c) => c.toUpperCase()));
-        };
+        // Central game-catalog lookup with legacy prettifier fallback.
+        const resourceDisplayName = resourceName;
 
         const getStarBuffName = (b) => {
-            if (!b || !b.buffName_string) return 'Неизвестный бафф';
+            if (!b || !b.buffName_string) return t('tasks.unknown_buff');
 
             const name = b.buffName_string;
+            const template = gameAnyLookup(name);
 
-            if (translations.value[name]) {
-                let tpl = translations.value[name];
+            if (template) {
+                let tpl = template;
                 if (tpl.includes('{0}')) {
-                    tpl = tpl.replace('{0}', formatResourceName(b.resourceName_string));
+                    tpl = tpl.replace('{0}', resourceDisplayName(b.resourceName_string));
                 }
                 tpl = tpl.replace(/\{1,\w+\}/g, '').replace(/[:\s]+$/, '').replace(/\s+/g, ' ').trim();
                 return tpl;
             }
 
             if (name === 'AddResource') {
-                return `Добавить ресурс: ${formatResourceName(b.resourceName_string)}`;
+                return `${t('tasks.buff_add_resource')}: ${resourceDisplayName(b.resourceName_string)}`;
             }
             if (name === 'BuildBuilding') {
-                return `Лицензия: ${formatResourceName(b.resourceName_string)}`;
+                return `${t('tasks.buff_build_license')}: ${resourceDisplayName(b.resourceName_string)}`;
             }
             if (name === 'Adventure') {
-                return `Приключение: ${formatResourceName(b.resourceName_string)}`;
+                return `${t('tasks.buff_adventure')}: ${resourceDisplayName(b.resourceName_string)}`;
             }
 
             return name.replace(/(?<!^)(?=[A-Z])/g, ' ').replace(/_/g, ' ');
@@ -1503,11 +1499,11 @@ export default {
         // Управление модальными окнами
         const openBuildingModal = () => {
             if (!selectedAccountId.value) {
-                showToast('Сначала выберите игровой аккаунт.', 'warning');
+                showToast(t('tasks.toast.select_account_first'), 'warning');
                 return;
             }
             buildingSearch.value = '';
-            buildingFilter.value = 'Все';
+            buildingFilter.value = 'all';
             showBuildingModal.value = true;
         };
         const closeBuildingModal = () => { showBuildingModal.value = false; };
@@ -1519,7 +1515,7 @@ export default {
 
         const openSpecialistModal = () => {
             if (!selectedAccountId.value) {
-                showToast('Сначала выберите игровой аккаунт.', 'warning');
+                showToast(t('tasks.toast.select_account_first'), 'warning');
                 return;
             }
             specialistSearch.value = '';
@@ -1535,7 +1531,7 @@ export default {
 
         const openBuffModal = () => {
             if (!selectedAccountId.value) {
-                showToast('Сначала выберите игровой аккаунт.', 'warning');
+                showToast(t('tasks.toast.select_account_first'), 'warning');
                 return;
             }
             buffSearch.value = '';
@@ -1552,15 +1548,15 @@ export default {
         const availableSubTasks = computed(() => {
             if (stepActionType.value === 'send_geologist') {
                 return [
-                    { id: 0, name: 'Камень' },
-                    { id: 1, name: 'Медная руда' },
-                    { id: 2, name: 'Мрамор' },
-                    { id: 3, name: 'Железная руда' },
-                    { id: 4, name: 'Золотая руда' },
-                    { id: 5, name: 'Каменный уголь' },
-                    { id: 6, name: 'Гранит' },
-                    { id: 7, name: 'Титановая руда' },
-                    { id: 8, name: 'Селитра' }
+                    { id: 0, name: t('tasks.deposit.stone') },
+                    { id: 1, name: t('tasks.deposit.copper_ore') },
+                    { id: 2, name: t('tasks.deposit.marble') },
+                    { id: 3, name: t('tasks.deposit.iron_ore') },
+                    { id: 4, name: t('tasks.deposit.gold_ore') },
+                    { id: 5, name: t('tasks.deposit.coal') },
+                    { id: 6, name: t('tasks.deposit.granite') },
+                    { id: 7, name: t('tasks.deposit.titanium_ore') },
+                    { id: 8, name: t('tasks.deposit.saltpeter') }
                 ];
             }
 
@@ -1570,23 +1566,23 @@ export default {
                     return [
                         {
                             id: 0,
-                            name: 'Короткий поиск сокровищ (6ч)'
+                            name: t('tasks.treasure.short')
                         },
                         {
                             id: 1,
-                            name: 'Средний поиск сокровищ (12ч)'
+                            name: t('tasks.treasure.medium')
                         },
                         {
                             id: 2,
-                            name: 'Длинный поиск сокровищ (24ч)'
+                            name: t('tasks.treasure.long')
                         },
                         {
                             id: 3,
-                            name: 'Очень длинный поиск сокровищ (36ч)'
+                            name: t('tasks.treasure.very_long')
                         },
                         {
                             id: 6,
-                            name: 'Экстрадлинный поиск сокровищ (48ч)'
+                            name: t('tasks.treasure.extra_long')
                         }
                     ];
                 }
@@ -1596,19 +1592,19 @@ export default {
                     return [
                         {
                             id: 0,
-                            name: 'Короткий поиск приключений'
+                            name: t('tasks.adventure.short')
                         },
                         {
                             id: 1,
-                            name: 'Средний поиск приключений'
+                            name: t('tasks.adventure.medium')
                         },
                         {
                             id: 2,
-                            name: 'Длинный поиск приключений'
+                            name: t('tasks.adventure.long')
                         },
                         {
                             id: 3,
-                            name: 'Очень длинный поиск приключений'
+                            name: t('tasks.adventure.very_long')
                         }
                     ];
                 }
@@ -1619,10 +1615,10 @@ export default {
 
         const groupedTasks = computed(() => {
             const groups = {};
-            tasks.value.forEach(t => {
-                const name = t.account ? (t.account.nickname || t.account.username) : 'Неизвестный аккаунт';
+            tasks.value.forEach(taskItem => {
+                const name = taskItem.account ? (taskItem.account.nickname || taskItem.account.username) : t('tasks.unknown_account');
                 if (!groups[name]) groups[name] = [];
-                groups[name].push(t);
+                groups[name].push(taskItem);
             });
             return groups;
         });
@@ -1635,34 +1631,34 @@ export default {
             const stNames = {
                 // Геолог
                 0: {
-                    0: 'Камень',
-                    1: 'Медь',
-                    2: 'Мрамор',
-                    3: 'Железо',
-                    4: 'Золото',
-                    5: 'Уголь',
-                    6: 'Гранит',
-                    7: 'Титановая руда',
-                    8: 'Селитра'
+                    0: t('tasks.deposit_short.stone'),
+                    1: t('tasks.deposit_short.copper'),
+                    2: t('tasks.deposit_short.marble'),
+                    3: t('tasks.deposit_short.iron'),
+                    4: t('tasks.deposit_short.gold'),
+                    5: t('tasks.deposit_short.coal'),
+                    6: t('tasks.deposit_short.granite'),
+                    7: t('tasks.deposit_short.titanium_ore'),
+                    8: t('tasks.deposit_short.saltpeter')
                 },
 
                 // Разведчик: сокровища
                 1: {
-                    0: 'Кор. сокровища',
-                    1: 'Ср. сокровища',
-                    2: 'Дл. сокровища',
-                    3: 'Очень дл. сокровища',
-                    4: 'Особый поиск Erudite',
-                    5: 'Особый поиск Bean A Collada',
-                    6: 'Экстрадл. сокровища'
+                    0: t('tasks.treasure_short.short'),
+                    1: t('tasks.treasure_short.medium'),
+                    2: t('tasks.treasure_short.long'),
+                    3: t('tasks.treasure_short.very_long'),
+                    4: t('tasks.treasure_short.erudite'),
+                    5: t('tasks.treasure_short.bean_collada'),
+                    6: t('tasks.treasure_short.extra_long')
                 },
 
                 // Разведчик: приключения
                 2: {
-                    0: 'Кор. приключение',
-                    1: 'Ср. приключение',
-                    2: 'Дл. приключение',
-                    3: 'Очень дл. приключение'
+                    0: t('tasks.adventure_short.short'),
+                    1: t('tasks.adventure_short.medium'),
+                    2: t('tasks.adventure_short.long'),
+                    3: t('tasks.adventure_short.very_long')
                 }
             };
 
@@ -1673,7 +1669,7 @@ export default {
                     : 1;
 
             return stNames[cat]?.[Number(subId)]
-                || `Задача #${subId}`;
+                || t('tasks.task_number', { id: subId });
         };
 
         // ===== Работа с часовыми поясами =====
@@ -1729,7 +1725,7 @@ export default {
             if (!dtStr) return '—';
             const d = parseServerDate(dtStr);
             if (!d) return dtStr;
-            return d.toLocaleString('ru-RU', {
+            return d.toLocaleString(intlLocale, {
                 day: '2-digit',
                 month: '2-digit',
                 year: 'numeric',
@@ -1740,9 +1736,9 @@ export default {
 
         const formatInterval = (hours, minutes) => {
             const parts = [];
-            if (hours) parts.push(`${hours} ч.`);
-            if (minutes) parts.push(`${minutes} мин.`);
-            return parts.join(' ') || '0 мин.';
+            if (hours) parts.push(`${hours} ${t('tasks.hours_short')}`);
+            if (minutes) parts.push(`${minutes} ${t('tasks.minutes_short')}`);
+            return parts.join(' ') || `0 ${t('tasks.minutes_short')}`;
         };
 
         const editingTaskId = ref(null);
@@ -1764,20 +1760,20 @@ export default {
             zone.value = { buildings: [], specialists: [], buffs: [] };
         };
 
-        const editTask = (t) => {
-            editingTaskId.value = t.id;
-            taskName.value = t.name || '';
-            selectedAccountId.value = t.account_id;
+        const editTask = (task) => {
+            editingTaskId.value = task.id;
+            taskName.value = task.name || '';
+            selectedAccountId.value = task.account_id;
             onAccountChange();
 
-            scheduleType.value = t.schedule_type || 'daily';
-            runAtTime.value = t.run_at_time ? utcTimeToLocal(t.run_at_time.substring(0, 5)) : '';
-            runAtDatetime.value = utcToDatetimeLocalInput(t.run_at_datetime);
-            intervalHours.value = t.interval_hours || 0;
-            intervalMinutes.value = t.interval_minutes || 0;
+            scheduleType.value = task.schedule_type || 'daily';
+            runAtTime.value = task.run_at_time ? utcTimeToLocal(task.run_at_time.substring(0, 5)) : '';
+            runAtDatetime.value = utcToDatetimeLocalInput(task.run_at_datetime);
+            intervalHours.value = task.interval_hours || 0;
+            intervalMinutes.value = task.interval_minutes || 0;
 
-            if (t.task_type === 'sequence' && t.payload && t.payload.actions) {
-                const acc = accounts.value.find(a => a.id === t.account_id);
+            if (task.task_type === 'sequence' && task.payload && task.payload.actions) {
+                const acc = accounts.value.find(a => a.id === task.account_id);
                 let zoneData = { buildings: [], specialists: [], buffs: [] };
                 if (acc && acc.zone_data) {
                     try {
@@ -1785,7 +1781,7 @@ export default {
                     } catch (e) {}
                 }
 
-                sequenceActions.value = t.payload.actions.map(act => {
+                sequenceActions.value = task.payload.actions.map(act => {
                     const meta = { building: null, buff: null, specialist: null };
 
                     if (['stop_production', 'start_production', 'apply_buff'].includes(act.task_type)) {
@@ -1820,12 +1816,12 @@ export default {
 
         const scheduleTask = async () => {
             if (!selectedAccountId.value) {
-                showToast('Выберите игровой аккаунт.', 'warning');
+                showToast(t('tasks.toast.select_game_account'), 'warning');
                 return;
             }
 
             if (sequenceActions.value.length === 0) {
-                showToast('Добавьте хотя бы одно действие в серию.', 'warning');
+                showToast(t('tasks.toast.add_action_first'), 'warning');
                 return;
             }
 
@@ -1862,12 +1858,12 @@ export default {
                 }
 
                 if (res.data.success) {
-                    showToast(editingTaskId.value ? 'Задача успешно обновлена.' : 'Серия задач успешно запланирована.');
+                    showToast(editingTaskId.value ? t('tasks.toast.task_updated') : t('tasks.toast.series_scheduled'));
                     cancelEdit();
                     loadPlanner();
                 }
             } catch (e) {
-                showToast(e.response?.data?.message || 'Не удалось сохранить серию задач.', 'error');
+                showToast(e.response?.data?.message || t('tasks.toast.save_failed'), 'error');
             } finally {
                 scheduling.value = false;
             }
@@ -1878,23 +1874,23 @@ export default {
                 const res = await axios.post(`/api/tasks/${task.id}/toggle`);
                 if (res.data.success) {
                     task.is_active = res.data.task.is_active;
-                    showToast(task.is_active ? 'Задача активирована' : 'Задача приостановлена');
+                    showToast(task.is_active ? t('tasks.toast.task_activated') : t('tasks.toast.task_paused'));
                 }
             } catch (e) {
-                showToast('Не удалось переключить состояние задачи.', 'error');
+                showToast(t('tasks.toast.toggle_failed'), 'error');
             }
         };
 
         const deleteTask = async (id) => {
-            if (!confirm('Удалить эту задачу?')) return;
+            if (!confirm(t('tasks.confirm.delete_task'))) return;
             try {
                 const res = await axios.delete(`/api/tasks/${id}`);
                 if (res.data.success) {
-                    showToast('Задача удалена.');
+                    showToast(t('tasks.toast.task_deleted'));
                     loadPlanner();
                 }
             } catch (e) {
-                showToast('Не удалось удалить задачу.', 'error');
+                showToast(t('tasks.toast.delete_failed'), 'error');
             }
         };
 
@@ -1904,13 +1900,13 @@ export default {
             try {
                 const res = await axios.post(`/api/tasks/${task.id}/execute`);
                 if (res.data.success) {
-                    showToast('Задача выполнена успешно: ' + (res.data.message || 'ОК'));
+                    showToast(t('tasks.toast.run_success') + ': ' + (res.data.message || 'OK'));
                 } else {
-                    showToast('Ошибка выполнения: ' + (res.data.message || 'Неизвестно'), 'error');
+                    showToast(t('tasks.toast.run_error') + ': ' + (res.data.message || t('tasks.toast.unknown')), 'error');
                 }
                 loadPlanner();
             } catch (e) {
-                showToast(e.response?.data?.message || 'Не удалось выполнить задачу.', 'error');
+                showToast(e.response?.data?.message || t('tasks.toast.run_failed'), 'error');
             } finally {
                 executingTasks.value[task.id] = false;
             }
@@ -1924,29 +1920,29 @@ export default {
             expandedTasks.value[taskId] = !expandedTasks.value[taskId];
         };
 
-        const getTaskActionsList = (t) => {
-            if (!t) return [];
-            if (t.task_type === 'sequence' && Array.isArray(t.payload?.actions)) {
-                return t.payload.actions;
+        const getTaskActionsList = (task) => {
+            if (!task) return [];
+            if (task.task_type === 'sequence' && Array.isArray(task.payload?.actions)) {
+                return task.payload.actions;
             }
             return [{
-                task_type: t.task_type,
-                payload: t.payload || {},
+                task_type: task.task_type,
+                payload: task.payload || {},
                 delay_seconds: 0
             }];
         };
 
-        const getNextRunDate = (t) => {
-            if (!t) return null;
+        const getNextRunDate = (task) => {
+            if (!task) return null;
 
-            if (t.schedule_type === 'once') {
-                if (!t.run_at_datetime) return null;
-                return parseServerDate(t.run_at_datetime);
+            if (task.schedule_type === 'once') {
+                if (!task.run_at_datetime) return null;
+                return parseServerDate(task.run_at_datetime);
             }
 
-            if (t.schedule_type === 'daily') {
-                if (!t.run_at_time) return null;
-                const parts = t.run_at_time.split(':');
+            if (task.schedule_type === 'daily') {
+                if (!task.run_at_time) return null;
+                const parts = task.run_at_time.split(':');
                 if (parts.length < 2) return null;
                 const hours = parseInt(parts[0], 10);
                 const minutes = parseInt(parts[1], 10);
@@ -1961,13 +1957,13 @@ export default {
                 return next;
             }
 
-            if (t.schedule_type === 'interval') {
-                const h = Number(t.interval_hours || 0);
-                const m = Number(t.interval_minutes || 0);
+            if (task.schedule_type === 'interval') {
+                const h = Number(task.interval_hours || 0);
+                const m = Number(task.interval_minutes || 0);
                 const intervalMs = (h * 3600 + m * 60) * 1000;
                 if (intervalMs <= 0) return null;
 
-                const baseStr = t.last_run_at || t.created_at;
+                const baseStr = task.last_run_at || task.created_at;
                 if (!baseStr) return null;
                 const base = parseServerDate(baseStr);
                 if (!base) return null;
@@ -1984,16 +1980,16 @@ export default {
             return null;
         };
 
-        const getTaskNextRunText = (t) => {
-            if (!t.is_active) {
-                return { status: 'paused', label: 'Приостановлена', detail: '' };
+        const getTaskNextRunText = (task) => {
+            if (!task.is_active) {
+                return { status: 'paused', label: t('tasks.status.paused'), detail: '' };
             }
 
-            if (t.schedule_type === 'once' && t.last_run_at) {
-                return { status: 'completed', label: 'Завершена', detail: '' };
+            if (task.schedule_type === 'once' && task.last_run_at) {
+                return { status: 'completed', label: t('tasks.status.completed'), detail: '' };
             }
 
-            const nextDate = getNextRunDate(t);
+            const nextDate = getNextRunDate(task);
             if (!nextDate) {
                 return { status: 'none', label: '—', detail: '' };
             }
@@ -2001,7 +1997,7 @@ export default {
             const diffMs = nextDate.getTime() - currentTimeMs.value;
 
             if (diffMs <= 0) {
-                return { status: 'due', label: 'Запуск...', detail: 'Выполняется или ожидает очереди' };
+                return { status: 'due', label: t('tasks.status.launching'), detail: t('tasks.status.running_detail') };
             }
 
             const totalSec = Math.floor(diffMs / 1000);
@@ -2011,15 +2007,15 @@ export default {
             const secs = totalSec % 60;
 
             let parts = [];
-            if (days > 0) parts.push(`${days}д`);
-            if (hours > 0 || days > 0) parts.push(`${hours}ч`);
-            if (mins > 0 || hours > 0 || days > 0) parts.push(`${mins}м`);
-            parts.push(`${secs}с`);
+            if (days > 0) parts.push(`${days}${t('tasks.unit.d')}`);
+            if (hours > 0 || days > 0) parts.push(`${hours}${t('tasks.unit.h')}`);
+            if (mins > 0 || hours > 0 || days > 0) parts.push(`${mins}${t('tasks.unit.m')}`);
+            parts.push(`${secs}${t('tasks.unit.s')}`);
 
             return {
                 status: 'active',
-                label: `через ${parts.join(' ')}`,
-                nextRunTime: nextDate.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+                label: t('tasks.in_time', { time: parts.join(' ') }),
+                nextRunTime: nextDate.toLocaleTimeString(intlLocale, { hour: '2-digit', minute: '2-digit' })
             };
         };
 
@@ -2028,9 +2024,9 @@ export default {
                 return getBuildingName(action.meta.building);
             }
             const grid = action.payload?.grid;
-            if (!grid) return 'Здание не указано';
+            if (!grid) return t('tasks.building_not_set');
 
-            const acc = accounts.value.find(a => Number(a.id) === Number(t.account_id));
+            const acc = accounts.value.find(a => Number(a.id) === Number(task.account_id));
             if (acc && acc.zone_data) {
                 try {
                     const zd = typeof acc.zone_data === 'string' ? JSON.parse(acc.zone_data) : acc.zone_data;
@@ -2038,7 +2034,7 @@ export default {
                     if (b) return getBuildingName(b);
                 } catch (e) {}
             }
-            return `Сетка #${grid}`;
+            return t('tasks.grid_number', { id: grid });
         };
 
         const getBuffDisplayName = (t, action) => {
@@ -2046,9 +2042,9 @@ export default {
                 return getStarBuffName(action.meta.buff);
             }
             const u1 = action.payload?.unique_id1;
-            if (!u1) return 'Бафф из меню';
+            if (!u1) return t('tasks.buff_from_menu');
 
-            const acc = accounts.value.find(a => Number(a.id) === Number(t.account_id));
+            const acc = accounts.value.find(a => Number(a.id) === Number(task.account_id));
             if (acc && acc.zone_data) {
                 try {
                     const zd = typeof acc.zone_data === 'string' ? JSON.parse(acc.zone_data) : acc.zone_data;
@@ -2057,7 +2053,7 @@ export default {
                     if (bf) return getStarBuffName(bf);
                 } catch (e) {}
             }
-            return `Бафф #${u1}`;
+            return t('tasks.buff_number', { id: u1 });
         };
 
         const closeAllDropdowns = (e) => {
@@ -2068,10 +2064,6 @@ export default {
 
         onMounted(() => {
             loadPlanner();
-            fetch('/api/lang/res')
-                .then(r => r.json())
-                .then(data => { translations.value = data; })
-                .catch(() => {});
             document.addEventListener('click', closeAllDropdowns);
             countdownTimer = setInterval(() => {
                 currentTimeMs.value = Date.now();
@@ -2084,7 +2076,6 @@ export default {
         });
 
         return {
-            translations,
             tasks,
             accounts,
             scheduling,
