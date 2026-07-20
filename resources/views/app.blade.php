@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>TSO Manager</title>
     <script>
+        window.__APP_LOCALE__ = @json(app()->getLocale());
         window.__AUTH_USER__ = {!! json_encode([
             'id' => auth()->id(),
             'name' => auth()->user()?->name,

@@ -823,6 +823,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import axios from 'axios';
 import { showToast } from '../toast';
+import { t, gameAny, gameAnyLookup, intlLocale } from '../lang';
 
 export default {
     name: 'Tasks',
@@ -1402,36 +1403,38 @@ export default {
             return list;
         });
 
-        const translations = ref({});
-
         const formatResourceName = (name) => {
             if (!name) return '';
             let formatted = name.replace(/(?<!^)(?=[A-Z])/g, ' ').replace(/_/g, ' ').trim();
             return formatted.replace(/\w\S*/g, (w) => w.replace(/^\w/, (c) => c.toUpperCase()));
         };
 
+        // Central game-catalog lookup with legacy prettifier fallback.
+        const resourceDisplayName = (name) => gameAnyLookup(name) ?? formatResourceName(name);
+
         const getStarBuffName = (b) => {
-            if (!b || !b.buffName_string) return 'Неизвестный бафф';
+            if (!b || !b.buffName_string) return t('tasks.unknown_buff');
 
             const name = b.buffName_string;
+            const template = gameAnyLookup(name);
 
-            if (translations.value[name]) {
-                let tpl = translations.value[name];
+            if (template) {
+                let tpl = template;
                 if (tpl.includes('{0}')) {
-                    tpl = tpl.replace('{0}', formatResourceName(b.resourceName_string));
+                    tpl = tpl.replace('{0}', resourceDisplayName(b.resourceName_string));
                 }
                 tpl = tpl.replace(/\{1,\w+\}/g, '').replace(/[:\s]+$/, '').replace(/\s+/g, ' ').trim();
                 return tpl;
             }
 
             if (name === 'AddResource') {
-                return `Добавить ресурс: ${formatResourceName(b.resourceName_string)}`;
+                return `${t('tasks.buff_add_resource')}: ${resourceDisplayName(b.resourceName_string)}`;
             }
             if (name === 'BuildBuilding') {
-                return `Лицензия: ${formatResourceName(b.resourceName_string)}`;
+                return `${t('tasks.buff_build_license')}: ${resourceDisplayName(b.resourceName_string)}`;
             }
             if (name === 'Adventure') {
-                return `Приключение: ${formatResourceName(b.resourceName_string)}`;
+                return `${t('tasks.buff_adventure')}: ${resourceDisplayName(b.resourceName_string)}`;
             }
 
             return name.replace(/(?<!^)(?=[A-Z])/g, ' ').replace(/_/g, ' ');
@@ -1729,7 +1732,7 @@ export default {
             if (!dtStr) return '—';
             const d = parseServerDate(dtStr);
             if (!d) return dtStr;
-            return d.toLocaleString('ru-RU', {
+            return d.toLocaleString(intlLocale, {
                 day: '2-digit',
                 month: '2-digit',
                 year: 'numeric',
@@ -2019,7 +2022,7 @@ export default {
             return {
                 status: 'active',
                 label: `через ${parts.join(' ')}`,
-                nextRunTime: nextDate.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+                nextRunTime: nextDate.toLocaleTimeString(intlLocale, { hour: '2-digit', minute: '2-digit' })
             };
         };
 
@@ -2057,7 +2060,7 @@ export default {
                     if (bf) return getStarBuffName(bf);
                 } catch (e) {}
             }
-            return `Бафф #${u1}`;
+            return t('tasks.buff_number', { id: u1 });
         };
 
         const closeAllDropdowns = (e) => {
@@ -2068,10 +2071,6 @@ export default {
 
         onMounted(() => {
             loadPlanner();
-            fetch('/api/lang/res')
-                .then(r => r.json())
-                .then(data => { translations.value = data; })
-                .catch(() => {});
             document.addEventListener('click', closeAllDropdowns);
             countdownTimer = setInterval(() => {
                 currentTimeMs.value = Date.now();
@@ -2084,7 +2083,6 @@ export default {
         });
 
         return {
-            translations,
             tasks,
             accounts,
             scheduling,

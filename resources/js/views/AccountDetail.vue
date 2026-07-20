@@ -214,7 +214,7 @@
                                 :class="specialistFilter === cat
                                     ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/10 text-emerald-400 border-emerald-500/30'
                                     : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
-                            {{ cat === 'All' ? 'Все' : cat === 'General' ? 'Генералы' : cat === 'Explorer' ? 'Разведчики' : 'Геологи' }}
+                            {{ t('account.specialist_filter.' + cat.toLowerCase()) }}
                             <span class="ml-1.5 px-1.5 py-0.5 rounded-full text-[9px]" :class="specialistFilter === cat ? 'bg-emerald-500/20' : 'bg-white/5'">
                                 {{ getSpecialistCategoryCount(cat) }}
                             </span>
@@ -226,7 +226,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                             </svg>
                         </div>
-                        <input v-model="specialistSearch" type="text" placeholder="Поиск специалистов..." class="glass-input w-full pl-11">
+                        <input v-model="specialistSearch" type="text" :placeholder="t('account.search_specialists')" class="glass-input w-full pl-11">
                     </div>
                 </div>
 
@@ -356,7 +356,7 @@
                     <div v-if="basicResources.length > 0">
                         <h4 class="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3 flex items-center gap-2">
                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                            {{ translations['WarehouseTab1'] || 'Basic Resources (Базовые)' }}
+                            {{ gameAny('WarehouseTab1', null, t('account.warehouse.basic')) }}
                         </h4>
                         <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
                             <div v-for="r in basicResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
@@ -376,7 +376,7 @@
                     <div v-if="improvedResources.length > 0">
                         <h4 class="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3 flex items-center gap-2">
                             <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
-                            {{ translations['WarehouseTab2'] || 'Improved Resources (Улучшенные)' }}
+                            {{ gameAny('WarehouseTab2', null, t('account.warehouse.improved')) }}
                         </h4>
                         <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
                             <div v-for="r in improvedResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
@@ -396,7 +396,7 @@
                     <div v-if="advancedResources.length > 0">
                         <h4 class="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3 flex items-center gap-2">
                             <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-                            {{ translations['WarehouseTab3'] || 'Advanced Resources (Усовершенствованные)' }}
+                            {{ gameAny('WarehouseTab3', null, t('account.warehouse.advanced')) }}
                         </h4>
                         <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
                             <div v-for="r in advancedResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
@@ -416,7 +416,7 @@
                     <div v-if="masterResources.length > 0">
                         <h4 class="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3 flex items-center gap-2">
                             <span class="w-1.5 h-1.5 rounded-full bg-orange-400"></span>
-                            {{ translations['WarehouseTab4'] || 'Master Resources (Искусные)' }}
+                            {{ gameAny('WarehouseTab4', null, t('account.warehouse.master')) }}
                         </h4>
                         <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
                             <div v-for="r in masterResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
@@ -436,7 +436,7 @@
                     <div v-if="eliteResources.length > 0">
                         <h4 class="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3 flex items-center gap-2">
                             <span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
-                            {{ translations['WarehouseTab8'] || 'Elite Resources (Элита)' }}
+                            {{ gameAny('WarehouseTab8', null, t('account.warehouse.elite')) }}
                         </h4>
                         <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
                             <div v-for="r in eliteResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
@@ -456,7 +456,7 @@
                     <div v-if="eventResources.length > 0">
                         <h4 class="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3 flex items-center gap-2">
                             <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
-                            {{ translations['WarehouseTab6'] || 'Event Resources (Событие)' }}
+                            {{ gameAny('WarehouseTab6', null, t('account.warehouse.event')) }}
                         </h4>
                         <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
                             <div v-for="r in eventResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
@@ -476,7 +476,7 @@
                     <div v-if="collectibleResources.length > 0">
                         <h4 class="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3 flex items-center gap-2">
                             <span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>
-                            {{ translations['WarehouseTab7'] || 'Collections (Коллекции)' }}
+                            {{ gameAny('WarehouseTab7', null, t('account.warehouse.collections')) }}
                         </h4>
                         <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
                             <div v-for="r in collectibleResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
@@ -496,7 +496,7 @@
                     <div v-if="militaryResources.length > 0">
                         <h4 class="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3 flex items-center gap-2">
                             <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
-                            {{ translations['WarehouseTab5'] || 'Military (Войска)' }}
+                            {{ gameAny('WarehouseTab5', null, t('account.warehouse.military')) }}
                         </h4>
                         <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
                             <div v-for="r in militaryResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
@@ -654,6 +654,7 @@ import { ref, computed, onMounted, h, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 import { showToast } from '../toast';
+import { t, gameAny, gameAnyLookup } from '../lang';
 
 // Icon components
 const BuildingIcon = { render() { return h('svg', { class: 'w-4 h-4', fill: 'none', viewBox: '0 0 24 24', 'stroke-width': '1.5', stroke: 'currentColor' }, [h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', d: 'M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z' })]); } };
@@ -758,7 +759,6 @@ export default {
         const buildingModeFilter = ref('all');
         const specialistSearch = ref('');
         const specialistFilter = ref('All');
-        const translations = ref({});
 
         const tabs = computed(() => [
             { id: 'buildings', label: 'Buildings', icon: BuildingIcon, count: parsedBuildings.value.length },
@@ -1080,35 +1080,38 @@ export default {
                 12: 'ProductivityBuffLvl5',
             };
             const mapped = buffIdMap[buffId];
-            if (mapped && translations.value[mapped]) {
-                return translations.value[mapped];
+            if (mapped) {
+                return gameAny(mapped, null, mapped);
             }
-            if (mapped) return mapped;
-            return `Бафф #${buffId}`;
+            return t('tasks.buff_number', { id: buffId });
         };
 
+        // Central game-catalog lookup with legacy prettifier fallback.
+        const resourceDisplayName = (name) => gameAnyLookup(name) ?? formatResourceName(name);
+
         const getStarBuffName = (b) => {
-            if (!b || !b.buffName_string) return 'Неизвестный бафф';
+            if (!b || !b.buffName_string) return t('tasks.unknown_buff');
 
             const name = b.buffName_string;
+            const template = gameAnyLookup(name);
 
-            if (translations.value[name]) {
-                let tpl = translations.value[name];
+            if (template) {
+                let tpl = template;
                 if (tpl.includes('{0}')) {
-                    tpl = tpl.replace('{0}', formatResourceName(b.resourceName_string));
+                    tpl = tpl.replace('{0}', resourceDisplayName(b.resourceName_string));
                 }
                 tpl = tpl.replace(/\{1,\w+\}/g, '').replace(/[:\s]+$/, '').replace(/\s+/g, ' ').trim();
                 return tpl;
             }
 
             if (name === 'AddResource') {
-                return `Добавить ресурс: ${formatResourceName(b.resourceName_string)}`;
+                return `${t('tasks.buff_add_resource')}: ${resourceDisplayName(b.resourceName_string)}`;
             }
             if (name === 'BuildBuilding') {
-                return `Лицензия: ${formatResourceName(b.resourceName_string)}`;
+                return `${t('tasks.buff_build_license')}: ${resourceDisplayName(b.resourceName_string)}`;
             }
             if (name === 'Adventure') {
-                return `Приключение: ${formatResourceName(b.resourceName_string)}`;
+                return `${t('tasks.buff_adventure')}: ${resourceDisplayName(b.resourceName_string)}`;
             }
 
             return name.replace(/(?<!^)(?=[A-Z])/g, ' ').replace(/_/g, ' ');
@@ -1303,9 +1306,10 @@ export default {
         const getSpecialistTypeName = (type) => {
             const rawName = SPECIALIST_TYPES[type] || `Specialist #${type}`;
 
-            // Check translation in lang.txt
-            if (translations.value[rawName]) {
-                return translations.value[rawName];
+            const translated = gameAnyLookup(rawName);
+
+            if (translated) {
+                return translated;
             }
 
             return rawName
@@ -1367,8 +1371,9 @@ export default {
                     9: 'FindAdventureLootMapFragmentMailSubject',
                 };
                 const key = subTypeKeys[taskSubType];
-                if (key && translations.value[key]) {
-                    return translations.value[key];
+                const translated = key ? gameAnyLookup(key) : null;
+                if (translated) {
+                    return translated;
                 }
                 const fallbackSubTypes = {
                     1: 'Поиск приключений (Короткий)',
@@ -1396,8 +1401,9 @@ export default {
                     9: 'FindDepositAlloy',
                 };
                 const key = subTypeKeys[taskSubType];
-                if (key && translations.value[key]) {
-                    return translations.value[key];
+                const translated = key ? gameAnyLookup(key) : null;
+                if (translated) {
+                    return translated;
                 }
                 const fallbackSubTypes = {
                     1: 'Поиск каменных залежей',
@@ -1563,10 +1569,6 @@ export default {
 
         onMounted(() => {
             loadAccount();
-            fetch('/api/lang/res')
-                .then(r => r.json())
-                .then(data => { translations.value = data; })
-                .catch(() => {});
         });
 
         return {
@@ -1646,7 +1648,6 @@ export default {
             syncAccount,
             visitors,
             getAvatarById,
-            translations,
             sessionForm,
             sessionSubmitting,
             saveSession,

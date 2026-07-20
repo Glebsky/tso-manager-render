@@ -7,6 +7,7 @@ use App\Models\BotLog;
 use App\Models\MarketHistory;
 use App\Models\MarketOffer;
 use App\Models\MarketSyncLog;
+use App\Services\Lang\GameTranslationResolver;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -17,13 +18,13 @@ class MarketSyncService
 
     private TsoAmfService $amfService;
 
-    private LangParserService $langParser;
+    private GameTranslationResolver $gameTranslations;
 
-    public function __construct(TsoAuthService $authService, TsoAmfService $amfService, LangParserService $langParser)
+    public function __construct(TsoAuthService $authService, TsoAmfService $amfService, GameTranslationResolver $gameTranslations)
     {
         $this->authService = $authService;
         $this->amfService = $amfService;
-        $this->langParser = $langParser;
+        $this->gameTranslations = $gameTranslations;
     }
 
     private function findPython(): string
@@ -136,8 +137,7 @@ class MarketSyncService
 
             $rawOffers = $parsed['offers'] ?? [];
 
-            // 4. Translate resource names
-            $translations = $this->langParser->getResTranslations();
+            // 4. Resource names are resolved from the Laravel translation catalog (lang/<locale>/game.php)
 
             $offersToInsert = [];
             $historyToInsert = [];
@@ -182,8 +182,8 @@ class MarketSyncService
                 $volume = $amount * $lotsRemaining;
 
                 // Human-readable names
-                $itemName = $translations[$itemId] ?? $itemId;
-                $targetItemName = $translations[$targetItemId] ?? $targetItemId;
+                $itemName = $this->gameTranslations->name('RES', $itemId);
+                $targetItemName = $this->gameTranslations->name('RES', $targetItemId);
 
                 // Game created timestamp (created is in ms)
                 $gameCreatedMs = $raw['created'] ?? 0;

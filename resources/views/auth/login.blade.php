@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="ru" class="h-full">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Вход — TSO Manager</title>
+    <title>{{ __('ui.auth.login_title') }} — TSO Manager</title>
     @vite(['resources/css/app.css'])
 </head>
 <body class="h-full bg-dark-950 font-sans text-white antialiased">
@@ -20,7 +20,7 @@
                     </svg>
                 </div>
                 <h1 class="text-2xl font-bold">TSO Manager</h1>
-                <p class="mt-2 text-sm text-white/40">Вход в панель администратора</p>
+                <p class="mt-2 text-sm text-white/40">{{ __('ui.auth.login_subtitle') }}</p>
             </div>
 
             <div class="glass-card border border-white/10 p-7 shadow-2xl">
@@ -43,7 +43,7 @@
                     </div>
 
                     <div>
-                        <label for="password" class="mb-2 block text-xs font-semibold uppercase tracking-wider text-white/40">Пароль</label>
+                        <label for="password" class="mb-2 block text-xs font-semibold uppercase tracking-wider text-white/40">{{ __('ui.auth.password') }}</label>
                         <input id="password" name="password" type="password" required autocomplete="current-password"
                                class="glass-input w-full @error('password') border-red-500/50 @enderror">
                         @error('password')
@@ -53,11 +53,11 @@
 
                     <label class="flex cursor-pointer items-center gap-3 text-sm text-white/50">
                         <input type="checkbox" name="remember" value="1" class="rounded border-white/20 bg-white/5 text-emerald-500 focus:ring-emerald-500/30">
-                        Запомнить меня
+                        {{ __('ui.auth.remember_me') }}
                     </label>
 
                     <button type="submit" class="w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 transition hover:shadow-emerald-500/35">
-                        Войти
+                        {{ __('ui.auth.sign_in') }}
                     </button>
                 </form>
             </div>

@@ -7,6 +7,7 @@ use App\Models\MarketHistory;
 use App\Models\MarketOffer;
 use App\Models\MarketSyncLog;
 use App\Models\Setting;
+use App\Services\Lang\GameTranslationResolver;
 use App\Services\MarketSyncService;
 use Carbon\Carbon;
 use Exception;
@@ -17,9 +18,27 @@ class MarketAnalyticsController extends Controller
 {
     private MarketSyncService $syncService;
 
-    public function __construct(MarketSyncService $syncService)
+    private GameTranslationResolver $gameTranslations;
+
+    public function __construct(MarketSyncService $syncService, GameTranslationResolver $gameTranslations)
     {
         $this->syncService = $syncService;
+        $this->gameTranslations = $gameTranslations;
+    }
+
+    /**
+     * Resolve the display name for a resource id at read time.
+     * Falls back to the legacy name stored in the row, then to the raw id.
+     */
+    private function resourceName(?string $itemId, ?string $legacyName): string
+    {
+        if ($itemId === null || $itemId === '') {
+            return (string) ($legacyName ?? '');
+        }
+
+        $fallback = ($legacyName !== null && $legacyName !== '') ? $legacyName : null;
+
+        return $this->gameTranslations->name('RES', $itemId, $fallback);
     }
 
     private function loadSettings(): array
@@ -133,6 +152,11 @@ class MarketAnalyticsController extends Controller
             ->orderBy('item_name')
             ->get()
             ->unique('item_id')
+            ->map(fn ($row) => [
+                'item_id' => $row->item_id,
+                'item_name' => $this->resourceName($row->item_id, $row->item_name),
+            ])
+            ->sortBy('item_name', SORT_NATURAL | SORT_FLAG_CASE)
             ->values();
 
         return response()->json($goods);
@@ -157,6 +181,11 @@ class MarketAnalyticsController extends Controller
             ->orderBy('target_item_name')
             ->get()
             ->unique('target_item_id')
+            ->map(fn ($row) => [
+                'target_item_id' => $row->target_item_id,
+                'target_item_name' => $this->resourceName($row->target_item_id, $row->target_item_name),
+            ])
+            ->sortBy('target_item_name', SORT_NATURAL | SORT_FLAG_CASE)
             ->values();
 
         return response()->json($targets);
@@ -233,7 +262,12 @@ class MarketAnalyticsController extends Controller
             ->orderBy('offers_count', 'desc')
             ->orderBy('total_volume', 'desc')
             ->limit(10)
-            ->get();
+            ->get()
+            ->map(function ($row) {
+                $row->item_name = $this->resourceName($row->item_id, $row->item_name);
+
+                return $row;
+            });
 
         if (empty($itemId) || empty($targetItemId)) {
             $limit = (int) $request->input('limit', 100);
@@ -257,10 +291,10 @@ class MarketAnalyticsController extends Controller
                         'offer_id' => $offer->offer_id,
                         'sender_name' => $offer->sender_name,
                         'item_id' => $offer->item_id,
-                        'item_name' => $offer->item_name,
+                        'item_name' => $this->resourceName($offer->item_id, $offer->item_name),
                         'amount' => $offer->amount,
                         'target_item_id' => $offer->target_item_id,
-                        'target_item_name' => $offer->target_item_name,
+                        'target_item_name' => $this->resourceName($offer->target_item_id, $offer->target_item_name),
                         'target_amount' => $offer->target_amount,
                         'price' => round($offer->price, 4),
                         'volume' => $offer->volume,
@@ -471,10 +505,10 @@ class MarketAnalyticsController extends Controller
                 'offer_id' => $offer->offer_id,
                 'sender_name' => $offer->sender_name,
                 'item_id' => $offer->item_id,
-                'item_name' => $offer->item_name,
+                'item_name' => $this->resourceName($offer->item_id, $offer->item_name),
                 'amount' => $offer->amount,
                 'target_item_id' => $offer->target_item_id,
-                'target_item_name' => $offer->target_item_name,
+                'target_item_name' => $this->resourceName($offer->target_item_id, $offer->target_item_name),
                 'target_amount' => $offer->target_amount,
                 'lots_remaining' => $offer->lots_remaining,
             ];

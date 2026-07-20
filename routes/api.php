@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\LangController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\MarketAnalyticsController;
 use App\Http\Controllers\ScheduledTaskController;
@@ -47,9 +46,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/tasks/{task}/toggle', [ScheduledTaskController::class, 'toggle']);
     Route::post('/tasks/{task}/execute', [ScheduledTaskController::class, 'execute']);
 
-    // Logs and translations
+    // Logs
     Route::get('/logs', [LogController::class, 'index']);
-    Route::get('/lang/res', [LangController::class, 'res']);
 
     // Settings
     Route::get('/settings', [SettingsController::class, 'index']);
@@ -78,5 +76,4 @@ Route::prefix('public/market')->group(function () {
     Route::get('/targets', [MarketAnalyticsController::class, 'getTargets']);
     Route::get('/analytics', [MarketAnalyticsController::class, 'getAnalytics']);
     Route::get('/arbitrage', [MarketAnalyticsController::class, 'getArbitrage']);
-    Route::get('/lang/res', [LangController::class, 'res']);
 });

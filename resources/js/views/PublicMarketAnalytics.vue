@@ -691,6 +691,7 @@
 <script>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { showToast } from '../toast';
+import { gameAnyLookup } from '../lang';
 import axios from 'axios';
 
 export default {
@@ -714,7 +715,6 @@ export default {
         const activeInfo = ref(null);
         const periodInfo = ref(null);
         const hoveredPoint = ref(null);
-        const translations = ref({});
 
         // Selection & Filter variables
         const selectionMode = ref('visual'); // 'dropdown' or 'visual'
@@ -742,27 +742,14 @@ export default {
         const selectedTarget = ref('');
         const calcAmount = ref(100);
 
-        const normalizeKey = value =>
-            String(value || '')
-                .replace(/[\s_]+/g, '')
-                .toLowerCase();
-
         const getItemName = (name, id) => {
             const raw = name || id || '';
             if (!raw) return '';
 
-            const normalizedRaw = normalizeKey(raw);
-            const normalizedId = normalizeKey(id);
+            const translated = (id ? gameAnyLookup(String(id)) : null) ?? gameAnyLookup(String(raw));
 
-            const translationKey = Object.keys(translations.value).find(key => {
-                const normalizedKey = normalizeKey(key);
-
-                return normalizedKey === normalizedRaw ||
-                    normalizedKey === normalizedId;
-            });
-
-            if (translationKey) {
-                return translations.value[translationKey];
+            if (translated) {
+                return translated;
             }
 
             return raw
@@ -1016,14 +1003,6 @@ export default {
         const loadInitialData = async () => {
             loading.value = true;
             try {
-                // Load translations first
-                try {
-                    const transRes = await axios.get('/api/public/market/lang/res');
-                    translations.value = transRes.data || {};
-                } catch (trErr) {
-                    console.warn('Could not load translations:', trErr);
-                }
-
                 const goodsRes = await axios.get('/api/public/market/goods');
                 goods.value = goodsRes.data || [];
 
@@ -1241,7 +1220,6 @@ export default {
             togglePopularItems,
             toggleArbitrageSchemes,
             toggleActiveListings,
-            translations,
             getItemName,
             hoveredPoint
         };
