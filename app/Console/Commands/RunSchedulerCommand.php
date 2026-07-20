@@ -249,7 +249,7 @@ class RunSchedulerCommand extends Command
 
         // Atomic lock check to prevent duplicate dispatches
         $lockKey = "market_sync_lock:{$account->id}";
-        $acquired = Cache::lock($lockKey, 180)->get();
+        $acquired = Cache::add($lockKey, true, 180);
 
         if (! $acquired) {
             $this->info("Market sync lock for account #{$account->id} already held. Skipping.");
@@ -300,7 +300,7 @@ class RunSchedulerCommand extends Command
 
             // Atomic lock check to prevent duplicate dispatches
             $lockKey = "account_sync_lock:{$account->id}";
-            $acquired = Cache::lock($lockKey, 300)->get();
+            $acquired = Cache::add($lockKey, true, 300);
 
             if (! $acquired) {
                 $this->info("Account sync lock for account #{$account->id} already held. Skipping.");
@@ -317,7 +317,7 @@ class RunSchedulerCommand extends Command
                 } catch (Exception $e) {
                     $this->error("Sync account #{$account->id} failed: {$e->getMessage()}");
                 } finally {
-                    Cache::lock($lockKey)->forceRelease();
+                    Cache::forget($lockKey);
                 }
             } else {
                 DB::afterCommit(function () use ($account) {

@@ -49,7 +49,7 @@ class AccountSyncJob implements ShouldQueue
             Log::error("AccountSyncJob failed for account #{$this->account->id}: {$e->getMessage()}");
             throw $e;
         } finally {
-            Cache::lock("account_sync_lock:{$this->account->id}")->forceRelease();
+            Cache::forget("account_sync_lock:{$this->account->id}");
         }
     }
 
@@ -66,6 +66,6 @@ class AccountSyncJob implements ShouldQueue
             'message' => "Account sync job failed permanently: {$exception->getMessage()}",
         ]);
 
-        Cache::lock("account_sync_lock:{$this->account->id}")->forceRelease();
+        Cache::forget("account_sync_lock:{$this->account->id}");
     }
 }

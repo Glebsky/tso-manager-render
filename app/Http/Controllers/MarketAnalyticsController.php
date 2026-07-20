@@ -62,7 +62,7 @@ class MarketAnalyticsController extends Controller
                 ->latest()
                 ->first();
             if ($lastLog) {
-                $lastSyncStr = $lastLog->created_at->format('d.m.Y H:i:s');
+                $lastSyncStr = $lastLog->created_at->toIso8601String();
             }
         }
 
@@ -265,7 +265,7 @@ class MarketAnalyticsController extends Controller
                         'price' => round($offer->price, 4),
                         'volume' => $offer->volume,
                         'lots_remaining' => $offer->lots_remaining,
-                        'created_at' => $offer->created_at->format('d.m.Y H:i'),
+                        'created_at' => $offer->created_at->toIso8601String(),
                         'time_left' => $timeLeft > 0 ? $timeLeft : 0,
                     ];
                 });
@@ -447,7 +447,7 @@ class MarketAnalyticsController extends Controller
         return response()->json([
             'data' => collect($paginator->items())->map(function ($log) {
                 return [
-                    'date' => $log->created_at->format('d.m.Y H:i:s'),
+                    'date' => $log->created_at->toIso8601String(),
                     'action' => $log->action,
                     'status' => $log->status,
                     'message' => $log->message,

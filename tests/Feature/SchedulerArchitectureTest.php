@@ -198,7 +198,7 @@ class SchedulerArchitectureTest extends TestCase
         Setting::set('market_sync_interval', '15');
 
         // Pre-acquire lock to simulate another process executing market sync
-        Cache::lock("market_sync_lock:{$account->id}", 180)->get();
+        Cache::add("market_sync_lock:{$account->id}", true, 180);
 
         Artisan::call('tso:run-scheduler', ['--mode' => 'queue']);
 

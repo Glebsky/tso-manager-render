@@ -664,7 +664,7 @@
                                     <td class="py-3 px-4 text-right font-mono text-xs" :class="offer.time_left > 0 ? 'text-amber-400' : 'text-red-500'">
                                         {{ formatTimeLeft(offer.time_left) }}
                                     </td>
-                                    <td class="py-3 px-4 text-right text-[10px] text-white/30 font-mono">{{ offer.created_at }}</td>
+                                    <td class="py-3 px-4 text-right text-[10px] text-white/30 font-mono">{{ formatDateTimeShort(offer.created_at) }}</td>
                                 </tr>
                                 <tr v-if="activeOffers.length === 0">
                                     <td colspan="7" class="py-8 text-center text-white/20">
@@ -768,7 +768,7 @@
                         <div>
                             <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">Last Synchronization</label>
                             <div class="text-sm font-semibold text-white/70 pt-2 font-mono">
-                                {{ lastSync }}
+                                {{ formatDateTime(lastSync) }}
                             </div>
                         </div>
                     </div>
@@ -813,7 +813,7 @@
                         </thead>
                         <tbody class="divide-y divide-white/5 text-sm text-white/70">
                             <tr v-for="(log, idx) in logs" :key="'log-'+idx" class="hover:bg-white/[0.01] transition-all">
-                                <td class="py-3 px-4 font-mono text-xs">{{ log.date }}</td>
+                                <td class="py-3 px-4 font-mono text-xs">{{ formatDateTime(log.date) }}</td>
                                 <td class="py-3 px-4 font-semibold text-white/95">{{ log.action }}</td>
                                 <td class="py-3 px-4">
                                     <span class="badge text-[10px]"
@@ -1102,6 +1102,43 @@ export default {
             const m = Math.floor((seconds % 3600) / 60);
             const s = seconds % 60;
             return `${h}h ${m}m ${s}s`;
+        };
+
+        const formatDateTime = (dateStr) => {
+            if (!dateStr || dateStr === 'Never') return 'Never';
+            try {
+                const date = new Date(dateStr);
+                if (isNaN(date.getTime())) return dateStr;
+                
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = date.getFullYear();
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                const seconds = String(date.getSeconds()).padStart(2, '0');
+                
+                return `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
+            } catch (e) {
+                return dateStr;
+            }
+        };
+
+        const formatDateTimeShort = (dateStr) => {
+            if (!dateStr || dateStr === 'Never') return 'Never';
+            try {
+                const date = new Date(dateStr);
+                if (isNaN(date.getTime())) return dateStr;
+                
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = date.getFullYear();
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                
+                return `${day}.${month}.${year} ${hours}:${minutes}`;
+            } catch (e) {
+                return dateStr;
+            }
         };
 
         // Charts calculations
@@ -1491,6 +1528,8 @@ export default {
             resetSelection,
             getResourceIcon,
             formatTimeLeft,
+            formatDateTime,
+            formatDateTimeShort,
             mirrorSelection,
             handleIconError,
             getStatusBadgeClass,

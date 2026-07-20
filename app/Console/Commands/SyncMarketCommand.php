@@ -88,7 +88,7 @@ class SyncMarketCommand extends Command
         }
 
         $lockKey = "market_sync_lock:{$account->id}";
-        $acquired = Cache::lock($lockKey, 180)->get();
+        $acquired = Cache::add($lockKey, true, 180);
 
         if (! $acquired) {
             $this->info("Market sync lock for account #{$account->id} already held. Skipping.");

@@ -12,7 +12,7 @@
                     </div>
                     <div>
                         <div class="flex items-center gap-2">
-                            <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">Market Analytics</h1>
+                            <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">TSO Market Analytics</h1>
                             <span class="badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] uppercase font-bold px-2.5 py-0.5 rounded-full">Public Portal</span>
                         </div>
                         <p class="text-white/50 text-xs sm:text-sm mt-1">Real-time trade prices, demand history, popular items, and arbitrage opportunities</p>

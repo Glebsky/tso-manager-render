@@ -120,7 +120,7 @@ class AccountSyncTest extends TestCase
         ]);
 
         // Pre-acquire lock
-        Cache::lock("account_sync_lock:{$account->id}", 300)->get();
+        Cache::add("account_sync_lock:{$account->id}", true, 300);
 
         Artisan::call('tso:run-scheduler', ['--mode' => 'queue']);
 
@@ -139,8 +139,7 @@ class AccountSyncTest extends TestCase
         ]);
 
         // Simulate lock acquired by scheduler
-        $lock = Cache::lock("account_sync_lock:{$account->id}", 300);
-        $this->assertTrue($lock->get());
+        $this->assertTrue(Cache::add("account_sync_lock:{$account->id}", true, 300));
 
         // Mock dependencies
         $this->authMock->shouldReceive('isAuthenticated')->andReturn(true);
@@ -178,6 +177,6 @@ class AccountSyncTest extends TestCase
         $this->assertJson($account->zone_data);
 
         // Lock must be released, so we can acquire it again
-        $this->assertTrue($lock->get());
+        $this->assertTrue(Cache::add("account_sync_lock:{$account->id}", true, 300));
     }
 }
