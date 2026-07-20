@@ -28,6 +28,8 @@
 - `resources/js/lang/index.js` — `t()`, `game()`, `gameAny()`, `gameAnyLookup()`, `intlLocale`; fallback ru→en→ключ; та же семантика плейсхолдеров.
 - `app.js` — глобальные `t/game/gameAny/$lang` для шаблонов.
 - Мигрированы: `App.vue`, `Register.vue`, `Tasks.vue` (полностью: все UI-строки формы/списка задач/модалок/тостов через `tasks.*`, плюс игровые лукапы: баффы, ресурсы, `intlLocale`; внутри цикла `v-for="t in groupTasks"` используется `$lang.t(...)`, т.к. переменная цикла затеняет глобальный `t()`), `AccountDetail.vue` (вкладки склада `WarehouseTab*`, баффы, специалисты, задачи разведки/геологии, фильтры, плейсхолдеры), `PublicMarketAnalytics.vue` (`getItemName` через каталог).
+- Фронтенд-каталог расширен секцией `BUI` (имена зданий): `FRONTEND_GAME_SECTIONS = ['BUI', 'LAB', 'RES', 'SPE']`, `GAME_SECTION_LOOKUP_ORDER = ['RES', 'BUI', 'SPE', 'LAB']`.
+- Имена ресурсов/зданий рендерятся «каталог-сначала»: вкладки ресурсов `AccountDetail.vue` — через `resourceDisplayName` (`gameAnyLookup` → хуманизация ключа как фолбэк), `getBuildingName` в `AccountDetail.vue`/`Tasks.vue` и `formattedName` в `BuildingRow.vue` — через `gameAnyLookup` (с попыткой базового имени без `_lvl_N`/`decoration_`).
 - Проверка: в `resources/js` и `routes/` не осталось обращений к `/api/lang/res`, `/api/public/market/lang/res`, `translations.value`.
 
 ### 6. Удаление легаси (Этап 7)
@@ -68,3 +70,32 @@ php artisan tso:lang:import /path/to/en_lang.xml --locale=en
 php artisan tso:lang:import /path/to/ru_lang.xml --locale=ru
 php artisan tso:lang:export-frontend
 ```
+
+
+## Итерация 4: полная миграция интерфейса SPA и переиспользуемый модуль имён
+
+### Переиспользуемый модуль `resources/js/lang/gameNames.js`
+
+Единая точка перевода игровых сущностей (ресурсы, здания, специалисты, баффы):
+
+- `resourceName(id)` — имя по каталогу (`RES` → `BUI` → `SPE` → `LAB`) с fallback-«хуманизацией» id;
+- `buildingName(rawOrObject)` — перевод сырого id здания с учётом суффиксов `_lvl_N` / `decoration_`;
+- `buildingBaseId(raw)`, `humanizeGameId(id)` — вспомогательные функции.
+
+На модуль переведены: `AccountDetail.vue`, `Tasks.vue`, `PublicMarketAnalytics.vue`, `components/BuildingRow.vue` (локальные дубли хелперов удалены).
+
+### Миграция всех оставшихся строк UI на `t()`
+
+- `Accounts.vue`, `Dashboard.vue`, `Logs.vue`, `Settings.vue`, `components/AccountCard.vue`, `components/LogEntry.vue` — все захардкоженные английские строки (заголовки, фильтры, кнопки, тосты, confirm) → ключи `accounts.*`, `dashboard.*`, `logs.*`, `settings.*`, `card.*`, `common.*`; `Dashboard` использует `intlLocale` вместо `en-US` для даты.
+- `AccountDetail.vue` — все русские строки (шапка, вкладки, сессия, инструкция по капче, fallback-задачи разведчиков/геологов, тосты) и остаточные английские (`Producing`, `Lvl`, `No buildings found.` и т.п.) → ключи `account.*`; фильтр зданий отображается через `account.building_filter.*`.
+- `MarketAnalytics.vue` и `PublicMarketAnalytics.vue` — весь текст (карточки цен, калькулятор, схемы обмена, таблицы, настройки синхронизации, диапазоны графиков, тосты) → общие ключи `market.*`.
+- Словарь: +262 ключа, всего 498; регенерированы `lang/{en,ru}/ui.php` и `resources/js/lang/generated/{en,ru}.json`.
+
+### Проверки
+
+- Скан покрытия: все использованные ключи `t('...')` (включая динамические префиксы `account.building_filter.*`, `card.status.*`, `logs.level_*`) присутствуют в словаре, missing = 0.
+- `node --check` пройден для всех затронутых файлов.
+- Остаточный скан текстовых узлов: осталось только намеренное — названия регионов/серверов (`RU (Realm 2)`, `EN/US (https://…)`), домен `thesettlersonline.ru/ru/play` в инструкции и логотип «TSO Market Analytics».
+- HTML-комментарии в шаблонах оставлены на русском (не попадают в UI).
+
+> Напоминание: после распаковки выполните `npm run build` локально (в песочнице нет php/npm).

@@ -3,8 +3,8 @@
         <!-- Page Header -->
         <div class="flex items-center justify-between mb-8">
             <div>
-                <h1 class="text-3xl font-bold text-white">Accounts</h1>
-                <p class="text-white/40 mt-1">Manage game accounts, sync data, and control production</p>
+                <h1 class="text-3xl font-bold text-white">{{ t('accounts.title') }}</h1>
+                <p class="text-white/40 mt-1">{{ t('accounts.subtitle') }}</p>
             </div>
         </div>
 
@@ -16,26 +16,26 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                     </svg>
                 </div>
-                <h2 class="text-lg font-semibold text-white">Add New Account</h2>
+                <h2 class="text-lg font-semibold text-white">{{ t('accounts.add_new') }}</h2>
             </div>
 
             <form @submit.prevent="addAccount" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                 <!-- Username -->
                 <div>
-                    <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">Uplay Email / Username</label>
+                    <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('accounts.username_label') }}</label>
                     <input type="email" required v-model="form.username" placeholder="email@domain.com" class="glass-input w-full">
                 </div>
 
                 <!-- Password -->
                 <div>
-                    <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">Password</label>
+                    <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('accounts.password') }}</label>
                     <input type="password" required v-model="form.password" placeholder="••••••••" class="glass-input w-full">
                 </div>
 
                 <!-- Region & Submit -->
                 <div class="flex gap-3">
                     <div class="flex-1 relative">
-                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">Region</label>
+                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('accounts.region') }}</label>
                         <select required v-model="form.region" class="glass-select w-full">
                             <option value="ru" class="bg-dark-900">RU (Realm 2)</option>
                             <option value="en" class="bg-dark-900">EN (US/UK)</option>
@@ -66,7 +66,7 @@
                         <svg v-else class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182" />
                         </svg>
-                        Add
+                        {{ t('accounts.add') }}
                     </button>
                 </div>
             </form>
@@ -78,7 +78,7 @@
                 <svg class="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
                 </svg>
-                Registered Accounts
+                {{ t('accounts.registered') }}
                 <span class="badge badge-neutral text-[10px]">{{ accounts.length }}</span>
             </h2>
 
@@ -87,7 +87,7 @@
                               @sync-success="loadAccounts" @delete-success="loadAccounts" @action-success="loadAccounts" />
             </div>
             <div v-else class="glass-card p-12 text-center">
-                <p class="text-white/30 text-sm">No accounts registered yet.</p>
+                <p class="text-white/30 text-sm">{{ t('accounts.empty') }}</p>
             </div>
         </div>
     </div>
@@ -95,6 +95,7 @@
 
 <script>
 import { ref, onMounted } from 'vue';
+import { t } from '../lang';
 import axios from 'axios';
 import AccountCard from '../components/AccountCard.vue';
 import { showToast } from '../toast';
@@ -116,7 +117,7 @@ export default {
                 const res = await axios.get('/api/accounts');
                 accounts.value = res.data || [];
             } catch (e) {
-                showToast('Failed to load accounts.', 'error');
+                showToast(t('accounts.load_failed'), 'error');
             }
         };
 
@@ -125,13 +126,13 @@ export default {
             try {
                 const res = await axios.post('/api/accounts', form.value);
                 if (res.data.success) {
-                    showToast('Account added successfully.');
+                    showToast(t('accounts.added'));
                     form.value.username = '';
                     form.value.password = '';
                     loadAccounts();
                 }
             } catch (e) {
-                showToast(e.response?.data?.message || 'Failed to add account.', 'error');
+                showToast(e.response?.data?.message || t('accounts.add_failed'), 'error');
             } finally {
                 submitting.value = false;
             }

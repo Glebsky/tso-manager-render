@@ -19,7 +19,7 @@ class LangFrontendExportCommand extends Command
      * Extend this list (and re-run the command) when the SPA starts using
      * translations from another section.
      */
-    private const FRONTEND_GAME_SECTIONS = ['LAB', 'RES', 'SPE'];
+    private const FRONTEND_GAME_SECTIONS = ['BUI', 'LAB', 'RES', 'SPE'];
 
     protected $signature = 'tso:lang:export-frontend
         {--output-dir= : Override the output directory (used by tests)}';

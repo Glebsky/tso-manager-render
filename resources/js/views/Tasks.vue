@@ -442,43 +442,43 @@
 
                     <!-- Список задач -->
                     <div class="divide-y divide-white/5">
-                        <div v-for="t in groupTasks" :key="t.id" class="p-5 hover:bg-white/[0.01] transition-all duration-200 group">
+                        <div v-for="task in groupTasks" :key="task.id" class="p-5 hover:bg-white/[0.01] transition-all duration-200 group">
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                 <div class="flex items-center gap-3">
                                     <!-- Иконка действия -->
                                     <div class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-xl flex-shrink-0 border border-white/5">
-                                        {{ t.task_type === 'sequence' ? '⛓️' : (typeIcons[t.task_type] || '📋') }}
+                                        {{ task.task_type === 'sequence' ? '⛓️' : (typeIcons[task.task_type] || '📋') }}
                                     </div>
 
                                     <!-- Информация о задаче -->
                                     <div class="min-w-0">
                                         <div class="flex items-center gap-2 flex-wrap">
                                             <p class="text-sm font-semibold text-white/90 group-hover:text-white transition-colors">
-                                                <span v-if="t.name" class="text-emerald-400/90">{{ t.name }}</span>
-                                                <span v-else-if="t.task_type === 'sequence'">{{ $lang.t('tasks.task_series') }} ({{ getTaskActionsList(t).length }})</span>
-                                                <span v-else>{{ typeLabels[t.task_type] || t.task_type }}</span>
+                                                <span v-if="task.name" class="text-emerald-400/90">{{ task.name }}</span>
+                                                <span v-else-if="task.task_type === 'sequence'">{{ $lang.t('tasks.task_series') }} ({{ getTaskActionsList(task).length }})</span>
+                                                <span v-else>{{ typeLabels[task.task_type] || task.task_type }}</span>
                                             </p>
                                             <span class="badge badge-neutral text-[9px] uppercase">
-                                                {{ t.schedule_type === 'once' ? $lang.t('tasks.once') : t.schedule_type === 'interval' ? $lang.t('tasks.interval') : $lang.t('tasks.daily') }}
+                                                {{ task.schedule_type === 'once' ? $lang.t('tasks.once') : task.schedule_type === 'interval' ? $lang.t('tasks.interval') : $lang.t('tasks.daily') }}
                                             </span>
                                         </div>
 
                                         <div class="flex flex-wrap items-center gap-2 mt-1.5 text-[11px]">
                                             <!-- Кнопка раскрывающегося списка всех действий -->
                                             <button type="button"
-                                                    @click="toggleTaskExpanded(t.id)"
+                                                    @click="toggleTaskExpanded(task.id)"
                                                     class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-medium bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/20 transition-all duration-200">
-                                                <span>{{ expandedTasks[t.id] ? '📖 ' + $lang.t('tasks.hide_actions') : '📘 ' + $lang.t('tasks.show_actions') }} ({{ getTaskActionsList(t).length }})</span>
-                                                <svg class="w-3 h-3 transition-transform duration-300" :class="{ 'rotate-180': expandedTasks[t.id] }" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                <span>{{ expandedTasks[task.id] ? '📖 ' + $lang.t('tasks.hide_actions') : '📘 ' + $lang.t('tasks.show_actions') }} ({{ getTaskActionsList(task).length }})</span>
+                                                <svg class="w-3 h-3 transition-transform duration-300" :class="{ 'rotate-180': expandedTasks[task.id] }" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                                                 </svg>
                                             </button>
 
-                                            <span v-if="t.task_type !== 'sequence' && t.payload && t.payload.grid" class="font-mono text-white/40">
-                                                {{ $lang.t('tasks.grid_number', { id: t.payload.grid }) }}
+                                            <span v-if="task.task_type !== 'sequence' && task.payload && task.payload.grid" class="font-mono text-white/40">
+                                                {{ $lang.t('tasks.grid_number', { id: task.payload.grid }) }}
                                             </span>
-                                            <span v-if="t.task_type !== 'sequence' && t.payload && t.payload.sub_task_id !== undefined" class="text-white/40">
-                                                {{ getSubTaskLabel(t.task_type, t.payload.task_type, t.payload.sub_task_id) }}
+                                            <span v-if="task.task_type !== 'sequence' && task.payload && task.payload.sub_task_id !== undefined" class="text-white/40">
+                                                {{ getSubTaskLabel(task.task_type, task.payload.task_type, task.payload.sub_task_id) }}
                                             </span>
                                         </div>
                                     </div>
@@ -488,11 +488,11 @@
                                 <div class="flex items-center justify-end gap-4 ml-auto sm:ml-0">
                                     <!-- Время до следующего запуска задачи -->
                                     <div class="text-right px-3 py-1.5 rounded-xl bg-white/[0.02] border border-white/5 min-w-[130px]">
-                                        <div v-if="!t.is_active" class="flex items-center justify-end gap-1.5 text-xs text-amber-400/80 font-medium">
+                                        <div v-if="!task.is_active" class="flex items-center justify-end gap-1.5 text-xs text-amber-400/80 font-medium">
                                             <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
                                             <span>{{ $lang.t('tasks.status.pause_short') }}</span>
                                         </div>
-                                        <div v-else-if="t.schedule_type === 'once' && t.last_run_at" class="flex items-center justify-end gap-1.5 text-xs text-white/40">
+                                        <div v-else-if="task.schedule_type === 'once' && task.last_run_at" class="flex items-center justify-end gap-1.5 text-xs text-white/40">
                                             <span>{{ $lang.t('tasks.status.completed') }}</span>
                                         </div>
                                         <div v-else class="flex flex-col items-end">
@@ -500,10 +500,10 @@
                                                 <svg class="w-3 h-3 text-emerald-400 animate-pulse" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                                 </svg>
-                                                {{ getTaskNextRunText(t).label }}
+                                                {{ getTaskNextRunText(task).label }}
                                             </span>
-                                            <span class="text-[9px] text-white/30 font-mono" v-if="getTaskNextRunText(t).nextRunTime">
-                                                ({{ $lang.t('tasks.at_time') }} {{ getTaskNextRunText(t).nextRunTime }})
+                                            <span class="text-[9px] text-white/30 font-mono" v-if="getTaskNextRunText(task).nextRunTime">
+                                                ({{ $lang.t('tasks.at_time') }} {{ getTaskNextRunText(task).nextRunTime }})
                                             </span>
                                         </div>
                                         <p class="text-[9px] text-white/30 uppercase tracking-wider mt-0.5 text-right font-medium">{{ $lang.t('tasks.until_launch') }}</p>
@@ -511,46 +511,46 @@
 
                                     <!-- Расписание -->
                                     <div class="text-right hidden md:block">
-                                        <p v-if="t.schedule_type === 'once'" class="text-xs text-white/60 font-mono">
-                                            {{ formatDateTime(t.run_at_datetime) }}
+                                        <p v-if="task.schedule_type === 'once'" class="text-xs text-white/60 font-mono">
+                                            {{ formatDateTime(task.run_at_datetime) }}
                                         </p>
-                                        <p v-else-if="t.schedule_type === 'interval'" class="text-xs text-white/60 font-mono">
-                                            {{ $lang.t('tasks.every') }} {{ formatInterval(t.interval_hours, t.interval_minutes) }}
+                                        <p v-else-if="task.schedule_type === 'interval'" class="text-xs text-white/60 font-mono">
+                                            {{ $lang.t('tasks.every') }} {{ formatInterval(task.interval_hours, task.interval_minutes) }}
                                         </p>
                                         <p v-else class="text-xs text-white/60 font-mono">
-                                            {{ $lang.t('tasks.daily_at') }} {{ t.run_at_time ? utcTimeToLocal(t.run_at_time.substring(0, 5)) : '—' }}
+                                            {{ $lang.t('tasks.daily_at') }} {{ task.run_at_time ? utcTimeToLocal(task.run_at_time.substring(0, 5)) : '—' }}
                                         </p>
                                         <p class="text-[9px] text-white/20 uppercase tracking-wider">{{ $lang.t('tasks.schedule') }}</p>
                                     </div>
 
                                     <!-- Последний результат выполнения -->
-                                    <span v-if="t.last_result"
+                                    <span v-if="task.last_result"
                                           class="badge text-[10px] flex-shrink-0 max-w-[100px] truncate"
-                                          :class="t.last_result.includes('OK') ? 'badge-success' : 'badge-danger'"
-                                          :title="t.last_result">
-                                        {{ t.last_result.includes('OK') ? $lang.t('tasks.success') : $lang.t('tasks.error') }}
+                                          :class="task.last_result.includes('OK') ? 'badge-success' : 'badge-danger'"
+                                          :title="task.last_result">
+                                        {{ task.last_result.includes('OK') ? $lang.t('tasks.success') : $lang.t('tasks.error') }}
                                     </span>
 
                                     <!-- Кнопка ручного запуска -->
-                                    <button @click="runTaskNow(t)"
-                                            :disabled="executingTasks[t.id]"
+                                    <button @click="runTaskNow(task)"
+                                            :disabled="executingTasks[task.id]"
                                             class="btn-secondary btn-sm flex items-center justify-center gap-1.5 flex-shrink-0"
-                                            :class="executingTasks[t.id] ? 'opacity-50 cursor-not-allowed' : 'hover:border-emerald-500/30 text-emerald-400/80 hover:text-emerald-400'"
+                                            :class="executingTasks[task.id] ? 'opacity-50 cursor-not-allowed' : 'hover:border-emerald-500/30 text-emerald-400/80 hover:text-emerald-400'"
                                             :title="$lang.t('tasks.run_now')">
-                                        <svg v-if="executingTasks[t.id]" class="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <svg v-if="executingTasks[task.id]" class="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                         </svg>
                                         <svg v-else class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
                                         </svg>
-                                        <span class="text-[9px] uppercase font-semibold">{{ executingTasks[t.id] ? $lang.t('tasks.status.launching') : $lang.t('tasks.run_short') }}</span>
+                                        <span class="text-[9px] uppercase font-semibold">{{ executingTasks[task.id] ? $lang.t('tasks.status.launching') : $lang.t('tasks.run_short') }}</span>
                                     </button>
 
                                     <!-- Кнопка редактирования -->
-                                    <button @click="editTask(t)"
+                                    <button @click="editTask(task)"
                                             class="btn-secondary btn-sm flex items-center justify-center gap-1.5 flex-shrink-0"
-                                            :class="editingTaskId === t.id ? 'border-amber-500/50 bg-amber-500/20 text-amber-300' : 'hover:border-amber-500/30 text-amber-400/80 hover:text-amber-400'"
+                                            :class="editingTaskId === task.id ? 'border-amber-500/50 bg-amber-500/20 text-amber-300' : 'hover:border-amber-500/30 text-amber-400/80 hover:text-amber-400'"
                                             :title="$lang.t('tasks.edit_task')">
                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
@@ -559,15 +559,15 @@
                                     </button>
 
                                     <!-- Тумблер активации -->
-                                    <button @click="toggleTask(t)"
+                                    <button @click="toggleTask(task)"
                                             class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 flex-shrink-0"
-                                            :class="t.is_active ? 'bg-emerald-500' : 'bg-white/10'">
+                                            :class="task.is_active ? 'bg-emerald-500' : 'bg-white/10'">
                                         <span class="inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform duration-300"
-                                              :class="t.is_active ? 'translate-x-6' : 'translate-x-1'"></span>
+                                              :class="task.is_active ? 'translate-x-6' : 'translate-x-1'"></span>
                                     </button>
 
                                     <!-- Кнопка удаления -->
-                                    <button @click="deleteTask(t.id)"
+                                    <button @click="deleteTask(task.id)"
                                             class="btn-secondary btn-sm text-red-400/60 hover:text-red-400 hover:border-red-500/30 flex-shrink-0">
                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
@@ -577,18 +577,18 @@
                             </div>
 
                             <!-- Раскрывающийся список действий задачи -->
-                            <div v-if="expandedTasks[t.id]" class="mt-4 pt-4 border-t border-white/5 space-y-2 animate-fade-in">
+                            <div v-if="expandedTasks[task.id]" class="mt-4 pt-4 border-t border-white/5 space-y-2 animate-fade-in">
                                 <div class="flex items-center justify-between mb-2">
                                     <p class="text-[10px] uppercase font-semibold text-white/40 tracking-wider flex items-center gap-1.5">
                                         <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm0 5.25h.007v.008H3.75V12Zm0 5.25h.007v.008H3.75v-.008Z" />
                                         </svg>
-                                        {{ $lang.t('tasks.actions_in_task', { count: getTaskActionsList(t).length }) }}
+                                        {{ $lang.t('tasks.actions_in_task', { count: getTaskActionsList(task).length }) }}
                                     </p>
                                 </div>
 
                                 <div class="grid grid-cols-1 gap-2">
-                                    <div v-for="(act, aIdx) in getTaskActionsList(t)" :key="aIdx"
+                                    <div v-for="(act, aIdx) in getTaskActionsList(task)" :key="aIdx"
                                          class="glass-card p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-white/5 hover:border-white/10 transition-all bg-white/[0.01]">
                                         <div class="flex items-start sm:items-center gap-3">
                                             <span class="w-6 h-6 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xs font-bold font-mono flex-shrink-0 mt-0.5 sm:mt-0">
@@ -608,14 +608,14 @@
                                                     <div v-if="['stop_production', 'start_production', 'apply_buff'].includes(act.task_type)" class="flex items-center gap-1.5 flex-wrap">
                                                         <span class="text-white/40">{{ $lang.t('tasks.building') }}:</span>
                                                         <span class="font-mono text-emerald-300 font-medium">
-                                                            {{ getBuildingDisplayName(t, act) }}
+                                                            {{ getBuildingDisplayName(task, act) }}
                                                         </span>
                                                     </div>
 
                                                     <!-- Бафф -->
                                                     <div v-if="act.task_type === 'apply_buff'" class="flex items-center gap-1.5 flex-wrap">
                                                         <span class="text-white/40">{{ $lang.t('tasks.buff') }}:</span>
-                                                        <span class="font-medium text-amber-300">{{ getBuffDisplayName(t, act) }}</span>
+                                                        <span class="font-medium text-amber-300">{{ getBuffDisplayName(task, act) }}</span>
                                                         <span class="text-white/40">• {{ $lang.t('tasks.quantity') }}: <strong class="text-white font-mono">{{ act.payload?.amount || 1 }}</strong></span>
                                                         <span v-if="act.payload?.target_player_name" class="text-emerald-400">• {{ $lang.t('tasks.friend') }}: <strong>{{ act.payload.target_player_name }}</strong></span>
                                                     </div>
@@ -824,6 +824,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import axios from 'axios';
 import { showToast } from '../toast';
 import { t, gameAny, gameAnyLookup, intlLocale } from '../lang';
+import { humanizeGameId, resourceName, buildingName } from '../lang/gameNames';
 
 export default {
     name: 'Tasks',
@@ -1247,11 +1248,7 @@ export default {
             return !nonStoppable.some(word => name.includes(word));
         };
 
-        const getBuildingName = (b) => {
-            if (!b) return '';
-            const name = b.buildingName_string || b.buildingName || 'Building';
-            return name.replace(/(?<!^)(?=[A-Z])/g, ' ').replace(/_/g, ' ');
-        };
+        const getBuildingName = (b) => (b ? buildingName(b.buildingName_string || b.buildingName || 'Building') : '');
 
         const getBuildingIcon = (b) => {
             if (!b) return null;
@@ -1403,14 +1400,10 @@ export default {
             return list;
         });
 
-        const formatResourceName = (name) => {
-            if (!name) return '';
-            let formatted = name.replace(/(?<!^)(?=[A-Z])/g, ' ').replace(/_/g, ' ').trim();
-            return formatted.replace(/\w\S*/g, (w) => w.replace(/^\w/, (c) => c.toUpperCase()));
-        };
+        const formatResourceName = humanizeGameId;
 
         // Central game-catalog lookup with legacy prettifier fallback.
-        const resourceDisplayName = (name) => gameAnyLookup(name) ?? formatResourceName(name);
+        const resourceDisplayName = resourceName;
 
         const getStarBuffName = (b) => {
             if (!b || !b.buffName_string) return t('tasks.unknown_buff');
@@ -1622,10 +1615,10 @@ export default {
 
         const groupedTasks = computed(() => {
             const groups = {};
-            tasks.value.forEach(t => {
-                const name = t.account ? (t.account.nickname || t.account.username) : t('tasks.unknown_account');
+            tasks.value.forEach(taskItem => {
+                const name = taskItem.account ? (taskItem.account.nickname || taskItem.account.username) : t('tasks.unknown_account');
                 if (!groups[name]) groups[name] = [];
-                groups[name].push(t);
+                groups[name].push(taskItem);
             });
             return groups;
         });
@@ -1767,20 +1760,20 @@ export default {
             zone.value = { buildings: [], specialists: [], buffs: [] };
         };
 
-        const editTask = (t) => {
-            editingTaskId.value = t.id;
-            taskName.value = t.name || '';
-            selectedAccountId.value = t.account_id;
+        const editTask = (task) => {
+            editingTaskId.value = task.id;
+            taskName.value = task.name || '';
+            selectedAccountId.value = task.account_id;
             onAccountChange();
 
-            scheduleType.value = t.schedule_type || 'daily';
-            runAtTime.value = t.run_at_time ? utcTimeToLocal(t.run_at_time.substring(0, 5)) : '';
-            runAtDatetime.value = utcToDatetimeLocalInput(t.run_at_datetime);
-            intervalHours.value = t.interval_hours || 0;
-            intervalMinutes.value = t.interval_minutes || 0;
+            scheduleType.value = task.schedule_type || 'daily';
+            runAtTime.value = task.run_at_time ? utcTimeToLocal(task.run_at_time.substring(0, 5)) : '';
+            runAtDatetime.value = utcToDatetimeLocalInput(task.run_at_datetime);
+            intervalHours.value = task.interval_hours || 0;
+            intervalMinutes.value = task.interval_minutes || 0;
 
-            if (t.task_type === 'sequence' && t.payload && t.payload.actions) {
-                const acc = accounts.value.find(a => a.id === t.account_id);
+            if (task.task_type === 'sequence' && task.payload && task.payload.actions) {
+                const acc = accounts.value.find(a => a.id === task.account_id);
                 let zoneData = { buildings: [], specialists: [], buffs: [] };
                 if (acc && acc.zone_data) {
                     try {
@@ -1788,7 +1781,7 @@ export default {
                     } catch (e) {}
                 }
 
-                sequenceActions.value = t.payload.actions.map(act => {
+                sequenceActions.value = task.payload.actions.map(act => {
                     const meta = { building: null, buff: null, specialist: null };
 
                     if (['stop_production', 'start_production', 'apply_buff'].includes(act.task_type)) {
@@ -1927,29 +1920,29 @@ export default {
             expandedTasks.value[taskId] = !expandedTasks.value[taskId];
         };
 
-        const getTaskActionsList = (t) => {
-            if (!t) return [];
-            if (t.task_type === 'sequence' && Array.isArray(t.payload?.actions)) {
-                return t.payload.actions;
+        const getTaskActionsList = (task) => {
+            if (!task) return [];
+            if (task.task_type === 'sequence' && Array.isArray(task.payload?.actions)) {
+                return task.payload.actions;
             }
             return [{
-                task_type: t.task_type,
-                payload: t.payload || {},
+                task_type: task.task_type,
+                payload: task.payload || {},
                 delay_seconds: 0
             }];
         };
 
-        const getNextRunDate = (t) => {
-            if (!t) return null;
+        const getNextRunDate = (task) => {
+            if (!task) return null;
 
-            if (t.schedule_type === 'once') {
-                if (!t.run_at_datetime) return null;
-                return parseServerDate(t.run_at_datetime);
+            if (task.schedule_type === 'once') {
+                if (!task.run_at_datetime) return null;
+                return parseServerDate(task.run_at_datetime);
             }
 
-            if (t.schedule_type === 'daily') {
-                if (!t.run_at_time) return null;
-                const parts = t.run_at_time.split(':');
+            if (task.schedule_type === 'daily') {
+                if (!task.run_at_time) return null;
+                const parts = task.run_at_time.split(':');
                 if (parts.length < 2) return null;
                 const hours = parseInt(parts[0], 10);
                 const minutes = parseInt(parts[1], 10);
@@ -1964,13 +1957,13 @@ export default {
                 return next;
             }
 
-            if (t.schedule_type === 'interval') {
-                const h = Number(t.interval_hours || 0);
-                const m = Number(t.interval_minutes || 0);
+            if (task.schedule_type === 'interval') {
+                const h = Number(task.interval_hours || 0);
+                const m = Number(task.interval_minutes || 0);
                 const intervalMs = (h * 3600 + m * 60) * 1000;
                 if (intervalMs <= 0) return null;
 
-                const baseStr = t.last_run_at || t.created_at;
+                const baseStr = task.last_run_at || task.created_at;
                 if (!baseStr) return null;
                 const base = parseServerDate(baseStr);
                 if (!base) return null;
@@ -1987,16 +1980,16 @@ export default {
             return null;
         };
 
-        const getTaskNextRunText = (t) => {
-            if (!t.is_active) {
+        const getTaskNextRunText = (task) => {
+            if (!task.is_active) {
                 return { status: 'paused', label: t('tasks.status.paused'), detail: '' };
             }
 
-            if (t.schedule_type === 'once' && t.last_run_at) {
+            if (task.schedule_type === 'once' && task.last_run_at) {
                 return { status: 'completed', label: t('tasks.status.completed'), detail: '' };
             }
 
-            const nextDate = getNextRunDate(t);
+            const nextDate = getNextRunDate(task);
             if (!nextDate) {
                 return { status: 'none', label: '—', detail: '' };
             }
@@ -2033,7 +2026,7 @@ export default {
             const grid = action.payload?.grid;
             if (!grid) return t('tasks.building_not_set');
 
-            const acc = accounts.value.find(a => Number(a.id) === Number(t.account_id));
+            const acc = accounts.value.find(a => Number(a.id) === Number(task.account_id));
             if (acc && acc.zone_data) {
                 try {
                     const zd = typeof acc.zone_data === 'string' ? JSON.parse(acc.zone_data) : acc.zone_data;
@@ -2051,7 +2044,7 @@ export default {
             const u1 = action.payload?.unique_id1;
             if (!u1) return t('tasks.buff_from_menu');
 
-            const acc = accounts.value.find(a => Number(a.id) === Number(t.account_id));
+            const acc = accounts.value.find(a => Number(a.id) === Number(task.account_id));
             if (acc && acc.zone_data) {
                 try {
                     const zd = typeof acc.zone_data === 'string' ? JSON.parse(acc.zone_data) : acc.zone_data;
