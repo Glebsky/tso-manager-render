@@ -518,7 +518,7 @@
                                             Каждые {{ formatInterval(t.interval_hours, t.interval_minutes) }}
                                         </p>
                                         <p v-else class="text-xs text-white/60 font-mono">
-                                            Ежедневно в {{ t.run_at_time ? t.run_at_time.substring(0, 5) : '—' }}
+                                            Ежедневно в {{ t.run_at_time ? utcTimeToLocal(t.run_at_time.substring(0, 5)) : '—' }}
                                         </p>
                                         <p class="text-[9px] text-white/20 uppercase tracking-wider">Расписание</p>
                                     </div>
@@ -1676,20 +1676,66 @@ export default {
                 || `Задача #${subId}`;
         };
 
+        // ===== Работа с часовыми поясами =====
+        // Сервер хранит и отдаёт время в UTC.
+        // Браузер конвертирует UTC -> локальный пояс при отображении
+        // и локальный пояс -> UTC при отправке на сервер.
+
+        const pad2 = (n) => String(n).padStart(2, '0');
+
+        // Парсит дату с сервера. Строки без явного часового пояса считаем UTC.
+        const parseServerDate = (dtStr) => {
+            if (!dtStr) return null;
+            let s = String(dtStr).trim();
+            if (!s.includes('T')) s = s.replace(' ', 'T');
+            if (!/(Z|[+-]\d{2}:?\d{2})$/.test(s)) s += 'Z';
+            const d = new Date(s);
+            return isNaN(d.getTime()) ? null : d;
+        };
+
+        // 'HH:mm' (UTC, с сервера) -> 'HH:mm' в локальном поясе пользователя
+        const utcTimeToLocal = (hhmm) => {
+            if (!hhmm) return hhmm;
+            const [h, m] = hhmm.split(':').map(Number);
+            const d = new Date();
+            d.setUTCHours(h, m, 0, 0);
+            return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+        };
+
+        // 'HH:mm' (локальное, из input[type=time]) -> 'HH:mm' в UTC для сервера
+        const localTimeToUtc = (hhmm) => {
+            if (!hhmm) return hhmm;
+            const [h, m] = hhmm.split(':').map(Number);
+            const d = new Date();
+            d.setHours(h, m, 0, 0);
+            return `${pad2(d.getUTCHours())}:${pad2(d.getUTCMinutes())}`;
+        };
+
+        // Значение input[type=datetime-local] (локальное) -> ISO-строка UTC для сервера
+        const localDatetimeToUtcIso = (val) => {
+            if (!val) return val;
+            const d = new Date(val); // datetime-local парсится браузером как локальное время
+            return isNaN(d.getTime()) ? val : d.toISOString();
+        };
+
+        // UTC-дата с сервера -> значение для input[type=datetime-local] (локальное)
+        const utcToDatetimeLocalInput = (dtStr) => {
+            const d = parseServerDate(dtStr);
+            if (!d) return '';
+            return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+        };
+
         const formatDateTime = (dtStr) => {
             if (!dtStr) return '—';
-            try {
-                const d = new Date(dtStr);
-                return d.toLocaleString('ru-RU', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                });
-            } catch (e) {
-                return dtStr;
-            }
+            const d = parseServerDate(dtStr);
+            if (!d) return dtStr;
+            return d.toLocaleString('ru-RU', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+            });
         };
 
         const formatInterval = (hours, minutes) => {
@@ -1725,8 +1771,8 @@ export default {
             onAccountChange();
 
             scheduleType.value = t.schedule_type || 'daily';
-            runAtTime.value = t.run_at_time || '';
-            runAtDatetime.value = t.run_at_datetime ? t.run_at_datetime.replace(' ', 'T').substring(0, 16) : '';
+            runAtTime.value = t.run_at_time ? utcTimeToLocal(t.run_at_time.substring(0, 5)) : '';
+            runAtDatetime.value = utcToDatetimeLocalInput(t.run_at_datetime);
             intervalHours.value = t.interval_hours || 0;
             intervalMinutes.value = t.interval_minutes || 0;
 
@@ -1800,9 +1846,9 @@ export default {
                 };
 
                 if (scheduleType.value === 'daily') {
-                    postData.run_at_time = runAtTime.value;
+                    postData.run_at_time = localTimeToUtc(runAtTime.value);
                 } else if (scheduleType.value === 'once') {
-                    postData.run_at_datetime = runAtDatetime.value;
+                    postData.run_at_datetime = localDatetimeToUtcIso(runAtDatetime.value);
                 } else if (scheduleType.value === 'interval') {
                     postData.interval_hours = intervalHours.value;
                     postData.interval_minutes = intervalMinutes.value;
@@ -1895,8 +1941,7 @@ export default {
 
             if (t.schedule_type === 'once') {
                 if (!t.run_at_datetime) return null;
-                const d = new Date(t.run_at_datetime);
-                return isNaN(d.getTime()) ? null : d;
+                return parseServerDate(t.run_at_datetime);
             }
 
             if (t.schedule_type === 'daily') {
@@ -1906,11 +1951,12 @@ export default {
                 const hours = parseInt(parts[0], 10);
                 const minutes = parseInt(parts[1], 10);
 
+                // run_at_time хранится в UTC, поэтому следующий запуск считаем в UTC
                 const now = new Date(currentTimeMs.value);
-                const next = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0, 0);
+                const next = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), hours, minutes, 0, 0));
 
                 if (next.getTime() <= now.getTime()) {
-                    next.setDate(next.getDate() + 1);
+                    next.setUTCDate(next.getUTCDate() + 1);
                 }
                 return next;
             }
@@ -1923,8 +1969,8 @@ export default {
 
                 const baseStr = t.last_run_at || t.created_at;
                 if (!baseStr) return null;
-                const base = new Date(baseStr);
-                if (isNaN(base.getTime())) return null;
+                const base = parseServerDate(baseStr);
+                if (!base) return null;
 
                 let nextMs = base.getTime() + intervalMs;
                 const nowMs = currentTimeMs.value;
@@ -2089,6 +2135,7 @@ export default {
             cancelEdit,
             formatDateTime,
             formatInterval,
+            utcTimeToLocal,
 
             // Next run time and expandable actions
             currentTimeMs,
