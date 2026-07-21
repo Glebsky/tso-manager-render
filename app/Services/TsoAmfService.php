@@ -581,7 +581,7 @@ class TsoAmfService
         $getFriends = new defaultGame_Communication_VO_dGetFriendsVO;
         //        $getFriends->version = '1843-Release_queen';
         //        $getFriends->version = '9361-Release_lugia_air';
-        $getFriends->version = '3edc5514e7e5177d38fa82e605f59519e25fcb42';
+        $getFriends->version = 'fe5e82453230b4145854f220221b9360f33dec92';
 
         return $this->sendServerCall(
             $account,

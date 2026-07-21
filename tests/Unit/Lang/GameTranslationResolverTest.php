@@ -13,7 +13,7 @@ class GameTranslationResolverTest extends TestCase
 {
     private function makeResolver(array $en, array $ru = [], string $locale = 'en'): GameTranslationResolver
     {
-        $loader = new ArrayLoader();
+        $loader = new ArrayLoader;
         $loader->addMessages('en', 'game', $en);
         $loader->addMessages('ru', 'game', $ru);
 

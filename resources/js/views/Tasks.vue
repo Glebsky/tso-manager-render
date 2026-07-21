@@ -825,6 +825,7 @@ import axios from 'axios';
 import { showToast } from '../toast';
 import { t, gameAny, gameAnyLookup, intlLocale } from '../lang';
 import { humanizeGameId, resourceName, buildingName } from '../lang/gameNames';
+import { getGameImageUrl, handleGameImageError } from '../services/gameImageService';
 
 export default {
     name: 'Tasks',
@@ -1250,52 +1251,20 @@ export default {
 
         const getBuildingName = (b) => (b ? buildingName(b.buildingName_string || b.buildingName || 'Building') : '');
 
-        const getBuildingIcon = (b) => {
-            if (!b) return null;
-            const name = b.buildingName_string || b.buildingName || '';
-            if (!name) return null;
-            let clean = name.replace(/_lvl_\d+/i, '').replace(/decoration_/g, '').trim().toLowerCase();
-
-            const nameMapping = {
-                'realwoodsawmill': 'sawmill_real_planks',
-                'exoticwoodsawmill': 'sawmill_exotic_planks',
-                'mahoganysawmill': 'mahogany_sawmill',
-                'exoticwoodtreeschool': 'exoticwood_treeschool',
-                'stonecutter': 'stonemason',
-                'marblecutter': 'marblemason',
-                'granitecutter': 'granitemason'
+        const getBuildingImageName = (building) => {
+            const name = building?.buildingName_string || building?.buildingName || '';
+            let imageName = name.replace(/_lvl_\d+/i, '').replace(/decoration_/g, '').trim().toLowerCase();
+            const aliases = {
+                realwoodsawmill: 'sawmill_real_planks', exoticwoodsawmill: 'sawmill_exotic_planks',
+                mahoganysawmill: 'mahogany_sawmill', exoticwoodtreeschool: 'exoticwood_treeschool',
+                stonecutter: 'stonemason', marblecutter: 'marblemason', granitecutter: 'granitemason',
             };
-
-            if (nameMapping[clean]) clean = nameMapping[clean];
-            return `/images/buildings/${clean}.webp`;
+            return aliases[imageName] || imageName;
         };
 
-        const handleBuildingIconError = (event, b) => {
-            if (!b) return;
-            const img = event.target;
-            const name = b.buildingName_string || b.buildingName || '';
-            let clean = name.replace(/_lvl_\d+/i, '').replace(/decoration_/g, '').trim().toLowerCase();
-
-            const nameMapping = {
-                'realwoodsawmill': 'sawmill_real_planks',
-                'exoticwoodsawmill': 'sawmill_exotic_planks',
-                'mahoganysawmill': 'mahogany_sawmill',
-                'exoticwoodtreeschool': 'exoticwood_treeschool',
-                'stonecutter': 'stonemason',
-                'marblecutter': 'marblemason',
-                'granitecutter': 'granitemason'
-            };
-
-            if (nameMapping[clean]) clean = nameMapping[clean];
-
-            if (img.src.includes('/images/buildings/') && img.src.endsWith('.webp')) {
-                img.src = `/images/buildings/${clean}.webp`;
-            } else if (img.src.includes('/images/buildings/') && img.src.endsWith('.webp')) {
-                img.src = `/images/resources/${clean}.webp`;
-            } else {
-                img.style.display = 'none';
-            }
-        };
+        const getBuildingIcon = (building) => getGameImageUrl('building', getBuildingImageName(building));
+        const handleBuildingIconError = (event, building) =>
+            handleGameImageError(event, 'building', getBuildingImageName(building));
 
         const totalBuildingsCount = computed(() => {
             if (!zone.value || !zone.value.buildings) return 0;
@@ -1353,7 +1322,11 @@ export default {
         };
 
         const handleSpecialistIconError = (event) => {
-            event.target.style.display = 'none';
+            const img = event.target;
+            if (img) {
+                img.dataset.failed = 'true';
+                img.style.display = 'none';
+            }
         };
 
         const filteredSpecialistsModal = computed(() => {
@@ -1433,57 +1406,19 @@ export default {
             return name.replace(/(?<!^)(?=[A-Z])/g, ' ').replace(/_/g, ' ');
         };
 
-        const getBuffIcon = (b) => {
-            if (!b) return null;
-            const name = b.buffName_string || b.name || '';
-            if (!name) return null;
-            let clean = name.trim().toLowerCase().replace(/\s+/g, '_').replace(/['"]/g, '');
-            const buffMap = {
-                'aunt_irmas_basket': 'aunt_irma_basket',
-                'aunt_irmas_feast_basket': 'aunt_irma_feast_basket',
-                'plate_of_fish': 'plate_fish',
-                'solid_sandwich': 'solid_sandwich',
-                'chocolate_rabbit': 'chocolate_rabbit',
-                'love_potion': 'love_potion',
-                'fermentation_accelerator': 'fermentation_accelerator',
-                'balloon_dog': 'balloon_dog',
-                'secretsanta': 'buff_secretsanta',
-                'buff_secretsanta': 'buff_secretsanta'
+        const getBuffImageName = (buff) => {
+            const name = buff?.buffName_string || buff?.name || '';
+            let imageName = name.trim().toLowerCase().replace(/\s+/g, '_').replace(/[\'"]/g, '');
+            const aliases = {
+                aunt_irmas_basket: 'aunt_irma_basket', aunt_irmas_feast_basket: 'aunt_irma_feast_basket',
+                secretsanta: 'buff_secretsanta', buff_secretsanta: 'buff_secretsanta',
             };
-            if (buffMap[clean]) clean = buffMap[clean];
-            return `/images/other/${clean}.webp`;
+            return aliases[imageName] || imageName;
         };
 
-        const handleBuffIconError = (event, b) => {
-            if (!b) return;
-            const img = event.target;
-            const name = b.buffName_string || b.name || '';
-            let clean = name.trim().toLowerCase().replace(/\s+/g, '_').replace(/['"]/g, '');
-
-            const buffMap = {
-                'aunt_irmas_basket': 'aunt_irma_basket',
-                'aunt_irmas_feast_basket': 'aunt_irma_feast_basket',
-                'solid_sandwich': 'solid_sandwich',
-                'grilled_steak': 'grilled_steak',
-                'fish_platter': 'fish_platter',
-                'chocolate_rabbit': 'chocolate_rabbit',
-                'love_potion': 'love_potion',
-                'fermentation_accelerator': 'fermentation_accelerator',
-                'balloon_dog': 'balloon_dog',
-                'secretsanta': 'buff_secretsanta',
-                'buff_secretsanta': 'buff_secretsanta'
-            };
-
-            if (buffMap[clean]) clean = buffMap[clean];
-
-            if (img.src.includes('/images/other/') && img.src.endsWith('.webp')) {
-                img.src = `/images/buildings/${clean}.webp`;
-            } else if (img.src.includes('/images/buildings/') && img.src.endsWith('.webp')) {
-                img.src = `/images/buildings/${clean}.webp`;
-            } else {
-                img.style.display = 'none';
-            }
-        };
+        const getBuffIcon = (buff) => getGameImageUrl('buff', getBuffImageName(buff));
+        const handleBuffIconError = (event, buff) =>
+            handleGameImageError(event, 'buff', getBuffImageName(buff));
 
         const filteredBuffsModal = computed(() => {
             if (!zone.value || !zone.value.availableBuffs) return [];

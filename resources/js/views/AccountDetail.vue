@@ -656,6 +656,7 @@ import axios from 'axios';
 import { showToast } from '../toast';
 import { t, gameAny, gameAnyLookup } from '../lang';
 import { humanizeGameId, resourceName, buildingName } from '../lang/gameNames';
+import { getGameImageUrl, handleGameImageError } from '../services/gameImageService';
 
 // Icon components
 const BuildingIcon = { render() { return h('svg', { class: 'w-4 h-4', fill: 'none', viewBox: '0 0 24 24', 'stroke-width': '1.5', stroke: 'currentColor' }, [h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', d: 'M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z' })]); } };
@@ -665,59 +666,11 @@ const ResourceIcon = { render() { return h('svg', { class: 'w-4 h-4', fill: 'non
 const FriendIcon = { render() { return h('svg', { class: 'w-4 h-4', fill: 'none', viewBox: '0 0 24 24', 'stroke-width': '1.5', stroke: 'currentColor' }, [h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', d: 'M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z' })]); } };
 const SettingsIcon = { render() { return h('svg', { class: 'w-4 h-4', fill: 'none', viewBox: '0 0 24 24', 'stroke-width': '1.5', stroke: 'currentColor' }, [h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', d: 'M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.43l-1.003.828c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.43l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 0 1 0-.255c.007-.378-.138-.75-.43-.991l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128c.332-.183.582-.495.645-.869l.214-1.28Z' }), h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', d: 'M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z' })]); } };
 
-// Building name to icon URL mapping (TSO CDN)
-const buildingIconMap = {
-    'Sawmill': 'sawmill.png',
-    'Woodcutter': 'woodcutter.png',
-    'Lumberjack': 'lumberjack.png',
-    'CoalMine': 'coalmine.png',
-    'IronMine': 'ironmine.png',
-    'GoldMine': 'goldmine.png',
-    'Quarry': 'quarry.png',
-    'Farm': 'farm.png',
-    'Windmill': 'windmill.png',
-    'Bakery': 'bakery.png',
-    'Brewery': 'brewery.png',
-    'Tavern': 'tavern.png',
-    'Market': 'market.png',
-    'Storehouse': 'storehouse.png',
-    'Barracks': 'barracks.png',
-    'Smithy': 'smithy.png',
-    'Foundry': 'foundry.png',
-    'Arsenal': ' arsenal.png',
-    'GuildHouse': 'guildhouse.png',
-    ' residence': 'residence.png',
-    'Residence': 'residence.png',
-};
-
-// Resource name to icon URL mapping
-const resourceIconMap = {
-    'Wood': 'wood.png',
-    'Coal': 'charcoal.png',
-    'Iron': 'iron.png',
-    'Gold': 'gold.png',
-    'Stone': 'stone.png',
-    'Granite': 'granite.png',
-    'Wheat': 'wheat.png',
-    'Flour': 'flour.png',
-    'Bread': 'bread.png',
-    'Beer': 'beer.png',
-    'Coke': 'coke.png',
-    'Steel': 'steel.png',
-    'Plank': 'plank.png',
-    'Beam': 'beam.png',
-    'MetalFrame': 'metals.png',
-    'CutStone': 'cutstone.png',
-    'Sword': 'sword.png',
-    'Cannon': 'cannon.png',
-    'Musket': 'musket.png',
-};
 
 // Resource categories
 const basicResourceNames = ['Wood', 'Coal', 'Iron', 'Gold', 'Stone', 'Granite', 'Wheat', 'Flour', 'Bread', 'Beer'];
 const improvedResourceNames = ['Coke', 'Steel', 'Plank', 'Beam', 'MetalFrame', 'CutStone'];
 const advancedResourceNames = ['Sword', 'Cannon', 'Musket'];
-const categorizedNames = [...basicResourceNames, ...improvedResourceNames, ...advancedResourceNames];
 
 // Building stop-words (non-stoppable buildings to hide)
 const stopWords = ['Bandit', 'DestroyableMountain', 'Mountain', 'Ruins', 'Camp', 'Loot'];
@@ -1118,129 +1071,41 @@ export default {
             return name.replace(/(?<!^)(?=[A-Z])/g, ' ').replace(/_/g, ' ');
         };
 
-        const getBuffIcon = (b) => {
-            const name = b.buffName_string || b.name || '';
-            if (!name) return null;
-
-            // Clean name: lowercase and strip spaces/special chars
-            let clean = name.trim().toLowerCase().replace(/\s+/g, '_').replace(/['"]/g, '');
-
-            // Map common buff names to their file names on disk
-            const buffMap = {
-                'aunt_irmas_basket': 'aunt_irma_basket',
-                'aunt_irmas_feast_basket': 'aunt_irma_feast_basket',
-                'solid_sandwich': 'solid_sandwich',
-                'grilled_steak': 'grilled_steak',
-                'fish_platter': 'fish_platter',
-                'chocolate_rabbit': 'chocolate_rabbit',
-                'love_potion': 'love_potion',
-                'fermentation_accelerator': 'fermentation_accelerator',
-                'balloon_dog': 'balloon_dog',
-                'secretsanta': 'buff_secretsanta',
-                'buff_secretsanta': 'buff_secretsanta'
+        const getBuffImageName = (buff) => {
+            const name = buff?.buffName_string || buff?.name || '';
+            let imageName = name.trim().toLowerCase().replace(/\s+/g, '_').replace(/[\'"]/g, '');
+            const aliases = {
+                aunt_irmas_basket: 'aunt_irma_basket', aunt_irmas_feast_basket: 'aunt_irma_feast_basket',
+                secretsanta: 'buff_secretsanta', buff_secretsanta: 'buff_secretsanta',
             };
-
-            if (buffMap[clean]) {
-                clean = buffMap[clean];
-            }
-
-            return `/images/other/${clean}.webp`;
+            return aliases[imageName] || imageName;
         };
 
-        const handleBuffIconError = (event, b) => {
-            const img = event.target;
-            const name = b.buffName_string || b.name || '';
-            let clean = name.trim().toLowerCase().replace(/\s+/g, '_').replace(/['"]/g, '');
-
-            const buffMap = {
-                'aunt_irmas_basket': 'aunt_irma_basket',
-                'aunt_irmas_feast_basket': 'aunt_irma_feast_basket',
-                'solid_sandwich': 'solid_sandwich',
-                'grilled_steak': 'grilled_steak',
-                'fish_platter': 'fish_platter',
-                'chocolate_rabbit': 'chocolate_rabbit',
-                'love_potion': 'love_potion',
-                'fermentation_accelerator': 'fermentation_accelerator',
-                'balloon_dog': 'balloon_dog',
-                'secretsanta': 'buff_secretsanta',
-                'buff_secretsanta': 'buff_secretsanta'
-            };
-
-            if (buffMap[clean]) {
-                clean = buffMap[clean];
-            }
-
-            if (img.src.includes('/images/other/') && img.src.endsWith('.webp')) {
-                // Step 1: PNG in resources failed, try WebP in buildings (from TSO Wiki)
-                img.src = `/images/buildings/${clean}.webp`;
-            } else if (img.src.includes('/images/buildings/') && img.src.endsWith('.webp')) {
-                // Step 2: WebP failed too, try PNG in buildings
-                img.src = `/images/buildings/${clean}.webp`;
-            } else {
-                // Step 3: Hide image and show sibling emoji/SVG
-                img.style.display = 'none';
-                const sibling = img.nextElementSibling;
+        const getBuffIcon = (buff) => getGameImageUrl('buff', getBuffImageName(buff));
+        const handleBuffIconError = (event, buff) => {
+            const advanced = handleGameImageError(event, 'buff', getBuffImageName(buff));
+            if (!advanced && event?.target?.dataset.imageFailed === 'true') {
+                const sibling = event.target.nextElementSibling;
                 if (sibling) sibling.style.display = 'block';
             }
         };
 
         const getBuildingName = (b) => buildingName(b.buildingName_string || b.buildingName || 'Building');
 
-        const getBuildingIcon = (b) => {
-            const name = b.buildingName_string || b.buildingName || '';
-            if (!name) return null;
-
-            // Clean name to lowercase and strip level info
-            let clean = name.replace(/_lvl_\d+/i, '').replace(/decoration_/g, '').trim().toLowerCase();
-
-            // Map game engine names to their actual image names from tsowiki
-            const nameMapping = {
-                'realwoodsawmill': 'sawmill_real_planks',
-                'exoticwoodsawmill': 'sawmill_exotic_planks',
-                'mahoganysawmill': 'mahogany_sawmill',
-                'exoticwoodtreeschool': 'exoticwood_treeschool',
-                'stonecutter': 'stonemason',
-                'marblecutter': 'marblemason',
-                'granitecutter': 'granitemason'
+        const getBuildingImageName = (building) => {
+            const name = building?.buildingName_string || building?.buildingName || '';
+            let imageName = name.replace(/_lvl_\d+/i, '').replace(/decoration_/g, '').trim().toLowerCase();
+            const aliases = {
+                realwoodsawmill: 'sawmill_real_planks', exoticwoodsawmill: 'sawmill_exotic_planks',
+                mahoganysawmill: 'mahogany_sawmill', exoticwoodtreeschool: 'exoticwood_treeschool',
+                stonecutter: 'stonemason', marblecutter: 'marblemason', granitecutter: 'granitemason',
             };
-
-            if (nameMapping[clean]) {
-                clean = nameMapping[clean];
-            }
-
-            return `/images/buildings/${clean}.webp`;
+            return aliases[imageName] || imageName;
         };
 
-        const handleBuildingIconError = (event, b) => {
-            const img = event.target;
-            const name = b.buildingName_string || b.buildingName || '';
-            let clean = name.replace(/_lvl_\d+/i, '').replace(/decoration_/g, '').trim().toLowerCase();
-
-            const nameMapping = {
-                'realwoodsawmill': 'sawmill_real_planks',
-                'exoticwoodsawmill': 'sawmill_exotic_planks',
-                'mahoganysawmill': 'mahogany_sawmill',
-                'exoticwoodtreeschool': 'exoticwood_treeschool',
-                'stonecutter': 'stonemason',
-                'marblecutter': 'marblemason',
-                'granitecutter': 'granitemason'
-            };
-
-            if (nameMapping[clean]) {
-                clean = nameMapping[clean];
-            }
-
-            if (img.src.includes('/images/buildings/') && img.src.endsWith('.webp')) {
-                // Step 1: WebP failed in buildings, try PNG in buildings
-                img.src = `/images/buildings/${clean}.webp`;
-            } else if (img.src.includes('/images/buildings/') && img.src.endsWith('.webp')) {
-                // Step 2: PNG failed in buildings, try PNG in resources
-                img.src = `/images/resources/${clean}.webp`;
-            } else {
-                // Step 3: All failed, hide
-                img.style.display = 'none';
-            }
-        };
+        const getBuildingIcon = (building) => getGameImageUrl('building', getBuildingImageName(building));
+        const handleBuildingIconError = (event, building) =>
+            handleGameImageError(event, 'building', getBuildingImageName(building));
 
         const isStoppable = (b) => {
             const mode = b.buildingMode;
@@ -1322,7 +1187,11 @@ export default {
 
         const specialistIconErrors = ref(new Set());
         const handleSpecialistIconError = (event, type) => {
-            specialistIconErrors.value.add(type);
+            specialistIconErrors.value = new Set(specialistIconErrors.value.add(type));
+            if (event?.target) {
+                event.target.dataset.failed = 'true';
+                event.target.style.display = 'none';
+            }
         };
         const hasSpecialistIconError = (type) => {
             return specialistIconErrors.value.has(type);
@@ -1419,24 +1288,14 @@ export default {
             return t('account.task_number', { id: taskSubType });
         };
 
-        const getResourceIcon = (name) => {
-            if (!name) return null;
-            const clean = name.trim().toLowerCase().replace(/\s+/g, '');
-            const map = { wheat: 'grain', corn: 'grain', coal: 'charcoal', coin: 'coin', coins: 'coin' };
-            return `/images/resources/${map[clean] || clean}.webp`;
+        const getResourceImageName = (name) => {
+            const clean = String(name || '').trim().toLowerCase().replace(/\s+/g, '');
+            return ({ wheat: 'grain', corn: 'grain', coal: 'charcoal', coin: 'coin', coins: 'coin' })[clean] || clean;
         };
 
-        const handleIconError = (event, name) => {
-            const img = event.target;
-            const clean = name.trim().toLowerCase().replace(/\s+/g, '');
-            const target = ({ wheat: 'grain', corn: 'grain', coal: 'charcoal', coin: 'coin', coins: 'coin' })[clean] || clean;
-            const src = img.getAttribute('src') || '';
-            if (src.includes('/images/resources/')) {
-                img.src = `/images/other/${target}.webp`;
-            } else {
-                img.style.display = 'none';
-            }
-        };
+        const getResourceIcon = (name) => getGameImageUrl('resource', getResourceImageName(name));
+        const handleIconError = (event, name) =>
+            handleGameImageError(event, 'resource', getResourceImageName(name));
 
         const formatResourceName = humanizeGameId;
 

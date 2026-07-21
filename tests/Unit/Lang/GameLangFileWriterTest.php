@@ -26,7 +26,7 @@ class GameLangFileWriterTest extends TestCase
         parent::tearDown();
     }
 
-    private function result(): LangImportResult
+    private function createResult(): LangImportResult
     {
         return new LangImportResult(
             sourceLocale: 'en',
@@ -47,7 +47,7 @@ class GameLangFileWriterTest extends TestCase
 
     public function test_writes_loadable_catalog_with_sorted_keys(): void
     {
-        $path = (new GameLangFileWriter())->write($this->result(), 'en', 'en_lang.xml', $this->dir);
+        $path = (new GameLangFileWriter)->write($this->createResult(), 'en', 'en_lang.xml', $this->dir);
 
         $this->assertFileExists($path);
 
@@ -63,10 +63,10 @@ class GameLangFileWriterTest extends TestCase
 
     public function test_output_is_deterministic(): void
     {
-        $writer = new GameLangFileWriter();
+        $writer = new GameLangFileWriter;
 
-        $first = file_get_contents($writer->write($this->result(), 'en', 'en_lang.xml', $this->dir));
-        $second = file_get_contents($writer->write($this->result(), 'en', 'en_lang.xml', $this->dir));
+        $first = file_get_contents($writer->write($this->createResult(), 'en', 'en_lang.xml', $this->dir));
+        $second = file_get_contents($writer->write($this->createResult(), 'en', 'en_lang.xml', $this->dir));
 
         $this->assertSame($first, $second);
     }

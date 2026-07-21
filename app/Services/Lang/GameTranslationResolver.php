@@ -24,9 +24,7 @@ final class GameTranslationResolver
     /** @var array<string, array<string, array<string, string>>> */
     private array $catalogs = [];
 
-    public function __construct(private readonly Translator $translator)
-    {
-    }
+    public function __construct(private readonly Translator $translator) {}
 
     /**
      * Resolve a plain display name. Returns $fallback (or the raw id) when
@@ -40,7 +38,7 @@ final class GameTranslationResolver
     /**
      * Resolve a translation template and interpolate {N} / {N,SECTION} placeholders.
      *
-     * @param array<int, string|int|float> $parameters positional parameters, e.g. [0 => 500, 1 => 'BronzeOre']
+     * @param  array<int, string|int|float>  $parameters  positional parameters, e.g. [0 => 500, 1 => 'BronzeOre']
      */
     public function resolve(string $section, string $id, array $parameters = [], ?string $fallback = null, ?string $locale = null): string
     {
@@ -95,8 +93,8 @@ final class GameTranslationResolver
     }
 
     /**
-     * @param array<int, string|int|float> $parameters
-     * @param array<string, true> $visited
+     * @param  array<int, string|int|float>  $parameters
+     * @param  array<string, true>  $visited
      */
     private function interpolate(string $template, array $parameters, ?string $locale, int $depth, array $visited): string
     {

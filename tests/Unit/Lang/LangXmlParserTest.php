@@ -17,7 +17,7 @@ class LangXmlParserTest extends TestCase
 
     public function test_parses_valid_file_with_stats(): void
     {
-        $result = (new LangXmlParser())->parse($this->fixture('valid-lang.xml'));
+        $result = (new LangXmlParser)->parse($this->fixture('valid-lang.xml'));
 
         $this->assertSame('en', $result->sourceLocale);
         $this->assertSame(2, $result->sectionCount());
@@ -36,7 +36,7 @@ class LangXmlParserTest extends TestCase
 
     public function test_records_conflicting_duplicate_ids(): void
     {
-        $result = (new LangXmlParser())->parse($this->fixture('conflict-lang.xml'));
+        $result = (new LangXmlParser)->parse($this->fixture('conflict-lang.xml'));
 
         $this->assertTrue($result->hasConflicts());
         $this->assertNotEmpty($result->conflicts);
@@ -48,19 +48,19 @@ class LangXmlParserTest extends TestCase
     {
         $this->expectException(LangImportException::class);
 
-        (new LangXmlParser())->parse($this->fixture('malformed-lang.xml'));
+        (new LangXmlParser)->parse($this->fixture('malformed-lang.xml'));
     }
 
     public function test_missing_file_throws_import_exception(): void
     {
         $this->expectException(LangImportException::class);
 
-        (new LangXmlParser())->parse($this->fixture('does-not-exist.xml'));
+        (new LangXmlParser)->parse($this->fixture('does-not-exist.xml'));
     }
 
     public function test_normalizes_locale_aliases(): void
     {
-        $parser = new LangXmlParser();
+        $parser = new LangXmlParser;
 
         $this->assertSame('en', $parser->normalizeLocale('en_uk'));
         $this->assertSame('ru', $parser->normalizeLocale('ru_ru'));

@@ -6,6 +6,4 @@ namespace App\Services\Lang;
 
 use RuntimeException;
 
-class LangImportException extends RuntimeException
-{
-}
+class LangImportException extends RuntimeException {}

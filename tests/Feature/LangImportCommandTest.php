@@ -19,8 +19,7 @@ class LangImportCommandTest extends TestCase
 
     protected function tearDown(): void
     {
-        array_map('unlink', glob($this->dir.'/*') ?: []);
-        @rmdir($this->dir);
+        \Illuminate\Support\Facades\File::deleteDirectory($this->dir);
         parent::tearDown();
     }
 

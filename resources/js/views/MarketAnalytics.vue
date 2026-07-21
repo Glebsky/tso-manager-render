@@ -189,7 +189,7 @@
                     </div>
 
                     <!-- Price Dynamic Chart Card -->
-                    <div class="glass-card p-6">
+                    <div class="glass-card p-6 relative transition-all duration-300" :class="hoveredPoint ? 'z-40' : 'z-10'">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                             <h3 class="text-sm font-semibold text-white">Price History (1 {{ selectedItemName }} = X {{ selectedTargetName }})</h3>
                             
@@ -220,7 +220,7 @@
                         </div>
 
                         <!-- SVG Price Chart -->
-                        <div class="h-64 w-full relative pt-2">
+                        <div class="h-64 w-full relative z-40 pt-2">
                             <template v-if="history.length > 0">
                                 <svg class="w-full h-full" viewBox="0 0 600 220" preserveAspectRatio="none">
                                     <!-- Gradients -->
@@ -263,7 +263,8 @@
 
                                 <!-- Floating Interactive Glassmorphism Tooltip -->
                                 <div v-if="hoveredPoint"
-                                     class="absolute z-30 pointer-events-none transition-all duration-150 ease-out transform -translate-x-1/2 -translate-y-full mb-3"
+                                     class="absolute z-50 pointer-events-none transition-all duration-150 ease-out transform"
+                                     :class="tooltipPositionClass"
                                      :style="{ left: (hoveredPoint.x / 600 * 100) + '%', top: (hoveredPoint.y / 220 * 100) + '%' }">
                                     <div class="glass-card p-3 shadow-2xl border border-white/20 bg-dark-900/95 backdrop-blur-md rounded-xl text-xs space-y-2 min-w-[210px] animate-fade-in">
                                         <!-- Tooltip Header: Date & Rate -->
@@ -864,6 +865,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { t } from '../lang';
 import axios from 'axios';
 import { showToast } from '../toast';
+import { getGameImageUrl, handleGameImageError } from '../services/gameImageService';
 
 export default {
     name: 'MarketAnalytics',
@@ -890,6 +892,26 @@ export default {
         const activeInfo = ref(null);
         const periodInfo = ref(null);
         const hoveredPoint = ref(null);
+
+        const tooltipPositionClass = computed(() => {
+            if (!hoveredPoint.value) return '';
+            const xRatio = hoveredPoint.value.x / 600;
+            const yRatio = hoveredPoint.value.y / 220;
+
+            let translateX = '-translate-x-1/2';
+            if (xRatio > 0.75) {
+                translateX = '-translate-x-[90%]';
+            } else if (xRatio < 0.25) {
+                translateX = '-translate-x-[10%]';
+            }
+
+            let translateY = '-translate-y-full mb-3';
+            if (yRatio < 0.3) {
+                translateY = 'translate-y-2 mt-2';
+            }
+
+            return `${translateX} ${translateY}`;
+        });
         const accounts = ref([]);
         const logs = ref([]);
         const logsPagination = ref({
@@ -1040,23 +1062,12 @@ export default {
             return val;
         };
 
-        // Resource Icons helper
-        const getResourceIcon = (itemId) => {
-            if (!itemId) return '/images/resources/addresource.webp';
-            return `/images/resources/${itemId.toLowerCase()}.webp`;
-        };
+        // Resource icon lookup: resources first, then other.
+        const getResourceIcon = (itemId) =>
+            getGameImageUrl('resource', itemId || 'addresource');
 
-        const handleIconError = (event, itemId) => {
-            const img = event.target;
-            if (!img || !itemId) return;
-            const lower = itemId.toLowerCase();
-            const src = img.getAttribute('src') || '';
-            if (src.includes('/images/resources/')) {
-                img.src = `/images/other/${lower}.webp`;
-            } else if (!src.includes('addresource.webp')) {
-                img.src = '/images/resources/addresource.webp';
-            }
-        };
+        const handleIconError = (event, itemId) =>
+            handleGameImageError(event, 'resource', itemId || 'addresource', '/images/resources/addresource.webp');
 
         const getStatusBadgeClass = (status) => {
             switch (status) {
@@ -1523,7 +1534,8 @@ export default {
             togglePopularItems,
             toggleArbitrageSchemes,
             toggleActiveListings,
-            hoveredPoint
+            hoveredPoint,
+            tooltipPositionClass
         };
     }
 };

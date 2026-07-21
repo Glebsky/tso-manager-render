@@ -10,8 +10,8 @@ namespace App\Services\Lang;
 final class LangImportResult
 {
     /**
-     * @param array<string, array<string, string>> $sections section => [id => text]
-     * @param list<string> $conflicts "SECTION/id" keys that appeared twice with different texts
+     * @param  array<string, array<string, string>>  $sections  section => [id => text]
+     * @param  list<string>  $conflicts  "SECTION/id" keys that appeared twice with different texts
      */
     public function __construct(
         public readonly string $sourceLocale,
@@ -21,8 +21,7 @@ final class LangImportResult
         public readonly int $skippedEmptyTexts,
         public readonly int $deduplicatedEntries,
         public readonly array $conflicts,
-    ) {
-    }
+    ) {}
 
     public function sectionCount(): int
     {
