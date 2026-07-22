@@ -199,13 +199,16 @@
                             <div>
                                 <label class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">{{ t('tasks.step_action_type') }}</label>
                                 <div class="relative">
-                                    <button type="button" @click.stop="activeDropdown = activeDropdown === 'stepActionType' ? null : 'stepActionType'" class="glass-select w-full flex items-center justify-between text-left text-xs py-2">
-                                        <span>{{ stepActionTypeLabel }}</span>
+                                    <button type="button" :disabled="!selectedAccountId"
+                                            @click.stop="toggleStepActionDropdown"
+                                            class="glass-select w-full flex items-center justify-between text-left text-xs py-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
+                                            :class="{ 'border-amber-500/40 bg-amber-500/5 text-amber-400/80': !selectedAccountId }">
+                                        <span>{{ selectedAccountId ? stepActionTypeLabel : t('tasks.toast.select_account_first') }}</span>
                                         <svg class="w-3.5 h-3.5 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                                         </svg>
                                     </button>
-                                    <div v-if="activeDropdown === 'stepActionType'" class="absolute z-50 mt-1.5 w-full glass-card border border-white/10 shadow-2xl rounded-xl py-1 max-h-60 overflow-y-auto">
+                                    <div v-if="selectedAccountId && activeDropdown === 'stepActionType'" class="absolute z-50 mt-1.5 w-full glass-card border border-white/10 shadow-2xl rounded-xl py-1 max-h-60 overflow-y-auto">
                                         <button type="button" @click="stepActionType = 'stop_production'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">🛑 {{ t('tasks.action.stop_production') }}</button>
                                         <button type="button" @click="stepActionType = 'start_production'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">▶️ {{ t('tasks.action.start_production') }}</button>
                                         <button type="button" @click="stepActionType = 'apply_buff'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">⚡ {{ t('tasks.action.apply_buff') }}</button>
@@ -221,90 +224,133 @@
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                     <!-- Селекторы целевой зоны и зданий/друзей -->
                                     <div class="col-span-2">
-                                        <!-- Переключатель: Моя зона / Зона друга (только для баффа) -->
-                                        <div v-if="stepActionType === 'apply_buff'" class="mb-3">
-                                            <label class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">{{ t('tasks.where_apply') }}</label>
-                                            <div class="grid grid-cols-2 gap-2">
-                                                <button type="button" @click="stepTargetScope = 'self'; onTargetScopeChange()"
-                                                        class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all duration-300"
-                                                        :class="stepTargetScope === 'self' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
-                                                    {{ t('tasks.my_zone') }}
-                                                </button>
-                                                <button type="button" @click="stepTargetScope = 'friend'; onTargetScopeChange()"
-                                                        class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all duration-300"
-                                                        :class="stepTargetScope === 'friend' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
-                                                    {{ t('tasks.friend_zone') }}
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <!-- Друг (только если выбрана зона друга) -->
-                                        <div v-if="stepActionType === 'apply_buff' && stepTargetScope === 'friend'" class="mb-3">
-                                            <label class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">{{ t('tasks.friend') }}</label>
-                                            <div class="relative">
-                                                <button type="button" @click.stop="activeDropdown = activeDropdown === 'friendList' ? null : 'friendList'"
-                                                        class="glass-select w-full flex items-center justify-between text-left text-xs py-2 bg-dark-900/40 transition-all duration-300"
-                                                        :class="{ 'border-amber-500/40 bg-amber-500/5': !selectedFriend }">
-                                                    <span v-if="selectedFriend" class="flex items-center gap-2">
-                                                        <span>👤 {{ selectedFriend.nickname || selectedFriend.username }} ({{ t('tasks.level') }} {{ selectedFriend.playerLevel }})</span>
-                                                    </span>
-                                                    <span v-else class="text-amber-400/80 font-medium">{{ t('tasks.select_friend') }}</span>
-                                                    <svg class="w-3.5 h-3.5 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                                                    </svg>
-                                                </button>
-                                                <div v-if="activeDropdown === 'friendList'" class="absolute z-50 mt-1.5 w-full glass-card border border-white/10 shadow-2xl rounded-xl py-1 max-h-60 overflow-y-auto">
-                                                    <button v-for="friend in friendsList" :key="friend.id" type="button" @click="selectFriend(friend); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors flex justify-between items-center">
-                                                        <span>👤 {{ friend.nickname || friend.username }} ({{ t('tasks.level') }} {{ friend.playerLevel }})</span>
-                                                        <span class="text-[9px]" :class="friend.onlineStatus ? 'text-green-400' : 'text-white/30'">
-                                                            {{ friend.onlineStatus ? t('tasks.online') : t('tasks.offline') }}
-                                                        </span>
+                                        <!-- ЗДАНИЯ (для остановки, запуска или баффа) -->
+                                        <div v-if="['stop_production', 'start_production', 'apply_buff'].includes(stepActionType)" class="mb-3">
+                                            <!-- Переключатель: Моя зона / Зона друга (только для баффа) -->
+                                            <div v-if="stepActionType === 'apply_buff'" class="mb-3">
+                                                <label class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">{{ t('tasks.where_apply') }}</label>
+                                                <div class="grid grid-cols-2 gap-2">
+                                                    <button type="button" @click="stepTargetScope = 'self'; onTargetScopeChange()"
+                                                            class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all duration-300"
+                                                            :class="stepTargetScope === 'self' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
+                                                        🏡 {{ t('tasks.my_zone') }}
                                                     </button>
-                                                    <div v-if="friendsList.length === 0" class="px-3 py-1.5 text-xs text-white/40">
-                                                        {{ t('tasks.friends_empty') }}
+                                                    <button type="button" @click="stepTargetScope = 'friend'; onTargetScopeChange()"
+                                                            class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all duration-300"
+                                                            :class="stepTargetScope === 'friend' ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
+                                                        👤 {{ t('tasks.friend_zone') }}
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <!-- Выбор друга (отображается ТОЛЬКО если выбрана Зона друга) -->
+                                            <div v-if="stepActionType === 'apply_buff' && stepTargetScope === 'friend'" class="mb-3">
+                                                <label class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">{{ t('tasks.friend') }}</label>
+                                                <div class="relative">
+                                                    <button type="button" @click.stop="activeDropdown = activeDropdown === 'friendList' ? null : 'friendList'"
+                                                            class="glass-select w-full flex items-center justify-between text-left text-xs py-2 bg-dark-900/40 transition-all duration-300"
+                                                            :class="{ 'border-amber-500/40 bg-amber-500/5': !selectedFriend }">
+                                                        <span v-if="selectedFriend" class="flex items-center gap-2">
+                                                            <span>👤 {{ selectedFriend.nickname || selectedFriend.username }} ({{ t('tasks.level') }} {{ selectedFriend.playerLevel }})</span>
+                                                        </span>
+                                                        <span v-else class="text-amber-400/80 font-medium">{{ t('tasks.select_friend') }}</span>
+                                                        <svg class="w-3.5 h-3.5 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                                        </svg>
+                                                    </button>
+                                                    <div v-if="activeDropdown === 'friendList'" class="absolute z-50 mt-1.5 w-full glass-card border border-white/10 shadow-2xl rounded-xl py-1 max-h-60 overflow-y-auto">
+                                                        <button v-for="friend in friendsList" :key="friend.id" type="button" @click="selectFriend(friend); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors flex justify-between items-center">
+                                                            <span>👤 {{ friend.nickname || friend.username }} ({{ t('tasks.level') }} {{ friend.playerLevel }})</span>
+                                                            <span class="text-[9px]" :class="friend.onlineStatus ? 'text-green-400' : 'text-white/30'">
+                                                                {{ friend.onlineStatus ? t('tasks.online') : t('tasks.offline') }}
+                                                            </span>
+                                                        </button>
+                                                        <div v-if="friendsList.length === 0" class="px-3 py-1.5 text-xs text-white/40">
+                                                            {{ t('tasks.friends_empty') }}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
+
+                                            <div class="flex items-center justify-between mb-1.5">
+                                                <label class="block text-[10px] font-medium text-white/40 uppercase">
+                                                    {{ t('tasks.selected_targets', { count: selectedBuildings.length }) }}
+                                                </label>
+                                                <button v-if="selectedBuildings.length > 0" type="button" @click="clearSelectedBuildings" class="text-[10px] text-red-400/80 hover:text-red-400 transition-colors">
+                                                    {{ t('tasks.modal.clear_selection') }}
+                                                </button>
+                                            </div>
+
+                                            <!-- Список выбранных чипов зданий -->
+                                            <div v-if="selectedBuildings.length > 0" class="flex flex-wrap gap-2 mb-2 max-h-40 overflow-y-auto p-2 bg-dark-900/40 rounded-xl border border-white/5">
+                                                <div v-for="(bTarget, bIdx) in selectedBuildings" :key="bTarget.id"
+                                                     class="glass-card px-2.5 py-1.5 flex items-center gap-2 text-xs border border-emerald-500/30 bg-emerald-500/10 rounded-lg max-w-full">
+                                                    <span class="text-[9px] px-1.5 py-0.5 rounded font-medium flex-shrink-0"
+                                                          :class="bTarget.scope === 'friend' ? 'bg-amber-500/20 text-amber-300' : 'bg-emerald-500/20 text-emerald-300'">
+                                                        {{ bTarget.scope === 'friend' ? ('👤 ' + (bTarget.friend?.nickname || bTarget.friend?.username || t('tasks.friend'))) : '🏡 ' + t('tasks.my_city') }}
+                                                    </span>
+                                                    <img v-if="getBuildingIcon(bTarget.building)" :src="getBuildingIcon(bTarget.building)" class="w-4 h-4 object-contain flex-shrink-0" @error="handleBuildingIconError($event, bTarget.building)" />
+                                                    <span class="text-white/90 font-medium truncate text-xs">{{ getBuildingName(bTarget.building) }} (Grid #{{ bTarget.buildingGrid }})</span>
+                                                    <button type="button" @click="removeSelectedBuilding(bIdx)" class="text-white/40 hover:text-red-400 transition-colors ml-1 font-bold flex-shrink-0">✕</button>
+                                                </div>
+                                            </div>
+
+                                            <!-- Кнопка вызова модального окна выбора зданий -->
+                                            <div>
+                                                <button v-if="stepTargetScope === 'self'" type="button" @click="openBuildingModal('self')"
+                                                        class="glass-select w-full flex items-center justify-between text-left text-xs py-2 bg-dark-900/40 transition-all duration-300"
+                                                        :class="{ 'border-amber-500/40 bg-amber-500/5': selectedBuildings.length === 0 }">
+                                                    <span class="flex items-center gap-2 truncate">
+                                                        <span>🏭 {{ t('tasks.select_buildings') }}</span>
+                                                        <span v-if="selectedBuildings.length > 0" class="badge badge-emerald text-[10px]">{{ selectedBuildings.length }}</span>
+                                                    </span>
+                                                    <svg class="w-3.5 h-3.5 text-white/30 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                                    </svg>
+                                                </button>
+                                                <button v-else type="button" @click="openBuildingModal('friend')" :disabled="!selectedFriend"
+                                                        class="glass-select w-full flex items-center justify-between text-left text-xs py-2 bg-dark-900/40 disabled:opacity-50 transition-all duration-300"
+                                                        :class="{ 'border-amber-500/40 bg-amber-500/5': !selectedFriend }">
+                                                    <span class="flex items-center gap-2 truncate">
+                                                        <span>👤 {{ t('tasks.modal.select_friend_building') }}</span>
+                                                        <span v-if="selectedBuildings.filter(b => b.scope === 'friend').length > 0" class="badge badge-emerald text-[10px]">{{ selectedBuildings.filter(b => b.scope === 'friend').length }}</span>
+                                                    </span>
+                                                    <svg class="w-3.5 h-3.5 text-white/30 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                                    </svg>
+                                                </button>
+                                            </div>
                                         </div>
 
-                                        <!-- Здание друга (только если выбрана зона друга) -->
-                                        <div v-if="stepActionType === 'apply_buff' && stepTargetScope === 'friend'" class="mb-3">
-                                            <label class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">{{ t('tasks.friend_building') }}</label>
-                                            <div v-if="loadingFriendZone" class="text-xs text-emerald-400/80 flex items-center gap-2 py-2">
-                                                <svg class="animate-spin h-3.5 w-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                </svg>
-                                                <span>{{ t('tasks.loading_zone') }} {{ selectedFriend?.nickname || selectedFriend?.username }}…</span>
+                                        <!-- СПЕЦИАЛИСТЫ (для отправки геологов / разведчиков) -->
+                                        <div v-if="['send_geologist', 'send_explorer'].includes(stepActionType)" class="mb-3">
+                                            <div class="flex items-center justify-between mb-1.5">
+                                                <label class="block text-[10px] font-medium text-white/40 uppercase">
+                                                    {{ t('tasks.selected_specialists', { count: selectedSpecialists.length }) }}
+                                                </label>
+                                                <button v-if="selectedSpecialists.length > 0" type="button" @click="clearSelectedSpecialists" class="text-[10px] text-red-400/80 hover:text-red-400 transition-colors">
+                                                    {{ t('tasks.modal.clear_selection') }}
+                                                </button>
                                             </div>
-                                            <div v-else-if="friendZoneError" class="text-xs text-red-400 flex items-center justify-between py-1 bg-red-500/10 px-3 rounded-lg border border-red-500/20">
-                                                <span>{{ t('tasks.zone_load_failed') }}</span>
-                                                <button type="button" @click="fetchFriendZoneBuildings" class="text-[10px] uppercase font-bold text-white bg-white/10 hover:bg-white/20 px-2 py-0.5 rounded transition-all">{{ t('tasks.retry') }}</button>
-                                            </div>
-                                            <button v-else type="button" @click="openFriendBuildingModal" :disabled="!selectedFriend"
-                                                    class="glass-select w-full flex items-center justify-between text-left text-xs py-2 bg-dark-900/40 disabled:opacity-50 transition-all duration-300"
-                                                    :class="{ 'border-amber-500/40 bg-amber-500/5': !selectedFriendBuilding }">
-                                                <span v-if="selectedFriendBuilding" class="flex items-center gap-2">
-                                                    <span>🏭 {{ getBuildingName(selectedFriendBuilding) }} (Grid #{{ selectedFriendBuilding.buildingGrid }})</span>
-                                                </span>
-                                                <span v-else class="text-amber-400/80 font-medium">{{ t('tasks.select_friend_building') }} ({{ filteredFriendBuildings.length }} {{ t('tasks.avail_short') }})</span>
-                                                <svg class="w-3.5 h-3.5 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                                                </svg>
-                                            </button>
-                                        </div>
 
-                                        <!-- Собственное здание (для остановки/запуска или для баффа на себя) -->
-                                        <div v-if="['stop_production', 'start_production'].includes(stepActionType) || (stepActionType === 'apply_buff' && stepTargetScope === 'self')">
-                                            <button type="button" @click="openBuildingModal"
+                                            <!-- Список выбранных чипов специалистов -->
+                                            <div v-if="selectedSpecialists.length > 0" class="flex flex-wrap gap-2 mb-2 max-h-40 overflow-y-auto p-2 bg-dark-900/40 rounded-xl border border-white/5">
+                                                <div v-for="(spec, sIdx) in selectedSpecialists" :key="getSpecialistId(spec)"
+                                                     class="glass-card px-2.5 py-1.5 flex items-center gap-2 text-xs border border-emerald-500/30 bg-emerald-500/10 rounded-lg max-w-full">
+                                                    <img v-if="getSpecialistIcon(spec.type)" :src="getSpecialistIcon(spec.type)" class="w-5 h-5 object-contain flex-shrink-0" @error="handleSpecialistIconError($event, spec.type)" />
+                                                    <span class="text-white/90 font-medium truncate text-xs">{{ spec.name || getSpecialistTypeName(spec.type) }}</span>
+                                                    <button type="button" @click="removeSelectedSpecialist(sIdx)" class="text-white/40 hover:text-red-400 transition-colors ml-1 font-bold flex-shrink-0">✕</button>
+                                                </div>
+                                            </div>
+
+                                            <button type="button" @click="openSpecialistModal"
                                                     class="glass-select w-full flex items-center justify-between text-left text-xs py-2 bg-dark-900/40 transition-all duration-300"
-                                                    :class="{ 'border-amber-500/40 bg-amber-500/5': !selectedBuilding }">
-                                                <span v-if="selectedBuilding" class="flex items-center gap-2">
-                                                    <img v-if="getBuildingIcon(selectedBuilding)" :src="getBuildingIcon(selectedBuilding)" class="w-5 h-5 object-contain" @error="handleBuildingIconError($event, selectedBuilding)" />
-                                                    <span class="truncate">{{ getBuildingName(selectedBuilding) }} (Grid #{{ selectedBuilding.buildingGrid }})</span>
+                                                    :class="{ 'border-amber-500/40 bg-amber-500/5': selectedSpecialists.length === 0 }">
+                                                <span class="flex items-center gap-2 truncate">
+                                                    <span>🎖️ {{ t('tasks.select_specialists') }}</span>
+                                                    <span v-if="selectedSpecialists.length > 0" class="badge badge-emerald text-[10px]">{{ selectedSpecialists.length }}</span>
                                                 </span>
-                                                <span v-else class="text-amber-400/80 font-medium">{{ t('tasks.select_building') }} ({{ totalBuildingsCount }} {{ t('tasks.avail_short') }})</span>
-                                                <svg class="w-3.5 h-3.5 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                <svg class="w-3.5 h-3.5 text-white/30 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                                                 </svg>
                                             </button>
@@ -328,24 +374,7 @@
 
                                         <div>
                                             <label class="block text-[10px] font-medium text-white/40 mb-1 uppercase">{{ t('tasks.quantity') }}</label>
-                                            <input type="number" min="1" required v-model.number="stepAmount" class="glass-input w-full text-xs py-1.5">
                                         </div>
-                                    </div>
-
-                                    <!-- Специалист -->
-                                    <div v-if="['send_geologist', 'send_explorer'].includes(stepActionType)" class="col-span-2">
-                                        <button type="button" @click="openSpecialistModal"
-                                                class="glass-select w-full flex items-center justify-between text-left text-xs py-2 bg-dark-900/40 transition-all duration-300"
-                                                :class="{ 'border-amber-500/40 bg-amber-500/5': !selectedSpecialist }">
-                                            <span v-if="selectedSpecialist" class="flex items-center gap-2">
-                                                <img v-if="getSpecialistIcon(selectedSpecialist.type)" :src="getSpecialistIcon(selectedSpecialist.type)" class="w-5 h-5 object-contain" @error="handleSpecialistIconError($event, selectedSpecialist.type)" />
-                                                <span class="truncate">{{ selectedSpecialist.name || getSpecialistTypeName(selectedSpecialist.type) }}</span>
-                                            </span>
-                                            <span v-else class="text-amber-400/80 font-medium">{{ t('tasks.select_specialist') }} ({{ totalSpecialistsCount }} {{ t('tasks.avail_short') }})</span>
-                                            <svg class="w-3.5 h-3.5 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                                            </svg>
-                                        </button>
                                     </div>
 
                                     <!-- Тип поиска (для специалистов) -->
@@ -655,44 +684,72 @@
             </div>
         </div>
 
-        <!-- МОДАЛЬНОЕ ОКНО: ВЫБОР ЗДАНИЯ -->
-        <div v-if="showBuildingModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-            <div class="glass-card max-w-2xl w-full flex flex-col max-h-[80vh] shadow-2xl border border-white/10">
-                <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between">
-                    <h3 class="text-base font-semibold text-white">{{ t('tasks.modal.select_building') }}</h3>
-                    <button type="button" @click="closeBuildingModal" class="text-white/40 hover:text-white transition-colors">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                        </svg>
-                    </button>
+        <!-- МОДАЛЬНОЕ ОКНО: ВЫБОР ЗДАНИЙ -->
+        <div v-if="showBuildingModal" @click.self="closeBuildingModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+            <div class="glass-card max-w-3xl w-full flex flex-col max-h-[85vh] shadow-2xl border border-white/10">
+                <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between flex-wrap gap-2">
+                    <div class="flex items-center gap-3">
+                        <h3 class="text-base font-semibold text-white">
+                            {{ buildingModalTab === 'friend' ? (t('tasks.modal.select_friend_building') + (selectedFriend ? ' (' + (selectedFriend.nickname || selectedFriend.username) + ')' : '')) : t('tasks.modal.select_building') }}
+                        </h3>
+                        <span class="badge badge-emerald text-xs font-mono">{{ t('tasks.modal.selected_count', { count: selectedBuildings.length }) }}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button type="button" @click="selectAllFilteredBuildings" class="btn-secondary btn-sm text-[11px] py-1 px-2.5">
+                            {{ t('tasks.modal.select_all') }}
+                        </button>
+                        <button type="button" @click="clearSelectedBuildings" class="btn-secondary btn-sm text-[11px] py-1 px-2.5 text-red-400 hover:text-red-300 border-red-500/20">
+                            {{ t('tasks.modal.clear_selection') }}
+                        </button>
+                        <button type="button" @click="closeBuildingModal" class="btn-primary btn-sm text-xs py-1 px-3">
+                            {{ t('tasks.modal.done') }}
+                        </button>
+                        <button type="button" @click="closeBuildingModal" class="text-white/40 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/5 ml-1">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
+
+                <!-- Контент фильтров -->
                 <div class="p-4 border-b border-white/5 bg-white/[0.01] space-y-3">
                     <div class="flex gap-1.5 flex-wrap">
-                        <button type="button" v-for="cat in buildingCategories" :key="cat" @click="buildingFilter = cat"
+                        <button type="button" v-for="cat in buildingCategories" :key="cat"
+                                @click="buildingModalTab === 'self' ? buildingFilter = cat : friendBuildingFilter = cat"
                                 class="px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-300"
-                                :class="buildingFilter === cat
+                                :class="(buildingModalTab === 'self' ? buildingFilter === cat : friendBuildingFilter === cat)
                                     ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                                     : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
                             {{ t('account.building_filter.' + cat.toLowerCase()) }}
                         </button>
                     </div>
                     <div class="relative">
-                        <input v-model="buildingSearch" type="text" :placeholder="t('tasks.modal.search_building')" class="glass-input w-full text-xs py-2 pl-4">
+                        <input v-if="buildingModalTab === 'self'" v-model="buildingSearch" type="text" :placeholder="t('tasks.modal.search_building')" class="glass-input w-full text-xs py-2 pl-4">
+                        <input v-else v-model="friendBuildingSearch" type="text" :placeholder="t('tasks.modal.search_building')" class="glass-input w-full text-xs py-2 pl-4">
                     </div>
                 </div>
-                <div class="p-6 overflow-y-auto flex-1 bg-dark-950/20">
+
+                <!-- Список карточек зданий для 'self' -->
+                <div v-if="buildingModalTab === 'self'" class="p-6 overflow-y-auto flex-1 bg-dark-950/20">
                     <div v-if="filteredBuildings.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div v-for="b in filteredBuildings" :key="b.buildingGrid"
-                             @click="selectBuilding(b)"
-                             class="glass-card p-3 cursor-pointer hover:border-emerald-500/40 hover:scale-[1.01] transition-all duration-200 flex items-center gap-3"
-                             :class="payload.grid === b.buildingGrid ? 'border-emerald-500/50 bg-emerald-500/10' : 'border-transparent'">
-                            <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-dark-900/50 border border-white/5">
-                                <img v-if="getBuildingIcon(b)" :src="getBuildingIcon(b)" :alt="getBuildingName(b)" class="w-7 h-7 object-contain" @error="handleBuildingIconError($event, b)">
-                                <span v-else class="text-sm">🏰</span>
+                             @click="toggleBuildingSelection(b, 'self')"
+                             class="glass-card p-3 cursor-pointer hover:border-emerald-500/40 transition-all duration-200 flex items-center justify-between gap-3"
+                             :class="isSelectedBuilding(b.buildingGrid, 'self') ? 'border-emerald-500/70 bg-emerald-500/15 shadow-lg shadow-emerald-500/5' : 'border-transparent hover:bg-white/[0.02]'">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-dark-900/50 border border-white/5">
+                                    <img v-if="getBuildingIcon(b)" :src="getBuildingIcon(b)" :alt="getBuildingName(b)" class="w-7 h-7 object-contain" @error="handleBuildingIconError($event, b)">
+                                    <span v-else class="text-sm">🏰</span>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-semibold text-white/90 truncate">{{ getBuildingName(b) }}</p>
+                                    <p class="text-[10px] text-white/40 mt-0.5">{{ t('tasks.grid_number', { id: b.buildingGrid }) }} • {{ t('tasks.level_short') }} {{ b.upgradeLevel || 1 }}</p>
+                                </div>
                             </div>
-                            <div class="flex-1 min-w-0">
-                                <p class="text-xs font-semibold text-white/90 truncate">{{ getBuildingName(b) }}</p>
-                                <p class="text-[10px] text-white/40 mt-0.5">{{ t('tasks.grid_number', { id: b.buildingGrid }) }} • {{ t('tasks.level_short') }} {{ b.upgradeLevel || 1 }}</p>
+                            <div class="w-5 h-5 rounded-md flex items-center justify-center border transition-all flex-shrink-0"
+                                 :class="isSelectedBuilding(b.buildingGrid, 'self') ? 'bg-emerald-500 border-emerald-400 text-dark-950 font-bold' : 'border-white/20 bg-white/5'">
+                                <span v-if="isSelectedBuilding(b.buildingGrid, 'self')" class="text-xs">✓</span>
                             </div>
                         </div>
                     </div>
@@ -703,47 +760,37 @@
                         <span v-else>{{ t('tasks.modal.no_buildings') }}</span>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- МОДАЛЬНОЕ ОКНО: ВЫБОР ЗДАНИЯ ДРУГА -->
-        <div v-if="showFriendBuildingModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-            <div class="glass-card max-w-2xl w-full flex flex-col max-h-[80vh] shadow-2xl border border-white/10">
-                <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between">
-                    <h3 class="text-base font-semibold text-white">{{ t('tasks.modal.select_friend_building') }}</h3>
-                    <button type="button" @click="closeFriendBuildingModal" class="text-white/40 hover:text-white transition-colors">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                <!-- Список карточек зданий для 'friend' -->
+                <div v-else class="p-6 overflow-y-auto flex-1 bg-dark-950/20">
+                    <div v-if="loadingFriendZone" class="text-center py-8 text-emerald-400 text-xs flex items-center justify-center gap-2">
+                        <svg class="animate-spin h-4 w-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                    </button>
-                </div>
-                <div class="p-4 border-b border-white/5 bg-white/[0.01] space-y-3">
-                    <div class="flex gap-1.5 flex-wrap">
-                        <button type="button" v-for="cat in buildingCategories" :key="cat" @click="friendBuildingFilter = cat"
-                                class="px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-300"
-                                :class="friendBuildingFilter === cat
-                                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                                    : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
-                            {{ t('account.building_filter.' + cat.toLowerCase()) }}
-                        </button>
+                        <span>{{ t('tasks.loading_zone') }} {{ selectedFriend?.nickname || selectedFriend?.username }}…</span>
                     </div>
-                    <div class="relative">
-                        <input v-model="friendBuildingSearch" type="text" :placeholder="t('tasks.modal.search_building')" class="glass-input w-full text-xs py-2 pl-4">
+                    <div v-else-if="!selectedFriend" class="text-center py-8 text-amber-400/80 text-xs">
+                        {{ t('tasks.select_friend') }}
                     </div>
-                </div>
-                <div class="p-6 overflow-y-auto flex-1 bg-dark-950/20">
-                    <div v-if="searchedFriendBuildings.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div v-else-if="searchedFriendBuildings.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div v-for="b in searchedFriendBuildings" :key="b.buildingGrid"
-                             @click="selectFriendBuilding(b)"
-                             class="glass-card p-3 cursor-pointer hover:border-emerald-500/40 hover:scale-[1.01] transition-all duration-200 flex items-center gap-3"
-                             :class="payload.grid === b.buildingGrid ? 'border-emerald-500/50 bg-emerald-500/10' : 'border-transparent'">
-                            <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-dark-900/50 border border-white/5">
-                                <img v-if="getBuildingIcon(b)" :src="getBuildingIcon(b)" :alt="getBuildingName(b)" class="w-7 h-7 object-contain" @error="handleBuildingIconError($event, b)">
-                                <span v-else class="text-sm">🏭</span>
+                             @click="toggleBuildingSelection(b, 'friend', selectedFriend)"
+                             class="glass-card p-3 cursor-pointer hover:border-emerald-500/40 transition-all duration-200 flex items-center justify-between gap-3"
+                             :class="isSelectedBuilding(b.buildingGrid, 'friend', selectedFriend?.id) ? 'border-emerald-500/70 bg-emerald-500/15 shadow-lg shadow-emerald-500/5' : 'border-transparent hover:bg-white/[0.02]'">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-dark-900/50 border border-white/5">
+                                    <img v-if="getBuildingIcon(b)" :src="getBuildingIcon(b)" :alt="getBuildingName(b)" class="w-7 h-7 object-contain" @error="handleBuildingIconError($event, b)">
+                                    <span v-else class="text-sm">🏭</span>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-semibold text-white/90 truncate">{{ getBuildingName(b) }}</p>
+                                    <p class="text-[10px] text-white/40 mt-0.5">{{ t('tasks.grid_number', { id: b.buildingGrid }) }} • {{ t('tasks.level_short') }} {{ b.upgradeLevel || 1 }}</p>
+                                </div>
                             </div>
-                            <div class="flex-1 min-w-0">
-                                <p class="text-xs font-semibold text-white/90 truncate">{{ getBuildingName(b) }}</p>
-                                <p class="text-[10px] text-white/40 mt-0.5">{{ t('tasks.grid_number', { id: b.buildingGrid }) }} • {{ t('tasks.level_short') }} {{ b.upgradeLevel || 1 }}</p>
+                            <div class="w-5 h-5 rounded-md flex items-center justify-center border transition-all flex-shrink-0"
+                                 :class="isSelectedBuilding(b.buildingGrid, 'friend', selectedFriend?.id) ? 'bg-emerald-500 border-emerald-400 text-dark-950 font-bold' : 'border-white/20 bg-white/5'">
+                                <span v-if="isSelectedBuilding(b.buildingGrid, 'friend', selectedFriend?.id)" class="text-xs">✓</span>
                             </div>
                         </div>
                     </div>
@@ -755,32 +802,52 @@
         </div>
 
         <!-- МОДАЛЬНОЕ ОКНО: ВЫБОР СПЕЦИАЛИСТА -->
-        <div v-if="showSpecialistModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-            <div class="glass-card max-w-2xl w-full flex flex-col max-h-[80vh] shadow-2xl border border-white/10">
-                <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between">
-                    <h3 class="text-base font-semibold text-white">{{ t('tasks.modal.select_specialist') }}</h3>
-                    <button type="button" @click="closeSpecialistModal" class="text-white/40 hover:text-white transition-colors">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                        </svg>
-                    </button>
+        <div v-if="showSpecialistModal" @click.self="closeSpecialistModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+            <div class="glass-card max-w-2xl w-full flex flex-col max-h-[85vh] shadow-2xl border border-white/10">
+                <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between flex-wrap gap-2">
+                    <div class="flex items-center gap-3">
+                        <h3 class="text-base font-semibold text-white">{{ t('tasks.modal.select_specialist') }}</h3>
+                        <span class="badge badge-emerald text-xs font-mono">{{ t('tasks.modal.selected_count', { count: selectedSpecialists.length }) }}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button type="button" @click="selectAllFilteredSpecialists" class="btn-secondary btn-sm text-[11px] py-1 px-2.5">
+                            {{ t('tasks.modal.select_all') }}
+                        </button>
+                        <button type="button" @click="clearSelectedSpecialists" class="btn-secondary btn-sm text-[11px] py-1 px-2.5 text-red-400 hover:text-red-300 border-red-500/20">
+                            {{ t('tasks.modal.clear_selection') }}
+                        </button>
+                        <button type="button" @click="closeSpecialistModal" class="btn-primary btn-sm text-xs py-1 px-3">
+                            {{ t('tasks.modal.done') }}
+                        </button>
+                        <button type="button" @click="closeSpecialistModal" class="text-white/40 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/5 ml-1">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
                 <div class="p-4 border-b border-white/5 bg-white/[0.01]">
                     <input v-model="specialistSearch" type="text" :placeholder="t('tasks.modal.search_specialist')" class="glass-input w-full text-xs py-2 pl-4">
                 </div>
                 <div class="p-6 overflow-y-auto flex-1 bg-dark-950/20">
                     <div v-if="filteredSpecialistsModal.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div v-for="s in filteredSpecialistsModal" :key="s.uniqueId1 + '-' + s.uniqueId2"
-                             @click="selectSpecialist(s)"
-                             class="glass-card p-3 cursor-pointer hover:border-emerald-500/40 hover:scale-[1.01] transition-all duration-200 flex items-center gap-3"
-                             :class="payload.unique_id1 === s.uniqueId1 ? 'border-emerald-500/50 bg-emerald-500/10' : 'border-transparent'">
-                            <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-dark-900/50 border border-white/5">
-                                <img v-if="getSpecialistIcon(s.type)" :src="getSpecialistIcon(s.type)" class="w-8 h-8 object-contain" @error="handleSpecialistIconError($event, s.type)">
-                                <span v-else class="text-sm">🎖️</span>
+                        <div v-for="s in filteredSpecialistsModal" :key="getSpecialistId(s)"
+                             @click="toggleSpecialistSelection(s)"
+                             class="glass-card p-3 cursor-pointer hover:border-emerald-500/40 transition-all duration-200 flex items-center justify-between gap-3"
+                             :class="isSelectedSpecialist(s) ? 'border-emerald-500/70 bg-emerald-500/15 shadow-lg shadow-emerald-500/5' : 'border-transparent hover:bg-white/[0.02]'">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-dark-900/50 border border-white/5">
+                                    <img v-if="getSpecialistIcon(s.type)" :src="getSpecialistIcon(s.type)" class="w-8 h-8 object-contain" @error="handleSpecialistIconError($event, s.type)">
+                                    <span v-else class="text-sm">🎖️</span>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-semibold text-white/90 truncate">{{ s.name || getSpecialistTypeName(s.type) }}</p>
+                                    <p class="text-[10px] text-white/40 mt-0.5">{{ getSpecialistTypeName(s.type) }}</p>
+                                </div>
                             </div>
-                            <div class="flex-1 min-w-0">
-                                <p class="text-xs font-semibold text-white/90 truncate">{{ s.name || getSpecialistTypeName(s.type) }}</p>
-                                <p class="text-[10px] text-white/40 mt-0.5">{{ getSpecialistTypeName(s.type) }}</p>
+                            <div class="w-5 h-5 rounded-md flex items-center justify-center border transition-all flex-shrink-0"
+                                 :class="isSelectedSpecialist(s) ? 'bg-emerald-500 border-emerald-400 text-dark-950 font-bold' : 'border-white/20 bg-white/5'">
+                                <span v-if="isSelectedSpecialist(s)" class="text-xs">✓</span>
                             </div>
                         </div>
                     </div>
@@ -792,7 +859,7 @@
         </div>
 
         <!-- МОДАЛЬНОЕ ОКНО: ВЫБОР БАФФА -->
-        <div v-if="showBuffModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+        <div v-if="showBuffModal" @click.self="closeBuffModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
             <div class="glass-card max-w-2xl w-full flex flex-col max-h-[80vh] shadow-2xl border border-white/10">
                 <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between">
                     <h3 class="text-base font-semibold text-white">{{ t('tasks.modal.select_buff') }}</h3>
@@ -915,9 +982,10 @@ export default {
         const specialistSearch = ref('');
         const buffSearch = ref('');
 
-        const selectedBuilding = ref(null);
-        const selectedSpecialist = ref(null);
+        const selectedBuildings = ref([]);
+        const selectedSpecialists = ref([]);
         const selectedBuff = ref(null);
+        const buildingModalTab = ref('self');
 
         const stepTargetScope = ref('self');
         const selectedFriend = ref(null);
@@ -929,6 +997,94 @@ export default {
         const stepAmount = ref(1);
         const showFriendBuildingModal = ref(false);
         const friendBuildingSearch = ref('');
+
+        // Хелперы выбора зданий (мультиселект)
+        const getBuildingTargetId = (buildingGrid, scope = 'self', friendId = null) => {
+            return scope === 'friend' ? `friend:${friendId}:${buildingGrid}` : `self:${buildingGrid}`;
+        };
+
+        const isSelectedBuilding = (buildingGrid, scope = 'self', friendId = null) => {
+            const id = getBuildingTargetId(buildingGrid, scope, friendId);
+            return selectedBuildings.value.some(b => b.id === id);
+        };
+
+        const toggleBuildingSelection = (building, scope = 'self', friend = null) => {
+            const friendId = scope === 'friend' ? friend?.id : null;
+            const id = getBuildingTargetId(building.buildingGrid, scope, friendId);
+            const index = selectedBuildings.value.findIndex(b => b.id === id);
+            if (index >= 0) {
+                selectedBuildings.value.splice(index, 1);
+            } else {
+                selectedBuildings.value.push({
+                    id,
+                    scope,
+                    buildingGrid: building.buildingGrid,
+                    building: { ...building },
+                    friend: friend ? { ...friend } : null
+                });
+            }
+        };
+
+        const removeSelectedBuilding = (index) => {
+            selectedBuildings.value.splice(index, 1);
+        };
+
+        const clearSelectedBuildings = () => {
+            selectedBuildings.value = [];
+        };
+
+        const selectAllFilteredBuildings = () => {
+            if (buildingModalTab.value === 'self') {
+                filteredBuildings.value.forEach(b => {
+                    if (!isSelectedBuilding(b.buildingGrid, 'self')) {
+                        toggleBuildingSelection(b, 'self');
+                    }
+                });
+            } else if (buildingModalTab.value === 'friend' && selectedFriend.value) {
+                searchedFriendBuildings.value.forEach(b => {
+                    if (!isSelectedBuilding(b.buildingGrid, 'friend', selectedFriend.value.id)) {
+                        toggleBuildingSelection(b, 'friend', selectedFriend.value);
+                    }
+                });
+            }
+        };
+
+        // Хелперы выбора специалистов (мультиселект)
+        const getSpecialistId = (s) => {
+            const u2 = s.uniqueID2 || s.uniqueId2 || 0;
+            return `${s.uniqueId1}_${u2}`;
+        };
+
+        const isSelectedSpecialist = (s) => {
+            const id = getSpecialistId(s);
+            return selectedSpecialists.value.some(sp => getSpecialistId(sp) === id);
+        };
+
+        const toggleSpecialistSelection = (s) => {
+            const id = getSpecialistId(s);
+            const index = selectedSpecialists.value.findIndex(sp => getSpecialistId(sp) === id);
+            if (index >= 0) {
+                selectedSpecialists.value.splice(index, 1);
+            } else {
+                selectedSpecialists.value.push({ ...s });
+            }
+        };
+
+        const removeSelectedSpecialist = (index) => {
+            selectedSpecialists.value.splice(index, 1);
+        };
+
+        const clearSelectedSpecialists = () => {
+            selectedSpecialists.value = [];
+        };
+
+        const selectAllFilteredSpecialists = () => {
+            filteredSpecialistsModal.value.forEach(s => {
+                if (!isSelectedSpecialist(s)) {
+                    toggleSpecialistSelection(s);
+                }
+            });
+        };
 
         const friendsList = computed(() => {
             return zone.value?.friends || [];
@@ -1018,7 +1174,7 @@ export default {
         const onTargetScopeChange = () => {
             selectedFriend.value = null;
             selectedFriendBuilding.value = null;
-            selectedBuilding.value = null;
+            selectedBuildings.value = [];
             payload.value.grid = '';
             friendBuildings.value = [];
             friendZoneError.value = false;
@@ -1081,8 +1237,8 @@ export default {
         };
 
         const onAccountChange = () => {
-            selectedBuilding.value = null;
-            selectedSpecialist.value = null;
+            selectedBuildings.value = [];
+            selectedSpecialists.value = [];
             selectedBuff.value = null;
             selectedFriend.value = null;
             selectedFriendBuilding.value = null;
@@ -1109,8 +1265,8 @@ export default {
 
         const resetPayload = (type) => {
             payload.value = {};
-            selectedBuilding.value = null;
-            selectedSpecialist.value = null;
+            selectedBuildings.value = [];
+            selectedSpecialists.value = [];
             selectedBuff.value = null;
 
             if (['stop_production', 'start_production'].includes(type)) {
@@ -1141,88 +1297,93 @@ export default {
             payload.value.sub_task_id = 0;
         };
 
+        const toggleStepActionDropdown = () => {
+            if (selectedAccountId.value) {
+                activeDropdown.value = activeDropdown.value === 'stepActionType' ? null : 'stepActionType';
+            }
+        };
+
         const addStepToSequence = () => {
-            if (stepActionType.value === 'apply_buff' && stepTargetScope.value === 'friend') {
-                if (loadingFriendZone.value) {
-                    showToast(t('tasks.toast.wait_friend_zone'), 'warning');
-                    return;
-                }
-                if (!selectedFriend.value) {
-                    showToast(t('tasks.toast.select_friend_first'), 'warning');
-                    return;
-                }
-                if (!payload.value.grid) {
-                    showToast(t('tasks.toast.select_friend_building_first'), 'warning');
-                    return;
-                }
-            } else if (['stop_production', 'start_production', 'apply_buff'].includes(stepActionType.value)) {
-                if (!payload.value.grid) {
+            if (['stop_production', 'start_production', 'apply_buff'].includes(stepActionType.value)) {
+                if (selectedBuildings.value.length === 0) {
                     showToast(t('tasks.toast.select_building_first'), 'warning');
                     return;
                 }
-            }
-            if (stepActionType.value === 'apply_buff') {
-                if (!payload.value.unique_id1) {
+                if (stepActionType.value === 'apply_buff' && !selectedBuff.value) {
                     showToast(t('tasks.toast.select_buff_first'), 'warning');
                     return;
                 }
+
+                let addedCount = 0;
+                for (const bTarget of selectedBuildings.value) {
+                    const actionPayload = {
+                        grid: bTarget.buildingGrid,
+                        target_scope: bTarget.scope,
+                        target_player_id: bTarget.scope === 'friend' ? bTarget.friend?.id : null,
+                        target_player_name: bTarget.scope === 'friend' ? (bTarget.friend?.nickname || bTarget.friend?.username) : null,
+                        amount: stepActionType.value === 'apply_buff' ? stepAmount.value : 1
+                    };
+
+                    if (stepActionType.value === 'apply_buff') {
+                        actionPayload.unique_id1 = selectedBuff.value.uniqueId1;
+                        actionPayload.unique_id2 = selectedBuff.value.uniqueID2 || selectedBuff.value.uniqueId2 || 0;
+                    }
+
+                    const meta = {
+                        building: { ...bTarget.building },
+                        buff: selectedBuff.value ? { ...selectedBuff.value } : null,
+                        friend: bTarget.friend ? { ...bTarget.friend } : null,
+                    };
+
+                    sequenceActions.value.push({
+                        task_type: stepActionType.value,
+                        payload: actionPayload,
+                        delay_seconds: Number(stepDelay.value || 0),
+                        meta: meta
+                    });
+                    addedCount++;
+                }
+
+                selectedBuildings.value = [];
+                stepDelay.value = 5;
+                showToast(`${t('tasks.toast.action_added')} (${addedCount})`);
+                return;
             }
+
             if (['send_geologist', 'send_explorer'].includes(stepActionType.value)) {
-                if (!selectedSpecialist.value) {
+                if (selectedSpecialists.value.length === 0) {
                     showToast(t('tasks.toast.select_specialist_first'), 'warning');
                     return;
                 }
+
+                let addedCount = 0;
+                for (const spec of selectedSpecialists.value) {
+                    const actionPayload = {
+                        unique_id1: spec.uniqueId1,
+                        unique_id2: spec.uniqueID2 || spec.uniqueId2 || 0,
+                        task_type: stepActionType.value === 'send_geologist' ? 0 : payload.value.task_type,
+                        sub_task_id: payload.value.sub_task_id || 0
+                    };
+
+                    const meta = {
+                        specialist: { ...spec },
+                        subTaskLabel: getSubTaskLabel(stepActionType.value, payload.value.task_type, payload.value.sub_task_id)
+                    };
+
+                    sequenceActions.value.push({
+                        task_type: stepActionType.value,
+                        payload: actionPayload,
+                        delay_seconds: Number(stepDelay.value || 0),
+                        meta: meta
+                    });
+                    addedCount++;
+                }
+
+                selectedSpecialists.value = [];
+                stepDelay.value = 5;
+                showToast(`${t('tasks.toast.action_added')} (${addedCount})`);
+                return;
             }
-
-            // Create step payload
-            const actionPayload = {
-                ...payload.value,
-                target_scope: stepTargetScope.value,
-                target_player_id: stepTargetScope.value === 'friend' ? selectedFriend.value?.id : null,
-                target_player_name: stepTargetScope.value === 'friend' ? (selectedFriend.value?.nickname || selectedFriend.value?.username) : null,
-                amount: stepActionType.value === 'apply_buff' ? stepAmount.value : 1
-            };
-
-            // Save meta for frontend rendering
-            const meta = {
-                building: stepTargetScope.value === 'friend'
-                    ? (selectedFriendBuilding.value ? { ...selectedFriendBuilding.value } : null)
-                    : (selectedBuilding.value ? { ...selectedBuilding.value } : null),
-                specialist: selectedSpecialist.value ? { ...selectedSpecialist.value } : null,
-                buff: selectedBuff.value ? { ...selectedBuff.value } : null,
-                subTaskLabel: selectedSpecialist.value
-                    ? getSubTaskLabel(stepActionType.value, payload.value.task_type, payload.value.sub_task_id)
-                    : ''
-            };
-
-            sequenceActions.value.push({
-                task_type: stepActionType.value,
-                payload: actionPayload,
-                delay_seconds: Number(stepDelay.value || 0),
-                meta: meta
-            });
-
-            // Reset temp step variables
-            if (stepActionType.value === 'apply_buff') {
-                // Keep selectedFriend, friendBuildings, selectedBuff, stepTargetScope, stepAmount!
-                // Only reset the targeted building so the user can quickly apply the same buff to multiple buildings.
-                selectedBuilding.value = null;
-                selectedFriendBuilding.value = null;
-                payload.value.grid = '';
-            } else {
-                selectedBuilding.value = null;
-                selectedFriendBuilding.value = null;
-                selectedFriend.value = null;
-                selectedSpecialist.value = null;
-                selectedBuff.value = null;
-                stepTargetScope.value = 'self';
-                stepAmount.value = 1;
-                friendBuildings.value = [];
-                resetPayload(stepActionType.value);
-            }
-            stepDelay.value = 5;
-
-            showToast(t('tasks.toast.action_added'));
         };
 
         const moveActionUp = (idx) => {
@@ -1425,21 +1586,19 @@ export default {
         });
 
         // Управление модальными окнами
-        const openBuildingModal = () => {
+        const openBuildingModal = (tab = 'self') => {
             if (!selectedAccountId.value) {
                 showToast(t('tasks.toast.select_account_first'), 'warning');
                 return;
             }
             buildingSearch.value = '';
             buildingFilter.value = 'All';
+            friendBuildingFilter.value = 'All';
+            friendBuildingSearch.value = '';
+            buildingModalTab.value = tab;
             showBuildingModal.value = true;
         };
         const closeBuildingModal = () => { showBuildingModal.value = false; };
-        const selectBuilding = (b) => {
-            selectedBuilding.value = b;
-            payload.value.grid = b.buildingGrid;
-            closeBuildingModal();
-        };
 
         const openSpecialistModal = () => {
             if (!selectedAccountId.value) {
@@ -1450,12 +1609,6 @@ export default {
             showSpecialistModal.value = true;
         };
         const closeSpecialistModal = () => { showSpecialistModal.value = false; };
-        const selectSpecialist = (s) => {
-            selectedSpecialist.value = s;
-            payload.value.unique_id1 = s.uniqueId1;
-            payload.value.unique_id2 = s.uniqueID2 || s.uniqueId2 || 0;
-            closeSpecialistModal();
-        };
 
         const openBuffModal = () => {
             if (!selectedAccountId.value) {
@@ -1675,8 +1828,8 @@ export default {
             editingTaskId.value = null;
             taskName.value = '';
             sequenceActions.value = [];
-            selectedBuilding.value = null;
-            selectedSpecialist.value = null;
+            selectedBuildings.value = [];
+            selectedSpecialists.value = [];
             selectedBuff.value = null;
             resetPayload(stepActionType.value);
 
@@ -1791,7 +1944,10 @@ export default {
                     loadPlanner();
                 }
             } catch (e) {
-                showToast(e.response?.data?.message || t('tasks.toast.save_failed'), 'error');
+                const errorMsg = e.response?.data?.errors
+                    ? Object.values(e.response.data.errors).flat().join(', ')
+                    : (e.response?.data?.message || e.message || t('tasks.toast.save_failed'));
+                showToast(errorMsg, 'error');
             } finally {
                 scheduling.value = false;
             }
@@ -2025,6 +2181,7 @@ export default {
             activeDropdown,
             selectedAccountLabel,
             stepActionTypeLabel,
+            toggleStepActionDropdown,
             specialistSearchTypeLabel,
             specialistSubTaskLabel,
             onAccountChange,
@@ -2095,19 +2252,32 @@ export default {
             buildingFilter,
             specialistSearch,
             buffSearch,
-            selectedBuilding,
-            selectedSpecialist,
+            selectedBuildings,
+            selectedSpecialists,
             selectedBuff,
+            buildingModalTab,
             buildingCategories,
             openBuildingModal,
             closeBuildingModal,
-            selectBuilding,
             openSpecialistModal,
             closeSpecialistModal,
-            selectSpecialist,
             openBuffModal,
             closeBuffModal,
             selectBuff,
+
+            // Мультиселект хелперы
+            getBuildingTargetId,
+            isSelectedBuilding,
+            toggleBuildingSelection,
+            removeSelectedBuilding,
+            clearSelectedBuildings,
+            selectAllFilteredBuildings,
+            getSpecialistId,
+            isSelectedSpecialist,
+            toggleSpecialistSelection,
+            removeSelectedSpecialist,
+            clearSelectedSpecialists,
+            selectAllFilteredSpecialists,
 
             // Иконки и методы отображения
             getBuildingName,
