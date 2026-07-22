@@ -48,8 +48,17 @@
                             <span v-if="pvpLevel" class="flex items-center gap-1 text-rose-400">
                                 ⚔️ PvP {{ pvpLevel }}
                             </span>
-                            <span v-if="account.region" class="badge badge-info uppercase text-[10px]">{{ account.region }}</span>
-                            <span v-if="serverName" class="badge badge-success bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px]">{{ serverName }}</span>
+                            <span v-if="account.is_market_connected" class="badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5 text-[11px] py-0.5 px-2.5" title="Connected to Market Analysis">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                <span class="font-medium">{{ t('card.market_connected') }}</span>
+                            </span>
+
+                            <span v-if="serverName" class="badge badge-success bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[11px] flex items-center gap-1 py-0.5 px-2.5">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 0 1-3-3V3.75a3 3 0 0 1 3-3h13.5a3 3 0 0 1 3 3v7.5a3 3 0 0 1-3 3m-13.5 0a3 3 0 0 0-3 3v3.75a3 3 0 0 0 3 3h13.5a3 3 0 0 0 3-3V17.25a3 3 0 0 0-3-3" />
+                                </svg>
+                                {{ serverName }}
+                            </span>
                             <span v-if="currentMaximumBuildingsCountAll" class="flex items-center gap-1 text-white/50 text-xs">
                                 🏰 {{ t('account.max_buildings') }}: {{ currentMaximumBuildingsCountAll }}
                             </span>
@@ -933,6 +942,24 @@ export default {
         const militaryResources = computed(() => parsedResources.value.filter(r => r.category === 'WarehouseTab5'));
         const otherResources = computed(() => parsedResources.value.filter(r => !r.category || r.category === 'Other'));
 
+        const REGION_SERVERS = {
+            ru: { flag: '🇷🇺', name: 'RU Market', locale: 'RU' },
+            de: { flag: '🇩🇪', name: 'DE Market', locale: 'DE' },
+            en: { flag: '🇬🇧', name: 'EN Market', locale: 'EN' },
+            us: { flag: '🇺🇸', name: 'US Market', locale: 'EN' },
+            fr: { flag: '🇫🇷', name: 'FR Market', locale: 'FR' },
+            pl: { flag: '🇵🇱', name: 'PL Market', locale: 'PL' },
+            es: { flag: '🇪🇸', name: 'ES Market', locale: 'ES' },
+        };
+
+        const marketServerInfo = computed(() => {
+            const reg = String(account.value?.region || '').toLowerCase();
+            if (!reg) return null;
+            const info = REGION_SERVERS[reg];
+            if (info) return { ...info, region: reg };
+            return { flag: '🌐', name: `${reg.toUpperCase()} Market`, locale: reg.toUpperCase(), region: reg };
+        });
+
         const serverName = computed(() => zoneData.value?.gameWorldName || null);
 
         const filteredBuildings = computed(() => {
@@ -1503,6 +1530,7 @@ export default {
             formatResourceName,
             resourceDisplayName,
             serverName,
+            marketServerInfo,
             buildingModeFilter,
             syncing,
             syncAccount,

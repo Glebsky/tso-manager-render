@@ -34,17 +34,15 @@
 
             <!-- Info row -->
             <div class="flex items-center gap-3 mb-4 flex-wrap">
-                <!-- Region badge -->
-                <span class="badge badge-info uppercase">
-                    <svg class="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 0 1 3 12c0-1.605.42-3.113 1.157-4.418" />
-                    </svg>
-                    {{ localAccount.region || 'N/A' }}
+                <!-- Market Connected Badge -->
+                <span v-if="localAccount.is_market_connected" class="badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5" title="Connected to Market Analysis">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span class="font-medium text-xs">{{ t('card.market_connected') }}</span>
                 </span>
 
                 <!-- Server name badge -->
-                <span v-if="serverName" class="badge badge-success bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                    <svg class="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <span v-if="serverName" class="badge badge-success bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 0 1-3-3V3.75a3 3 0 0 1 3-3h13.5a3 3 0 0 1 3 3v7.5a3 3 0 0 1-3 3m-13.5 0a3 3 0 0 0-3 3v3.75a3 3 0 0 0 3 3h13.5a3 3 0 0 0 3-3V17.25a3 3 0 0 0-3-3" />
                     </svg>
                     {{ serverName }}
@@ -240,6 +238,24 @@ export default {
             router.push(`/accounts/${localAccount.value.id}`);
         };
 
+        const REGION_SERVERS = {
+            ru: { flag: '🇷🇺', name: 'RU Market', locale: 'RU' },
+            de: { flag: '🇩🇪', name: 'DE Market', locale: 'DE' },
+            en: { flag: '🇬🇧', name: 'EN Market', locale: 'EN' },
+            us: { flag: '🇺🇸', name: 'US Market', locale: 'EN' },
+            fr: { flag: '🇫🇷', name: 'FR Market', locale: 'FR' },
+            pl: { flag: '🇵🇱', name: 'PL Market', locale: 'PL' },
+            es: { flag: '🇪🇸', name: 'ES Market', locale: 'ES' },
+        };
+
+        const marketServerInfo = computed(() => {
+            const reg = String(localAccount.value?.region || '').toLowerCase();
+            if (!reg) return null;
+            const info = REGION_SERVERS[reg];
+            if (info) return { ...info, region: reg };
+            return { flag: '🌐', name: `${reg.toUpperCase()} Market`, locale: reg.toUpperCase(), region: reg };
+        });
+
         const serverName = computed(() => {
             return zoneObject.value?.gameWorldName || null;
         });
@@ -256,7 +272,8 @@ export default {
             syncAccount,
             deleteAccount,
             goToDetail,
-            serverName
+            serverName,
+            marketServerInfo,
         };
     }
 };</script>

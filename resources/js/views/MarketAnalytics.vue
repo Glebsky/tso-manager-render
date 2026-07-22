@@ -1,28 +1,88 @@
 <template>
     <div>
         <!-- Page Header -->
-        <div class="flex items-center justify-between mb-8">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
             <div>
                 <h1 class="text-3xl font-bold text-white">{{ t('market.title') }}</h1>
                 <p class="text-white/40 mt-1">{{ t('market.subtitle') }}</p>
             </div>
-            <!-- Tab Navigation -->
-            <div class="flex items-center gap-1 bg-white/5 border border-white/10 p-1 rounded-xl">
-                <button @click="activeTab = 'analytics'"
-                        class="px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all"
-                        :class="activeTab === 'analytics' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'text-white/50 hover:text-white'">
-                    Analytics
-                </button>
-                <button @click="activeTab = 'settings'"
-                        class="px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all"
-                        :class="activeTab === 'settings' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'text-white/50 hover:text-white'">
-                    Settings
-                </button>
+
+            <div class="flex flex-wrap items-center gap-3">
+                <!-- Server Selector -->
+                <div v-if="servers.length > 0" class="flex items-center gap-2 bg-white/5 border border-white/10 p-1.5 rounded-xl">
+                    <span class="text-xs font-semibold text-white/40 uppercase tracking-wider px-2">{{ t('market.server') }}:</span>
+                    <select v-model="selectedServerId" @change="onServerChange" class="bg-dark-900 text-xs font-bold text-emerald-400 py-1.5 px-3 rounded-lg border border-emerald-500/20 focus:outline-none cursor-pointer">
+                        <option v-for="srv in servers" :key="srv.server_id" :value="srv.server_id">
+                            {{ getLocaleFlag(srv.locale) }} {{ srv.display_name }} ({{ srv.account ? srv.account.username : t('market.no_account') }})
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Tab Navigation -->
+                <div class="flex items-center gap-1 bg-white/5 border border-white/10 p-1 rounded-xl">
+                    <button @click="activeTab = 'analytics'"
+                            class="px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all"
+                            :class="activeTab === 'analytics' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'text-white/50 hover:text-white'">
+                        {{ t('market.tab_analytics') }}
+                    </button>
+                    <button @click="activeTab = 'settings'"
+                            class="px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all"
+                            :class="activeTab === 'settings' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'text-white/50 hover:text-white'">
+                        {{ t('market.tab_settings') }}
+                    </button>
+                </div>
             </div>
         </div>
 
         <!-- TAB 1: ANALYTICS -->
         <div v-if="activeTab === 'analytics'" class="space-y-6">
+            <!-- Active Server Status Notice / Empty State -->
+            <div v-if="servers.length === 0" class="glass-card p-8 text-center space-y-4">
+                <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 mx-auto">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-white">{{ t('market.no_servers_title') }}</h3>
+                <p class="text-xs text-white/50 max-w-md mx-auto">
+                    {{ t('market.no_servers_text') }}
+                </p>
+                <button @click="activeTab = 'settings'" class="btn-primary py-2 px-6 text-xs inline-flex items-center gap-2">
+                    {{ t('market.go_to_settings') }}
+                </button>
+            </div>
+
+            <div v-else-if="currentServerConnection && (!currentServerConnection.account_id || currentServerConnection.sync_status === 'error' || currentServerConnection.sync_status === 'not_configured')"
+                 class="glass-card p-4 border-l-4"
+                 :class="currentServerConnection.sync_status === 'error' ? 'border-l-red-500 bg-red-500/5' : 'border-l-amber-500 bg-amber-500/5'">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                    <div class="flex items-center gap-3">
+                        <span class="badge" :class="getSyncBadgeClass(currentServerConnection.sync_status)">
+                            {{ currentServerConnection.sync_status }}
+                        </span>
+                        <div class="space-y-0.5">
+                            <p class="font-semibold text-white">
+                                Server {{ currentServerConnection.display_name }} ({{ currentServerConnection.locale }}):
+                                <span v-if="!currentServerConnection.account_id" class="text-amber-400">No account assigned</span>
+                                <span v-else-if="currentServerConnection.last_error" class="text-red-400">{{ currentServerConnection.last_error }}</span>
+                                <span v-else class="text-white/60">Not synchronized yet</span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <button v-if="currentServerConnection.account_id" @click="syncServerNow(currentServerConnection)" :disabled="syncing" class="btn-secondary py-1.5 px-3 text-xs flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5" :class="{ 'animate-spin': syncing }" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182" />
+                            </svg>
+                            Sync Now
+                        </button>
+                        <button @click="activeTab = 'settings'" class="btn-secondary py-1.5 px-3 text-xs">
+                            Manage Server
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Selection Card (Dropdowns or Visual Grid) -->
             <div class="glass-card p-6">
                 <!-- Selector Header: Mode Switch & Mirror Button -->
@@ -125,7 +185,7 @@
                             <span class="text-[9px] font-medium text-white/90 truncate w-full" :title="good.item_name">{{ good.item_name }}</span>
                         </div>
                         <div v-if="goods.length === 0" class="col-span-full py-8 text-center text-xs text-white/30">
-                            No resources available in the database.
+                            {{ t('market.no_resources_for_server', { server: selectedServerId }) }}
                         </div>
                     </div>
 
@@ -162,25 +222,21 @@
                 <div class="lg:col-span-2 space-y-6">
                     <!-- Pricing Stats -->
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                        <!-- Current Price -->
                         <div class="glass-card p-4">
                             <span class="text-[10px] font-semibold text-white/30 uppercase tracking-wider block">{{ t('market.current_price') }}</span>
                             <span class="text-xl font-bold text-white mt-1 block">{{ stats.current }}</span>
                             <span class="text-[10px] text-white/40 block mt-0.5">{{ selectedTargetName }}</span>
                         </div>
-                        <!-- Average Price -->
                         <div class="glass-card p-4">
                             <span class="text-[10px] font-semibold text-white/30 uppercase tracking-wider block">{{ t('market.average_price') }}</span>
                             <span class="text-xl font-bold text-emerald-400 mt-1 block">{{ stats.average }}</span>
                             <span class="text-[10px] text-white/40 block mt-0.5">{{ selectedTargetName }}</span>
                         </div>
-                        <!-- Min Price -->
                         <div class="glass-card p-4">
                             <span class="text-[10px] font-semibold text-white/30 uppercase tracking-wider block">{{ t('market.min_price') }}</span>
                             <span class="text-xl font-bold text-blue-400 mt-1 block">{{ stats.minimum }}</span>
                             <span class="text-[10px] text-white/40 block mt-0.5">{{ selectedTargetName }}</span>
                         </div>
-                        <!-- Max Price -->
                         <div class="glass-card p-4">
                             <span class="text-[10px] font-semibold text-white/30 uppercase tracking-wider block">{{ t('market.max_price') }}</span>
                             <span class="text-xl font-bold text-red-400 mt-1 block">{{ stats.maximum }}</span>
@@ -194,7 +250,6 @@
                             <h3 class="text-sm font-semibold text-white">Price History (1 {{ selectedItemName }} = X {{ selectedTargetName }})</h3>
                             
                             <div class="flex items-center gap-4">
-                                <!-- Period Selection Buttons -->
                                 <div class="flex items-center bg-white/5 border border-white/10 p-0.5 rounded-lg text-[10px] font-semibold">
                                     <button v-for="p in periods" :key="p.value" @click="changePeriod(p.value)"
                                             class="px-2.5 py-1 rounded transition-all uppercase tracking-wider"
@@ -203,17 +258,14 @@
                                     </button>
                                 </div>
 
-                                <!-- Chart Price Indicator Legend -->
                                 <div class="flex items-center gap-4 text-[10px] text-white/40">
                                     <div class="flex items-center gap-1.5">
                                         <span class="w-2.5 h-0.5 bg-emerald-500 inline-block"></span>
                                         Avg Price
-                                        <span>{{ t('market.average_price') }}</span>
                                     </div>
                                     <div class="flex items-center gap-1.5">
                                         <span class="w-2.5 h-0.5 bg-white/20 border-dashed border inline-block"></span>
                                         Mean
-                                        <span>{{ t('market.global_mean') }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -223,7 +275,6 @@
                         <div class="h-64 w-full relative z-40 pt-2">
                             <template v-if="history.length > 0">
                                 <svg class="w-full h-full" viewBox="0 0 600 220" preserveAspectRatio="none">
-                                    <!-- Gradients -->
                                     <defs>
                                         <linearGradient id="priceGrad" x1="0" y1="0" x2="0" y2="1">
                                             <stop offset="0%" stop-color="#10b981" stop-opacity="0.2"/>
@@ -231,29 +282,20 @@
                                         </linearGradient>
                                     </defs>
                                     
-                                    <!-- Grid lines Y -->
                                     <line v-for="grid in 4" :key="'grid-y-'+grid"
                                           x1="40" :y1="20 + (grid - 1) * 50" x2="590" :y2="20 + (grid - 1) * 50"
                                           stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
 
-                                    <!-- Price Line Area Fill -->
                                     <path :d="chartPriceAreaPath" fill="url(#priceGrad)"/>
-
-                                    <!-- Price Line -->
                                     <path :d="chartPriceLinePath" fill="none" stroke="#10b981" stroke-width="2"/>
-
-                                    <!-- Global Mean Line -->
                                     <line x1="40" :y1="chartMeanY" x2="590" :y2="chartMeanY"
                                           stroke="rgba(255,255,255,0.2)" stroke-dasharray="4,4" stroke-width="1.5"/>
 
-                                    <!-- Data Dots with Stable Invisible Hit Targets -->
                                     <g v-for="(p, idx) in chartPoints" :key="'dot-group-'+idx"
                                        class="cursor-pointer"
                                        @mouseenter="hoveredPoint = { ...p, index: idx }"
                                        @mouseleave="hoveredPoint = null">
-                                        <!-- Invisible 14px Hit Target area -->
                                         <circle :cx="p.x" :cy="p.y" r="14" fill="transparent" />
-                                        <!-- Visible Point -->
                                         <circle :cx="p.x" :cy="p.y" :r="hoveredPoint?.index === idx ? 5.5 : 3.5"
                                                 :fill="hoveredPoint?.index === idx ? '#34d399' : '#10b981'"
                                                 stroke="#0b171c" stroke-width="1.5"
@@ -261,33 +303,27 @@
                                     </g>
                                 </svg>
 
-                                <!-- Floating Interactive Glassmorphism Tooltip -->
                                 <div v-if="hoveredPoint"
                                      class="absolute z-50 pointer-events-none transition-all duration-150 ease-out transform"
                                      :class="tooltipPositionClass"
                                      :style="{ left: (hoveredPoint.x / 600 * 100) + '%', top: (hoveredPoint.y / 220 * 100) + '%' }">
                                     <div class="glass-card p-3 shadow-2xl border border-white/20 bg-dark-900/95 backdrop-blur-md rounded-xl text-xs space-y-2 min-w-[210px] animate-fade-in">
-                                        <!-- Tooltip Header: Date & Rate -->
                                         <div class="flex items-center justify-between border-b border-white/10 pb-1.5 text-[10px] text-white/50 font-mono">
                                             <span>{{ hoveredPoint.collected_at }}</span>
                                             <span class="text-emerald-400 font-bold">Price: {{ hoveredPoint.price }}</span>
                                         </div>
 
-                                        <!-- Exchange Details: Amount Selling -> Amount Buying -->
                                         <div class="flex items-center justify-between gap-2 py-1.5 bg-white/5 rounded-lg px-2 border border-white/5">
-                                            <!-- Selling Item -->
                                             <div class="flex items-center gap-1.5">
                                                 <img :src="getResourceIcon(selectedItem)" @error="handleIconError($event, selectedItem)" class="w-4 h-4 object-contain" />
                                                 <span class="font-mono font-bold text-white text-xs">{{ formatVolume(hoveredPoint.avg_amount) }}</span>
                                                 <span class="text-[10px] text-white/60 truncate max-w-[60px]" :title="selectedItemName">{{ selectedItemName }}</span>
                                             </div>
 
-                                            <!-- Arrow -->
                                             <svg class="w-3.5 h-3.5 text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
                                             </svg>
 
-                                            <!-- Buying Item -->
                                             <div class="flex items-center gap-1.5">
                                                 <img :src="getResourceIcon(selectedTarget)" @error="handleIconError($event, selectedTarget)" class="w-4 h-4 object-contain" />
                                                 <span class="font-mono font-bold text-emerald-400 text-xs">{{ formatVolume(hoveredPoint.avg_target_amount) }}</span>
@@ -295,70 +331,14 @@
                                             </div>
                                         </div>
 
-                                        <!-- Point Stats Summary -->
                                         <div class="flex items-center justify-between text-[10px] text-white/40 font-mono pt-0.5">
-                                            <span>{{ t('market.offers') }} <strong class="text-white/80">{{ hoveredPoint.offers_count }}</strong></span>
-                                            <span>{{ t('market.sellers') }} <strong class="text-white/80">{{ hoveredPoint.sellers_count }}</strong></span>
-                                            <span>{{ t('market.vol') }} <strong class="text-white/80">{{ formatVolume(hoveredPoint.volume) }}</strong></span>
+                                            <span>Offers: <strong class="text-white/80">{{ hoveredPoint.offers_count }}</strong></span>
+                                            <span>Sellers: <strong class="text-white/80">{{ hoveredPoint.sellers_count }}</strong></span>
+                                            <span>Vol: <strong class="text-white/80">{{ formatVolume(hoveredPoint.volume) }}</strong></span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <!-- X-Axis Labels (Timeline) -->
-                                <div class="flex justify-between text-[8px] text-white/30 px-9 mt-1 font-mono">
-                                    <span>{{ history[0]?.collected_at }}</span>
-                                    <span>{{ history[Math.floor(history.length / 2)]?.collected_at }}</span>
-                                    <span>{{ history[history.length - 1]?.collected_at }}</span>
-                                </div>
-                            </template>
-                            <div v-else class="absolute inset-0 flex items-center justify-center text-xs text-white/20">
-                                Not enough historical data to display the chart
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Demand Dynamic Chart Card -->
-                    <div class="glass-card p-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-sm font-semibold text-white">{{ t('market.volume_offers') }}</h3>
-                            <div class="flex items-center gap-4 text-[10px] text-white/40">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="w-2.5 h-2.5 bg-blue-500/20 border border-blue-500 rounded-sm inline-block"></span>
-                                    Sellers
-                                    <span>{{ t('market.sellers_count') }}</span>
-                                </div>
-                                <div class="flex items-center gap-1.5">
-                                    <span class="w-2.5 h-2.5 bg-indigo-500/20 border border-indigo-500 rounded-sm inline-block"></span>
-                                    {{ t('market.active_offers') }}
-                                    <span>{{ t('market.active_offers') }}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- SVG Demand Chart -->
-                        <div class="h-64 w-full relative pt-2">
-                            <template v-if="history.length > 0">
-                                <svg class="w-full h-full" viewBox="0 0 600 220" preserveAspectRatio="none">
-                                    <!-- Grid lines Y -->
-                                    <line v-for="grid in 4" :key="'grid-dy-'+grid"
-                                          x1="40" :y1="20 + (grid - 1) * 50" x2="590" :y2="20 + (grid - 1) * 50"
-                                          stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
-
-                                    <!-- Sellers Area Fill -->
-                                    <path :d="chartSellersAreaPath" fill="rgba(59, 130, 246, 0.1)"/>
-                                    <!-- Sellers Line -->
-                                    <path :d="chartSellersLinePath" fill="none" stroke="#3b82f6" stroke-width="1.5"/>
-
-                                    <!-- Offers Area Fill -->
-                                    <path :d="chartOffersAreaPath" fill="rgba(99, 102, 241, 0.1)"/>
-                                    <!-- Offers Line -->
-                                    <path :d="chartOffersLinePath" fill="none" stroke="#6366f1" stroke-width="1.5"/>
-
-                                    <!-- Volume Bars (drawn as faint vertical glass cylinders) -->
-                                    <rect v-for="(b, idx) in chartPoints" :key="'vol-bar-'+idx"
-                                          :x="b.x - 3" :y="b.vy" width="6" :height="220 - b.vy"
-                                          fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" stroke-width="0.5" rx="1"/>
-                                </svg>
                                 <div class="flex justify-between text-[8px] text-white/30 px-9 mt-1 font-mono">
                                     <span>{{ history[0]?.collected_at }}</span>
                                     <span>{{ history[Math.floor(history.length / 2)]?.collected_at }}</span>
@@ -374,7 +354,6 @@
 
                 <!-- Calculator Side Panel (Right columns) -->
                 <div class="space-y-6">
-                    <!-- Calculator Card -->
                     <div class="glass-card p-6">
                         <div class="flex items-center gap-3 mb-5 border-b border-white/5 pb-3">
                             <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
@@ -391,50 +370,12 @@
                                 <input type="number" v-model.number="calcAmount" min="1" class="glass-input w-full font-mono text-white text-lg"/>
                             </div>
 
-                            <!-- Direct estimated revenue -->
                             <div class="p-4 rounded-xl border border-emerald-500/10 bg-emerald-500/[0.02]">
                                 <span class="text-[10px] font-semibold text-emerald-400/70 uppercase tracking-wider block">{{ t('market.estimated_revenue') }}</span>
                                 <div class="flex items-baseline gap-2 mt-1">
                                     <span class="text-2xl font-bold text-emerald-400 font-mono">{{ calculatedCost }}</span>
                                     <span class="text-xs text-white/40">{{ selectedTargetName }}</span>
                                 </div>
-                                <span class="text-[9px] text-white/20 block mt-2">Formula: {{ calcAmount || 0 }} * {{ stats.average }} average price</span>
-                            </div>
-
-                            <!-- Mirrored estimated cost -->
-                            <div v-if="mirroredStats" class="p-4 rounded-xl border border-blue-500/10 bg-blue-500/[0.02]">
-                                <span class="text-[10px] font-semibold text-blue-400/70 uppercase tracking-wider block">{{ t('market.estimated_cost') }}</span>
-                                <div class="flex items-baseline gap-2 mt-1">
-                                    <span class="text-2xl font-bold text-blue-400 font-mono">{{ calculatedMirroredCost }}</span>
-                                    <span class="text-xs text-white/40">{{ selectedTargetName }}</span>
-                                </div>
-                                <span class="text-[9px] text-white/20 block mt-2">Formula: {{ calcAmount || 0 }} / {{ mirroredStats.average }} average price</span>
-                            </div>
-                            <div v-else class="p-4 rounded-xl border border-white/5 bg-white/[0.01] text-center text-xs text-white/30">
-                                No mirrored trades ({{ selectedTargetName }} ➔ {{ selectedItemName }}) found to calculate mirrored cost.
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Selected pair market details -->
-                    <div class="glass-card p-6">
-                        <h3 class="text-sm font-semibold text-white mb-4">{{ t('market.info') }}</h3>
-                        <div class="space-y-3 text-xs">
-                            <div class="flex justify-between py-2 border-b border-white/5">
-                                <span class="text-white/40">{{ t('market.total_volume') }}</span>
-                                <span class="text-white font-mono font-medium">{{ activeVolume }} {{ selectedItemName }}</span>
-                            </div>
-                            <div class="flex justify-between py-2 border-b border-white/5">
-                                <span class="text-white/40">{{ t('market.offers_count') }}</span>
-                                <span class="text-white font-mono font-medium">{{ activeOffersCount }}</span>
-                            </div>
-                            <div class="flex justify-between py-2 border-b border-white/5">
-                                <span class="text-white/40">{{ t('market.active_sellers') }}</span>
-                                <span class="text-white font-mono font-medium">{{ activeSellersCount }}</span>
-                            </div>
-                            <div class="flex justify-between py-2 last:border-0">
-                                <span class="text-white/40">{{ t('market.trend') }}</span>
-                                <span class="font-semibold" :class="priceTrendClass">{{ priceTrendText }}</span>
                             </div>
                         </div>
                     </div>
@@ -490,7 +431,7 @@
                                 </tr>
                                 <tr v-if="popular.length === 0">
                                     <td colspan="5" class="py-8 text-center text-white/20">
-                                        No data available. Perform market synchronization first.
+                                        {{ t('market.no_data_for_server', { server: selectedServerId }) }}
                                     </td>
                                 </tr>
                             </tbody>
@@ -530,14 +471,13 @@
                     <div v-show="showArbitrageSchemes" class="space-y-4 max-h-[500px] overflow-y-auto pr-2 scrollbar-thin">
                         <div v-for="(scheme, idx) in arbitrageLoops" :key="'scheme-'+idx" 
                              class="p-4 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-all flex flex-col gap-4">
-                            
                             <!-- Card Header (Type & Profit) -->
                             <div class="flex items-center justify-between flex-wrap gap-2 border-b border-white/5 pb-2">
                                 <span class="badge text-[10px] font-semibold tracking-wider uppercase"
                                       :class="scheme.type === '2-step' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-purple-500/10 text-purple-400 border border-purple-500/20'">
                                     {{ scheme.type }} loop
                                 </span>
-                                
+
                                 <div class="flex items-center gap-3">
                                     <!-- Leftovers -->
                                     <div v-if="scheme.leftovers && scheme.leftovers.length" class="flex items-center gap-2 text-xs text-blue-400">
@@ -563,10 +503,8 @@
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
                                 <div v-for="(step, sIdx) in scheme.steps" :key="sIdx" class="flex items-center gap-3">
                                     <div class="flex-1 p-3 rounded-lg bg-white/[0.02] border border-white/5 relative">
-                                        <!-- Step label -->
                                         <div class="text-[10px] uppercase font-bold text-white/30 mb-2">Step {{ sIdx + 1 }}</div>
-                                        
-                                        <!-- Exchange description -->
+
                                         <div class="flex flex-col gap-1.5">
                                             <div class="flex items-center gap-1.5 text-xs">
                                                 <span class="text-white/40 w-8">{{ t('market.give') }}</span>
@@ -586,8 +524,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    
-                                    <!-- Flow arrow icon -->
+
                                     <div v-if="sIdx < scheme.steps.length - 1" class="hidden md:flex text-white/20">
                                         <svg class="w-5 h-5 animate-pulse" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
@@ -597,18 +534,17 @@
                             </div>
                         </div>
 
-                        <!-- Empty state -->
                         <div v-if="arbitrageLoops.length === 0" class="py-8 text-center text-white/20">
-                            No profitable exchange schemes found on the market currently.
+                            {{ t('market.no_schemes_for_server', { server: selectedServerId }) }}
                         </div>
                     </div>
                 </div>
 
                 <!-- Current Active Market Listings Card -->
-                <div class="glass-card p-6 animate-fade-in-up">
+                <div class="glass-card p-6 animate-fade-in-up transition-all duration-500 hover:border-white/20">
                     <div class="flex items-center justify-between gap-3 mb-6 border-b border-white/5 pb-3">
                         <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white">
+                            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
                                 </svg>
@@ -618,111 +554,192 @@
                                 <span class="text-xs text-white/40">{{ totalActiveCount }} active trades</span>
                             </div>
                         </div>
-                        <button @click="toggleActiveListings" class="text-white/40 hover:text-white transition-colors">
-                            <svg v-if="showActiveListings" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <button @click="toggleActiveListings" class="text-white/40 hover:text-white transition-colors duration-300">
+                            <svg v-if="showActiveListings" class="w-5 h-5 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
                             </svg>
-                            <svg v-else class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <svg v-else class="w-5 h-5 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                             </svg>
                         </button>
                     </div>
 
-                    <div v-show="showActiveListings" class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="border-b border-white/5 text-[10px] font-semibold text-white/30 uppercase tracking-wider">
-                                    <th class="py-3 px-4">{{ t('market.player') }}</th>
-                                    <th class="py-3 px-4">{{ t('market.selling_resource') }}</th>
-                                    <th class="py-3 px-4">{{ t('market.buying_resource') }}</th>
-                                    <th class="py-3 px-4 text-right">{{ t('market.price') }}</th>
-                                    <th class="py-3 px-4 text-right">{{ t('market.lots_remaining') }}</th>
-                                    <th class="py-3 px-4 text-right">{{ t('market.time_left') }}</th>
-                                    <th class="py-3 px-4 text-right">{{ t('market.sync_time') }}</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-white/5 text-sm text-white/70">
-                                <tr v-for="offer in activeOffers" :key="offer.offer_id" class="hover:bg-white/[0.01] transition-all">
-                                    <td class="py-3 px-4 font-semibold text-white">{{ offer.sender_name }}</td>
-                                    <td class="py-3 px-4">
-                                        <div class="flex items-center gap-2">
-                                            <img :src="getResourceIcon(offer.item_id)" @error="handleIconError($event, offer.item_id)" class="w-5 h-5 object-contain" />
-                                            <span class="font-mono text-white/90">{{ formatVolume(offer.amount) }}</span>
-                                            <span class="text-xs text-white/40 truncate max-w-[100px]">{{ offer.item_name }}</span>
-                                        </div>
-                                    </td>
-                                    <td class="py-3 px-4">
-                                        <div class="flex items-center gap-2">
-                                            <img :src="getResourceIcon(offer.target_item_id)" @error="handleIconError($event, offer.target_item_id)" class="w-5 h-5 object-contain" />
-                                            <span class="font-mono text-white/90">{{ formatVolume(offer.target_amount) }}</span>
-                                            <span class="text-xs text-white/40 truncate max-w-[100px]">{{ offer.target_item_name }}</span>
-                                        </div>
-                                    </td>
-                                    <td class="py-3 px-4 text-right text-emerald-400 font-mono font-medium">
-                                        {{ offer.price }}
-                                    </td>
-                                    <td class="py-3 px-4 text-right text-blue-400 font-mono">{{ offer.lots_remaining }}</td>
-                                    <td class="py-3 px-4 text-right font-mono text-xs" :class="offer.time_left > 0 ? 'text-amber-400' : 'text-red-500'">
-                                        {{ formatTimeLeft(offer.time_left) }}
-                                    </td>
-                                    <td class="py-3 px-4 text-right text-[10px] text-white/30 font-mono">{{ formatDateTimeShort(offer.created_at) }}</td>
-                                </tr>
-                                <tr v-if="activeOffers.length === 0">
-                                    <td colspan="7" class="py-8 text-center text-white/20">
-                                        No active listings found in database. Perform synchronization first.
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                    <transition name="smooth-accordion">
+                        <div v-show="showActiveListings" class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="border-b border-white/5 text-[10px] font-semibold text-white/30 uppercase tracking-wider">
+                                        <th class="py-3 px-4">{{ t('market.player') }}</th>
+                                        <th class="py-3 px-4">{{ t('market.selling_resource') }}</th>
+                                        <th class="py-3 px-4">{{ t('market.buying_resource') }}</th>
+                                        <th class="py-3 px-4 text-right">{{ t('market.price') }}</th>
+                                        <th class="py-3 px-4 text-right">{{ t('market.lots_remaining') }}</th>
+                                        <th class="py-3 px-4 text-right">{{ t('market.time_left') }}</th>
+                                        <th class="py-3 px-4 text-right">{{ t('market.sync_time') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-white/5 text-sm text-white/70">
+                                    <tr v-for="offer in activeOffers" :key="offer.offer_id" class="hover:bg-white/[0.03] transition-colors duration-300">
+                                        <td class="py-3 px-4 font-semibold text-white">{{ offer.sender_name }}</td>
+                                        <td class="py-3 px-4">
+                                            <div class="flex items-center gap-2">
+                                                <img :src="getResourceIcon(offer.item_id)" @error="handleIconError($event, offer.item_id)" class="w-5 h-5 object-contain" />
+                                                <span class="font-mono text-white/90">{{ formatVolume(offer.amount) }}</span>
+                                                <span class="text-xs text-white/40 truncate max-w-[100px]">{{ offer.item_name }}</span>
+                                            </div>
+                                        </td>
+                                        <td class="py-3 px-4">
+                                            <div class="flex items-center gap-2">
+                                                <img :src="getResourceIcon(offer.target_item_id)" @error="handleIconError($event, offer.target_item_id)" class="w-5 h-5 object-contain" />
+                                                <span class="font-mono text-white/90">{{ formatVolume(offer.target_amount) }}</span>
+                                                <span class="text-xs text-white/40 truncate max-w-[100px]">{{ offer.target_item_name }}</span>
+                                            </div>
+                                        </td>
+                                        <td class="py-3 px-4 text-right text-emerald-400 font-mono font-medium">
+                                            {{ offer.price }}
+                                        </td>
+                                        <td class="py-3 px-4 text-right text-blue-400 font-mono">{{ offer.lots_remaining }}</td>
+                                        <td class="py-3 px-4 text-right font-mono text-xs" :class="offer.time_left > 0 ? 'text-amber-400' : 'text-red-500'">
+                                            {{ formatTimeLeft(offer.time_left) }}
+                                        </td>
+                                        <td class="py-3 px-4 text-right text-[10px] text-white/30 font-mono">{{ offer.created_at }}</td>
+                                    </tr>
+                                    <tr v-if="activeOffers.length === 0">
+                                        <td colspan="7" class="py-8 text-center text-white/20">
+                                            No active listings found in database. Perform synchronization first.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
 
-                    <!-- Load More Button -->
-                    <div v-if="hasMoreActiveOffers" class="flex justify-center mt-4 pt-4 border-t border-white/5">
-                        <button @click="loadMoreActiveOffers" :disabled="loadingMore" class="btn-secondary py-2 px-6 flex items-center gap-2 bg-white/5 border border-white/10 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all text-xs font-semibold">
-                            <svg v-if="loadingMore" class="animate-spin w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                            </svg>
-                            {{ loadingMore ? 'Loading more...' : 'Load More Listings' }}
-                        </button>
-                    </div>
+                            <!-- Load More Button -->
+                            <div v-if="hasMoreActiveOffers" class="flex justify-center mt-4 pt-4 border-t border-white/5">
+                                <button @click="loadMoreActiveOffers" :disabled="loadingMore" class="btn-secondary py-2 px-6 flex items-center gap-2 bg-white/5 border border-white/10 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-300 text-xs font-semibold">
+                                    <svg v-if="loadingMore" class="animate-spin w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                    </svg>
+                                    {{ loadingMore ? 'Loading more...' : 'Load More Listings' }}
+                                </button>
+                            </div>
+                        </div>
+                    </transition>
                 </div>
             </div>
         </div>
 
-        <!-- TAB 2: SETTINGS & SYNC LOGS -->
+        <!-- TAB 2: SETTINGS & SERVERS -->
         <div v-else-if="activeTab === 'settings'" class="space-y-6">
+            <!-- Section 1: Server Connections Table -->
+            <div class="glass-card p-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-white/5 pb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 0 1-3-3m3 3a3 3 0 1 0 0 6h13.5a3 3 0 1 0 0-6m-13.5 0H3m16.5 0a3 3 0 0 0 3-3m-3 3a3 3 0 1 1 0 6M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-semibold text-white">{{ t('market.servers_title') }}</h2>
+                            <p class="text-xs text-white/40">{{ t('market.servers_subtitle') }}</p>
+                        </div>
+                    </div>
+
+                    <button @click="openAddServerModal" class="btn-primary py-2 px-4 text-xs flex items-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                        {{ t('market.add_server') }}
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-white/5 text-[10px] font-semibold text-white/30 uppercase tracking-wider">
+                                <th class="py-3 px-4">{{ t('market.col_server_locale') }}</th>
+                                <th class="py-3 px-4">{{ t('market.col_account') }}</th>
+                                <th class="py-3 px-4">{{ t('market.col_verification') }}</th>
+                                <th class="py-3 px-4">{{ t('market.status') }}</th>
+                                <th class="py-3 px-4">{{ t('market.last_sync') }}</th>
+                                <th class="py-3 px-4 text-right">{{ t('market.col_actions') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-white/5 text-sm text-white/70">
+                            <tr v-for="srv in servers" :key="srv.id" class="hover:bg-white/[0.01] transition-all">
+                                <td class="py-3 px-4 font-semibold text-white">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-base">{{ getLocaleFlag(srv.locale) }}</span>
+                                        <div>
+                                            <span>{{ srv.display_name }}</span>
+                                            <span class="block text-[10px] text-white/35 font-mono">{{ srv.server_id }} ({{ srv.locale }})</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <div v-if="srv.account" class="flex items-center gap-1.5 flex-wrap">
+                                        <span class="w-2 h-2 rounded-full" :class="srv.account.status === 'online' ? 'bg-emerald-500' : 'bg-white/30'"></span>
+                                        <span class="font-medium text-white/90">{{ srv.account.username }}</span>
+                                        <span class="text-xs text-white/40">({{ srv.account.nickname || t('market.no_nick') }})</span>
+                                        <span v-if="srv.account.server_name" class="badge badge-success bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px]">
+                                            {{ srv.account.server_name }}
+                                        </span>
+                                    </div>
+                                    <span v-else class="text-xs text-white/30 italic">{{ t('market.not_assigned') }}</span>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <span class="badge text-[10px]" :class="getVerificationBadgeClass(srv.verification_status)">
+                                        {{ srv.verification_status }}
+                                    </span>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <span class="badge text-[10px]" :class="getSyncBadgeClass(srv.sync_status)">
+                                        {{ srv.sync_status }}
+                                    </span>
+                                </td>
+                                <td class="py-3 px-4 font-mono text-xs text-white/60">
+                                    {{ formatDateTime(srv.last_synced_at) }}
+                                    <span v-if="srv.last_error" class="block text-[10px] text-red-400 truncate max-w-[150px]" :title="srv.last_error">
+                                        {{ srv.last_error }}
+                                    </span>
+                                </td>
+                                <td class="py-3 px-4 text-right space-x-2">
+                                    <button @click="verifyServer(srv)" :disabled="verifyingId === srv.id" class="btn-secondary py-1 px-2.5 text-[11px]" :title="t('market.verify_hint')">
+                                        {{ verifyingId === srv.id ? '...' : t('market.verify') }}
+                                    </button>
+                                    <button @click="syncServerNow(srv)" :disabled="syncing || !srv.account_id" class="btn-secondary py-1 px-2.5 text-[11px] text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/10">
+                                        {{ t('market.sync_now') }}
+                                    </button>
+                                    <button @click="openEditServerModal(srv)" class="btn-secondary py-1 px-2.5 text-[11px]">
+                                        {{ t('market.edit') }}
+                                    </button>
+                                    <button @click="deleteServer(srv)" class="btn-secondary py-1 px-2.5 text-[11px] text-red-400 hover:bg-red-500/10 border-red-500/20">
+                                        {{ t('market.delete') }}
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr v-if="servers.length === 0">
+                                <td colspan="6" class="py-8 text-center text-white/20">
+                                    {{ t('market.no_servers_row') }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Section 2: Global Settings -->
             <div class="glass-card p-6">
                 <div class="flex items-center gap-3 mb-5 border-b border-white/5 pb-3">
                     <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                         </svg>
                     </div>
-                    <h2 class="text-lg font-semibold text-white">{{ t('market.sync_settings') }}</h2>
+                    <h2 class="text-lg font-semibold text-white">{{ t('market.autosync_schedule') }}</h2>
                 </div>
 
                 <form @submit.prevent="saveSettings">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <!-- Account Selection -->
-                        <div>
-                            <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('market.account') }}</label>
-                            <div class="relative">
-                                <select v-model="settingsForm.account_id" class="glass-select w-full">
-                                    <option :value="null" class="bg-dark-900">{{ t('market.select_account') }}</option>
-                                    <option v-for="acc in accounts" :key="acc.id" :value="acc.id" class="bg-dark-900">
-                                        {{ acc.username }} ({{ acc.nickname || 'No Nickname' }})
-                                    </option>
-                                </select>
-                                <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-                                    <svg class="w-4 h-4 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Sync Interval Selection -->
                         <div>
                             <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('market.sync_interval') }}</label>
                             <div class="relative">
@@ -733,65 +750,22 @@
                                     <option value="60" class="bg-dark-900">1 hour</option>
                                     <option value="custom" class="bg-dark-900">{{ t('market.custom') }}</option>
                                 </select>
-                                <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-                                    <svg class="w-4 h-4 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                                    </svg>
-                                </div>
                             </div>
                         </div>
 
-                        <!-- Custom Interval Input -->
                         <div v-if="settingsForm.sync_interval === 'custom'">
                             <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('market.custom_interval') }}</label>
                             <input type="number" v-model.number="settingsForm.custom_interval_minutes" min="1" class="glass-input w-full font-mono text-white"/>
                         </div>
-
-                        <!-- Account Status Information -->
-                        <div>
-                            <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('market.account_id') }}</label>
-                            <div class="glass-input w-full font-mono text-white/50 select-none bg-white/[0.02]">
-                                {{ settingsForm.account_id || 'Not selected' }}
-                            </div>
-                        </div>
-
-                        <!-- Connection Status -->
-                        <div>
-                            <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('market.connection_status') }}</label>
-                            <div class="flex items-center gap-2 pt-2">
-                                <span class="w-2.5 h-2.5 rounded-full"
-                                      :class="connectionStatus === 'Connected' ? 'bg-emerald-500 shadow-lg shadow-emerald-500/50 animate-pulse' : 'bg-red-500 shadow-lg shadow-red-500/50'"></span>
-                                <span class="text-sm font-semibold text-white">{{ connectionStatus }}</span>
-                            </div>
-                        </div>
-
-                        <!-- Last Synchronization -->
-                        <div>
-                            <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('market.last_sync') }}</label>
-                            <div class="text-sm font-semibold text-white/70 pt-2 font-mono">
-                                {{ formatDateTime(lastSync) }}
-                            </div>
-                        </div>
                     </div>
 
-                    <div class="flex gap-4">
-                        <button type="submit" :disabled="saving" class="btn-primary flex items-center gap-2">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
-                            </svg>
-                            {{ saving ? 'Saving...' : 'Save Settings' }}
-                        </button>
-                        <button type="button" @click="triggerManualSync" :disabled="syncing || !settingsForm.account_id" class="btn-secondary flex items-center gap-2">
-                            <svg class="w-4 h-4" :class="{ 'animate-spin': syncing }" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182" />
-                            </svg>
-                            {{ syncing ? 'Syncing...' : 'Sync Now' }}
-                        </button>
-                    </div>
+                    <button type="submit" :disabled="saving" class="btn-primary flex items-center gap-2 text-xs">
+                        {{ t('market.save_schedule') }}
+                    </button>
                 </form>
             </div>
 
-            <!-- Sync Logs -->
+            <!-- Section 3: Sync Logs -->
             <div class="glass-card p-6">
                 <div class="flex items-center gap-3 mb-6 border-b border-white/5 pb-3">
                     <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center text-white">
@@ -806,6 +780,7 @@
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="border-b border-white/5 text-[10px] font-semibold text-white/30 uppercase tracking-wider">
+                                <th class="py-3 px-4">{{ t('market.server') }}</th>
                                 <th class="py-3 px-4">{{ t('market.date') }}</th>
                                 <th class="py-3 px-4">{{ t('market.action') }}</th>
                                 <th class="py-3 px-4">{{ t('market.status') }}</th>
@@ -814,47 +789,88 @@
                         </thead>
                         <tbody class="divide-y divide-white/5 text-sm text-white/70">
                             <tr v-for="(log, idx) in logs" :key="'log-'+idx" class="hover:bg-white/[0.01] transition-all">
+                                <td class="py-3 px-4 font-mono text-xs text-emerald-400 font-bold">{{ log.server_id || '-' }}</td>
                                 <td class="py-3 px-4 font-mono text-xs">{{ formatDateTime(log.date) }}</td>
                                 <td class="py-3 px-4 font-semibold text-white/95">{{ log.action }}</td>
                                 <td class="py-3 px-4">
-                                    <span class="badge text-[10px]"
-                                          :class="getStatusBadgeClass(log.status)">
+                                    <span class="badge text-[10px]" :class="getStatusBadgeClass(log.status)">
                                         {{ log.status }}
                                     </span>
                                 </td>
                                 <td class="py-3 px-4 text-xs text-white/50">{{ log.message }}</td>
                             </tr>
                             <tr v-if="logs.length === 0">
-                                <td colspan="4" class="py-8 text-center text-white/20">
+                                <td colspan="5" class="py-8 text-center text-white/20">
                                     No synchronization logs yet.
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
+            </div>
+        </div>
 
-                <!-- Pagination Controls -->
-                <div v-if="logsPagination.last_page > 1" class="flex items-center justify-between mt-4 pt-4 border-t border-white/5">
-                    <p class="text-xs text-white/30">
-                        Showing Page {{ logsPagination.current_page }} of {{ logsPagination.last_page }} (Total {{ logsPagination.total }})
-                    </p>
-                    <div class="flex items-center gap-2">
-                        <button :disabled="logsPagination.current_page === 1 || loadingSyncLogs" @click="loadSyncLogs(logsPagination.current_page - 1)"
-                                class="btn-secondary btn-sm flex items-center gap-1 hover:border-emerald-500/30 hover:text-emerald-400 disabled:opacity-50 text-xs">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-                            </svg>
-                            Previous
-                        </button>
-                        <button :disabled="logsPagination.current_page === logsPagination.last_page || loadingSyncLogs" @click="loadSyncLogs(logsPagination.current_page + 1)"
-                                class="btn-secondary btn-sm flex items-center gap-1 hover:border-emerald-500/30 hover:text-emerald-400 disabled:opacity-50 text-xs">
-                            Next
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-                            </svg>
+        <!-- Add / Edit Server Connection Modal -->
+        <div v-if="showServerModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
+            <div class="glass-card max-w-lg w-full p-6 space-y-6 border border-white/10 shadow-2xl">
+                <div class="flex items-center justify-between border-b border-white/10 pb-4">
+                    <h3 class="text-lg font-bold text-white">
+                        {{ editingServer ? t('market.edit_server_connection') : t('market.add_server_connection') }}
+                    </h3>
+                    <button @click="closeServerModal" class="text-white/40 hover:text-white">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div v-if="editingServer" class="p-3 rounded-lg bg-white/5 border border-white/10 text-xs text-white/60 space-y-1">
+                    <div>{{ t('market.server') }}: <span class="font-mono text-white/80">{{ editingServer.server_id }}</span> ({{ editingServer.locale }})</div>
+                    <div>{{ editingServer.display_name }}</div>
+                </div>
+
+                <form @submit.prevent="saveServerModal" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-white/40 mb-1.5 uppercase">{{ t('market.sync_account') }}</label>
+                        <select v-model="serverForm.account_id" required class="glass-select w-full">
+                            <option :value="null" disabled class="bg-dark-900 text-white/50">{{ t('market.choose_account') }}</option>
+                            <option v-for="acc in accounts" :key="acc.id" :value="acc.id" class="bg-dark-900 text-white">
+                                {{ acc.username }} ({{ acc.nickname || t('market.no_nick') }}) [{{ t('market.region_label') }}: {{ acc.region || '?' }}{{ acc.server_name ? ` | ${acc.server_name}` : '' }}]
+                            </option>
+                        </select>
+                        <p v-if="accounts.length === 0" class="mt-2 text-xs text-amber-400 font-medium">
+                            ⚠️ {{ t('market.err_no_accounts_found') || 'Игровые аккаунты не найдены. Добавьте аккаунт в разделе «Аккаунты».' }}
+                        </p>
+                        <p v-else class="mt-1.5 text-[11px] text-white/35">{{ t('market.auto_detect_hint') }}</p>
+                    </div>
+
+                    <!-- Auto-detected server info -->
+                    <div v-if="detectedServerInfo" class="p-3 rounded-lg text-xs space-y-1"
+                         :class="detectedServerInfo.error ? 'bg-amber-500/10 border border-amber-500/20 text-amber-400' : 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'">
+                        <template v-if="detectedServerInfo.error">
+                            {{ detectedServerInfo.error }}
+                        </template>
+                        <template v-else>
+                            <div class="font-semibold">{{ getLocaleFlag(detectedServerInfo.locale) }} {{ t('market.detected_title') }}</div>
+                            <div v-if="detectedServerInfo.server_name" class="font-bold text-emerald-300 flex items-center gap-1.5 pt-0.5">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 0 1-3-3V3.75a3 3 0 0 1 3-3h13.5a3 3 0 0 1 3 3v7.5a3 3 0 0 1-3 3m-13.5 0a3 3 0 0 0-3 3v3.75a3 3 0 0 0 3 3h13.5a3 3 0 0 0 3-3V17.25a3 3 0 0 0-3-3" />
+                                </svg>
+                                Игровой мир: {{ detectedServerInfo.server_name }}
+                            </div>
+                            <div>{{ t('market.detected_id') }}: <span class="font-mono">{{ detectedServerInfo.server_id }}</span></div>
+                            <div>{{ t('market.detected_name') }}: {{ detectedServerInfo.display_name }}</div>
+                            <div>{{ t('market.detected_locale') }}: {{ detectedServerInfo.locale }}</div>
+                        </template>
+                    </div>
+
+                    <div class="flex justify-end gap-3 pt-4 border-t border-white/10">
+                        <button type="button" @click="closeServerModal" class="btn-secondary text-xs py-2 px-4">{{ t('market.cancel') }}</button>
+                        <button type="submit" :disabled="savingServer || !serverForm.account_id || !!(detectedServerInfo && detectedServerInfo.error)" class="btn-primary text-xs py-2 px-4">
+                            {{ savingServer ? t('market.saving') : t('market.save') }}
                         </button>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
     </div>
@@ -882,8 +898,144 @@ export default {
         const toggleArbitrageSchemes = () => showArbitrageSchemes.value = !showArbitrageSchemes.value;
         const toggleActiveListings = () => showActiveListings.value = !showActiveListings.value;
 
+        const activeOffers = ref([]);
+        const totalActiveCount = ref(0);
+        const activeOffersPage = ref(1);
+        const hasMoreActiveOffers = ref(false);
+        const loadingMore = ref(false);
 
-        // API lists
+        let countdownInterval = null;
+        const startCountdown = () => {
+            if (countdownInterval) clearInterval(countdownInterval);
+            countdownInterval = setInterval(() => {
+                activeOffers.value.forEach(offer => {
+                    if (offer.time_left > 0) {
+                        offer.time_left--;
+                    }
+                });
+            }, 1000);
+        };
+
+        const formatTimeLeft = (seconds) => {
+            if (!seconds || seconds <= 0) return 'Expired';
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = seconds % 60;
+            if (h > 0) return `${h}h ${m}m`;
+            if (m > 0) return `${m}m ${s}s`;
+            return `${s}s`;
+        };
+
+        const loadMoreActiveOffers = async () => {
+            if (loadingMore.value || !hasMoreActiveOffers.value) return;
+            loadingMore.value = true;
+            try {
+                const nextPage = activeOffersPage.value + 1;
+                const res = await axios.get('/api/market/analytics', {
+                    params: { server_id: selectedServerId.value, page: nextPage }
+                });
+                const newOffers = res.data.active_offers || [];
+                activeOffers.value.push(...newOffers);
+                activeOffersPage.value = nextPage;
+                hasMoreActiveOffers.value = res.data.has_more || false;
+            } catch (e) {
+                showToast('Failed to load active listings', 'error');
+            } finally {
+                loadingMore.value = false;
+            }
+        };
+
+        // Multi-server state
+        const servers = ref([]);
+        const presets = ref([]);
+        const accounts = ref([]);
+        const selectedServerId = ref(localStorage.getItem('tso_market_selected_server') || '');
+        const verifyingId = ref(null);
+
+        // Server Modal
+        const showServerModal = ref(false);
+        const editingServer = ref(null);
+        const savingServer = ref(false);
+        const serverForm = ref({
+            account_id: null,
+        });
+
+        const currentServerConnection = computed(() => {
+            return servers.value.find(s => s.server_id === selectedServerId.value) || servers.value[0] || null;
+        });
+
+        const REGION_LOCALES = { ru: 'RU', de: 'DE', en: 'EN', us: 'EN', fr: 'FR', pl: 'PL', es: 'ES', es2: 'ES', nl: 'NL', cz: 'CZ', pt: 'PT', it: 'IT', el: 'EL', ro: 'RO' };
+
+        const detectedServerInfo = computed(() => {
+            if (!serverForm.value.account_id) return null;
+            const acc = accounts.value.find(a => a.id === serverForm.value.account_id);
+            if (!acc) return null;
+            const region = String(acc.region || '').toLowerCase();
+            if (!region) {
+                return { error: t('market.err_no_region', { username: acc.username }) };
+            }
+            if (editingServer.value && region !== String(editingServer.value.server_id).toLowerCase()) {
+                return { error: t('market.err_wrong_server', { username: acc.username, detected: region, server: editingServer.value.server_id }) };
+            }
+            if (!editingServer.value && servers.value.some(s => String(s.server_id).toLowerCase() === region)) {
+                return { error: t('market.err_server_exists', { server: region }) };
+            }
+            const locale = REGION_LOCALES[region] || region.toUpperCase();
+            const displayName = acc.server_name
+                ? `${acc.server_name} Settlers Market`
+                : `${region.toUpperCase()} Settlers Market`;
+
+            return {
+                server_id: region,
+                locale,
+                display_name: displayName,
+                server_name: acc.server_name || null,
+            };
+        });
+
+        const getLocaleFlag = (locale) => {
+            switch (String(locale).toUpperCase()) {
+                case 'RU': return '🇷🇺';
+                case 'DE': return '🇩🇪';
+                case 'EN': return '🇬🇧';
+                case 'US': return '🇺🇸';
+                case 'FR': return '🇫🇷';
+                case 'PL': return '🇵🇱';
+                case 'ES': return '🇪🇸';
+                default: return '🌐';
+            }
+        };
+
+        const getVerificationBadgeClass = (status) => {
+            switch (status) {
+                case 'verified':
+                    return 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+                case 'mismatch':
+                    return 'bg-amber-500/10 text-amber-400 border border-amber-500/20';
+                case 'error':
+                    return 'bg-red-500/10 text-red-400 border border-red-500/20';
+                case 'unverified':
+                default:
+                    return 'bg-white/10 text-white/50 border border-white/10';
+            }
+        };
+
+        const getSyncBadgeClass = (status) => {
+            switch (status) {
+                case 'connected':
+                    return 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+                case 'syncing':
+                    return 'bg-blue-500/10 text-blue-400 border border-blue-500/20 animate-pulse';
+                case 'error':
+                    return 'bg-red-500/10 text-red-400 border border-red-500/20';
+                case 'not_configured':
+                case 'disabled':
+                default:
+                    return 'bg-white/10 text-white/40 border border-white/10';
+            }
+        };
+
+        // Analytics state
         const goods = ref([]);
         const targets = ref([]);
         const popular = ref([]);
@@ -893,69 +1045,12 @@ export default {
         const periodInfo = ref(null);
         const hoveredPoint = ref(null);
 
-        const tooltipPositionClass = computed(() => {
-            if (!hoveredPoint.value) return '';
-            const xRatio = hoveredPoint.value.x / 600;
-            const yRatio = hoveredPoint.value.y / 220;
-
-            let translateX = '-translate-x-1/2';
-            if (xRatio > 0.75) {
-                translateX = '-translate-x-[90%]';
-            } else if (xRatio < 0.25) {
-                translateX = '-translate-x-[10%]';
-            }
-
-            let translateY = '-translate-y-full mb-3';
-            if (yRatio < 0.3) {
-                translateY = 'translate-y-2 mt-2';
-            }
-
-            return `${translateX} ${translateY}`;
-        });
-        const accounts = ref([]);
         const logs = ref([]);
-        const logsPagination = ref({
-            current_page: 1,
-            last_page: 1,
-            total: 0
-        });
-        const loadingSyncLogs = ref(false);
+        const logsPagination = ref({ current_page: 1, last_page: 1, total: 0 });
 
-        const loadSyncLogs = async (page = 1) => {
-            loadingSyncLogs.value = true;
-            try {
-                const logsRes = await axios.get('/api/market/logs', {
-                    params: { page, limit: 10 }
-                });
-                if (logsRes.data && logsRes.data.data) {
-                    logs.value = logsRes.data.data;
-                    logsPagination.value = {
-                        current_page: logsRes.data.current_page || 1,
-                        last_page: logsRes.data.last_page || 1,
-                        total: logsRes.data.total || 0
-                    };
-                } else {
-                    logs.value = Array.isArray(logsRes.data) ? logsRes.data : [];
-                    logsPagination.value = { current_page: 1, last_page: 1, total: logs.value.length };
-                }
-            } catch (e) {
-                console.error('Failed to load sync logs:', e);
-            } finally {
-                loadingSyncLogs.value = false;
-            }
-        };
-
-        // New Mirrored Trade and period variables
-        const selectionMode = ref('visual'); // 'dropdown' or 'visual'
-        const visualTab = ref(1); // 1 = Sell, 2 = Buy
+        const selectionMode = ref('visual');
+        const visualTab = ref(1);
         const selectedPeriod = ref('all');
-        const mirroredStats = ref(null);
-        const mirroredHistory = ref(null);
-        const activeOffers = ref([]);
-        const totalActiveCount = ref(0);
-        const activeOffersPage = ref(1);
-        const hasMoreActiveOffers = ref(false);
-        const loadingMore = ref(false);
         const arbitrageLoops = ref([]);
 
         const periods = [
@@ -966,21 +1061,15 @@ export default {
             { value: 'all', label: t('market.range_all') }
         ];
 
-        // Form state
         const selectedItem = ref('');
         const selectedTarget = ref('');
         const calcAmount = ref(100);
         
         const settingsForm = ref({
-            account_id: null,
             sync_interval: '15',
             custom_interval_minutes: 15,
         });
 
-        const connectionStatus = ref('Disconnected');
-        const lastSync = ref('Never');
-
-        // Dynamic translated names
         const selectedItemName = computed(() => {
             const item = goods.value.find(g => g.item_id === selectedItem.value);
             return item ? item.item_name : '';
@@ -991,78 +1080,18 @@ export default {
             return item ? item.target_item_name : '';
         });
 
-        // Calculator costs
         const calculatedCost = computed(() => {
             if (!stats.value || !stats.value.average) return 0;
             const amt = parseFloat(calcAmount.value) || 0;
             return Math.round(amt * stats.value.average * 100) / 100;
         });
 
-        const calculatedMirroredCost = computed(() => {
-            if (!mirroredStats.value || !mirroredStats.value.average) return 0;
-            const amt = parseFloat(calcAmount.value) || 0;
-            return Math.round((amt / mirroredStats.value.average) * 100) / 100;
-        });
-
-        // Market detail helpers
-        const activeVolume = computed(() => {
-            if (periodInfo.value) {
-                return periodInfo.value.volume;
-            }
-            if (activeInfo.value && activeInfo.value.offers_count > 0) {
-                return activeInfo.value.volume;
-            }
-            if (!history.value || history.value.length === 0) return 0;
-            return history.value.reduce((sum, h) => sum + (h.volume || 0), 0);
-        });
-
-        const activeOffersCount = computed(() => {
-            if (periodInfo.value) {
-                return periodInfo.value.offers_count;
-            }
-            if (activeInfo.value && activeInfo.value.offers_count > 0) {
-                return activeInfo.value.offers_count;
-            }
-            if (!history.value || history.value.length === 0) return 0;
-            return history.value.reduce((sum, h) => sum + (h.offers_count || 0), 0);
-        });
-
-        const activeSellersCount = computed(() => {
-            if (periodInfo.value) {
-                return periodInfo.value.sellers_count;
-            }
-            if (activeInfo.value && activeInfo.value.offers_count > 0) {
-                return activeInfo.value.sellers_count;
-            }
-            if (!history.value || history.value.length === 0) return 0;
-            return history.value[history.value.length - 1].sellers_count;
-        });
-
-        // Trend calculation
-        const priceTrendText = computed(() => {
-            if (history.value.length < 2) return 'Stable';
-            const last = history.value[history.value.length - 1].price;
-            const prev = history.value[history.value.length - 2].price;
-            if (last > prev) return 'Rising';
-            if (last < prev) return 'Falling';
-            return 'Stable';
-        });
-
-        const priceTrendClass = computed(() => {
-            const trend = priceTrendText.value;
-            if (trend === 'Rising') return 'text-emerald-400';
-            if (trend === 'Falling') return 'text-red-400';
-            return 'text-white/40';
-        });
-
-        // Volume Formatting Helper
         const formatVolume = (val) => {
             if (val >= 1000000) return (val / 1000000).toFixed(1) + 'M';
             if (val >= 1000) return (val / 1000).toFixed(1) + 'K';
             return val;
         };
 
-        // Resource icon lookup: resources first, then other.
         const getResourceIcon = (itemId) =>
             getGameImageUrl('resource', itemId || 'addresource');
 
@@ -1084,84 +1113,37 @@ export default {
             }
         };
 
-        // Real-time Countdown formatting
-        const formatTimeLeft = (seconds) => {
-            if (seconds <= 0) return 'Expired';
-            const h = Math.floor(seconds / 3600);
-            const m = Math.floor((seconds % 3600) / 60);
-            const s = seconds % 60;
-            return `${h}h ${m}m ${s}s`;
-        };
-
         const formatDateTime = (dateStr) => {
             if (!dateStr || dateStr === 'Never') return 'Never';
             try {
                 const date = new Date(dateStr);
                 if (isNaN(date.getTime())) return dateStr;
-                
                 const day = String(date.getDate()).padStart(2, '0');
                 const month = String(date.getMonth() + 1).padStart(2, '0');
                 const year = date.getFullYear();
                 const hours = String(date.getHours()).padStart(2, '0');
                 const minutes = String(date.getMinutes()).padStart(2, '0');
                 const seconds = String(date.getSeconds()).padStart(2, '0');
-                
                 return `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
             } catch (e) {
                 return dateStr;
             }
         };
 
-        const formatDateTimeShort = (dateStr) => {
-            if (!dateStr || dateStr === 'Never') return 'Never';
-            try {
-                const date = new Date(dateStr);
-                if (isNaN(date.getTime())) return dateStr;
-                
-                const day = String(date.getDate()).padStart(2, '0');
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const year = date.getFullYear();
-                const hours = String(date.getHours()).padStart(2, '0');
-                const minutes = String(date.getMinutes()).padStart(2, '0');
-                
-                return `${day}.${month}.${year} ${hours}:${minutes}`;
-            } catch (e) {
-                return dateStr;
-            }
-        };
-
-        // Charts calculations
         const chartPoints = computed(() => {
             if (history.value.length === 0) return [];
-            const w = 550; // width bounds (from 40 to 590)
-            const h = 200; // height bounds (from 20 to 220, so height is 200)
-
+            const w = 550;
+            const h = 200;
             const maxPrice = Math.max(...history.value.map(h => h.price)) || 1;
             const minPrice = Math.min(...history.value.map(h => h.price)) || 0;
             const priceDiff = (maxPrice - minPrice) || 1;
 
-            const maxSellers = Math.max(...history.value.map(h => h.sellers_count)) || 1;
-            const maxOffers = Math.max(...history.value.map(h => h.offers_count)) || 1;
-            const maxVolume = Math.max(...history.value.map(h => h.volume)) || 1;
-
             return history.value.map((d, idx) => {
                 const stepX = history.value.length > 1 ? w / (history.value.length - 1) : w;
                 const x = 40 + idx * stepX;
-                
-                // Y for price: invert coordinate
-                const py = maxPrice === minPrice 
-                    ? 120 
-                    : 220 - ((d.price - minPrice) / priceDiff) * 180 - 10;
-                
-                // Y for sellers & offers
-                const sy = 220 - (d.sellers_count / maxSellers) * 180 - 10;
-                const oy = 220 - (d.offers_count / maxOffers) * 180 - 10;
-                
-                // Y for volume bar (vy starts at 220 and goes up)
-                const vy = 220 - (d.volume / maxVolume) * 180 - 10;
-
+                const py = maxPrice === minPrice ? 120 : 220 - ((d.price - minPrice) / priceDiff) * 180 - 10;
                 return {
-                    x, y: py, sy, oy, vy,
+                    x, y: py,
                     price: d.price,
                     volume: d.volume,
                     sellers_count: d.sellers_count,
@@ -1176,16 +1158,13 @@ export default {
         const chartPriceLinePath = computed(() => {
             const pts = chartPoints.value;
             if (pts.length === 0) return '';
-            return pts.reduce((path, p, idx) => {
-                return idx === 0 ? `M ${p.x} ${p.y}` : `${path} L ${p.x} ${p.y}`;
-            }, '');
+            return pts.reduce((path, p, idx) => (idx === 0 ? `M ${p.x} ${p.y}` : `${path} L ${p.x} ${p.y}`), '');
         });
 
         const chartPriceAreaPath = computed(() => {
             const pts = chartPoints.value;
             if (pts.length === 0) return '';
-            const line = chartPriceLinePath.value;
-            return `${line} L ${pts[pts.length - 1].x} 220 L ${pts[0].x} 220 Z`;
+            return `${chartPriceLinePath.value} L ${pts[pts.length - 1].x} 220 L ${pts[0].x} 220 Z`;
         });
 
         const chartMeanY = computed(() => {
@@ -1193,94 +1172,205 @@ export default {
             const maxPrice = Math.max(...history.value.map(h => h.price)) || 1;
             const minPrice = Math.min(...history.value.map(h => h.price)) || 0;
             const priceDiff = (maxPrice - minPrice) || 1;
-            
-            return maxPrice === minPrice 
-                ? 120 
-                : 220 - ((stats.value.average - minPrice) / priceDiff) * 180 - 10;
+            return maxPrice === minPrice ? 120 : 220 - ((stats.value.average - minPrice) / priceDiff) * 180 - 10;
         });
 
-        // Demand Charts Paths
-        const chartSellersLinePath = computed(() => {
-            const pts = chartPoints.value;
-            if (pts.length === 0) return '';
-            return pts.reduce((path, p, idx) => {
-                return idx === 0 ? `M ${p.x} ${p.sy}` : `${path} L ${p.x} ${p.sy}`;
-            }, '');
+        const tooltipPositionClass = computed(() => {
+            if (!hoveredPoint.value) return '';
+            const xRatio = hoveredPoint.value.x / 600;
+            const yRatio = hoveredPoint.value.y / 220;
+            let translateX = '-translate-x-1/2';
+            if (xRatio > 0.75) translateX = '-translate-x-[90%]';
+            else if (xRatio < 0.25) translateX = '-translate-x-[10%]';
+            let translateY = '-translate-y-full mb-3';
+            if (yRatio < 0.3) translateY = 'translate-y-2 mt-2';
+            return `${translateX} ${translateY}`;
         });
 
-        const chartSellersAreaPath = computed(() => {
-            const pts = chartPoints.value;
-            if (pts.length === 0) return '';
-            const line = chartSellersLinePath.value;
-            return `${line} L ${pts[pts.length - 1].x} 220 L ${pts[0].x} 220 Z`;
-        });
+        // Server API methods
+        const loadServers = async () => {
+            try {
+                const res = await axios.get('/api/market/servers');
+                servers.value = res.data.servers || [];
+                accounts.value = res.data.accounts || [];
+                presets.value = res.data.presets || [];
+                settingsForm.value = res.data.settings || { sync_interval: '15', custom_interval_minutes: 15 };
 
-        const chartOffersLinePath = computed(() => {
-            const pts = chartPoints.value;
-            if (pts.length === 0) return '';
-            return pts.reduce((path, p, idx) => {
-                return idx === 0 ? `M ${p.x} ${p.oy}` : `${path} L ${p.x} ${p.oy}`;
-            }, '');
-        });
-
-        const chartOffersAreaPath = computed(() => {
-            const pts = chartPoints.value;
-            if (pts.length === 0) return '';
-            const line = chartOffersLinePath.value;
-            return `${line} L ${pts[pts.length - 1].x} 220 L ${pts[0].x} 220 Z`;
-        });
-
-        let countdownInterval = null;
-        const startCountdown = () => {
-            if (countdownInterval) clearInterval(countdownInterval);
-            countdownInterval = setInterval(() => {
-                activeOffers.value.forEach(offer => {
-                    if (offer.time_left > 0) {
-                        offer.time_left--;
+                if (servers.value.length > 0) {
+                    const exists = servers.value.some(s => s.server_id === selectedServerId.value);
+                    if (!exists) {
+                        selectedServerId.value = servers.value[0].server_id;
+                        localStorage.setItem('tso_market_selected_server', selectedServerId.value);
                     }
-                });
-            }, 1000);
+                } else {
+                    selectedServerId.value = '';
+                }
+            } catch (e) {
+                console.error('Failed to load market servers:', e);
+            }
         };
 
-        // API Methods
-        const loadInitialData = async () => {
+        const onServerChange = () => {
+            localStorage.setItem('tso_market_selected_server', selectedServerId.value);
+            resetSelection();
+            loadAnalyticsData();
+        };
+
+        const loadAnalyticsData = async () => {
+            if (!selectedServerId.value) return;
             loading.value = true;
             try {
-                // Fetch settings
-                const settingsRes = await axios.get('/api/market/settings');
-                settingsForm.value = settingsRes.data.settings || {
-                    account_id: null,
-                    sync_interval: '15',
-                    custom_interval_minutes: 15
-                };
-                accounts.value = settingsRes.data.accounts || [];
-                connectionStatus.value = settingsRes.data.connection_status || 'Disconnected';
-                lastSync.value = settingsRes.data.last_sync || 'Never';
-
-                // Fetch logs
-                await loadSyncLogs(1);
-
-                // Fetch popular items & goods
-                const goodsRes = await axios.get('/api/market/goods');
+                const params = { server_id: selectedServerId.value };
+                const goodsRes = await axios.get('/api/market/goods', { params });
                 goods.value = goodsRes.data || [];
 
-                // Fetch basic analytics (for popular table and active listings)
-                const analyticsRes = await axios.get('/api/market/analytics');
+                const analyticsRes = await axios.get('/api/market/analytics', { params });
                 popular.value = analyticsRes.data.popular || [];
                 activeOffers.value = analyticsRes.data.active_offers || [];
                 totalActiveCount.value = analyticsRes.data.total_active_count || 0;
                 activeOffersPage.value = 1;
                 hasMoreActiveOffers.value = analyticsRes.data.has_more || false;
 
-                // Fetch arbitrage loops
-                const arbitrageRes = await axios.get('/api/market/arbitrage');
+                const arbitrageRes = await axios.get('/api/market/arbitrage', { params });
                 arbitrageLoops.value = arbitrageRes.data || [];
 
                 startCountdown();
+                await loadSyncLogs(1);
             } catch (e) {
-                showToast(t('market.stats_failed'), 'error');
+                console.error('Failed to load analytics data:', e);
             } finally {
                 loading.value = false;
+            }
+        };
+
+        const loadSyncLogs = async (page = 1) => {
+            try {
+                const res = await axios.get('/api/market/logs', {
+                    params: { server_id: selectedServerId.value, page, limit: 10 }
+                });
+                logs.value = res.data.data || [];
+                logsPagination.value = {
+                    current_page: res.data.current_page || 1,
+                    last_page: res.data.last_page || 1,
+                    total: res.data.total || 0,
+                };
+            } catch (e) {
+                console.error('Failed to load logs:', e);
+            }
+        };
+
+        // Server Modal Handlers
+        const refreshAccounts = async () => {
+            try {
+                const res = await axios.get('/api/accounts');
+                accounts.value = res.data || [];
+            } catch (e) {
+                console.error('Failed to refresh accounts:', e);
+            }
+        };
+
+        const openAddServerModal = async () => {
+            await refreshAccounts();
+            editingServer.value = null;
+            serverForm.value = {
+                account_id: null,
+            };
+            showServerModal.value = true;
+        };
+
+        const openEditServerModal = async (srv) => {
+            await refreshAccounts();
+            editingServer.value = srv;
+            serverForm.value = {
+                account_id: srv.account_id,
+            };
+            showServerModal.value = true;
+        };
+
+        const closeServerModal = () => {
+            showServerModal.value = false;
+            editingServer.value = null;
+        };
+
+        const saveServerModal = async () => {
+            savingServer.value = true;
+            try {
+                const payload = { account_id: serverForm.value.account_id };
+                if (editingServer.value) {
+                    await axios.put(`/api/market/servers/${editingServer.value.id}`, payload);
+                    showToast(t('market.server_updated'));
+                } else {
+                    await axios.post('/api/market/servers', payload);
+                    showToast(t('market.server_created'));
+                }
+                closeServerModal();
+                await loadServers();
+                loadAnalyticsData();
+            } catch (e) {
+                const msg = e.response?.data?.message || t('market.server_save_failed');
+                showToast(msg, 'error');
+            } finally {
+                savingServer.value = false;
+            }
+        };
+
+        const deleteServer = async (srv) => {
+            if (!confirm(t('market.confirm_delete_server', { name: srv.display_name }))) return;
+            try {
+                await axios.delete(`/api/market/servers/${srv.id}`);
+                showToast(t('market.server_deleted'));
+                await loadServers();
+                loadAnalyticsData();
+            } catch (e) {
+                showToast(t('market.server_delete_failed'), 'error');
+            }
+        };
+
+        const verifyServer = async (srv) => {
+            verifyingId.value = srv.id;
+            try {
+                const res = await axios.post(`/api/market/servers/${srv.id}/verify`);
+                showToast(res.data.message, res.data.success ? 'success' : 'warning');
+                await loadServers();
+            } catch (e) {
+                const msg = e.response?.data?.message || t('market.verification_failed');
+                showToast(msg, 'error');
+            } finally {
+                verifyingId.value = null;
+            }
+        };
+
+        const syncServerNow = async (srv) => {
+            syncing.value = true;
+            try {
+                const targetServer = srv || currentServerConnection.value;
+                if (!targetServer) return;
+                const res = await axios.post(`/api/market/servers/${targetServer.id}/sync`);
+                if (res.data.success) {
+                    showToast(t('market.sync_complete', { message: res.data.message }));
+                    await loadServers();
+                    await loadAnalyticsData();
+                    if (selectedItem.value && selectedTarget.value) {
+                        await fetchAnalytics();
+                    }
+                }
+            } catch (e) {
+                const msg = e.response?.data?.message || t('market.sync_failed_toast');
+                showToast(msg, 'error');
+            } finally {
+                syncing.value = false;
+            }
+        };
+
+        const saveSettings = async () => {
+            saving.value = true;
+            try {
+                await axios.put('/api/market/settings', settingsForm.value);
+                showToast(t('market.schedule_saved'));
+            } catch (e) {
+                showToast('Failed to save settings.', 'error');
+            } finally {
+                saving.value = false;
             }
         };
 
@@ -1289,14 +1379,12 @@ export default {
             targets.value = [];
             stats.value = null;
             history.value = [];
-            mirroredStats.value = null;
-            mirroredHistory.value = null;
 
-            if (!selectedItem.value) return;
+            if (!selectedItem.value || !selectedServerId.value) return;
 
             try {
                 const res = await axios.get('/api/market/targets', {
-                    params: { item_id: selectedItem.value }
+                    params: { server_id: selectedServerId.value, item_id: selectedItem.value }
                 });
                 targets.value = res.data || [];
             } catch (e) {
@@ -1304,39 +1392,13 @@ export default {
             }
         };
 
-        const loadMoreActiveOffers = async () => {
-            if (loadingMore.value || !hasMoreActiveOffers.value) return;
-            loadingMore.value = true;
-            try {
-                const nextPage = activeOffersPage.value + 1;
-                const res = await axios.get('/api/market/analytics', {
-                    params: { page: nextPage }
-                });
-                const newOffers = res.data.active_offers || [];
-                activeOffers.value.push(...newOffers);
-                activeOffersPage.value = nextPage;
-                hasMoreActiveOffers.value = res.data.has_more || false;
-            } catch (e) {
-                showToast(t('market.listings_failed'), 'error');
-            } finally {
-                loadingMore.value = false;
-            }
-        };
-
         const fetchAnalytics = async () => {
-            if (!selectedItem.value || !selectedTarget.value) {
-                stats.value = null;
-                history.value = [];
-                activeInfo.value = null;
-                periodInfo.value = null;
-                mirroredStats.value = null;
-                mirroredHistory.value = null;
-                return;
-            }
+            if (!selectedItem.value || !selectedTarget.value || !selectedServerId.value) return;
 
             try {
                 const res = await axios.get('/api/market/analytics', {
                     params: {
+                        server_id: selectedServerId.value,
                         item_id: selectedItem.value,
                         target_item_id: selectedTarget.value,
                         period: selectedPeriod.value
@@ -1344,53 +1406,11 @@ export default {
                 });
                 stats.value = res.data.stats || null;
                 history.value = res.data.history || [];
-                activeInfo.value = res.data.active_info || null;
-                periodInfo.value = res.data.period_info || null;
-                mirroredStats.value = res.data.mirrored_stats || null;
-                mirroredHistory.value = res.data.mirrored_history || null;
             } catch (e) {
                 showToast(t('market.charts_failed'), 'error');
             }
         };
 
-        const saveSettings = async () => {
-            saving.value = true;
-            try {
-                const res = await axios.put('/api/market/settings', settingsForm.value);
-                if (res.data.success) {
-                    showToast(t('market.settings_saved'));
-                    // Reload status
-                    const settingsRes = await axios.get('/api/market/settings');
-                    connectionStatus.value = settingsRes.data.connection_status;
-                    lastSync.value = settingsRes.data.last_sync;
-                }
-            } catch (e) {
-                showToast(t('market.settings_failed'), 'error');
-            } finally {
-                saving.value = false;
-            }
-        };
-
-        const triggerManualSync = async () => {
-            syncing.value = true;
-            try {
-                const res = await axios.post('/api/market/sync');
-                if (res.data.success) {
-                    showToast(`Synchronization complete! ${res.data.message}`);
-                    await loadInitialData();
-                    if (selectedItem.value && selectedTarget.value) {
-                        await fetchAnalytics();
-                    }
-                }
-            } catch (e) {
-                const msg = e.response?.data?.message || 'Sync failed.';
-                showToast(msg, 'error');
-            } finally {
-                syncing.value = false;
-            }
-        };
-
-        // Visual Browser Handlers
         const selectVisualItem = async (itemId) => {
             selectedItem.value = itemId;
             await onItemChange();
@@ -1408,40 +1428,25 @@ export default {
             targets.value = [];
             stats.value = null;
             history.value = [];
-            activeInfo.value = null;
-            periodInfo.value = null;
-            mirroredStats.value = null;
-            mirroredHistory.value = null;
             visualTab.value = 1;
         };
 
-        // Swapping / Mirroring Trade pair handler
         const mirrorSelection = async () => {
             if (!selectedItem.value || !selectedTarget.value) return;
             const tempItem = selectedItem.value;
             const tempTarget = selectedTarget.value;
-            
-            // Check if target is a valid selling item
-            const canSellTarget = goods.value.some(g => g.item_id === tempTarget);
-            if (!canSellTarget) {
-                showToast(`Cannot mirror: No listings for selling ${selectedTargetName.value} are available.`, 'warning');
-                return;
-            }
-            
             selectedItem.value = tempTarget;
             try {
                 const res = await axios.get('/api/market/targets', {
-                    params: { item_id: selectedItem.value }
+                    params: { server_id: selectedServerId.value, item_id: selectedItem.value }
                 });
                 targets.value = res.data || [];
-                
-                const hasOldItemAsTarget = targets.value.some(t => t.target_item_id === tempItem);
-                if (hasOldItemAsTarget) {
+                const hasOldItem = targets.value.some(t => t.target_item_id === tempItem);
+                if (hasOldItem) {
                     selectedTarget.value = tempItem;
                     await fetchAnalytics();
                 } else {
                     selectedTarget.value = '';
-                    showToast(`Opposite trade not found. Targets reloaded.`, 'info');
                 }
             } catch (e) {
                 showToast(t('market.mirror_failed'), 'error');
@@ -1453,8 +1458,9 @@ export default {
             fetchAnalytics();
         };
 
-        onMounted(() => {
-            loadInitialData();
+        onMounted(async () => {
+            await loadServers();
+            await loadAnalyticsData();
         });
 
         onUnmounted(() => {
@@ -1466,84 +1472,80 @@ export default {
             loading,
             saving,
             syncing,
+            servers,
+            presets,
+            accounts,
+            selectedServerId,
+            currentServerConnection,
+            verifyingId,
+            showServerModal,
+            editingServer,
+            savingServer,
+            serverForm,
+            detectedServerInfo,
+            getLocaleFlag,
+            getVerificationBadgeClass,
+            getSyncBadgeClass,
+            openAddServerModal,
+            openEditServerModal,
+            closeServerModal,
+            saveServerModal,
+            deleteServer,
+            verifyServer,
+            syncServerNow,
+            onServerChange,
             goods,
             targets,
             popular,
             history,
             stats,
-            accounts,
+            activeOffers,
+            totalActiveCount,
+            hasMoreActiveOffers,
+            loadingMore,
+            loadMoreActiveOffers,
+            formatTimeLeft,
             logs,
             logsPagination,
-            loadingSyncLogs,
             loadSyncLogs,
+            selectionMode,
+            visualTab,
+            selectedPeriod,
+            arbitrageLoops,
+            periods,
             selectedItem,
             selectedTarget,
             calcAmount,
             settingsForm,
-            connectionStatus,
-            lastSync,
             selectedItemName,
             selectedTargetName,
             calculatedCost,
-            calculatedMirroredCost,
-            activeVolume,
-            activeOffersCount,
-            activeSellersCount,
-            priceTrendText,
-            priceTrendClass,
+            formatVolume,
+            getResourceIcon,
+            handleIconError,
+            getStatusBadgeClass,
+            formatDateTime,
             chartPoints,
             chartPriceLinePath,
             chartPriceAreaPath,
             chartMeanY,
-            chartSellersLinePath,
-            chartSellersAreaPath,
-            chartOffersLinePath,
-            chartOffersAreaPath,
-            onItemChange,
-            fetchAnalytics,
-            saveSettings,
-            triggerManualSync,
-            formatVolume,
-            selectionMode,
-            visualTab,
-            selectedPeriod,
-            mirroredStats,
-            mirroredHistory,
-            activeOffers,
-            periods,
-            changePeriod,
-            selectVisualItem,
-            selectVisualTarget,
-            resetSelection,
-            getResourceIcon,
-            formatTimeLeft,
-            formatDateTime,
-            formatDateTimeShort,
-            mirrorSelection,
-            handleIconError,
-            getStatusBadgeClass,
-            totalActiveCount,
-            activeOffersPage,
-            hasMoreActiveOffers,
-            loadingMore,
-            loadMoreActiveOffers,
-            arbitrageLoops,
+            hoveredPoint,
+            tooltipPositionClass,
             showPopularItems,
             showArbitrageSchemes,
             showActiveListings,
             togglePopularItems,
             toggleArbitrageSchemes,
             toggleActiveListings,
-            hoveredPoint,
-            tooltipPositionClass
+            saveSettings,
+            onItemChange,
+            fetchAnalytics,
+            selectVisualItem,
+            selectVisualTarget,
+            resetSelection,
+            mirrorSelection,
+            changePeriod,
         };
     }
 };
 </script>
-
-<style scoped>
-/* Smooth dot transitions without jittering */
-circle {
-  transition: r 0.2s ease, fill 0.2s ease;
-}
-</style>

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class MarketOffer extends Model
 {
     protected $fillable = [
+        'server_id',
         'offer_id',
         'player_id',
         'sender_name',

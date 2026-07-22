@@ -1,16 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\Account;
 use App\Models\MarketHistory;
 use App\Models\MarketOffer;
+use App\Models\MarketServerConnection;
 use App\Models\MarketSyncLog;
 use App\Models\Setting;
 use App\Services\Lang\GameTranslationResolver;
+use App\Services\MarketServerVerificationService;
 use App\Services\MarketSyncService;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -20,15 +25,37 @@ class MarketAnalyticsController extends Controller
 
     private GameTranslationResolver $gameTranslations;
 
-    public function __construct(MarketSyncService $syncService, GameTranslationResolver $gameTranslations)
-    {
+    private MarketServerVerificationService $verificationService;
+
+    public function __construct(
+        MarketSyncService $syncService,
+        GameTranslationResolver $gameTranslations,
+        MarketServerVerificationService $verificationService
+    ) {
         $this->syncService = $syncService;
         $this->gameTranslations = $gameTranslations;
+        $this->verificationService = $verificationService;
+    }
+
+    /**
+     * Resolve target server_id from request or fallback to first available.
+     */
+    private function resolveServerId(Request $request): string
+    {
+        $serverId = $request->input('server_id');
+        if (! empty($serverId)) {
+            return (string) $serverId;
+        }
+
+        $defaultServer = MarketServerConnection::whereNotNull('account_id')->value('server_id')
+            ?? MarketServerConnection::value('server_id')
+            ?? 'ru';
+
+        return (string) $defaultServer;
     }
 
     /**
      * Resolve the display name for a resource id at read time.
-     * Falls back to the legacy name stored in the row, then to the raw id.
      */
     private function resourceName(?string $itemId, ?string $legacyName): string
     {
@@ -41,67 +68,302 @@ class MarketAnalyticsController extends Controller
         return $this->gameTranslations->name('RES', $itemId, $fallback);
     }
 
-    private function loadSettings(): array
+    /**
+     * Get server connection presets.
+     */
+    private function getServerPresets(): array
     {
-        $accountIdVal = Setting::get('market_account_id', null);
-
         return [
-            'account_id' => $accountIdVal !== null ? (int) $accountIdVal : null,
-            'sync_interval' => (string) Setting::get('market_sync_interval', '15'),
-            'custom_interval_minutes' => (int) Setting::get('market_custom_interval_minutes', 15),
+            ['server_id' => 'ru', 'locale' => 'RU', 'display_name' => 'RU Settlers Market'],
+            ['server_id' => 'de', 'locale' => 'DE', 'display_name' => 'DE Settlers Market'],
+            ['server_id' => 'en', 'locale' => 'EN', 'display_name' => 'EN Settlers Market'],
+            ['server_id' => 'us', 'locale' => 'EN', 'display_name' => 'US Settlers Market'],
+            ['server_id' => 'fr', 'locale' => 'FR', 'display_name' => 'FR Settlers Market'],
+            ['server_id' => 'pl', 'locale' => 'PL', 'display_name' => 'PL Settlers Market'],
+            ['server_id' => 'es', 'locale' => 'ES', 'display_name' => 'ES Settlers Market'],
         ];
     }
 
-    private function saveSettings(array $settings): void
+    // ==========================================
+    // SERVER CONNECTIONS & SETTINGS MANAGEMENT
+    // ==========================================
+
+    public function getServers(): JsonResponse
     {
-        Setting::set('market_account_id', $settings['account_id']);
-        Setting::set('market_sync_interval', $settings['sync_interval']);
-        Setting::set('market_custom_interval_minutes', $settings['custom_interval_minutes'] ?? null);
-    }
+        $servers = MarketServerConnection::with('account:id,username,nickname,region,status,zone_data')
+            ->orderBy('id', 'asc')
+            ->get()
+            ->map(function ($server) {
+                if ($server->account && $server->account->server_name) {
+                    $worldSlug = \Illuminate\Support\Str::slug($server->account->server_name, '_');
+                    if (! empty($worldSlug)) {
+                        $worldServerId = strtolower($server->account->region).'_'.$worldSlug;
+                        if ($server->server_id !== $worldServerId && ! MarketServerConnection::where('server_id', $worldServerId)->where('id', '!=', $server->id)->exists()) {
+                            $server->server_id = $worldServerId;
+                            $server->save();
+                        }
+                    }
+                    $server->display_name = "{$server->account->server_name} Settlers Market";
+                } elseif (str_contains($server->display_name, 'Market (The Settlers') || str_contains($server->display_name, 'Market (Die Siedler')) {
+                    $server->display_name = strtoupper($server->server_id).' Settlers Market';
+                }
 
-    public function getSettings()
-    {
-        $settings = $this->loadSettings();
-        $accounts = Account::select('id', 'username', 'nickname')->latest()->get();
+                return $server;
+            });
 
-        $accountId = $settings['account_id'] ?? null;
-        $connectionStatus = 'Disconnected';
-        $lastSyncStr = 'Never';
+        $accounts = Account::select('id', 'username', 'nickname', 'region', 'status', 'zone_data')
+            ->latest()
+            ->get();
 
-        if ($accountId) {
-            $account = Account::find($accountId);
-            if ($account) {
-                // If account is online, we say Connected. Otherwise use account status
-                $connectionStatus = ($account->status === 'online') ? 'Connected' : 'Error';
-            }
+        $syncInterval = (string) Setting::get('market_sync_interval', '15');
+        $customIntervalMinutes = (int) Setting::get('market_custom_interval_minutes', 15);
 
-            // Find last successful sync log
-            $lastLog = MarketSyncLog::where('account_id', $accountId)
-                ->where('status', 'SUCCESS')
-                ->latest()
-                ->first();
-            if ($lastLog) {
-                $lastSyncStr = $lastLog->created_at->toIso8601String();
-            }
-        }
+        $firstAccountId = MarketServerConnection::whereNotNull('account_id')->value('account_id');
+        $lastSyncTime = MarketSyncLog::where('status', 'SUCCESS')->latest()->value('created_at');
 
         return response()->json([
-            'settings' => $settings,
+            'servers' => $servers,
             'accounts' => $accounts,
-            'connection_status' => $connectionStatus,
-            'last_sync' => $lastSyncStr,
+            'presets' => $this->getServerPresets(),
+            'settings' => [
+                'account_id' => $firstAccountId ? (int) $firstAccountId : null,
+                'sync_interval' => $syncInterval,
+                'custom_interval_minutes' => $customIntervalMinutes,
+            ],
+            'connection_status' => $servers->contains(fn ($s) => $s->sync_status === 'connected') ? 'Connected' : 'Disconnected',
+            'last_sync' => $lastSyncTime ? $lastSyncTime->toIso8601String() : 'Never',
         ]);
     }
 
-    public function updateSettings(Request $request)
+    public function getPublicServers(): JsonResponse
+    {
+        $servers = MarketServerConnection::with('account:id,username,nickname,region,status,zone_data')
+            ->select('id', 'server_id', 'locale', 'display_name', 'sync_status', 'account_id')
+            ->orderBy('id', 'asc')
+            ->get()
+            ->map(function ($server) {
+                if ($server->account && $server->account->server_name) {
+                    $server->display_name = "{$server->account->server_name} Settlers Market";
+                } elseif (str_contains($server->display_name, 'Market (The Settlers') || str_contains($server->display_name, 'Market (Die Siedler')) {
+                    $server->display_name = strtoupper($server->server_id).' Settlers Market';
+                }
+
+                unset($server->account);
+                unset($server->account_id);
+
+                return $server;
+            });
+
+        return response()->json($servers);
+    }
+
+    public function storeServer(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'account_id' => 'required|integer|exists:accounts,id',
+        ]);
+
+        $account = Account::findOrFail($validated['account_id']);
+        $detection = $this->verificationService->detectServerForAccount($account);
+
+        if (empty($detection['detected_server_id'])) {
+            return response()->json([
+                'success' => false,
+                'message' => __('ui.market.api.account_no_region', ['username' => $account->username]),
+            ], 422);
+        }
+
+        $serverId = strtolower($detection['detected_server_id']);
+        $locale = strtoupper((string) ($detection['detected_locale'] ?? $serverId));
+
+        if (MarketServerConnection::where('server_id', $serverId)->exists()) {
+            $worldOrServer = $account->server_name ?: strtoupper($serverId);
+
+            return response()->json([
+                'success' => false,
+                'message' => __('ui.market.api.server_exists', ['server' => $worldOrServer]),
+            ], 422);
+        }
+
+        $gameWorld = $account->server_name;
+        $displayName = $gameWorld
+            ? "{$gameWorld} Settlers Market"
+            : strtoupper($serverId).' Settlers Market';
+
+        $server = MarketServerConnection::create([
+            'server_id' => $serverId,
+            'locale' => $locale,
+            'display_name' => $displayName,
+            'account_id' => $account->id,
+            'verification_status' => 'verified',
+            'sync_status' => 'connected',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => __('ui.market.api.server_created', ['server' => $serverId, 'username' => $account->username]),
+            'server' => $server->load('account:id,username,nickname,region,status'),
+        ]);
+    }
+
+    public function updateServer(Request $request, MarketServerConnection $server): JsonResponse
     {
         $validated = $request->validate([
             'account_id' => 'nullable|integer|exists:accounts,id',
+            'sync_status' => 'nullable|string|in:not_configured,syncing,connected,error,disabled',
+        ]);
+
+        if (array_key_exists('account_id', $validated)) {
+            $server->account_id = $validated['account_id'];
+        }
+        if (isset($validated['sync_status'])) {
+            $server->sync_status = $validated['sync_status'];
+        }
+
+        if (! empty($server->account_id)) {
+            $account = Account::find($server->account_id);
+            if (! $account) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('ui.market.api.account_not_found'),
+                ], 422);
+            }
+
+            $detection = $this->verificationService->detectServerForAccount($account);
+            $detectedServerId = $detection['detected_server_id'] ? strtolower($detection['detected_server_id']) : null;
+
+            if ($detectedServerId && $detectedServerId !== strtolower($server->server_id)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('ui.market.api.account_wrong_server', ['username' => $account->username, 'detected' => $detectedServerId, 'server' => $server->server_id]),
+                ], 422);
+            }
+
+            $verification = $this->verificationService->verifyAccountServerMatch($account, $server);
+            $server->verification_status = $verification['status'];
+            if ($verification['status'] === 'verified') {
+                $server->last_error = null;
+                if (in_array($server->sync_status, ['error', 'not_configured'], true)) {
+                    $server->sync_status = 'connected';
+                }
+            }
+        } else {
+            $server->verification_status = 'unverified';
+            $server->sync_status = 'not_configured';
+        }
+
+        $server->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => __('ui.market.api.server_updated'),
+            'server' => $server->load('account:id,username,nickname,region,status'),
+        ]);
+    }
+
+    public function deleteServer(MarketServerConnection $server): JsonResponse
+    {
+        $server->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => __('ui.market.api.server_deleted'),
+        ]);
+    }
+
+    public function verifyServerAccount(MarketServerConnection $server): JsonResponse
+    {
+        if (empty($server->account_id)) {
+            $server->update([
+                'verification_status' => 'unverified',
+                'last_error' => __('ui.market.api.no_account_assigned'),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'status' => 'unverified',
+                'message' => __('ui.market.api.no_account_assigned'),
+                'server' => $server->load('account:id,username,nickname,region,status'),
+            ]);
+        }
+
+        $account = Account::find($server->account_id);
+        if (! $account) {
+            $server->update([
+                'verification_status' => 'error',
+                'last_error' => __('ui.market.api.account_not_found'),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'status' => 'error',
+                'message' => __('ui.market.api.account_not_found'),
+                'server' => $server->load('account:id,username,nickname,region,status'),
+            ], 422);
+        }
+
+        $result = $this->verificationService->verifyAccountServerMatch($account, $server);
+        $server->verification_status = $result['status'];
+        if ($result['status'] === 'mismatch') {
+            $server->last_error = $result['message'];
+        } elseif ($result['status'] === 'verified' && $server->last_error && str_contains($server->last_error, 'mismatch')) {
+            $server->last_error = null;
+        }
+
+        $server->save();
+
+        return response()->json([
+            'success' => $result['status'] === 'verified',
+            'status' => $result['status'],
+            'message' => $result['message'],
+            'detected_server' => $result['detected_server'] ?? null,
+            'server' => $server->load('account:id,username,nickname,region,status'),
+        ]);
+    }
+
+    public function syncServerNow(MarketServerConnection $server): JsonResponse
+    {
+        if (empty($server->account_id)) {
+            return response()->json([
+                'success' => false,
+                'message' => __('ui.market.api.assign_account_first'),
+            ], 422);
+        }
+
+        $account = Account::find($server->account_id);
+        if (! $account) {
+            return response()->json([
+                'success' => false,
+                'message' => __('ui.market.api.account_not_found'),
+            ], 422);
+        }
+
+        try {
+            $result = $this->syncService->sync($account, $server->server_id);
+
+            return response()->json($result);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('ui.market.api.sync_failed', ['error' => $e->getMessage()]),
+            ], 500);
+        }
+    }
+
+    public function getSettings(): JsonResponse
+    {
+        return $this->getServers();
+    }
+
+    public function updateSettings(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
             'sync_interval' => 'required|string|in:5,15,30,60,custom',
             'custom_interval_minutes' => 'nullable|integer|min:1',
         ]);
 
-        $this->saveSettings($validated);
+        Setting::set('market_sync_interval', $validated['sync_interval']);
+        Setting::set('market_custom_interval_minutes', $validated['custom_interval_minutes'] ?? null);
 
         return response()->json([
             'success' => true,
@@ -109,43 +371,31 @@ class MarketAnalyticsController extends Controller
         ]);
     }
 
-    public function syncNow(Request $request)
+    public function syncNow(Request $request): JsonResponse
     {
-        $settings = $this->loadSettings();
-        $accountId = $settings['account_id'] ?? null;
+        $serverId = $this->resolveServerId($request);
+        $server = MarketServerConnection::where('server_id', $serverId)->first();
 
-        if (empty($accountId)) {
+        if (! $server || empty($server->account_id)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Please select an account in Settings first.',
+                'message' => "No account configured for server [{$serverId}].",
             ], 422);
         }
 
-        $account = Account::find($accountId);
-        if (! $account) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Configured account not found.',
-            ], 422);
-        }
-
-        try {
-            $result = $this->syncService->sync($account);
-
-            return response()->json($result);
-        } catch (Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Synchronization failed: '.$e->getMessage(),
-            ], 500);
-        }
+        return $this->syncServerNow($server);
     }
 
-    public function getGoods()
+    // ==========================================
+    // MARKET ANALYTICS DATA ENDPOINTS
+    // ==========================================
+
+    public function getGoods(Request $request): JsonResponse
     {
-        // Get list of unique items from both active offers and full trade history
-        $fromOffers = MarketOffer::select('item_id', 'item_name');
-        $fromHistory = MarketHistory::select('item_id', 'item_name');
+        $serverId = $this->resolveServerId($request);
+
+        $fromOffers = MarketOffer::where('server_id', $serverId)->select('item_id', 'item_name');
+        $fromHistory = MarketHistory::where('server_id', $serverId)->select('item_id', 'item_name');
 
         $goods = $fromOffers->union($fromHistory)
             ->distinct()
@@ -162,18 +412,20 @@ class MarketAnalyticsController extends Controller
         return response()->json($goods);
     }
 
-    public function getTargets(Request $request)
+    public function getTargets(Request $request): JsonResponse
     {
+        $serverId = $this->resolveServerId($request);
         $itemId = $request->input('item_id');
 
         if (empty($itemId)) {
             return response()->json([]);
         }
 
-        // Get target items from both active offers and full trade history
-        $fromOffers = MarketOffer::where('item_id', $itemId)
+        $fromOffers = MarketOffer::where('server_id', $serverId)
+            ->where('item_id', $itemId)
             ->select('target_item_id', 'target_item_name');
-        $fromHistory = MarketHistory::where('item_id', $itemId)
+        $fromHistory = MarketHistory::where('server_id', $serverId)
+            ->where('item_id', $itemId)
             ->select('target_item_id', 'target_item_name');
 
         $targets = $fromOffers->union($fromHistory)
@@ -191,46 +443,35 @@ class MarketAnalyticsController extends Controller
         return response()->json($targets);
     }
 
-    public function getAnalytics(Request $request)
+    public function getAnalytics(Request $request): JsonResponse
     {
+        $serverId = $this->resolveServerId($request);
         $itemId = $request->input('item_id');
         $targetItemId = $request->input('target_item_id');
         $period = $request->input('period', 'all');
 
-        // 3. Date filter calculation (moved up so stats queries can use it)
         $now = Carbon::now();
-        $dateFilter = null;
-
-        switch ($period) {
-            case '1d':
-                $dateFilter = $now->copy()->subDay();
-                break;
-            case '7d':
-                $dateFilter = $now->copy()->subDays(7);
-                break;
-            case '30d':
-                $dateFilter = $now->copy()->subDays(30);
-                break;
-            case '1y':
-                $dateFilter = $now->copy()->subYear();
-                break;
-            case 'all':
-            default:
-                $dateFilter = null;
-                break;
-        }
+        $dateFilter = match ($period) {
+            '1d' => $now->copy()->subDay(),
+            '7d' => $now->copy()->subDays(7),
+            '30d' => $now->copy()->subDays(30),
+            '1y' => $now->copy()->subYear(),
+            default => null,
+        };
 
         // Determine dynamic group-by expression based on dataset date span
         $groupByExpression = 'day';
         if ($itemId && $targetItemId) {
-            $minDateStr = MarketHistory::where('item_id', $itemId)
+            $minDateStr = MarketHistory::where('server_id', $serverId)
+                ->where('item_id', $itemId)
                 ->where('target_item_id', $targetItemId)
                 ->when($dateFilter, function ($q) use ($dateFilter) {
                     $q->where('collected_at', '>=', $dateFilter);
                 })
                 ->min('collected_at');
 
-            $maxDateStr = MarketHistory::where('item_id', $itemId)
+            $maxDateStr = MarketHistory::where('server_id', $serverId)
+                ->where('item_id', $itemId)
                 ->where('target_item_id', $targetItemId)
                 ->when($dateFilter, function ($q) use ($dateFilter) {
                     $q->where('collected_at', '>=', $dateFilter);
@@ -253,8 +494,9 @@ class MarketAnalyticsController extends Controller
             }
         }
 
-        // 1. Most popular items (from history, both active and closed)
-        $popularQuery = MarketHistory::selectRaw('item_id, item_name, count(*) as offers_count, count(distinct player_id) as sellers_count, sum(volume) as total_volume');
+        // 1. Most popular items for this server
+        $popularQuery = MarketHistory::where('server_id', $serverId)
+            ->selectRaw('item_id, item_name, count(*) as offers_count, count(distinct player_id) as sellers_count, sum(volume) as total_volume');
         if ($dateFilter) {
             $popularQuery->where('collected_at', '>=', $dateFilter);
         }
@@ -274,7 +516,8 @@ class MarketAnalyticsController extends Controller
             $page = (int) $request->input('page', 1);
             $offset = ($page - 1) * $limit;
 
-            $activeOffersQuery = MarketOffer::where('created_at', '>=', now()->subHours(6))
+            $activeOffersQuery = MarketOffer::where('server_id', $serverId)
+                ->where('created_at', '>=', now()->subHours(6))
                 ->orderBy('created_at', 'desc');
             $totalActive = $activeOffersQuery->count();
 
@@ -288,6 +531,7 @@ class MarketAnalyticsController extends Controller
 
                     return [
                         'id' => $offer->id,
+                        'server_id' => $offer->server_id,
                         'offer_id' => $offer->offer_id,
                         'sender_name' => $offer->sender_name,
                         'item_id' => $offer->item_id,
@@ -296,7 +540,7 @@ class MarketAnalyticsController extends Controller
                         'target_item_id' => $offer->target_item_id,
                         'target_item_name' => $this->resourceName($offer->target_item_id, $offer->target_item_name),
                         'target_amount' => $offer->target_amount,
-                        'price' => round($offer->price, 4),
+                        'price' => round((float) $offer->price, 4),
                         'volume' => $offer->volume,
                         'lots_remaining' => $offer->lots_remaining,
                         'created_at' => $offer->created_at->toIso8601String(),
@@ -305,6 +549,7 @@ class MarketAnalyticsController extends Controller
                 });
 
             return response()->json([
+                'server_id' => $serverId,
                 'popular' => $popular,
                 'active_offers' => $activeOffers,
                 'total_active_count' => $totalActive,
@@ -313,8 +558,9 @@ class MarketAnalyticsController extends Controller
             ]);
         }
 
-        // 2. Active & closed history stats
-        $statsQuery = MarketHistory::where('item_id', $itemId)
+        // 2. Active & closed history stats for selected server
+        $statsQuery = MarketHistory::where('server_id', $serverId)
+            ->where('item_id', $itemId)
             ->where('target_item_id', $targetItemId);
 
         if ($dateFilter) {
@@ -325,13 +571,15 @@ class MarketAnalyticsController extends Controller
             ->first();
 
         // Latest price (current)
-        $current = MarketHistory::where('item_id', $itemId)
+        $current = MarketHistory::where('server_id', $serverId)
+            ->where('item_id', $itemId)
             ->where('target_item_id', $targetItemId)
             ->orderBy('collected_at', 'desc')
             ->value('price');
 
-        // Fetch mirrored stats if possible
-        $mirroredStatsQuery = MarketHistory::where('item_id', $targetItemId)
+        // Fetch mirrored stats
+        $mirroredStatsQuery = MarketHistory::where('server_id', $serverId)
+            ->where('item_id', $targetItemId)
             ->where('target_item_id', $itemId);
 
         if ($dateFilter) {
@@ -341,13 +589,15 @@ class MarketAnalyticsController extends Controller
         $mirroredStats = $mirroredStatsQuery->selectRaw('avg(price) as average_price, min(price) as min_price, max(price) as max_price')
             ->first();
 
-        $mirroredCurrent = MarketHistory::where('item_id', $targetItemId)
+        $mirroredCurrent = MarketHistory::where('server_id', $serverId)
+            ->where('item_id', $targetItemId)
             ->where('target_item_id', $itemId)
             ->orderBy('collected_at', 'desc')
             ->value('price');
 
         // Real-time live active market info for the selected pair
-        $activeOffersForPair = MarketOffer::where('item_id', $itemId)
+        $activeOffersForPair = MarketOffer::where('server_id', $serverId)
+            ->where('item_id', $itemId)
             ->where('target_item_id', $targetItemId)
             ->where('created_at', '>=', now()->subHours(6))
             ->get();
@@ -358,8 +608,9 @@ class MarketAnalyticsController extends Controller
             'sellers_count' => $activeOffersForPair->pluck('player_id')->unique()->count(),
         ];
 
-        // Period aggregate summary for the selected pair over dateFilter
-        $periodSummary = MarketHistory::where('item_id', $itemId)
+        // Period aggregate summary
+        $periodSummary = MarketHistory::where('server_id', $serverId)
+            ->where('item_id', $itemId)
             ->where('target_item_id', $targetItemId)
             ->when($dateFilter, function ($q) use ($dateFilter) {
                 $q->where('collected_at', '>=', $dateFilter);
@@ -376,8 +627,9 @@ class MarketAnalyticsController extends Controller
         // 3. Historical data
         $driver = DB::connection()->getDriverName();
 
-        $buildHistoryQuery = function ($item, $target, $dateFilter, $groupByExpression, $driver) {
-            $query = MarketHistory::where('item_id', $item)
+        $buildHistoryQuery = function ($item, $target, $dateFilter, $groupByExpression, $driver) use ($serverId) {
+            $query = MarketHistory::where('server_id', $serverId)
+                ->where('item_id', $item)
                 ->where('target_item_id', $target);
 
             if ($dateFilter) {
@@ -403,7 +655,6 @@ class MarketAnalyticsController extends Controller
                     ->groupBy('time_bucket')
                     ->orderBy('time_bucket', 'asc');
             } else {
-                // sqlite or fallback
                 if ($groupByExpression === 'hour') {
                     $selectBucket = "strftime('%Y-%m-%d %H:00:00', collected_at)";
                 } elseif ($groupByExpression === 'week') {
@@ -430,12 +681,12 @@ class MarketAnalyticsController extends Controller
 
                 return [
                     'collected_at' => $formattedDate,
-                    'price' => round($item->price, 4),
+                    'price' => round((float) $item->price, 4),
                     'volume' => (int) $item->volume,
                     'sellers_count' => (int) $item->sellers_count,
                     'offers_count' => (int) $item->offers_count,
-                    'avg_amount' => (int) round($item->avg_amount ?? 1),
-                    'avg_target_amount' => (int) round($item->avg_target_amount ?? 1),
+                    'avg_amount' => (int) round((float) ($item->avg_amount ?? 1)),
+                    'avg_target_amount' => (int) round((float) ($item->avg_target_amount ?? 1)),
                 ];
             });
         };
@@ -450,20 +701,21 @@ class MarketAnalyticsController extends Controller
         $mirroredStatsData = null;
         if ($mirroredStats && $mirroredStats->average_price !== null) {
             $mirroredStatsData = [
-                'average' => round($mirroredStats->average_price ?? 0, 2),
-                'minimum' => round($mirroredStats->min_price ?? 0, 2),
-                'maximum' => round($mirroredStats->max_price ?? 0, 2),
-                'current' => round($mirroredCurrent ?? 0, 2),
+                'average' => round((float) ($mirroredStats->average_price ?? 0), 2),
+                'minimum' => round((float) ($mirroredStats->min_price ?? 0), 2),
+                'maximum' => round((float) ($mirroredStats->max_price ?? 0), 2),
+                'current' => round((float) ($mirroredCurrent ?? 0), 2),
             ];
         }
 
         return response()->json([
+            'server_id' => $serverId,
             'popular' => $popular,
             'stats' => [
-                'average' => round($stats->average_price ?? 0, 2),
-                'minimum' => round($stats->min_price ?? 0, 2),
-                'maximum' => round($stats->max_price ?? 0, 2),
-                'current' => round($current ?? 0, 2),
+                'average' => round((float) ($stats->average_price ?? 0), 2),
+                'minimum' => round((float) ($stats->min_price ?? 0), 2),
+                'maximum' => round((float) ($stats->max_price ?? 0), 2),
+                'current' => round((float) ($current ?? 0), 2),
             ],
             'history' => $history,
             'active_info' => $activeInfo,
@@ -473,15 +725,23 @@ class MarketAnalyticsController extends Controller
         ]);
     }
 
-    public function getLogs(Request $request)
+    public function getLogs(Request $request): JsonResponse
     {
+        $serverId = $request->input('server_id');
         $limit = (int) $request->input('limit', 10);
-        $paginator = MarketSyncLog::orderBy('created_at', 'desc')->paginate($limit);
+
+        $query = MarketSyncLog::orderBy('created_at', 'desc');
+        if (! empty($serverId)) {
+            $query->where('server_id', $serverId);
+        }
+
+        $paginator = $query->paginate($limit);
 
         return response()->json([
             'data' => collect($paginator->items())->map(function ($log) {
                 return [
                     'date' => $log->created_at->toIso8601String(),
+                    'server_id' => $log->server_id,
                     'action' => $log->action,
                     'status' => $log->status,
                     'message' => $log->message,
@@ -493,9 +753,13 @@ class MarketAnalyticsController extends Controller
         ]);
     }
 
-    public function getArbitrage()
+    public function getArbitrage(Request $request): JsonResponse
     {
-        $offers = MarketOffer::where('created_at', '>=', now()->subHours(6))->get();
+        $serverId = $this->resolveServerId($request);
+
+        $offers = MarketOffer::where('server_id', $serverId)
+            ->where('created_at', '>=', now()->subHours(6))
+            ->get();
         $byPair = [];
 
         foreach ($offers as $offer) {
@@ -718,13 +982,11 @@ class MarketAnalyticsController extends Controller
                             }
                         }
                     }
-                } // end isset($byPair[$B])
+                }
             }
         }
 
-        usort($loops, function ($a, $b) {
-            return $b['profit']['amount'] <=> $a['profit']['amount'];
-        });
+        usort($loops, fn ($a, $b) => $b['profit']['amount'] <=> $a['profit']['amount']);
 
         return response()->json(array_slice($loops, 0, 20));
     }

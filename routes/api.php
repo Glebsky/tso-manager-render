@@ -56,6 +56,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/settings/tasks/stop', [SettingsController::class, 'stopAllTasks']);
 
     // Market analytics
+    Route::get('/market/servers', [MarketAnalyticsController::class, 'getServers']);
+    Route::post('/market/servers', [MarketAnalyticsController::class, 'storeServer']);
+    Route::put('/market/servers/{server}', [MarketAnalyticsController::class, 'updateServer']);
+    Route::delete('/market/servers/{server}', [MarketAnalyticsController::class, 'deleteServer']);
+    Route::post('/market/servers/{server}/verify', [MarketAnalyticsController::class, 'verifyServerAccount']);
+    Route::post('/market/servers/{server}/sync', [MarketAnalyticsController::class, 'syncServerNow']);
+
     Route::get('/market/settings', [MarketAnalyticsController::class, 'getSettings']);
     Route::put('/market/settings', [MarketAnalyticsController::class, 'updateSettings']);
     Route::post('/market/sync', [MarketAnalyticsController::class, 'syncNow']);
@@ -72,6 +79,7 @@ Route::middleware('auth:sanctum')->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::prefix('public/market')->group(function () {
+    Route::get('/servers', [MarketAnalyticsController::class, 'getPublicServers']);
     Route::get('/goods', [MarketAnalyticsController::class, 'getGoods']);
     Route::get('/targets', [MarketAnalyticsController::class, 'getTargets']);
     Route::get('/analytics', [MarketAnalyticsController::class, 'getAnalytics']);

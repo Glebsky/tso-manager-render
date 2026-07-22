@@ -20,6 +20,16 @@
                 </div>
 
                 <div class="flex items-center gap-3">
+                    <!-- Server Selector -->
+                    <div v-if="servers.length > 0" class="flex items-center gap-2">
+                        <label class="text-xs text-white/40 uppercase font-semibold">{{ t('market.server') }}:</label>
+                        <select v-model="selectedServerId" @change="onServerChange" class="glass-select py-2 px-3 text-xs font-semibold bg-dark-900 border-white/10 text-white rounded-xl">
+                            <option v-for="srv in servers" :key="srv.id" :value="srv.server_id" class="bg-dark-900 text-white">
+                                {{ getLocaleFlag(srv.locale) }} {{ srv.display_name }}
+                            </option>
+                        </select>
+                    </div>
+
                     <div class="flex items-center gap-2 bg-white/5 border border-white/10 px-3.5 py-2 rounded-xl text-xs text-white/70 transition-all duration-300 hover:bg-white/10">
                         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                         <span>{{ t('market.live_title') }}</span>
@@ -752,6 +762,46 @@ export default {
         const loadingMore = ref(false);
         const arbitrageLoops = ref([]);
 
+        const servers = ref([]);
+        const selectedServerId = ref(localStorage.getItem('tso_market_selected_server') || 'ru');
+
+        const getLocaleFlag = (locale) => {
+            switch (String(locale).toUpperCase()) {
+                case 'RU': return '🇷🇺';
+                case 'DE': return '🇩🇪';
+                case 'EN': return '🇬🇧';
+                case 'US': return '🇺🇸';
+                case 'FR': return '🇫🇷';
+                case 'PL': return '🇵🇱';
+                case 'ES': return '🇪🇸';
+                default: return '🌐';
+            }
+        };
+
+        const loadServers = async () => {
+            try {
+                const res = await axios.get('/api/public/market/servers');
+                servers.value = res.data || [];
+                if (servers.value.length > 0) {
+                    const exists = servers.value.some(s => s.server_id === selectedServerId.value);
+                    if (!exists) {
+                        selectedServerId.value = servers.value[0].server_id;
+                        localStorage.setItem('tso_market_selected_server', selectedServerId.value);
+                    }
+                } else {
+                    selectedServerId.value = '';
+                }
+            } catch (e) {
+                console.error('Failed to load public market servers:', e);
+            }
+        };
+
+        const onServerChange = () => {
+            localStorage.setItem('tso_market_selected_server', selectedServerId.value);
+            resetSelection();
+            loadInitialData();
+        };
+
         const periods = [
             { value: '1d', label: t('market.range_24h') },
             { value: '7d', label: t('market.range_7d') },
@@ -986,19 +1036,21 @@ export default {
 
         // Public API Methods
         const loadInitialData = async () => {
+            if (!selectedServerId.value) return;
             loading.value = true;
             try {
-                const goodsRes = await axios.get('/api/public/market/goods');
+                const params = { server_id: selectedServerId.value };
+                const goodsRes = await axios.get('/api/public/market/goods', { params });
                 goods.value = goodsRes.data || [];
 
-                const analyticsRes = await axios.get('/api/public/market/analytics');
+                const analyticsRes = await axios.get('/api/public/market/analytics', { params });
                 popular.value = analyticsRes.data.popular || [];
                 activeOffers.value = analyticsRes.data.active_offers || [];
                 totalActiveCount.value = analyticsRes.data.total_active_count || 0;
                 activeOffersPage.value = 1;
                 hasMoreActiveOffers.value = analyticsRes.data.has_more || false;
 
-                const arbitrageRes = await axios.get('/api/public/market/arbitrage');
+                const arbitrageRes = await axios.get('/api/public/market/arbitrage', { params });
                 arbitrageLoops.value = arbitrageRes.data || [];
 
                 startCountdown();
@@ -1017,11 +1069,11 @@ export default {
             mirroredStats.value = null;
             mirroredHistory.value = null;
 
-            if (!selectedItem.value) return;
+            if (!selectedItem.value || !selectedServerId.value) return;
 
             try {
                 const res = await axios.get('/api/public/market/targets', {
-                    params: { item_id: selectedItem.value }
+                    params: { server_id: selectedServerId.value, item_id: selectedItem.value }
                 });
                 targets.value = res.data || [];
             } catch (e) {
@@ -1035,7 +1087,7 @@ export default {
             try {
                 const nextPage = activeOffersPage.value + 1;
                 const res = await axios.get('/api/public/market/analytics', {
-                    params: { page: nextPage }
+                    params: { server_id: selectedServerId.value, page: nextPage }
                 });
                 const newOffers = res.data.active_offers || [];
                 activeOffers.value.push(...newOffers);
@@ -1049,7 +1101,7 @@ export default {
         };
 
         const fetchAnalytics = async () => {
-            if (!selectedItem.value || !selectedTarget.value) {
+            if (!selectedItem.value || !selectedTarget.value || !selectedServerId.value) {
                 stats.value = null;
                 history.value = [];
                 activeInfo.value = null;
@@ -1062,6 +1114,7 @@ export default {
             try {
                 const res = await axios.get('/api/public/market/analytics', {
                     params: {
+                        server_id: selectedServerId.value,
                         item_id: selectedItem.value,
                         target_item_id: selectedTarget.value,
                         period: selectedPeriod.value
@@ -1140,8 +1193,9 @@ export default {
             fetchAnalytics();
         };
 
-        onMounted(() => {
-            loadInitialData();
+        onMounted(async () => {
+            await loadServers();
+            await loadInitialData();
         });
 
         onUnmounted(() => {
@@ -1150,6 +1204,10 @@ export default {
 
         return {
             loading,
+            servers,
+            selectedServerId,
+            onServerChange,
+            getLocaleFlag,
             goods,
             targets,
             popular,

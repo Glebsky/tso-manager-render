@@ -6,9 +6,7 @@ namespace App\Console\Commands;
 
 use App\Jobs\AccountSyncJob;
 use App\Jobs\ExecuteScheduledTaskJob;
-use App\Jobs\MarketSyncJob;
 use App\Models\Account;
-use App\Models\MarketSyncLog;
 use App\Models\ScheduledTask;
 use App\Models\Setting;
 use App\Services\AccountSyncService;
@@ -224,64 +222,14 @@ class RunSchedulerCommand extends Command
      */
     private function processMarketAnalytics(Carbon $now, string $mode): bool
     {
-        $accountIdVal = Setting::get('market_account_id');
-        if (empty($accountIdVal)) {
-            return false;
-        }
-
-        $account = Account::find((int) $accountIdVal);
-        if (! $account) {
-            return false;
-        }
-
-        $syncIntervalStr = (string) Setting::get('market_sync_interval', '15');
-        $interval = ($syncIntervalStr === 'custom')
-            ? (int) Setting::get('market_custom_interval_minutes', 15)
-            : (int) $syncIntervalStr;
-
-        if ($interval <= 0) {
-            return false;
-        }
-
-        $lastLog = MarketSyncLog::where('account_id', $account->id)
-            ->where('status', 'SUCCESS')
-            ->orderBy('created_at', 'desc')
-            ->first();
-
-        if ($lastLog) {
-            $elapsedMinutes = $now->diffInMinutes($lastLog->created_at);
-            if ($elapsedMinutes < $interval) {
-                return false;
-            }
-        }
-
-        // Atomic lock check to prevent duplicate dispatches
-        $lockKey = "market_sync_lock:{$account->id}";
-        $acquired = Cache::add($lockKey, true, 180);
-
-        if (! $acquired) {
-            $this->info("Market sync lock for account #{$account->id} already held. Skipping.");
-
-            return false;
-        }
-
-        $this->info("Triggering Market Analytics sync for account [{$account->username}]...");
-
+        $params = [];
         if ($mode === 'sync') {
-            try {
-                $this->marketSyncService->sync($account);
-            } catch (Exception $e) {
-                $this->error("Sync market failed: {$e->getMessage()}");
-            } finally {
-                Cache::forget($lockKey);
-            }
-        } else {
-            DB::afterCommit(function () use ($account) {
-                MarketSyncJob::dispatch($account);
-            });
+            $params['--sync'] = true;
         }
 
-        return true;
+        $exitCode = Artisan::call('tso:sync-market', $params);
+
+        return $exitCode === 0;
     }
 
     /**

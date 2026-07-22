@@ -9,6 +9,7 @@ class MarketSyncLog extends Model
 {
     protected $fillable = [
         'account_id',
+        'server_id',
         'action',
         'status',
         'message',

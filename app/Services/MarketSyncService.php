@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\Account;
 use App\Models\BotLog;
 use App\Models\MarketHistory;
 use App\Models\MarketOffer;
+use App\Models\MarketServerConnection;
 use App\Models\MarketSyncLog;
 use App\Services\Lang\GameTranslationResolver;
 use Exception;
@@ -41,13 +44,23 @@ class MarketSyncService
         throw new Exception('Python not found in system PATH.');
     }
 
-    public function sync(Account $account): array
+    public function sync(Account $account, ?string $serverId = null): array
     {
         $action = 'Market synchronized';
         $collectedAt = now();
 
+        if (empty($serverId)) {
+            $connection = MarketServerConnection::where('account_id', $account->id)->first();
+            $serverId = $connection ? $connection->server_id : strtolower((string) ($account->region ?? 'ru'));
+        }
+
+        $connection = MarketServerConnection::where('server_id', $serverId)->first();
+        if ($connection) {
+            $connection->update(['sync_status' => 'syncing']);
+        }
+
         try {
-            $this->logEvent($account, $action, 'INFO', 'Starting market synchronization');
+            $this->logEvent($account, $action, 'INFO', "Starting market synchronization for server [{$serverId}]", $serverId);
 
             // 1. Authenticate if needed
             if (! $this->authService->isAuthenticated($account)) {
@@ -64,7 +77,7 @@ class MarketSyncService
 
             for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
                 try {
-                    $this->logEvent($account, $action, 'INFO', "Fetching market offers AMF (attempt {$attempt}/{$maxRetries})");
+                    $this->logEvent($account, $action, 'INFO', "Fetching market offers AMF (attempt {$attempt}/{$maxRetries})", $serverId);
                     $rawAmf = $this->amfService->getMarketOffers($account);
 
                     $scriptPath = storage_path('app/parse_market.py');
@@ -99,7 +112,7 @@ class MarketSyncService
                     $errorCode = $parsed['errorCode'] ?? 0;
 
                     if ($errorCode === 1012) {
-                        $this->logEvent($account, $action, 'WARNING', "Received error 1012 (Zone loading). Waiting {$retryDelay}s and retrying...");
+                        $this->logEvent($account, $action, 'WARNING', "Received error 1012 (Zone loading). Waiting {$retryDelay}s and retrying...", $serverId);
                         sleep($retryDelay);
 
                         continue;
@@ -109,7 +122,7 @@ class MarketSyncService
                         if ($hasResetSession) {
                             throw new Exception(__('ui.sync.session_intercepted_market', ['code' => $errorCode]));
                         }
-                        $this->logEvent($account, $action, 'WARNING', "Received error {$errorCode} (Session expired). Resetting session...");
+                        $this->logEvent($account, $action, 'WARNING', "Received error {$errorCode} (Session expired). Resetting session...", $serverId);
                         @unlink($this->authService->getCookieFile($account));
                         $this->authService->login($account);
                         $this->amfService->resetClient();
@@ -123,7 +136,7 @@ class MarketSyncService
                     // Success or other unhandled code
                     break;
                 } catch (Exception $attemptEx) {
-                    $this->logEvent($account, $action, 'WARNING', "Attempt {$attempt}/{$maxRetries} failed: ".$attemptEx->getMessage());
+                    $this->logEvent($account, $action, 'WARNING', "Attempt {$attempt}/{$maxRetries} failed: ".$attemptEx->getMessage(), $serverId);
                     if ($attempt === $maxRetries) {
                         throw $attemptEx;
                     }
@@ -136,8 +149,6 @@ class MarketSyncService
             }
 
             $rawOffers = $parsed['offers'] ?? [];
-
-            // 4. Resource names are resolved from the Laravel translation catalog (lang/<locale>/game.php)
 
             $offersToInsert = [];
             $historyToInsert = [];
@@ -189,8 +200,14 @@ class MarketSyncService
                 $gameCreatedMs = $raw['created'] ?? 0;
                 $gameCreatedAt = $gameCreatedMs > 0 ? date('Y-m-d H:i:s', (int) ($gameCreatedMs / 1000)) : $collectedAt;
 
+                $offerId = (int) ($raw['id'] ?? 0);
+                if ($offerId <= 0) {
+                    continue;
+                }
+
                 $offerData = [
-                    'offer_id' => (int) $raw['id'],
+                    'server_id' => $serverId,
+                    'offer_id' => $offerId,
                     'player_id' => (int) $raw['senderID'],
                     'sender_name' => $raw['senderName'] ?? 'Unknown',
                     'item_id' => $itemId,
@@ -206,10 +223,11 @@ class MarketSyncService
                     'collected_at' => $collectedAt,
                 ];
 
-                $offersToInsert[] = $offerData;
+                $offersToInsert[$offerId] = $offerData;
 
                 $historyData = [
-                    'offer_id' => (int) $raw['id'],
+                    'server_id' => $serverId,
+                    'offer_id' => $offerId,
                     'player_id' => (int) $raw['senderID'],
                     'item_id' => $itemId,
                     'item_name' => $itemName,
@@ -222,25 +240,29 @@ class MarketSyncService
                     'collected_at' => $collectedAt,
                 ];
 
-                $historyToInsert[] = $historyData;
+                $historyToInsert[$offerId] = $historyData;
             }
 
-            // 5. Database updates
-            DB::transaction(function () use ($offersToInsert, $historyToInsert) {
-                // Clear active offers
-                MarketOffer::truncate();
+            $offersToInsertList = array_values($offersToInsert);
+            $historyToInsertList = array_values($historyToInsert);
+
+            // 5. Database updates isolated by server_id
+            DB::transaction(function () use ($serverId, $offersToInsertList, $historyToInsertList) {
+                // Clear active offers for this server ONLY
+                MarketOffer::where('server_id', $serverId)->delete();
 
                 // Chunk inserts to avoid database limits
-                foreach (array_chunk($offersToInsert, 200) as $chunk) {
+                foreach (array_chunk($offersToInsertList, 200) as $chunk) {
                     MarketOffer::insert($chunk);
                 }
 
-                // Filter out history entries that already exist in market_history to avoid duplicates
-                $offerIds = array_column($historyToInsert, 'offer_id');
+                // Filter out history entries that already exist for this server
+                $offerIds = array_column($historyToInsertList, 'offer_id');
                 $existingIds = [];
                 if (! empty($offerIds)) {
                     foreach (array_chunk($offerIds, 500) as $idChunk) {
-                        $chunkExisting = MarketHistory::whereIn('offer_id', $idChunk)
+                        $chunkExisting = MarketHistory::where('server_id', $serverId)
+                            ->whereIn('offer_id', $idChunk)
                             ->pluck('offer_id')
                             ->toArray();
                         $existingIds = array_merge($existingIds, $chunkExisting);
@@ -249,7 +271,7 @@ class MarketSyncService
 
                 $existingIdsSet = array_flip($existingIds);
                 $filteredHistory = [];
-                foreach ($historyToInsert as $h) {
+                foreach ($historyToInsertList as $h) {
                     if (! isset($existingIdsSet[$h['offer_id']])) {
                         $filteredHistory[] = $h;
                     }
@@ -262,27 +284,44 @@ class MarketSyncService
                 }
             });
 
-            $count = count($offersToInsert);
-            $message = "{$count} offers received";
+            $count = count($offersToInsertList);
+            $message = "{$count} offers received for server [{$serverId}]";
 
-            $this->logEvent($account, $action, 'SUCCESS', $message);
+            $this->logEvent($account, $action, 'SUCCESS', $message, $serverId);
+
+            if ($connection) {
+                $connection->update([
+                    'sync_status' => 'connected',
+                    'last_synced_at' => now(),
+                    'last_error' => null,
+                ]);
+            }
 
             return [
                 'success' => true,
                 'message' => $message,
                 'count' => $count,
+                'server_id' => $serverId,
             ];
 
         } catch (Exception $e) {
-            $this->logEvent($account, $action, 'ERROR', $e->getMessage());
+            $this->logEvent($account, $action, 'ERROR', $e->getMessage(), $serverId);
+
+            if ($connection) {
+                $connection->update([
+                    'sync_status' => 'error',
+                    'last_error' => $e->getMessage(),
+                ]);
+            }
+
             throw $e;
         }
     }
 
-    private function logEvent(Account $account, string $action, string $status, string $message): void
+    private function logEvent(Account $account, string $action, string $status, string $message, ?string $serverId = null): void
     {
         // 1. Write to standard Laravel file logs (storage/logs/laravel.log)
-        $logMessage = "[MarketSync] [{$account->username}] {$action} - {$status}: {$message}";
+        $logMessage = "[MarketSync] [{$account->username}] [server:{$serverId}] {$action} - {$status}: {$message}";
         if ($status === 'FAILED' || $status === 'ERROR') {
             Log::error($logMessage);
         } elseif ($status === 'WARNING') {
@@ -295,6 +334,7 @@ class MarketSyncService
         try {
             MarketSyncLog::create([
                 'account_id' => $account->id,
+                'server_id' => $serverId,
                 'action' => $action,
                 'status' => $status,
                 'message' => $message,
@@ -311,7 +351,7 @@ class MarketSyncService
             BotLog::create([
                 'account_id' => $account->id,
                 'level' => $botLogLevel,
-                'message' => "[Market] {$action}: {$message}",
+                'message' => "[Market][{$serverId}] {$action}: {$message}",
                 'created_at' => now(),
             ]);
         } catch (Exception $dbEx) {

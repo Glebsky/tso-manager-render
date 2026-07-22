@@ -6,6 +6,7 @@ namespace App\Console\Commands;
 
 use App\Jobs\MarketSyncJob;
 use App\Models\Account;
+use App\Models\MarketServerConnection;
 use App\Models\MarketSyncLog;
 use App\Models\Setting;
 use App\Services\MarketSyncService;
@@ -16,9 +17,9 @@ use Illuminate\Support\Facades\Cache;
 
 class SyncMarketCommand extends Command
 {
-    protected $signature = 'tso:sync-market {--sync : Execute synchronization synchronously instead of queueing}';
+    protected $signature = 'tso:sync-market {--sync : Execute synchronization synchronously instead of queueing} {--server= : Optional specific server_id to sync}';
 
-    protected $description = 'Trigger automatic market sync if the configured interval has elapsed.';
+    protected $description = 'Trigger automatic market sync for configured server connections if their interval has elapsed.';
 
     private MarketSyncService $syncService;
 
@@ -28,89 +29,99 @@ class SyncMarketCommand extends Command
         $this->syncService = $syncService;
     }
 
-    private function loadSettings(): array
+    private function getSyncIntervalMinutes(): int
     {
-        $accountIdVal = Setting::get('market_account_id', null);
+        $syncIntervalStr = (string) Setting::get('market_sync_interval', '15');
+        if ($syncIntervalStr === 'custom') {
+            return (int) Setting::get('market_custom_interval_minutes', 15);
+        }
 
-        return [
-            'account_id' => $accountIdVal !== null ? (int) $accountIdVal : null,
-            'sync_interval' => (string) Setting::get('market_sync_interval', '15'),
-            'custom_interval_minutes' => (int) Setting::get('market_custom_interval_minutes', 15),
-        ];
+        return (int) $syncIntervalStr;
     }
 
     public function handle(): int
     {
-        $settings = $this->loadSettings();
-        $accountId = $settings['account_id'] ?? null;
-
-        if (empty($accountId)) {
-            $this->info('No account configured for Market Analytics. Skipping sync.');
-
-            return self::SUCCESS;
-        }
-
-        $account = Account::find($accountId);
-        if (! $account) {
-            $this->error("Configured market account #{$accountId} not found.");
-
-            return self::FAILURE;
-        }
-
-        // Determine target interval in minutes
-        $interval = 15;
-        $syncIntervalStr = (string) ($settings['sync_interval'] ?? '15');
-        if ($syncIntervalStr === 'custom') {
-            $interval = (int) ($settings['custom_interval_minutes'] ?? 15);
-        } else {
-            $interval = (int) $syncIntervalStr;
-        }
-
+        $interval = $this->getSyncIntervalMinutes();
         if ($interval <= 0) {
             $this->info('Market sync is disabled (interval = 0).');
 
             return self::SUCCESS;
         }
 
-        // Check last successful sync log
-        $lastLog = MarketSyncLog::where('account_id', $account->id)
-            ->where('status', 'SUCCESS')
-            ->orderBy('created_at', 'desc')
-            ->first();
+        $specificServer = $this->option('server');
+        $query = MarketServerConnection::whereNotNull('account_id')
+            ->where('sync_status', '!=', 'disabled');
 
-        if ($lastLog) {
-            $elapsedMinutes = Carbon::now()->diffInMinutes($lastLog->created_at);
-            if ($elapsedMinutes < $interval) {
-                $this->info("Last sync was {$elapsedMinutes} minutes ago. Configured interval: {$interval} minutes. Skipping.");
-
-                return self::SUCCESS;
-            }
+        if ($specificServer) {
+            $query->where('server_id', $specificServer);
         }
 
-        $lockKey = "market_sync_lock:{$account->id}";
-        $acquired = Cache::add($lockKey, true, 180);
-
-        if (! $acquired) {
-            $this->info("Market sync lock for account #{$account->id} already held. Skipping.");
+        $connections = $query->get();
+        if ($connections->isEmpty()) {
+            $this->info('No server connections configured with assigned accounts. Skipping sync.');
 
             return self::SUCCESS;
         }
 
-        if ($this->option('sync')) {
-            $this->info("Running MarketSync synchronously for account [{$account->username}]...");
-            try {
-                $this->syncService->sync($account);
-                $this->info('Market sync completed successfully.');
-            } catch (Exception $e) {
-                $this->error("Market sync failed: {$e->getMessage()}");
+        foreach ($connections as $connection) {
+            $serverId = $connection->server_id;
+            $account = Account::find($connection->account_id);
 
-                return self::FAILURE;
-            } finally {
-                Cache::forget($lockKey);
+            if (! $account) {
+                $this->error("Account #{$connection->account_id} for server [{$serverId}] not found.");
+                $connection->update([
+                    'sync_status' => 'error',
+                    'last_error' => "Configured account #{$connection->account_id} not found.",
+                ]);
+
+                continue;
             }
-        } else {
-            $this->info("Dispatching MarketSyncJob for account [{$account->username}]...");
-            MarketSyncJob::dispatch($account);
+
+            // Check elapsed time since last successful sync for this server
+            $lastLog = MarketSyncLog::where('server_id', $serverId)
+                ->where('status', 'SUCCESS')
+                ->orderBy('created_at', 'desc')
+                ->first();
+
+            $lastSyncTime = $connection->last_synced_at ?? ($lastLog ? $lastLog->created_at : null);
+            if ($lastSyncTime) {
+                $elapsedMinutes = Carbon::now()->diffInMinutes($lastSyncTime);
+                if ($elapsedMinutes < $interval) {
+                    $this->info("Server [{$serverId}]: Last sync was {$elapsedMinutes} minutes ago. Configured interval: {$interval} minutes. Skipping.");
+
+                    continue;
+                }
+            }
+
+            $lockKey = "market_sync_lock:server:{$serverId}";
+            $acquired = Cache::add($lockKey, true, 180);
+
+            if (! $acquired) {
+                $this->info("Market sync lock for server [{$serverId}] already held. Skipping.");
+
+                continue;
+            }
+
+            try {
+                if ($this->option('sync')) {
+                    $this->info("Running MarketSync synchronously for server [{$serverId}] account [{$account->username}]...");
+                    $this->syncService->sync($account, $serverId);
+                    $this->info("Market sync for server [{$serverId}] completed successfully.");
+                } else {
+                    $this->info("Dispatching MarketSyncJob for server [{$serverId}] account [{$account->username}]...");
+                    MarketSyncJob::dispatch($account, $serverId);
+                }
+            } catch (Exception $e) {
+                $this->error("Market sync for server [{$serverId}] failed: {$e->getMessage()}");
+                $connection->update([
+                    'sync_status' => 'error',
+                    'last_error' => $e->getMessage(),
+                ]);
+            } finally {
+                if ($this->option('sync')) {
+                    Cache::forget($lockKey);
+                }
+            }
         }
 
         return self::SUCCESS;

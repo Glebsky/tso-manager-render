@@ -9,6 +9,7 @@ class MarketHistory extends Model
     protected $table = 'market_history';
 
     protected $fillable = [
+        'server_id',
         'offer_id',
         'player_id',
         'item_id',

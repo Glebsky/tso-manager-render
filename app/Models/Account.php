@@ -24,9 +24,34 @@ class Account extends Model
         'last_sync_at' => 'datetime',
     ];
 
+    protected $appends = [
+        'server_name',
+        'is_market_connected',
+    ];
+
     protected $hidden = [
         'password',
     ];
+
+    public function getIsMarketConnectedAttribute(): bool
+    {
+        return MarketServerConnection::where('account_id', $this->id)->exists();
+    }
+
+    public function getServerNameAttribute(): ?string
+    {
+        if (empty($this->zone_data)) {
+            return null;
+        }
+
+        try {
+            $data = is_array($this->zone_data) ? $this->zone_data : json_decode($this->zone_data, true);
+
+            return $data['gameWorldName'] ?? null;
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
 
     public function getPasswordAttribute($value)
     {

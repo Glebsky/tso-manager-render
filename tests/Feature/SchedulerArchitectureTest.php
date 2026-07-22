@@ -194,11 +194,18 @@ class SchedulerArchitectureTest extends TestCase
             'nickname' => 'market_user',
         ]);
 
-        Setting::set('market_account_id', $account->id);
+        \App\Models\MarketServerConnection::create([
+            'server_id' => 'ru_test',
+            'locale' => 'RU',
+            'display_name' => 'RU Market',
+            'account_id' => $account->id,
+            'sync_status' => 'connected',
+        ]);
+
         Setting::set('market_sync_interval', '15');
 
         // Pre-acquire lock to simulate another process executing market sync
-        Cache::add("market_sync_lock:{$account->id}", true, 180);
+        Cache::add('market_sync_lock:server:ru_test', true, 180);
 
         Artisan::call('tso:run-scheduler', ['--mode' => 'queue']);
 
