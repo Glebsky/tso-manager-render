@@ -43,4 +43,88 @@ export function buildingName(rawOrObject) {
     return gameAnyLookup(raw) ?? gameAnyLookup(buildingBaseId(raw)) ?? humanizeGameId(raw);
 }
 
-export default { humanizeGameId, resourceName, buildingBaseId, buildingName };
+const BUILDING_MAP = {
+    // Basic
+    'mayorhouse': 'Basic', 'storehouse': 'Basic', 'woodcutter': 'Basic', 'forester': 'Basic',
+    'sawmill': 'Basic', 'stonecutter': 'Basic', 'stonemason': 'Basic', 'fishfarm': 'Basic',
+    'fisher': 'Basic', 'farm': 'Basic', 'well': 'Basic', 'provisionhouse': 'Basic',
+    'tavern': 'Basic', 'barracks': 'Basic',
+
+    // Improved
+    'cokingplant': 'Improved', 'copperore': 'Improved', 'coppermine': 'Improved',
+    'bronzesmelter': 'Improved', 'bronzeweaponsmith': 'Improved', 'toolmaker': 'Improved',
+    'improvedstorehouse': 'Improved', 'improvedfarm': 'Improved', 'improvedwell': 'Improved',
+    'silo': 'Improved', 'improvedsilo': 'Improved', 'mill': 'Improved', 'bakery': 'Improved',
+    'brewery': 'Improved',
+
+    // Advanced
+    'ironore': 'Advanced', 'ironmine': 'Advanced', 'ironsmelter': 'Advanced',
+    'steelsmelter': 'Advanced', 'ironweaponsmith': 'Advanced', 'steelweaponsmith': 'Advanced',
+    'stable': 'Advanced', 'bowmaker': 'Advanced', 'longbowmaker': 'Advanced',
+    'hunter': 'Advanced', 'deerstalkerhut': 'Advanced', 'butcher': 'Advanced',
+    'marblecutter': 'Advanced', 'marblemason': 'Advanced',
+
+    // Elite
+    'coalmine': 'Elite', 'goldore': 'Elite', 'goldmine': 'Elite', 'goldsmelter': 'Elite',
+    'coinage': 'Elite', 'titaniummine': 'Elite', 'titaniumsmelter': 'Elite',
+    'titaniumweaponsmith': 'Elite', 'crossbowmaker': 'Elite', 'gunpowderforge': 'Elite',
+    'cannonforge': 'Elite', 'eliteresidence': 'Elite', 'spaciousstorehouse': 'Elite',
+    'floatingstorehouse': 'Elite', 'granite_pit': 'Elite', 'grout_factory': 'Elite'
+};
+
+const NON_BUFFABLE_PATTERNS = [
+    // Warehouses / Storage
+    'mayorhouse', 'storehouse', 'improvedstorehouse', 'spaciousstorehouse',
+    'floatingstorehouse', 'waterstorehouse', 'guild_bank_building', 'guild_building',
+
+    // Housing / Residences
+    'residence', 'nobleresidence', 'floatingresidence', 'magnificentresidence',
+    'eliteresidence', 'townhouse', 'manor', 'palace',
+
+    // Special non-production / Towers / Castles / Decorations
+    'decoration', 'monument', 'statue', 'flowerbed', 'bench', 'tree', 'lantern',
+    'signpost', 'gate', 'fence', 'tent', 'camp', 'trophy', 'garden',
+    'lake', 'well_0', 'excelsior', 'garrison', 'tavern', 'mountain', 'deposit',
+    'rubble', 'ruin', 'rock', 'peak', 'buffad_building_site', 'bandit',
+    'destroyablemountain', 'loot', 'pioneercastle', 'lookouttower', 'watercastle',
+    'witchtower', 'darkcastle', 'bonechurch', 'frozenmanor', 'wreckage', 'ship'
+];
+
+/** Check if a building object can be buffed or stopped. */
+export function isBuffableBuilding(b) {
+    if (!b) return false;
+    const mode = b.buildingMode;
+    if (mode !== undefined && mode !== null) {
+        if (mode < 20 || mode > 28) return false;
+    }
+    const name = (b.buildingName_string || b.buildingName || '').toLowerCase();
+    if (!name) return false;
+    return !NON_BUFFABLE_PATTERNS.some(pat => name.includes(pat));
+}
+
+/** Get building category: Basic, Improved, Advanced, Elite, Decorations. */
+export function getBuildingCategory(b) {
+    if (!b) return 'Basic';
+    const name = (b.buildingName_string || b.buildingName || '').toLowerCase();
+
+    for (const key in BUILDING_MAP) {
+        if (name.includes(key)) return BUILDING_MAP[key];
+    }
+
+    if (name.includes('residence') || name.includes('manor') || name.includes('castle') || name.includes('palace') || name.includes('deco') || name.includes('monument') || name.includes('statue') || name.includes('flowerbed') || name.includes('bench') || name.includes('tree') || name.includes('lantern') || name.includes('signpost') || name.includes('gate') || name.includes('tower') || name.includes('tent') || name.includes('camp') || name.includes('trophy') || name.includes('garden') || name.includes('lake') || name.includes('well_0') || name.includes('excelsior') || name.includes('garrison') || name.includes('mountain') || name.includes('deposit') || name.includes('rubble') || name.includes('ruin') || name.includes('rock') || name.includes('peak')) {
+        return 'Decorations';
+    }
+    if (name.includes('titanium') || name.includes('platinum') || name.includes('gold') || name.includes('gunpowder') || name.includes('cannon') || name.includes('crossbow') || name.includes('salpeter') || name.includes('granite') || name.includes('elite')) {
+        return 'Elite';
+    }
+    if (name.includes('iron') || name.includes('steel') || name.includes('stable') || name.includes('bow') || name.includes('hunter') || name.includes('deerstalker') || name.includes('butcher') || name.includes('marble')) {
+        return 'Advanced';
+    }
+    if (name.includes('coke') || name.includes('copper') || name.includes('bronze') || name.includes('tool') || name.includes('improved') || name.includes('silo') || name.includes('mill') || name.includes('bakery') || name.includes('brewery')) {
+        return 'Improved';
+    }
+    return 'Basic';
+}
+
+export default { humanizeGameId, resourceName, buildingBaseId, buildingName, isBuffableBuilding, getBuildingCategory };
+

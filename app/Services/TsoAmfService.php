@@ -534,7 +534,7 @@ class TsoAmfService
         if ($zoneId !== (int) $account->dso_auth_user) {
             $cacheKey = "friend-zone-raw:{$account->id}:{$zoneId}";
 
-            return Cache::remember($cacheKey, 300, function () use ($account, $zoneId) {
+            return Cache::remember($cacheKey, 3600, function () use ($account, $zoneId) {
                 return $this->sendServerCall(
                     $account,
                     self::CMD_GET_ZONE,

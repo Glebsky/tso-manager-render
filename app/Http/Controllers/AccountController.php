@@ -264,6 +264,7 @@ class AccountController extends Controller
         }
 
         $cacheKey = "friend-zone:{$account->id}:{$friendId}";
+        $staleCacheKey = "friend-zone-stale:{$account->id}:{$friendId}";
         $cachedZone = Cache::get($cacheKey);
 
         if ($cachedZone) {
@@ -281,20 +282,34 @@ class AccountController extends Controller
 
                 $errorCode = $friendZoneData['errorCode'] ?? 0;
                 if ($errorCode !== 0) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => "Ошибка сервера игры: {$errorCode}",
-                    ], 500);
+                    $staleCache = Cache::get($staleCacheKey);
+                    if ($staleCache) {
+                        Log::warning("Game server error {$errorCode} when fetching friend zone {$friendId} for account {$account->id}, falling back to stale cache");
+                        $friendZoneData = json_decode($staleCache, true);
+                    } else {
+                        return response()->json([
+                            'success' => false,
+                            'message' => "Ошибка сервера игры: {$errorCode}",
+                        ], 500);
+                    }
+                } else {
+                    $jsonEncoded = json_encode($friendZoneData);
+                    Cache::put($cacheKey, $jsonEncoded, 3600);
+                    Cache::put($staleCacheKey, $jsonEncoded, 86400);
                 }
-
-                Cache::put($cacheKey, json_encode($friendZoneData), 300);
             } catch (Exception $e) {
                 Log::error("Failed to fetch zone of friend {$friendId} for account {$account->id}: ".$e->getMessage());
 
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Не удалось загрузить зону друга: '.$e->getMessage(),
-                ], 500);
+                $staleCache = Cache::get($staleCacheKey);
+                if ($staleCache) {
+                    Log::warning("Exception when fetching friend zone {$friendId} for account {$account->id}, falling back to stale cache");
+                    $friendZoneData = json_decode($staleCache, true);
+                } else {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Не удалось загрузить зону друга: '.$e->getMessage(),
+                    ], 500);
+                }
             }
         }
 

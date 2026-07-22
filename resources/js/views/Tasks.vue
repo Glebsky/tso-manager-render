@@ -673,7 +673,7 @@
                                 :class="buildingFilter === cat
                                     ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                                     : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
-                            {{ t('tasks.building_filter.' + cat) }}
+                            {{ t('account.building_filter.' + cat.toLowerCase()) }}
                         </button>
                     </div>
                     <div class="relative">
@@ -717,8 +717,19 @@
                         </svg>
                     </button>
                 </div>
-                <div class="p-4 border-b border-white/5 bg-white/[0.01]">
-                    <input v-model="friendBuildingSearch" type="text" :placeholder="t('tasks.modal.search_building')" class="glass-input w-full text-xs py-2 pl-4">
+                <div class="p-4 border-b border-white/5 bg-white/[0.01] space-y-3">
+                    <div class="flex gap-1.5 flex-wrap">
+                        <button type="button" v-for="cat in buildingCategories" :key="cat" @click="friendBuildingFilter = cat"
+                                class="px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-300"
+                                :class="friendBuildingFilter === cat
+                                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                                    : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
+                            {{ t('account.building_filter.' + cat.toLowerCase()) }}
+                        </button>
+                    </div>
+                    <div class="relative">
+                        <input v-model="friendBuildingSearch" type="text" :placeholder="t('tasks.modal.search_building')" class="glass-input w-full text-xs py-2 pl-4">
+                    </div>
                 </div>
                 <div class="p-6 overflow-y-auto flex-1 bg-dark-950/20">
                     <div v-if="searchedFriendBuildings.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -824,7 +835,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import axios from 'axios';
 import { showToast } from '../toast';
 import { t, gameAny, gameAnyLookup, intlLocale } from '../lang';
-import { humanizeGameId, resourceName, buildingName } from '../lang/gameNames';
+import { humanizeGameId, resourceName, buildingName, isBuffableBuilding, getBuildingCategory } from '../lang/gameNames';
 import { getGameImageUrl, handleGameImageError } from '../services/gameImageService';
 
 export default {
@@ -896,8 +907,10 @@ export default {
         const showSpecialistModal = ref(false);
         const showBuffModal = ref(false);
 
+        const buildingCategories = ['All', 'Basic', 'Improved', 'Advanced', 'Elite'];
         const buildingSearch = ref('');
-        const buildingFilter = ref('all');
+        const buildingFilter = ref('All');
+        const friendBuildingFilter = ref('All');
 
         const specialistSearch = ref('');
         const buffSearch = ref('');
@@ -910,6 +923,7 @@ export default {
         const selectedFriend = ref(null);
         const selectedFriendBuilding = ref(null);
         const friendBuildings = ref([]);
+        const friendZonesCache = ref({});
         const loadingFriendZone = ref(false);
         const friendZoneError = ref(false);
         const stepAmount = ref(1);
@@ -920,23 +934,17 @@ export default {
             return zone.value?.friends || [];
         });
 
-        const isBuffable = (b) => {
-            if (!b) return false;
-            const name = (b.buildingName_string || b.buildingName || '').toLowerCase();
-            const nonBuffable = [
-                'decoration', 'mountain', 'mine_02', 'wall', 'gate',
-                'ruin', 'rubble', 'wreckage', 'depleted', 'deposit',
-                'collectible', 'bandit'
-            ];
-            return !nonBuffable.some(word => name.includes(word));
-        };
-
         const filteredFriendBuildings = computed(() => {
-            return friendBuildings.value.filter(b => isBuffable(b));
+            return friendBuildings.value.filter(b => isBuffableBuilding(b));
         });
 
         const searchedFriendBuildings = computed(() => {
             let list = filteredFriendBuildings.value;
+
+            if (friendBuildingFilter.value && friendBuildingFilter.value !== 'All') {
+                list = list.filter(b => getBuildingCategory(b) === friendBuildingFilter.value);
+            }
+
             if (friendBuildingSearch.value) {
                 const q = friendBuildingSearch.value.toLowerCase();
                 list = list.filter(b => getBuildingName(b).toLowerCase().includes(q) || String(b.buildingGrid).includes(q));
@@ -948,29 +956,44 @@ export default {
             selectedFriend.value = friend;
             selectedFriendBuilding.value = null;
             payload.value.grid = '';
-            friendBuildings.value = [];
+            
             if (friend) {
                 if (!friend.id) {
                     showToast(t('tasks.toast.friend_no_id'), 'error');
                     return;
                 }
+                const cacheKey = `${selectedAccountId.value}:${friend.id}`;
+                if (friendZonesCache.value[cacheKey]) {
+                    friendBuildings.value = friendZonesCache.value[cacheKey];
+                    friendZoneError.value = false;
+                }
                 fetchFriendZoneBuildings();
+            } else {
+                friendBuildings.value = [];
             }
         };
 
         const fetchFriendZoneBuildings = async () => {
             if (!selectedAccountId.value || !selectedFriend.value) return;
-            loadingFriendZone.value = true;
+            const friendId = selectedFriend.value.id;
+            const cacheKey = `${selectedAccountId.value}:${friendId}`;
+
+            if (!friendZonesCache.value[cacheKey] || friendZonesCache.value[cacheKey].length === 0) {
+                loadingFriendZone.value = true;
+            }
             friendZoneError.value = false;
             try {
-                const res = await axios.get(`/api/accounts/${selectedAccountId.value}/friends/${selectedFriend.value.id}/zone`);
-                if (res.data.success) {
-                    friendBuildings.value = res.data.buildings || [];
-                } else {
+                const res = await axios.get(`/api/accounts/${selectedAccountId.value}/friends/${friendId}/zone`);
+                if (res.data.success && Array.isArray(res.data.buildings)) {
+                    friendBuildings.value = res.data.buildings;
+                    friendZonesCache.value[cacheKey] = res.data.buildings;
+                } else if (!friendZonesCache.value[cacheKey]) {
                     friendZoneError.value = true;
                 }
             } catch (e) {
-                friendZoneError.value = true;
+                if (!friendZonesCache.value[cacheKey]) {
+                    friendZoneError.value = true;
+                }
             } finally {
                 loadingFriendZone.value = false;
             }
@@ -982,6 +1005,7 @@ export default {
                 return;
             }
             friendBuildingSearch.value = '';
+            friendBuildingFilter.value = 'All';
             showFriendBuildingModal.value = true;
         };
         const closeFriendBuildingModal = () => { showFriendBuildingModal.value = false; };
@@ -999,8 +1023,6 @@ export default {
             friendBuildings.value = [];
             friendZoneError.value = false;
         };
-
-        const buildingCategories = ['all', 'wood', 'mines', 'metal', 'food', 'other'];
 
         const typeIcons = {
             stop_production: '🛑',
@@ -1232,22 +1254,7 @@ export default {
 
         resetPayload('stop_production');
 
-        // Логика фильтрации и поиска зданий
-        const isStoppable = (b) => {
-            if (!b) return false;
-            const mode = b.buildingMode;
-            if (mode < 20 || mode > 28) return false;
-
-            const name = (b.buildingName_string || b.buildingName || '').toLowerCase();
-            const nonStoppable = [
-                'mayorhouse', 'storehouse', 'residence', 'tavern', 'decoration',
-                'mountain', 'mine_02', 'pioneercastle', 'lookouttower', 'waterstorehouse',
-                'floatingstorehouse', 'spaciousstorehouse', 'improvedstorehouse', 'tower', 'wall', 'gate',
-                'garrison', 'excelsior', 'ruin', 'rubble', 'wreckage', 'ship', 'depleted', 'deposit',
-                'collectible', 'bandit'
-            ];
-            return !nonStoppable.some(word => name.includes(word));
-        };
+        const isStoppable = (b) => isBuffableBuilding(b);
 
         const getBuildingName = (b) => (b ? buildingName(b.buildingName_string || b.buildingName || 'Building') : '');
 
@@ -1268,38 +1275,24 @@ export default {
 
         const totalBuildingsCount = computed(() => {
             if (!zone.value || !zone.value.buildings) return 0;
-            return zone.value.buildings.filter(b => isStoppable(b)).length;
+            return zone.value.buildings.filter(b => isBuffableBuilding(b)).length;
         });
         const totalSpecialistsCount = computed(() => zone.value?.specialists?.length || 0);
         const totalBuffsCount = computed(() => zone.value?.availableBuffs?.length || 0);
 
         const filteredBuildings = computed(() => {
             if (!zone.value || !zone.value.buildings) return [];
-            let list = zone.value.buildings.filter(b => isStoppable(b));
+            let list = zone.value.buildings.filter(b => isBuffableBuilding(b));
+
+            if (buildingFilter.value && buildingFilter.value !== 'All') {
+                list = list.filter(b => getBuildingCategory(b) === buildingFilter.value);
+            }
 
             if (buildingSearch.value) {
                 const query = buildingSearch.value.toLowerCase();
                 list = list.filter(b => getBuildingName(b).toLowerCase().includes(query) || String(b.buildingGrid).includes(query));
             }
 
-            if (buildingFilter.value !== 'all') {
-                list = list.filter(b => {
-                    const name = (b.buildingName_string || b.buildingName || '').toLowerCase();
-                    if (buildingFilter.value === 'wood') {
-                        return name.includes('wood') || name.includes('sawmill') || name.includes('forester') || name.includes('cutter');
-                    }
-                    if (buildingFilter.value === 'mines') {
-                        return name.includes('mine') || name.includes('quarry') || name.includes('cutter');
-                    }
-                    if (buildingFilter.value === 'metal') {
-                        return name.includes('iron') || name.includes('copper') || name.includes('gold') || name.includes('steel') || name.includes('smelter') || name.includes('weapon');
-                    }
-                    if (buildingFilter.value === 'food') {
-                        return name.includes('farm') || name.includes('brewery') || name.includes('butcher') || name.includes('mill') || name.includes('bakery') || name.includes('hunter') || name.includes('fish');
-                    }
-                    return !name.includes('wood') && !name.includes('sawmill') && !name.includes('forester') && !name.includes('mine') && !name.includes('quarry') && !name.includes('iron') && !name.includes('copper') && !name.includes('gold') && !name.includes('steel') && !name.includes('smelter') && !name.includes('weapon') && !name.includes('farm') && !name.includes('brewery') && !name.includes('butcher') && !name.includes('mill') && !name.includes('bakery') && !name.includes('hunter') && !name.includes('fish');
-                });
-            }
             return list;
         });
 
@@ -1438,7 +1431,7 @@ export default {
                 return;
             }
             buildingSearch.value = '';
-            buildingFilter.value = 'all';
+            buildingFilter.value = 'All';
             showBuildingModal.value = true;
         };
         const closeBuildingModal = () => { showBuildingModal.value = false; };
@@ -1954,14 +1947,14 @@ export default {
             };
         };
 
-        const getBuildingDisplayName = (t, action) => {
+        const getBuildingDisplayName = (taskObj, action) => {
             if (action.meta?.building) {
                 return getBuildingName(action.meta.building);
             }
             const grid = action.payload?.grid;
             if (!grid) return t('tasks.building_not_set');
 
-            const acc = accounts.value.find(a => Number(a.id) === Number(task.account_id));
+            const acc = accounts.value.find(a => Number(a.id) === Number(taskObj?.account_id));
             if (acc && acc.zone_data) {
                 try {
                     const zd = typeof acc.zone_data === 'string' ? JSON.parse(acc.zone_data) : acc.zone_data;
@@ -1972,14 +1965,14 @@ export default {
             return t('tasks.grid_number', { id: grid });
         };
 
-        const getBuffDisplayName = (t, action) => {
+        const getBuffDisplayName = (taskObj, action) => {
             if (action.meta?.buff) {
                 return getStarBuffName(action.meta.buff);
             }
             const u1 = action.payload?.unique_id1;
             if (!u1) return t('tasks.buff_from_menu');
 
-            const acc = accounts.value.find(a => Number(a.id) === Number(task.account_id));
+            const acc = accounts.value.find(a => Number(a.id) === Number(taskObj?.account_id));
             if (acc && acc.zone_data) {
                 try {
                     const zd = typeof acc.zone_data === 'string' ? JSON.parse(acc.zone_data) : acc.zone_data;
@@ -2083,6 +2076,7 @@ export default {
             stepAmount,
             showFriendBuildingModal,
             friendBuildingSearch,
+            friendBuildingFilter,
             friendsList,
             searchedFriendBuildings,
             filteredFriendBuildings,

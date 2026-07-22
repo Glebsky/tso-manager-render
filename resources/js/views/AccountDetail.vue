@@ -155,7 +155,7 @@
 
                 <!-- Buildings Grid -->
                 <div v-if="filteredBuildings.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                    <div v-for="b in filteredBuildings" :key="b.buildingGrid" class="glass-card p-4 hover:border-white/20 hover:scale-[1.02] transition-all duration-300">
+                    <div v-for="b in filteredBuildings" :key="b.buildingGrid" class="glass-card p-4 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 flex flex-col justify-between">
                         <div class="flex items-start gap-3">
                             <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-dark-900/50 border border-white/5">
                                 <img v-if="getBuildingIcon(b)" :src="getBuildingIcon(b)" :alt="getBuildingName(b)" class="w-8 h-8 object-contain" @error="handleBuildingIconError($event, b)">
@@ -168,13 +168,6 @@
                                 <div class="flex items-center gap-2 mt-1">
                                     <span class="text-[10px] text-white/30 font-mono">{{ t('account.grid_number', { id: b.buildingGrid }) }}</span>
                                     <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400">{{ t('account.lvl_short') }} {{ b.upgradeLevel || 1 }}</span>
-                                </div>
-                                <div v-if="b.buffs && b.buffs.length > 0" class="mt-2 flex flex-wrap gap-1">
-                                    <span v-for="(bf, idx) in b.buffs" :key="idx"
-                                          class="inline-flex items-center gap-1 bg-amber-500/10 text-amber-400 text-[10px] px-1.5 py-0.5 rounded border border-amber-500/20"
-                                          :title="'ID: ' + bf.buffID">
-                                        ✨ {{ getBuffName(bf.buffID) }}
-                                    </span>
                                 </div>
                             </div>
                             <div class="flex flex-col items-end gap-2 flex-shrink-0">
@@ -195,6 +188,19 @@
                                             : 'text-emerald-400/60 hover:text-emerald-400 hover:border-emerald-500/30'">
                                     {{ actionLoading ? '...' : (isBuildingActive(b) ? 'Stop' : 'Start') }}
                                 </button>
+                            </div>
+                        </div>
+
+                        <!-- Highlighted bottom row for active Buffs -->
+                        <div v-if="b.buffs && b.buffs.length > 0" class="mt-3 pt-2 border-t border-amber-500/20 bg-amber-500/[0.04] -mx-4 -mb-4 px-4 py-2 rounded-b-xl flex items-center gap-2 overflow-hidden">
+                            <span class="text-xs flex-shrink-0" title="Active Buff">⚡</span>
+                            <div class="flex flex-wrap gap-1 min-w-0 flex-1">
+                                <span v-for="(bf, idx) in b.buffs" :key="idx"
+                                      class="inline-flex items-center gap-1 bg-amber-500/10 text-amber-300 text-[10px] font-medium px-2 py-0.5 rounded-md border border-amber-500/20 truncate"
+                                      :title="'ID: ' + (bf.buffID || bf.buffId || '?')">
+                                    <img v-if="getBuffIcon(bf)" :src="getBuffIcon(bf)" class="w-3.5 h-3.5 object-contain" @error="handleBuffIconError($event, bf)">
+                                    <span class="truncate">{{ getBuffName(bf) }}</span>
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -1020,8 +1026,18 @@ export default {
             return buildings;
         });
 
-        const getBuffName = (buffId) => {
-            if (!buffId) return t('account.unknown_buff');
+        const getBuffName = (buffOrId) => {
+            if (!buffOrId) return t('account.unknown_buff');
+            if (typeof buffOrId === 'object') {
+                if (buffOrId.buffName_string) {
+                    return gameAnyLookup(buffOrId.buffName_string) ?? humanizeGameId(buffOrId.buffName_string);
+                }
+                if (buffOrId.name) {
+                    return gameAnyLookup(buffOrId.name) ?? humanizeGameId(buffOrId.name);
+                }
+                return getBuffName(buffOrId.buffID || buffOrId.buffId);
+            }
+            const buffId = buffOrId;
             const buffIdMap = {
                 1: 'ProductivityBuffLvl1',
                 2: 'ProductivityBuffLvl3',
