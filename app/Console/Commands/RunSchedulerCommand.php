@@ -13,6 +13,7 @@ use App\Models\ScheduledTask;
 use App\Models\Setting;
 use App\Services\AccountSyncService;
 use App\Services\MarketSyncService;
+use App\Services\SystemLogCleanupService;
 use App\Services\TaskExecutionService;
 use Carbon\Carbon;
 use Exception;
@@ -37,15 +38,19 @@ class RunSchedulerCommand extends Command
 
     private AccountSyncService $accountSyncService;
 
+    private SystemLogCleanupService $systemLogCleanupService;
+
     public function __construct(
         TaskExecutionService $taskExecutionService,
         MarketSyncService $marketSyncService,
-        AccountSyncService $accountSyncService
+        AccountSyncService $accountSyncService,
+        SystemLogCleanupService $systemLogCleanupService
     ) {
         parent::__construct();
         $this->taskExecutionService = $taskExecutionService;
         $this->marketSyncService = $marketSyncService;
         $this->accountSyncService = $accountSyncService;
+        $this->systemLogCleanupService = $systemLogCleanupService;
     }
 
     public function handle(): int
@@ -79,7 +84,10 @@ class RunSchedulerCommand extends Command
         // 4. Schedule Account internal sync based on settings
         $accountSyncProcessed = $this->processAccountSync($now, $mode);
 
-        $this->info("Scheduler cycle completed. Tasks reserved/dispatched: {$tasksProcessed}, Market sync triggered: ".($marketProcessed ? 'Yes' : 'No').', Account sync triggered: '.($accountSyncProcessed > 0 ? "Yes ({$accountSyncProcessed})" : 'No'));
+        // 5. Evaluate Log Retention Policy and cleanup expired logs
+        $logCleanupProcessed = $this->systemLogCleanupService->processAutoCleanup($now);
+
+        $this->info("Scheduler cycle completed. Tasks reserved/dispatched: {$tasksProcessed}, Market sync triggered: ".($marketProcessed ? 'Yes' : 'No').', Account sync triggered: '.($accountSyncProcessed > 0 ? "Yes ({$accountSyncProcessed})" : 'No').', Log retention cleanup: '.($logCleanupProcessed ? 'Yes' : 'No'));
 
         // 4. If --work flag is specified (or cron mode with work requested), process TSO queues inline
         if ($this->option('work') || ($mode === 'cron' && $this->option('work'))) {

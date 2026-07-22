@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\BotLog;
 use App\Models\ScheduledTask;
 use App\Models\Setting;
 use Illuminate\Http\Request;
@@ -47,9 +46,9 @@ class SettingsController extends Controller
         ]);
     }
 
-    public function clearLogs()
+    public function clearLogs(\App\Services\SystemLogCleanupService $logCleanupService)
     {
-        BotLog::truncate();
+        $logCleanupService->clearAllLogs();
 
         return response()->json([
             'success' => true,
