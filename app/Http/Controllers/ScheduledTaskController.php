@@ -14,7 +14,7 @@ class ScheduledTaskController extends Controller
      */
     public function index()
     {
-        $tasks = ScheduledTask::with('account')->latest()->get();
+        $tasks = ScheduledTask::with('account')->orderBy('id', 'desc')->get();
         $accounts = Account::orderBy('username')->get();
 
         return response()->json([

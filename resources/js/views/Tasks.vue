@@ -1730,7 +1730,8 @@ export default {
 
         const groupedTasks = computed(() => {
             const groups = {};
-            tasks.value.forEach(taskItem => {
+            const sortedTasks = [...tasks.value].sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
+            sortedTasks.forEach(taskItem => {
                 const name = taskItem.account ? (taskItem.account.nickname || taskItem.account.username) : t('tasks.unknown_account');
                 if (!groups[name]) groups[name] = [];
                 groups[name].push(taskItem);
