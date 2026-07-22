@@ -2140,6 +2140,17 @@ export default {
                     msg = msg.substring(6);
                 }
 
+                if (msg.startsWith('{') && msg.endsWith('}')) {
+                    try {
+                        const parsed = JSON.parse(msg);
+                        if (parsed && parsed.key) {
+                            return t(parsed.key, parsed.params || {});
+                        }
+                    } catch (e) {
+                        // Not valid JSON, fallback to standard parsing
+                    }
+                }
+
                 const match = msg.match(/(?:ошибки|error|код|code)\D*(\d+)/i);
                 if (match) {
                     const code = parseInt(match[1], 10);

@@ -4,9 +4,19 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Exceptions\FriendBuildingNotFoundException;
+use App\Exceptions\FriendNotFoundException;
+use App\Exceptions\FriendZoneLoadException;
+use App\Exceptions\GameServerErrorException;
+use App\Exceptions\TaskAccountNotFoundException;
+use App\Exceptions\TaskExecutionException;
+use App\Exceptions\TaskInactiveException;
+use App\Exceptions\TokenMismatchException;
+use App\Exceptions\UnknownTaskActionException;
 use App\Models\BotLog;
 use App\Models\ScheduledTask;
 use Exception;
+use Throwable;
 
 class TaskExecutionService
 {
@@ -37,16 +47,16 @@ class TaskExecutionService
         $task->refresh();
 
         if (! $task->is_active) {
-            throw new Exception("Task #{$task->id} is inactive or paused.");
+            throw new TaskInactiveException($task->id);
         }
 
         if ($expectedToken !== null && $task->execution_token !== null && $task->execution_token !== $expectedToken) {
-            throw new Exception("Execution token mismatch for task #{$task->id}. Expected: {$expectedToken}, found: {$task->execution_token}");
+            throw new TokenMismatchException($task->id, $expectedToken, $task->execution_token);
         }
 
         $account = $task->account;
         if (! $account) {
-            throw new Exception("Account for task #{$task->id} not found.");
+            throw new TaskAccountNotFoundException($task->id);
         }
 
         // Mark running
@@ -72,7 +82,7 @@ class TaskExecutionService
                 foreach ($actions as $index => $action) {
                     // Skip steps that were already completed in a previous attempt
                     if ($index < $completedSteps) {
-                        $resultsSummary[] = 'Step '.($index + 1)." [{$action['task_type']}]: SKIPPED (already executed)";
+                        $resultsSummary[] = __('tasks.step.skipped', ['step' => $index + 1, 'type' => $action['task_type']]);
 
                         continue;
                     }
@@ -90,12 +100,12 @@ class TaskExecutionService
                         'completed_steps' => $completedSteps,
                     ]);
 
-                    $resultsSummary[] = 'Step '.($index + 1)." [{$actionType}]: OK (".strlen($stepResult).' bytes)';
+                    $resultsSummary[] = __('tasks.step.ok', ['step' => $index + 1, 'type' => $actionType, 'bytes' => strlen($stepResult)]);
 
                     BotLog::create([
                         'account_id' => $account->id,
                         'level' => 'success',
-                        'message' => "Sequence task #{$task->id} step ".($index + 1)." [{$actionType}] executed successfully.",
+                        'message' => __('tasks.log.step_success', ['id' => $task->id, 'step' => $index + 1, 'type' => $actionType]),
                     ]);
 
                     // Delay between steps if not the last step
@@ -127,13 +137,15 @@ class TaskExecutionService
             BotLog::create([
                 'account_id' => $account->id,
                 'level' => 'success',
-                'message' => "Scheduled [{$task->task_type}] executed successfully. ".(strlen($result) > 100 ? substr($result, 0, 97).'...' : $result),
+                'message' => __('tasks.log.task_success', ['type' => $task->task_type, 'result' => strlen($result) > 100 ? substr($result, 0, 97).'...' : $result]),
             ]);
 
             return $result;
 
-        } catch (Exception $e) {
-            $errorMsg = $e->getMessage();
+        } catch (Throwable $e) {
+            $errorMsg = $e instanceof TaskExecutionException
+                ? (string) json_encode($e->toPayload())
+                : $e->getMessage();
 
             $updateData = [
                 'status' => 'failed',
@@ -193,7 +205,7 @@ class TaskExecutionService
                         }
                     }
                     if (! $friend) {
-                        throw new Exception('Шаг пропущен: игрок больше не находится в списке друзей');
+                        throw new FriendNotFoundException;
                     }
 
                     $friendZoneAmf = $this->amfService->getZone($account, $targetPlayerId);
@@ -201,7 +213,7 @@ class TaskExecutionService
                     $err = $friendZoneData['errorCode'] ?? 0;
                     if ($err !== 0) {
                         $errMsg = GameErrorResolver::getMessage((int) $err);
-                        throw new Exception("Не удалось загрузить зону друга (код ошибки сервера {$err}: {$errMsg})");
+                        throw new FriendZoneLoadException((int) $err, $errMsg);
                     }
 
                     $buildings = $friendZoneData['buildings'] ?? [];
@@ -214,7 +226,7 @@ class TaskExecutionService
                     }
                     if (! $gridFound) {
                         $friendName = $friend['username'] ?? $friend['nickname'] ?? $payload['target_player_name'] ?? 'Unknown';
-                        throw new Exception("Шаг не выполнен: здание Grid #{$grid} не найдено в зоне {$friendName}");
+                        throw new FriendBuildingNotFoundException((int) $grid, (string) $friendName);
                     }
 
                     $result = $this->amfService->applyBuff($account, (int) $grid, (int) $uniqueId1, (int) $uniqueId2, (int) $amount, (int) $targetPlayerId);
@@ -226,7 +238,7 @@ class TaskExecutionService
                 $errorCode = $parsed['errorCode'] ?? 0;
                 if ($errorCode !== 0) {
                     $errorMsg = GameErrorResolver::getMessage((int) $errorCode);
-                    throw new Exception("Код ошибки сервера {$errorCode}: {$errorMsg}");
+                    throw new GameServerErrorException((int) $errorCode, $errorMsg);
                 }
 
                 return $result;
@@ -241,7 +253,7 @@ class TaskExecutionService
                 return $this->amfService->sendSpecialist($account, (int) $taskTypeVal, (int) $subTaskId, (int) $uniqueId1, (int) $uniqueId2);
 
             default:
-                throw new Exception("Unknown action type: {$taskType}");
+                throw new UnknownTaskActionException($taskType);
         }
     }
 }

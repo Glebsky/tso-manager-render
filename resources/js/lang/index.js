@@ -39,20 +39,48 @@ const INTL_LOCALES = { en: 'en-GB', ru: 'ru-RU' };
 /** BCP-47 locale for Intl / toLocaleString date & number formatting. */
 export const intlLocale = INTL_LOCALES[locale] || locale;
 
+function getDotPath(obj, key) {
+    if (!obj || typeof obj !== 'object') return null;
+    if (key in obj && typeof obj[key] === 'string') return obj[key];
+    const parts = key.split('.');
+    let current = obj;
+    for (const part of parts) {
+        if (current && typeof current === 'object' && part in current) {
+            current = current[part];
+        } else {
+            return null;
+        }
+    }
+    return typeof current === 'string' ? current : null;
+}
+
 /**
- * UI translation. Keys live in lang/<locale>/ui.php on the backend and are
- * exported into the "ui" part of the generated catalogs.
- * Named params: t('tasks.rows', { count: 5 }) replaces {count}.
+ * UI & Tasks translation. Keys live in lang/<locale>/ui.php and lang/<locale>/tasks.php
+ * on the backend and are exported into generated catalogs.
+ * Named params: t('tasks.error.task_inactive', { id: 5 }) replaces {id}.
  */
 export function t(key, params = null) {
     let text = null;
 
-    for (const chainLocale of localeChain) {
-        const candidate = catalogs[chainLocale]?.ui?.[key];
+    if (key.startsWith('tasks.')) {
+        const subKey = key.substring(6);
+        for (const chainLocale of localeChain) {
+            const candidate = getDotPath(catalogs[chainLocale]?.tasks, subKey);
+            if (typeof candidate === 'string') {
+                text = candidate;
+                break;
+            }
+        }
+    }
 
-        if (typeof candidate === 'string') {
-            text = candidate;
-            break;
+    if (text === null) {
+        for (const chainLocale of localeChain) {
+            const candidate = catalogs[chainLocale]?.ui?.[key] || getDotPath(catalogs[chainLocale]?.ui, key);
+
+            if (typeof candidate === 'string') {
+                text = candidate;
+                break;
+            }
         }
     }
 
@@ -61,7 +89,10 @@ export function t(key, params = null) {
     }
 
     if (params) {
-        text = text.replace(/\{(\w+)\}/g, (full, name) => (name in params ? String(params[name]) : full));
+        text = text.replace(/\{(\w+)\}|:(\w+)/g, (full, name1, name2) => {
+            const name = name1 || name2;
+            return name in params ? String(params[name]) : full;
+        });
     }
 
     return text;
