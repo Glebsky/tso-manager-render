@@ -618,17 +618,45 @@
 
                                 <div class="grid grid-cols-1 gap-2">
                                     <div v-for="(act, aIdx) in getTaskActionsList(task)" :key="aIdx"
-                                         class="glass-card p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-white/5 hover:border-white/10 transition-all bg-white/[0.01]">
+                                         class="glass-card p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border transition-all"
+                                         :class="[
+                                             getActionStepStatus(task, aIdx) === 'failed'
+                                                 ? 'border-red-500/40 bg-red-500/10 shadow-lg shadow-red-500/5'
+                                                 : getActionStepStatus(task, aIdx) === 'completed'
+                                                     ? 'border-emerald-500/20 bg-emerald-500/[0.02]'
+                                                     : 'border-white/5 bg-white/[0.01]'
+                                         ]">
                                         <div class="flex items-start sm:items-center gap-3">
-                                            <span class="w-6 h-6 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xs font-bold font-mono flex-shrink-0 mt-0.5 sm:mt-0">
+                                            <span class="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold font-mono flex-shrink-0 mt-0.5 sm:mt-0"
+                                                  :class="[
+                                                      getActionStepStatus(task, aIdx) === 'failed'
+                                                          ? 'bg-red-500/20 text-red-400'
+                                                          : getActionStepStatus(task, aIdx) === 'completed'
+                                                              ? 'bg-emerald-500/20 text-emerald-400'
+                                                              : 'bg-white/10 text-white/50'
+                                                  ]">
                                                 {{ aIdx + 1 }}
                                             </span>
                                             <span class="text-xl flex-shrink-0">{{ typeIcons[act.task_type] || '📋' }}</span>
                                             <div class="min-w-0 text-xs">
-                                                <div class="flex items-center gap-2">
+                                                <div class="flex items-center gap-2 flex-wrap">
                                                     <span class="font-semibold text-white/90">{{ typeLabels[act.task_type] || act.task_type }}</span>
                                                     <span v-if="act.payload?.target_scope === 'friend'" class="badge badge-warning text-[9px]">{{ $lang.t('tasks.friend_zone') }}</span>
                                                     <span v-else-if="act.payload?.target_scope === 'self'" class="badge badge-neutral text-[9px]">{{ $lang.t('tasks.my_zone') }}</span>
+
+                                                    <!-- Статус шага -->
+                                                    <span v-if="getActionStepStatus(task, aIdx) === 'completed'" class="badge badge-emerald text-[9px] flex items-center gap-1">
+                                                        ✓ {{ $lang.t('tasks.step_status.completed') }}
+                                                    </span>
+                                                    <span v-else-if="getActionStepStatus(task, aIdx) === 'failed'" class="badge badge-rose text-[9px] flex items-center gap-1">
+                                                        ❌ {{ $lang.t('tasks.step_status.failed') }}
+                                                    </span>
+                                                    <span v-else-if="getActionStepStatus(task, aIdx) === 'skipped'" class="badge badge-neutral text-[9px] opacity-60">
+                                                        ⏸️ {{ $lang.t('tasks.step_status.skipped') }}
+                                                    </span>
+                                                    <span v-else-if="getActionStepStatus(task, aIdx) === 'running'" class="badge badge-warning text-[9px] animate-pulse">
+                                                        ⏳ {{ $lang.t('tasks.step_status.running') }}
+                                                    </span>
                                                 </div>
 
                                                 <!-- Подробные параметры действия -->
@@ -655,6 +683,12 @@
                                                         <span class="font-medium text-teal-300">
                                                             {{ getSubTaskLabel(act.task_type, act.payload?.task_type, act.payload?.sub_task_id) }}
                                                         </span>
+                                                    </div>
+
+                                                    <!-- Блок ошибки конкретного действия -->
+                                                    <div v-if="getActionStepStatus(task, aIdx) === 'failed'" class="mt-2 p-2 bg-red-950/80 border border-red-500/40 rounded-lg text-red-300 text-xs flex items-start gap-1.5">
+                                                        <span class="flex-shrink-0">⚠️</span>
+                                                        <span><strong>{{ $lang.t('tasks.error') }}:</strong> {{ getActionStepError(task, aIdx) }}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -2016,6 +2050,63 @@ export default {
             }];
         };
 
+        const getActionStepStatus = (task, aIdx) => {
+            if (!task) return 'pending';
+            const isFailed = task.status === 'failed' || (task.last_result && task.last_result.startsWith('ERROR:'));
+            const isCompleted = task.status === 'completed';
+            const isRunning = task.status === 'running';
+            const completedSteps = task.completed_steps ?? 0;
+
+            if (isCompleted) {
+                return 'completed';
+            }
+            if (isFailed) {
+                if (aIdx < completedSteps) {
+                    return 'completed';
+                } else if (aIdx === completedSteps) {
+                    return 'failed';
+                } else {
+                    return 'skipped';
+                }
+            }
+            if (isRunning) {
+                if (aIdx < completedSteps) {
+                    return 'completed';
+                } else if (aIdx === completedSteps) {
+                    return 'running';
+                } else {
+                    return 'pending';
+                }
+            }
+            return 'pending';
+        };
+
+        const getActionStepError = (task, aIdx) => {
+            if (getActionStepStatus(task, aIdx) === 'failed') {
+                let msg = task.last_result || '';
+                if (msg.startsWith('ERROR: ')) {
+                    msg = msg.substring(7);
+                } else if (msg.startsWith('ERROR:')) {
+                    msg = msg.substring(6);
+                }
+
+                const match = msg.match(/(?:ошибки|error|код|code)\D*(\d+)/i);
+                if (match) {
+                    const code = parseInt(match[1], 10);
+                    const translationKey = `game_error.${code}`;
+                    const translatedMsg = t(translationKey);
+                    if (translatedMsg && translatedMsg !== translationKey) {
+                        msg = msg.replace(/Неизвестная ошибка (?:сервера )?\(код \d+\)/gi, translatedMsg);
+                        msg = msg.replace(/Unknown game error \(code \d+\)/gi, translatedMsg);
+                        msg = msg.replace(/Неизвестная ошибка (?:сервера|игры)/gi, translatedMsg);
+                        msg = msg.replace(/Unknown game error/gi, translatedMsg);
+                    }
+                }
+                return msg;
+            }
+            return null;
+        };
+
         const getNextRunDate = (task) => {
             if (!task) return null;
 
@@ -2218,6 +2309,8 @@ export default {
             expandedTasks,
             toggleTaskExpanded,
             getTaskActionsList,
+            getActionStepStatus,
+            getActionStepError,
             getNextRunDate,
             getTaskNextRunText,
             getBuildingDisplayName,

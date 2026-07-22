@@ -347,7 +347,7 @@ class ScheduledTaskBuffTest extends TestCase
 
         $task->refresh();
         $this->assertFalse($task->is_active);
-        $this->assertStringContainsString('ERROR: Код ошибки сервера 25: На здании достигнут лимит бафов', $task->last_result);
+        $this->assertStringContainsString('ERROR: Код ошибки сервера 25: Buff cannot be produced or used this way', $task->last_result);
     }
 
     public function test_friend_zone_endpoint_caching()

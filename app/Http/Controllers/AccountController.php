@@ -154,7 +154,7 @@ class AccountController extends Controller
                     $parsed = $this->zoneParser->parse($result);
                     $errorCode = $parsed['errorCode'] ?? 0;
                     if ($errorCode !== 0) {
-                        throw new Exception("Код ошибки сервера {$errorCode}: ".$this->getBuffErrorMessage($errorCode));
+                        throw new Exception("Код ошибки сервера {$errorCode}: ".\App\Services\GameErrorResolver::getMessage((int) $errorCode));
                     }
                     break;
 
@@ -289,7 +289,7 @@ class AccountController extends Controller
                     } else {
                         return response()->json([
                             'success' => false,
-                            'message' => "Ошибка сервера игры: {$errorCode}",
+                            'message' => "Ошибка сервера игры {$errorCode}: ".\App\Services\GameErrorResolver::getMessage((int) $errorCode),
                         ], 500);
                     }
                 } else {
@@ -333,21 +333,5 @@ class AccountController extends Controller
             ],
             'buildings' => $buildings,
         ]);
-    }
-
-    /**
-     * Map buff error code to message.
-     */
-    private function getBuffErrorMessage(int $errorCode): string
-    {
-        return match ($errorCode) {
-            22 => 'Баф нельзя применить к этому типу здания на чужой зоне',
-            25 => 'На здании достигнут лимит бафов',
-            27 => 'Баф можно применять только на домашней зоне владельца',
-            28 => 'Применение временно заблокировано',
-            46 => 'Баф нельзя применить в зоне этого типа',
-            52 => 'Не выполнены условия применения',
-            default => "Неизвестная ошибка сервера (код {$errorCode})",
-        };
     }
 }

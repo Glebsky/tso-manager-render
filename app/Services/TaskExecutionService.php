@@ -200,7 +200,8 @@ class TaskExecutionService
                     $friendZoneData = $this->zoneParser->parse($friendZoneAmf);
                     $err = $friendZoneData['errorCode'] ?? 0;
                     if ($err !== 0) {
-                        throw new Exception("Не удалось загрузить зону друга (код ошибки сервера: {$err})");
+                        $errMsg = GameErrorResolver::getMessage((int) $err);
+                        throw new Exception("Не удалось загрузить зону друга (код ошибки сервера {$err}: {$errMsg})");
                     }
 
                     $buildings = $friendZoneData['buildings'] ?? [];
@@ -224,7 +225,7 @@ class TaskExecutionService
                 $parsed = $this->zoneParser->parse($result);
                 $errorCode = $parsed['errorCode'] ?? 0;
                 if ($errorCode !== 0) {
-                    $errorMsg = $this->getBuffErrorMessage($errorCode);
+                    $errorMsg = GameErrorResolver::getMessage((int) $errorCode);
                     throw new Exception("Код ошибки сервера {$errorCode}: {$errorMsg}");
                 }
 
@@ -242,21 +243,5 @@ class TaskExecutionService
             default:
                 throw new Exception("Unknown action type: {$taskType}");
         }
-    }
-
-    /**
-     * Map buff error code to message.
-     */
-    private function getBuffErrorMessage(int $errorCode): string
-    {
-        return match ($errorCode) {
-            22 => 'Баф нельзя применить к этому типу здания на чужой зоне',
-            25 => 'На здании достигнут лимит бафов',
-            27 => 'Баф можно применять только на домашней зоне владельца',
-            28 => 'Применение временно заблокировано',
-            46 => 'Баф нельзя применить в зоне этого типа',
-            52 => 'Не выполнены условия применения',
-            default => "Неизвестная ошибка сервера (код {$errorCode})",
-        };
     }
 }
