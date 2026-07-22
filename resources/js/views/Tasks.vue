@@ -1379,7 +1379,6 @@ export default {
                 }
 
                 selectedBuildings.value = [];
-                stepDelay.value = 5;
                 showToast(`${t('tasks.toast.action_added')} (${addedCount})`);
                 return;
             }
@@ -1414,7 +1413,6 @@ export default {
                 }
 
                 selectedSpecialists.value = [];
-                stepDelay.value = 5;
                 showToast(`${t('tasks.toast.action_added')} (${addedCount})`);
                 return;
             }
