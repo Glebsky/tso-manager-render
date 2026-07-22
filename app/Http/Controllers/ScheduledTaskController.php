@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\ExecuteScheduledTaskJob;
 use App\Models\Account;
 use App\Models\BotLog;
 use App\Models\ScheduledTask;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class ScheduledTaskController extends Controller
 {
@@ -209,7 +211,17 @@ class ScheduledTaskController extends Controller
      */
     public function execute(ScheduledTask $task)
     {
-        \Illuminate\Support\Facades\Artisan::call('tso:execute-tasks', ['--task' => $task->id]);
+        $token = (string) Str::uuid();
+
+        if (! in_array($task->status, ['queued', 'running'], true)) {
+            $task->update([
+                'status' => 'queued',
+                'queued_at' => now(),
+                'execution_token' => $token,
+            ]);
+
+            ExecuteScheduledTaskJob::dispatch($task->id, $token);
+        }
 
         $task->refresh();
 
@@ -217,8 +229,9 @@ class ScheduledTaskController extends Controller
 
         return response()->json([
             'success' => $success,
+            'queued' => true,
             'task' => $task,
-            'message' => $task->last_result,
+            'message' => $task->last_result ?? 'Task execution queued.',
         ]);
     }
 

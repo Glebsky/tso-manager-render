@@ -2011,20 +2011,71 @@ export default {
             }
         };
 
+        const pollTaskExecution = (taskId) => {
+            let attempts = 0;
+            const maxAttempts = 150; // polling up to 5 minutes max
+
+            const timer = setInterval(async () => {
+                attempts++;
+                try {
+                    const res = await axios.get('/api/tasks');
+                    const allTasks = res.data.tasks || [];
+                    tasks.value = allTasks;
+
+                    const updatedTask = allTasks.find(t => t.id === taskId);
+
+                    if (!updatedTask || (updatedTask.status !== 'queued' && updatedTask.status !== 'running') || attempts >= maxAttempts) {
+                        clearInterval(timer);
+                        executingTasks.value[taskId] = false;
+
+                        if (updatedTask) {
+                            const isErr = updatedTask.status === 'failed' || (updatedTask.last_result && updatedTask.last_result.startsWith('ERROR:'));
+                            if (isErr) {
+                                const err = getActionStepError(updatedTask, 0) || updatedTask.last_result || t('tasks.toast.unknown');
+                                showToast(t('tasks.toast.run_error') + ': ' + err, 'error');
+                            } else if (updatedTask.last_result) {
+                                showToast(t('tasks.toast.run_success') + ': ' + updatedTask.last_result);
+                            }
+                        }
+                    }
+                } catch (e) {
+                    if (attempts >= maxAttempts) {
+                        clearInterval(timer);
+                        executingTasks.value[taskId] = false;
+                    }
+                }
+            }, 2000);
+        };
+
         const runTaskNow = async (task) => {
             if (executingTasks.value[task.id]) return;
             executingTasks.value[task.id] = true;
             try {
                 const res = await axios.post(`/api/tasks/${task.id}/execute`);
-                if (res.data.success) {
-                    showToast(t('tasks.toast.run_success') + ': ' + (res.data.message || 'OK'));
-                } else {
-                    showToast(t('tasks.toast.run_error') + ': ' + (res.data.message || t('tasks.toast.unknown')), 'error');
+                const currentTask = res.data.task || task;
+
+                // Update tasks list in state
+                const idx = tasks.value.findIndex(t => t.id === task.id);
+                if (idx !== -1 && res.data.task) {
+                    tasks.value[idx] = res.data.task;
                 }
-                loadPlanner();
+
+                if (currentTask.status !== 'queued' && currentTask.status !== 'running') {
+                    if (res.data.success && !currentTask.last_result?.startsWith('ERROR:')) {
+                        showToast(t('tasks.toast.run_success') + ': ' + (currentTask.last_result || 'OK'));
+                    } else {
+                        const err = getActionStepError(currentTask, 0) || currentTask.last_result || res.data.message || t('tasks.toast.unknown');
+                        showToast(t('tasks.toast.run_error') + ': ' + err, 'error');
+                    }
+                    executingTasks.value[task.id] = false;
+                    loadPlanner();
+                    return;
+                }
+
+                // Poll status periodically until execution finishes
+                pollTaskExecution(task.id);
             } catch (e) {
                 showToast(e.response?.data?.message || t('tasks.toast.run_failed'), 'error');
-            } finally {
                 executingTasks.value[task.id] = false;
             }
         };
