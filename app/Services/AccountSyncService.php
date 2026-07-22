@@ -105,7 +105,7 @@ class AccountSyncService
 
                 if ($errorCode === 1005) {
                     if ($hasResetSession) {
-                        throw new Exception("Сессия перехвачена другой игрой (ошибка {$errorCode}). Синхронизация отменена во избежание блокировки.");
+                        throw new Exception(__('ui.sync.session_intercepted', ['code' => $errorCode]));
                     }
                     Log::info("Received error {$errorCode} (Session expired) for account {$account->id}. Resetting session...");
                     @unlink($this->authService->getCookieFile($account));
@@ -136,7 +136,7 @@ class AccountSyncService
         if ($errorCode !== 0) {
             $account->update(['status' => 'error']);
             if ($errorCode === 1012) {
-                throw new Exception('Игровая зона занята или заблокирована (ошибка 1012). Пожалуйста, выйдите из игры через кнопку «Выход» в меню игры (а не просто закрыв окно), подождите пару минут и попробуйте синхронизацию снова.');
+                throw new Exception(__('ui.sync.zone_locked'));
             }
             throw new Exception("Server error code {$errorCode}. The zone may not be loaded yet — try again in a few seconds.");
         }

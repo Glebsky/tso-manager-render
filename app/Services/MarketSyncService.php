@@ -107,7 +107,7 @@ class MarketSyncService
 
                     if ($errorCode === 1005) {
                         if ($hasResetSession) {
-                            throw new Exception("Сессия перехвачена другой игрой (ошибка {$errorCode}) во время синхронизации рынка.");
+                            throw new Exception(__('ui.sync.session_intercepted_market', ['code' => $errorCode]));
                         }
                         $this->logEvent($account, $action, 'WARNING', "Received error {$errorCode} (Session expired). Resetting session...");
                         @unlink($this->authService->getCookieFile($account));

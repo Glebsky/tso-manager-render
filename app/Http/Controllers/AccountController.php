@@ -154,7 +154,8 @@ class AccountController extends Controller
                     $parsed = $this->zoneParser->parse($result);
                     $errorCode = $parsed['errorCode'] ?? 0;
                     if ($errorCode !== 0) {
-                        throw new Exception("Код ошибки сервера {$errorCode}: ".\App\Services\GameErrorResolver::getMessage((int) $errorCode));
+                        $errorMsg = \App\Services\GameErrorResolver::getMessage((int) $errorCode);
+                        throw new \App\Exceptions\GameServerErrorException((int) $errorCode, $errorMsg);
                     }
                     break;
 
@@ -242,7 +243,7 @@ class AccountController extends Controller
         if ($friendId <= 0) {
             return response()->json([
                 'success' => false,
-                'message' => 'Некорректный ID друга. Пожалуйста, выполните синхронизацию аккаунта.',
+                'message' => __('ui.account.friend_zone.invalid_id'),
             ], 400);
         }
 
@@ -259,7 +260,7 @@ class AccountController extends Controller
         if (! $friend) {
             return response()->json([
                 'success' => false,
-                'message' => 'Игрок отсутствует в вашем списке друзей.',
+                'message' => __('ui.account.friend_zone.not_in_friends_list'),
             ], 403);
         }
 
@@ -289,7 +290,10 @@ class AccountController extends Controller
                     } else {
                         return response()->json([
                             'success' => false,
-                            'message' => "Ошибка сервера игры {$errorCode}: ".\App\Services\GameErrorResolver::getMessage((int) $errorCode),
+                            'message' => __('ui.account.friend_zone.server_error', [
+                                'code' => $errorCode,
+                                'error' => \App\Services\GameErrorResolver::getMessage((int) $errorCode),
+                            ]),
                         ], 500);
                     }
                 } else {
@@ -307,7 +311,7 @@ class AccountController extends Controller
                 } else {
                     return response()->json([
                         'success' => false,
-                        'message' => 'Не удалось загрузить зону друга: '.$e->getMessage(),
+                        'message' => __('ui.account.friend_zone.load_failed', ['message' => $e->getMessage()]),
                     ], 500);
                 }
             }

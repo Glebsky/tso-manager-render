@@ -117,7 +117,7 @@ class TsoAuthService
 
         if (strpos($loginRes, 'OKAY') === false) {
             if (str_contains($loginRes, 'CAPTCHA') || str_contains($loginRes, 'captcha') || str_contains($loginRes, 'Captcha')) {
-                throw new Exception('Ubisoft требует прохождения CAPTCHA. Пожалуйста, обновите сессию вручную в настройках аккаунта.');
+                throw new Exception(__('ui.auth.captcha_required'));
             }
             throw new Exception('Login failed: '.$loginRes);
         }
@@ -269,7 +269,7 @@ class TsoAuthService
         $authTokenData = json_decode($authTokenRes, true);
 
         if (isset($authTokenData['twoFactorAuthenticationTicket'])) {
-            throw new Exception('Учетная запись требует двухфакторной аутентификации (2FA).');
+            throw new Exception(__('ui.auth.2fa_required'));
         }
 
         $token = $authTokenData['token'] ?? null;
