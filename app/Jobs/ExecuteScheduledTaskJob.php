@@ -25,6 +25,18 @@ class ExecuteScheduledTaskJob implements ShouldQueue
 
     public array $backoff = [30, 120, 300];
 
+    /**
+     * Seconds of work budget per job invocation. Kept short so the inline
+     * cron worker (queue:work --max-time=50) is not blocked by one job.
+     */
+    private const TIME_BUDGET_SECONDS = 45;
+
+    /**
+     * Safety margin for a single step's own duration when deciding whether
+     * to continue in-process or hand off to a delayed job.
+     */
+    private const STEP_MARGIN_SECONDS = 10;
+
     public int $taskId;
 
     public string $executionToken;
@@ -71,7 +83,48 @@ class ExecuteScheduledTaskJob implements ShouldQueue
         }
 
         Log::info("Executing Task #{$this->taskId} via ExecuteScheduledTaskJob (attempt {$this->attempts()})");
-        $executionService->execute($task, $this->executionToken);
+
+        // Non-sequence tasks are a single action: run them as before.
+        if ($task->task_type !== 'sequence') {
+            $executionService->execute($task, $this->executionToken);
+
+            return;
+        }
+
+        // Sequence tasks are executed step-by-step. Short delays are waited
+        // out inline within the time budget; long delays (or an exhausted
+        // budget) hand the remaining steps to a fresh delayed job so no
+        // single run blocks the worker or hits execution time limits.
+        $budgetEndsAt = microtime(true) + self::TIME_BUDGET_SECONDS;
+
+        while (true) {
+            $state = $executionService->executeSequenceStep($task, $this->executionToken);
+
+            if ($state['finished']) {
+                return;
+            }
+
+            $delay = max(0, (int) $state['nextDelay']);
+
+            if (microtime(true) + $delay + self::STEP_MARGIN_SECONDS < $budgetEndsAt) {
+                if ($delay > 0) {
+                    sleep($delay);
+                }
+
+                continue;
+            }
+
+            // Push the stale-recovery heartbeat past the intentional wait so
+            // recoverStaleTasks() does not reset a healthy paused run.
+            $task->update(['queued_at' => now()->addSeconds($delay)]);
+
+            self::dispatch($this->taskId, $this->executionToken)
+                ->delay(now()->addSeconds(max($delay, 1)));
+
+            Log::info("Task #{$this->taskId}: handed off to a delayed job (next step in {$delay}s, completed_steps={$task->completed_steps}).");
+
+            return;
+        }
     }
 
     /**

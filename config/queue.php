@@ -38,7 +38,9 @@ return [
             'driver' => 'database',
             'table' => 'jobs',
             'queue' => 'default',
-            'retry_after' => 90,
+            // Must exceed the longest job timeout (ExecuteScheduledTaskJob::$timeout = 120)
+            // to avoid the same job being handed to two workers.
+            'retry_after' => 180,
             'after_commit' => false,
         ],
 

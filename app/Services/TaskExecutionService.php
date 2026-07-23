@@ -295,6 +295,167 @@ class TaskExecutionService
     }
 
     /**
+     * Execute exactly one pending step of a sequence task.
+     *
+     * Unlike execute(), this method never sleeps between steps. The caller
+     * (the queue job) decides whether to wait inline or re-dispatch a
+     * delayed job, so a long sequence never exceeds execution time limits.
+     *
+     * On infrastructure errors (auth, DB, ...) the exception is re-thrown
+     * WITHOUT changing task status: the job retry or stale-task recovery
+     * resumes the run from completed_steps.
+     *
+     * @return array{finished: bool, nextDelay: int}
+     *
+     * @throws Exception
+     */
+    public function executeSequenceStep(ScheduledTask $task, ?string $expectedToken = null): array
+    {
+        $task->refresh();
+
+        if (! $task->is_active) {
+            throw new TaskInactiveException($task->id);
+        }
+
+        if ($expectedToken !== null && $task->execution_token !== null && $task->execution_token !== $expectedToken) {
+            throw new TokenMismatchException($task->id, $expectedToken, $task->execution_token);
+        }
+
+        if ($task->task_type !== 'sequence') {
+            throw new Exception("Task #{$task->id} is not a sequence task.");
+        }
+
+        $account = $task->account;
+        if (! $account) {
+            throw new TaskAccountNotFoundException($task->id);
+        }
+
+        $payload = $task->payload ?? [];
+        $actions = $payload['actions'] ?? [];
+        $stepResults = $payload['step_results'] ?? [];
+        $index = (int) ($task->completed_steps ?? 0);
+
+        // Fresh run: drop step results left over from the previous run.
+        if ($index === 0 && ! empty($stepResults)) {
+            $stepResults = [];
+        }
+
+        if (empty($actions) || $index >= count($actions)) {
+            return $this->finalizeSequence($task, (int) $account->id, $payload, $stepResults);
+        }
+
+        // Mark running + heartbeat so recoverStaleTasks() leaves healthy runs alone.
+        $task->update([
+            'status' => 'running',
+            'queued_at' => now(),
+        ]);
+
+        if (! $this->authService->isAuthenticated($account)) {
+            $this->authService->login($account);
+            $account->refresh();
+        }
+
+        $action = $actions[$index];
+        $actionType = $action['task_type'];
+        $actionPayload = $action['payload'] ?? [];
+        $delay = (int) ($action['delay_seconds'] ?? 0);
+
+        try {
+            $stepResult = $this->executeSingleActionWithRetry($account, $actionType, $actionPayload);
+
+            $stepResults[$index] = [
+                'status' => 'completed',
+                'error' => null,
+            ];
+
+            BotLog::create([
+                'account_id' => $account->id,
+                'level' => 'success',
+                'message' => __('tasks.log.step_success', ['id' => $task->id, 'step' => $index + 1, 'type' => $actionType]),
+            ]);
+        } catch (Throwable $e) {
+            $errorMsg = $e instanceof TaskExecutionException
+                ? (string) json_encode($e->toPayload())
+                : $e->getMessage();
+
+            $stepResults[$index] = [
+                'status' => 'failed',
+                'error' => $errorMsg,
+            ];
+
+            BotLog::create([
+                'account_id' => $account->id,
+                'level' => 'error',
+                'message' => "Sequence task #{$task->id} step ".($index + 1)." [{$actionType}] failed: {$errorMsg}",
+            ]);
+        }
+
+        $payload['step_results'] = $stepResults;
+        $task->update([
+            'completed_steps' => $index + 1,
+            'payload' => $payload,
+        ]);
+
+        if ($index + 1 >= count($actions)) {
+            return $this->finalizeSequence($task, (int) $account->id, $payload, $stepResults);
+        }
+
+        return [
+            'finished' => false,
+            'nextDelay' => $delay,
+        ];
+    }
+
+    /**
+     * Write the final status/result of a step-by-step sequence run.
+     *
+     * @return array{finished: bool, nextDelay: int}
+     */
+    private function finalizeSequence(ScheduledTask $task, int $accountId, array $payload, array $stepResults): array
+    {
+        $hasStepError = false;
+        $summaryParts = [];
+
+        foreach ($stepResults as $i => $stepResult) {
+            if (($stepResult['status'] ?? null) === 'failed') {
+                $hasStepError = true;
+                $summaryParts[] = 'Step '.($i + 1).': ERROR - '.($stepResult['error'] ?? 'unknown');
+            } else {
+                $summaryParts[] = 'Step '.($i + 1).': OK';
+            }
+        }
+
+        $result = implode('; ', $summaryParts);
+        $payload['step_results'] = $stepResults;
+
+        $updateData = [
+            'status' => $hasStepError ? 'failed' : 'completed',
+            'last_run_at' => now(),
+            'last_result' => ($hasStepError ? 'ERROR: ' : 'OK: ').(strlen($result) > 150 ? substr($result, 0, 147).'...' : $result),
+            'payload' => $payload,
+            'completed_steps' => 0, // Reset step progress after run completion
+            'execution_token' => null,
+        ];
+
+        if ($task->schedule_type === 'once') {
+            $updateData['is_active'] = false;
+        }
+
+        $task->update($updateData);
+
+        BotLog::create([
+            'account_id' => $accountId,
+            'level' => $hasStepError ? 'error' : 'success',
+            'message' => __('tasks.log.task_success', ['type' => $task->task_type, 'result' => strlen($result) > 100 ? substr($result, 0, 97).'...' : $result]),
+        ]);
+
+        return [
+            'finished' => true,
+            'nextDelay' => 0,
+        ];
+    }
+
+    /**
      * Execute a single action step with session error (1012, 1005) retry logic.
      */
     public function executeSingleActionWithRetry($account, string $taskType, array $payload, int $maxAttempts = 2): string

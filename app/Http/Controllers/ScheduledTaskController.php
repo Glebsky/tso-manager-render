@@ -225,13 +225,15 @@ class ScheduledTaskController extends Controller
 
         $task->refresh();
 
-        $success = ! str_starts_with($task->last_result ?? '', 'ERROR:');
-
+        // With an async queue driver the job has not run yet at this point,
+        // so report the queued state instead of reading a stale last_result.
         return response()->json([
-            'success' => $success,
+            'success' => true,
             'queued' => true,
             'task' => $task,
-            'message' => $task->last_result ?? 'Task execution queued.',
+            'message' => in_array($task->status, ['queued', 'running'], true)
+                ? 'Task queued for background execution.'
+                : ($task->last_result ?? 'Task execution queued.'),
         ]);
     }
 
