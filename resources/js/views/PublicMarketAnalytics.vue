@@ -3,15 +3,21 @@
         <!-- Page Header -->
         <div class="glass-card p-6 border-white/10 shadow-2xl relative overflow-hidden transition-all duration-500 hover:border-white/20">
             <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none transition-all duration-700"></div>
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
+
+            <!-- Language Switcher in Upper Right Corner -->
+            <div class="absolute top-5 right-5 z-20">
+                <LanguageSwitcher />
+            </div>
+
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10 pr-16 md:pr-24">
                 <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:scale-105">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:scale-105 flex-shrink-0">
                         <svg class="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18 9 11.25l4.306 4.307a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-3.75-1.002m3.75 1.002-1.002 3.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                         </svg>
                     </div>
                     <div>
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-2 flex-wrap">
                             <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">TSO Market Analytics</h1>
                             <span class="badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] uppercase font-bold px-2.5 py-0.5 rounded-full">{{ t('market.public_portal') }}</span>
                         </div>
@@ -19,17 +25,7 @@
                     </div>
                 </div>
 
-                <div class="flex items-center gap-3 flex-wrap">
-                    <!-- Server Selector -->
-                    <div v-if="servers.length > 0" class="flex items-center gap-2">
-                        <label class="text-xs text-white/40 uppercase font-semibold">{{ t('market.server') }}:</label>
-                        <select v-model="selectedServerId" @change="onServerChange" class="glass-select py-2 px-3 text-xs font-semibold bg-dark-900 border-white/10 text-white rounded-xl max-w-[200px] truncate">
-                            <option v-for="srv in servers" :key="srv.id || srv.server_id" :value="srv.server_id" class="bg-dark-900 text-white">
-                                {{ getLocaleFlag(srv.locale) }} {{ getServerWorldName(srv) }}
-                            </option>
-                        </select>
-                    </div>
-
+                <div class="flex justify-end items-center gap-3 flex-wrap">
                     <div class="flex items-center gap-2 bg-white/5 border border-white/10 px-3.5 py-2 rounded-xl text-xs text-white/70 transition-all duration-300 hover:bg-white/10">
                         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                         <span>{{ t('market.live_title') }}</span>
@@ -42,9 +38,6 @@
                         </svg>
                         <span>{{ t('dashboard.title') }}</span>
                     </router-link>
-
-                    <!-- Language Switcher -->
-                    <LanguageSwitcher />
                 </div>
             </div>
         </div>
