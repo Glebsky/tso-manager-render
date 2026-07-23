@@ -812,22 +812,24 @@
                                         {{ srv.last_error }}
                                     </span>
                                 </td>
-                                <td class="py-3 px-4 text-right space-x-2">
-                                    <button @click="verifyServer(srv)" :disabled="verifyingId === srv.id" class="btn-secondary py-1 px-2.5 text-[11px]" :title="t('market.verify_hint')">
-                                        {{ verifyingId === srv.id ? '...' : t('market.verify') }}
-                                    </button>
-                                    <button @click="syncServerNow(srv)" :disabled="syncing || !srv.account_id" class="btn-secondary py-1 px-2.5 text-[11px] text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/10 inline-flex items-center gap-1.5 disabled:opacity-50">
-                                        <svg v-if="syncingServerId === srv.id" class="animate-spin w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                                        </svg>
-                                        <span>{{ syncingServerId === srv.id ? '...' : t('market.sync_now') }}</span>
-                                    </button>
-                                    <button @click="openEditServerModal(srv)" class="btn-secondary py-1 px-2.5 text-[11px]">
-                                        {{ t('market.edit') }}
-                                    </button>
-                                    <button @click="deleteServer(srv)" class="btn-secondary py-1 px-2.5 text-[11px] text-red-400 hover:bg-red-500/10 border-red-500/20">
-                                        {{ t('market.delete') }}
-                                    </button>
+                                <td class="py-3 px-4 text-right">
+                                    <div class="flex items-center justify-end flex-wrap gap-2">
+                                        <button @click="verifyServer(srv)" :disabled="verifyingId === srv.id" class="btn-secondary py-1 px-2.5 text-[11px]" :title="t('market.verify_hint')">
+                                            {{ verifyingId === srv.id ? '...' : t('market.verify') }}
+                                        </button>
+                                        <button @click="syncServerNow(srv)" :disabled="syncing || !srv.account_id" class="btn-secondary py-1 px-2.5 text-[11px] text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/10 inline-flex items-center gap-1.5 disabled:opacity-50">
+                                            <svg v-if="syncingServerId === srv.id" class="animate-spin w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                            </svg>
+                                            <span>{{ syncingServerId === srv.id ? '...' : t('market.sync_now') }}</span>
+                                        </button>
+                                        <button @click="openEditServerModal(srv)" class="btn-secondary py-1 px-2.5 text-[11px]">
+                                            {{ t('market.edit') }}
+                                        </button>
+                                        <button @click="deleteServer(srv)" class="btn-secondary py-1 px-2.5 text-[11px] text-red-400 hover:bg-red-500/10 border-red-500/20">
+                                            {{ t('market.delete') }}
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                             <tr v-if="servers.length === 0">
