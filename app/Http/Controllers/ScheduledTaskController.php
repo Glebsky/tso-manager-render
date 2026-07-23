@@ -238,6 +238,31 @@ class ScheduledTaskController extends Controller
     }
 
     /**
+     * Lightweight status endpoint for polling a single task execution.
+     *
+     * Returns only the fields the frontend needs to track a manual run,
+     * instead of the full planner payload (all tasks + all accounts).
+     */
+    public function status(ScheduledTask $task)
+    {
+        return response()->json([
+            'success' => true,
+            'task' => [
+                'id' => $task->id,
+                'status' => $task->status,
+                'is_active' => $task->is_active,
+                'completed_steps' => $task->completed_steps,
+                'last_result' => $task->last_result,
+                'last_run_at' => $task->last_run_at?->toIso8601String(),
+                // payload is included because the UI reads payload.step_results
+                // to show per-step progress and error details.
+                'payload' => $task->payload,
+            ],
+            'server_time' => now()->toIso8601String(),
+        ]);
+    }
+
+    /**
      * Validate payload for apply_buff action/step.
      */
     private function validateBuffPayload(Account $account, array $payload, string $prefix = 'payload.'): void

@@ -746,7 +746,7 @@
                     </div>
                 </div>
 
-                <!-- Кон��ент фильтров -->
+                <!-- Кон����ент фильтров -->
                 <div class="p-4 border-b border-white/5 bg-white/[0.01] space-y-3">
                     <div class="flex gap-1.5 flex-wrap">
                         <button type="button" v-for="cat in buildingCategories" :key="cat"
@@ -2067,11 +2067,15 @@ export default {
             const timer = setInterval(async () => {
                 attempts++;
                 try {
-                    const res = await axios.get('/api/tasks');
-                    const allTasks = res.data.tasks || [];
-                    tasks.value = allTasks;
+                    // Lightweight endpoint: only this task's state, not the full planner payload
+                    const res = await axios.get(`/api/tasks/${taskId}/status`);
+                    const updatedTask = res.data.task;
 
-                    const updatedTask = allTasks.find(t => t.id === taskId);
+                    // Refresh the affected row in place without reloading the whole list
+                    const idx = tasks.value.findIndex(t => t.id === taskId);
+                    if (idx !== -1 && updatedTask) {
+                        tasks.value[idx] = { ...tasks.value[idx], ...updatedTask };
+                    }
 
                     if (!updatedTask || (updatedTask.status !== 'queued' && updatedTask.status !== 'running') || attempts >= maxAttempts) {
                         clearInterval(timer);
@@ -2086,8 +2090,18 @@ export default {
                                 showToast(t('tasks.toast.run_success') + ': ' + updatedTask.last_result);
                             }
                         }
+
+                        // One full refresh at the end to sync the planner state
+                        loadPlanner();
                     }
                 } catch (e) {
+                    // Task was deleted while polling: stop and resync
+                    if (e.response?.status === 404) {
+                        clearInterval(timer);
+                        executingTasks.value[taskId] = false;
+                        loadPlanner();
+                        return;
+                    }
                     if (attempts >= maxAttempts) {
                         clearInterval(timer);
                         executingTasks.value[taskId] = false;

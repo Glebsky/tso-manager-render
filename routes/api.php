@@ -45,6 +45,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/tasks/{task}', [ScheduledTaskController::class, 'destroy']);
     Route::post('/tasks/{task}/toggle', [ScheduledTaskController::class, 'toggle']);
     Route::post('/tasks/{task}/execute', [ScheduledTaskController::class, 'execute']);
+    Route::get('/tasks/{task}/status', [ScheduledTaskController::class, 'status']);
 
     // Logs
     Route::get('/logs', [LogController::class, 'index']);
