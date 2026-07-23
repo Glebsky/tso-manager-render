@@ -177,14 +177,16 @@
 
                     <!-- Step 1: Selling resource grid -->
                     <div v-if="visualTab === 1" class="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-8 lg:grid-cols-10 gap-2 max-h-60 overflow-y-auto p-1.5">
-                        <div v-for="good in goods" :key="good.item_id"
+                        <div v-for="good in allGoods" :key="good.item_id"
                              @click="selectVisualItem(good.item_id)"
                              class="flex flex-col items-center justify-center p-1.5 rounded-lg border cursor-pointer hover:border-emerald-500/40 hover:bg-white/[0.05] hover:shadow-md hover:shadow-emerald-500/5 text-center select-none transition-all duration-200"
-                             :class="selectedItem === good.item_id ? 'bg-emerald-500/10 border-emerald-500 shadow shadow-emerald-500/10' : 'bg-white/[0.02] border-white/5 hover:border-white/20 hover:bg-white/[0.04]'">
+                             :class="selectedItem === good.item_id ? 'bg-emerald-500/10 border-emerald-500 shadow shadow-emerald-500/10' : 'bg-white/[0.02] border-white/5 hover:border-white/20 hover:bg-white/[0.04]'"
+                             :style="good.no_offers ? 'opacity:0.4' : ''"
+                             :title="good.no_offers ? t('market.no_offers') : good.item_name">
                             <img :src="getResourceIcon(good.item_id)" @error="handleIconError($event, good.item_id)" class="w-6 h-6 object-contain mb-1 pointer-events-none" />
                             <span class="text-[9px] font-medium text-white/90 truncate w-full" :title="good.item_name">{{ good.item_name }}</span>
                         </div>
-                        <div v-if="goods.length === 0" class="col-span-full py-8 text-center text-xs text-white/30">
+                        <div v-if="allGoods.length === 0" class="col-span-full py-8 text-center text-xs text-white/30">
                             {{ t('market.no_resources_for_server', { server: selectedServerId }) }}
                         </div>
                     </div>
@@ -882,6 +884,8 @@ import { t } from '../lang';
 import axios from 'axios';
 import { showToast } from '../toast';
 import { getGameImageUrl, handleGameImageError } from '../services/gameImageService';
+import { resourceName } from '../lang/gameNames';
+import { TRADABLE_RESOURCES } from '../lang/resourcesCatalog';
 
 export default {
     name: 'MarketAnalytics',
@@ -1038,6 +1042,16 @@ export default {
         // Analytics state
         const goods = ref([]);
         const targets = ref([]);
+
+        // Полный каталог торгуемых ресурсов из игрового XML, объединённый с товарами с сервера:
+        // ресурсы без активных предложений тоже отображаются (приглушёнными), чтобы был виден весь рынок.
+        const allGoods = computed(() => {
+            const known = new Set(goods.value.map(g => g.item_id));
+            const extras = TRADABLE_RESOURCES
+                .filter(name => !known.has(name))
+                .map(name => ({ item_id: name, item_name: resourceName(name), no_offers: true }));
+            return [...goods.value, ...extras];
+        });
         const popular = ref([]);
         const history = ref([]);
         const stats = ref(null);
@@ -1071,7 +1085,7 @@ export default {
         });
 
         const selectedItemName = computed(() => {
-            const item = goods.value.find(g => g.item_id === selectedItem.value);
+            const item = allGoods.value.find(g => g.item_id === selectedItem.value);
             return item ? item.item_name : '';
         });
 
@@ -1495,6 +1509,7 @@ export default {
             syncServerNow,
             onServerChange,
             goods,
+            allGoods,
             targets,
             popular,
             history,

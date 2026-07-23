@@ -503,6 +503,8 @@ return [
     'tasks.select_account' => 'Select an account',
     'tasks.select_action' => 'Select an action',
     'tasks.select_buff' => 'Select a buff...',
+    'tasks.buff_first_hint' => 'Select a buff first — the list of available buildings depends on it',
+    'market.no_offers' => 'No market offers for this resource yet',
     'tasks.select_building' => 'Select a building...',
     'tasks.select_friend' => 'Select a friend...',
     'tasks.select_friend_building' => 'Select a friend\'s building...',

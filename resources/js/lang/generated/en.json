@@ -6653,6 +6653,8 @@
         "tasks.unknown_friend": "Unknown friend",
         "tasks.until_launch": "Until launch",
         "tasks.where_apply": "Where to apply",
-        "tasks.zone_load_failed": "Failed to load friend's zone"
+        "tasks.zone_load_failed": "Failed to load friend's zone",
+        "tasks.buff_first_hint": "Select a buff first — the list of available buildings depends on it",
+        "market.no_offers": "No market offers for this resource yet"
     }
 }

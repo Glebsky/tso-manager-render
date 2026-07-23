@@ -503,6 +503,8 @@ return [
     'tasks.select_account' => 'Выберите аккаунт',
     'tasks.select_action' => 'Выберите действие',
     'tasks.select_buff' => 'Выберите бафф...',
+    'tasks.buff_first_hint' => 'Сначала выберите бафф — от него зависит список доступных зданий',
+    'market.no_offers' => 'По этому ресурсу пока нет предложений на рынке',
     'tasks.select_building' => 'Выберите здание...',
     'tasks.select_friend' => 'Выберите друга...',
     'tasks.select_friend_building' => 'Выберите здание друга...',

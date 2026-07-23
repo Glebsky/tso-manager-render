@@ -6391,6 +6391,8 @@
         "tasks.unknown_friend": "Неизвестный друг",
         "tasks.until_launch": "До запуска",
         "tasks.where_apply": "Где применить бафф?",
-        "tasks.zone_load_failed": "Не удалось загрузить зону друга"
+        "tasks.zone_load_failed": "Не удалось загрузить зону друга",
+        "tasks.buff_first_hint": "Сначала выберите бафф — от него зависит список доступных зданий",
+        "market.no_offers": "По этому ресурсу пока нет предложений на рынке"
     }
 }

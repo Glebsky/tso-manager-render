@@ -10,6 +10,7 @@
  *   buildingName(b)                            // accepts a raw id or a building object
  */
 import { gameAnyLookup } from './index';
+import { isBuffableBuildingName } from './buffTargets';
 
 /** Legacy prettifier: CamelCase/underscores -> "Title Case" words. */
 export function humanizeGameId(id) {
@@ -90,16 +91,19 @@ const NON_BUFFABLE_PATTERNS = [
     'witchtower', 'darkcastle', 'bonechurch', 'frozenmanor', 'wreckage', 'ship'
 ];
 
-/** Check if a building object can be buffed or stopped. */
+/**
+ * Check if a building object can be buffed or stopped.
+ * Now backed by the exact whitelist generated from the game's bld.xml
+ * (ResourceDefinitions workyards + buffable attribute), instead of the old
+ * name-pattern blacklist.
+ */
 export function isBuffableBuilding(b) {
     if (!b) return false;
-    const mode = b.buildingMode;
-    if (mode !== undefined && mode !== null) {
-        if (mode < 20 || mode > 28) return false;
-    }
-    const name = (b.buildingName_string || b.buildingName || '').toLowerCase();
-    if (!name) return false;
-    return !NON_BUFFABLE_PATTERNS.some(pat => name.includes(pat));
+    const raw = b && typeof b === 'object'
+        ? (b.buildingName_string || b.buildingName || '')
+        : String(b || '');
+    if (!raw) return false;
+    return isBuffableBuildingName(raw) || isBuffableBuildingName(buildingBaseId(raw));
 }
 
 /** Get building category: Basic, Improved, Advanced, Elite, Decorations. */

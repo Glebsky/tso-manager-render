@@ -224,8 +224,27 @@
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                     <!-- Селекторы целевой зоны и зданий/друзей -->
                                     <div class="col-span-2">
-                                        <!-- ЗДАНИЯ (для остановки, запуска или баффа) -->
-                                        <div v-if="['stop_production', 'start_production', 'apply_buff'].includes(stepActionType)" class="mb-3">
+                                        <!-- БАФФ (для apply_buff выбирается ПЕРВЫМ: от баффа зависят доступные здания) -->
+                                        <div v-if="stepActionType === 'apply_buff'" class="mb-3">
+                                            <label class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">{{ t('tasks.buff') }}</label>
+                                            <button type="button" @click="openBuffModal"
+                                                    class="glass-select w-full flex items-center justify-between text-left text-xs py-2 bg-dark-900/40 transition-all duration-300"
+                                                    :class="{ 'border-amber-500/40 bg-amber-500/5': !selectedBuff }">
+                                                <span v-if="selectedBuff" class="flex items-center gap-2 min-w-0">
+                                                    <img v-if="getBuffIcon(selectedBuff)" :src="getBuffIcon(selectedBuff)" class="w-5 h-5 object-contain flex-shrink-0" @error="handleBuffIconError($event, selectedBuff)" />
+                                                    <span class="truncate">{{ getStarBuffName(selectedBuff) }} ({{ selectedBuff.amount }})</span>
+                                                    <span v-if="buffDurationLabel(selectedBuff)" class="badge badge-emerald text-[9px] flex-shrink-0">⏱ {{ buffDurationLabel(selectedBuff) }}</span>
+                                                </span>
+                                                <span v-else class="text-amber-400/80 font-medium">{{ t('tasks.select_buff') }} ({{ totalBuffsCount }} {{ t('tasks.avail_short') }})</span>
+                                                <svg class="w-3.5 h-3.5 text-white/30 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                                </svg>
+                                            </button>
+                                            <p v-if="!selectedBuff" class="text-[10px] text-white/30 mt-1.5">{{ t('tasks.buff_first_hint') }}</p>
+                                        </div>
+
+                                        <!-- ЗДАНИЯ (для остановки/запуска — сразу; для баффа — после выбора баффа) -->
+                                        <div v-if="['stop_production', 'start_production'].includes(stepActionType) || (stepActionType === 'apply_buff' && selectedBuff)" class="mb-3">
                                             <!-- Переключатель: Моя зона / Зона друга (только для баффа) -->
                                             <div v-if="stepActionType === 'apply_buff'" class="mb-3">
                                                 <label class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">{{ t('tasks.where_apply') }}</label>
@@ -357,25 +376,6 @@
                                         </div>
                                     </div>
 
-                                    <!-- Бафф и количество (только для apply_buff) -->
-                                    <div v-if="stepActionType === 'apply_buff'" class="col-span-2 mt-1 space-y-2">
-                                        <button type="button" @click="openBuffModal"
-                                                class="glass-select w-full flex items-center justify-between text-left text-xs py-2 bg-dark-900/40 transition-all duration-300"
-                                                :class="{ 'border-amber-500/40 bg-amber-500/5': !selectedBuff }">
-                                            <span v-if="selectedBuff" class="flex items-center gap-2">
-                                                <img v-if="getBuffIcon(selectedBuff)" :src="getBuffIcon(selectedBuff)" class="w-5 h-5 object-contain" @error="handleBuffIconError($event, selectedBuff)" />
-                                                <span class="truncate">{{ getStarBuffName(selectedBuff) }} ({{ selectedBuff.amount }})</span>
-                                            </span>
-                                            <span v-else class="text-amber-400/80 font-medium">{{ t('tasks.select_buff') }} ({{ totalBuffsCount }} {{ t('tasks.avail_short') }})</span>
-                                            <svg class="w-3.5 h-3.5 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                                            </svg>
-                                        </button>
-
-                                        <div>
-                                            <label class="block text-[10px] font-medium text-white/40 mb-1 uppercase">{{ t('tasks.quantity') }}</label>
-                                        </div>
-                                    </div>
 
                                     <!-- Тип поиска (для специалистов) -->
                                     <div v-if="['send_geologist', 'send_explorer'].includes(stepActionType)">
@@ -746,7 +746,7 @@
                     </div>
                 </div>
 
-                <!-- Контент фильтров -->
+                <!-- Кон��ент фильтров -->
                 <div class="p-4 border-b border-white/5 bg-white/[0.01] space-y-3">
                     <div class="flex gap-1.5 flex-wrap">
                         <button type="button" v-for="cat in buildingCategories" :key="cat"
@@ -918,7 +918,10 @@
                             </div>
                             <div class="flex-1 min-w-0">
                                 <p class="text-xs font-semibold text-white/90 truncate">{{ getStarBuffName(bf) }}</p>
-                                <p class="text-[10px] text-white/40 mt-0.5">{{ t('tasks.modal.in_stock') }}: {{ bf.amount }}</p>
+                                <p class="text-[10px] text-white/40 mt-0.5">
+                                    {{ t('tasks.modal.in_stock') }}: {{ bf.amount }}
+                                    <span v-if="buffDurationLabel(bf)" class="text-emerald-400/80"> • ⏱ {{ buffDurationLabel(bf) }}</span>
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -937,6 +940,7 @@ import axios from 'axios';
 import { showToast } from '../toast';
 import { t, gameAny, gameAnyLookup, intlLocale } from '../lang';
 import { humanizeGameId, resourceName, buildingName, isBuffableBuilding, getBuildingCategory } from '../lang/gameNames';
+import { canBuffTarget, isBuildingBuff, isFriendZoneBuff, getBuffDurations, formatBuffDuration } from '../lang/buffTargets';
 import { getGameImageUrl, handleGameImageError } from '../services/gameImageService';
 
 export default {
@@ -1125,7 +1129,13 @@ export default {
         });
 
         const filteredFriendBuildings = computed(() => {
-            return friendBuildings.value.filter(b => isBuffableBuilding(b));
+            let list = friendBuildings.value.filter(b => isBuffableBuilding(b));
+            // Buff-first flow: только здания, на которые применим выбранный бафф.
+            if (stepActionType.value === 'apply_buff' && selectedBuff.value?.buffName_string) {
+                const buffKey = selectedBuff.value.buffName_string;
+                list = list.filter(b => canBuffTarget(buffKey, b.buildingName_string || b.buildingName || ''));
+            }
+            return list;
         });
 
         const searchedFriendBuildings = computed(() => {
@@ -1212,6 +1222,12 @@ export default {
             payload.value.grid = '';
             friendBuildings.value = [];
             friendZoneError.value = false;
+            // Buff-first flow: набор доступных бафов зависит от зоны (self/friend) — сбрасываем выбор баффа.
+            if (stepActionType.value === 'apply_buff') {
+                selectedBuff.value = null;
+                delete payload.value.unique_id1;
+                delete payload.value.unique_id2;
+            }
         };
 
         const typeIcons = {
@@ -1480,6 +1496,12 @@ export default {
             if (!zone.value || !zone.value.buildings) return [];
             let list = zone.value.buildings.filter(b => isBuffableBuilding(b));
 
+            // Buff-first flow: когда бафф выбран, показываем только здания, на которые он применим.
+            if (stepActionType.value === 'apply_buff' && selectedBuff.value?.buffName_string) {
+                const buffKey = selectedBuff.value.buffName_string;
+                list = list.filter(b => canBuffTarget(buffKey, b.buildingName_string || b.buildingName || ''));
+            }
+
             if (buildingFilter.value && buildingFilter.value !== 'All') {
                 list = list.filter(b => getBuildingCategory(b) === buildingFilter.value);
             }
@@ -1613,6 +1635,14 @@ export default {
             if (!zone.value || !zone.value.availableBuffs) return [];
             let list = zone.value.availableBuffs;
 
+            // Только настоящие бафы зданий (отсекаем AddResource / FillDeposit / Adventure и пр.).
+            list = list.filter(bf => isBuildingBuff(bf.buffName_string));
+
+            // На зоне друга доступны только friend-бафы.
+            if (stepTargetScope.value === 'friend') {
+                list = list.filter(bf => isFriendZoneBuff(bf.buffName_string));
+            }
+
             if (buffSearch.value) {
                 const query = buffSearch.value.toLowerCase();
                 list = list.filter(bf => getStarBuffName(bf).toLowerCase().includes(query));
@@ -1660,7 +1690,21 @@ export default {
             const u2 = bf.uniqueId2 ?? bf.uniqueID2 ?? bf.uniqueID?.uniqueID2 ?? bf.uniqueID?.uniqueId2 ?? bf.uniqueId?.uniqueId2 ?? 0;
             payload.value.unique_id1 = u1;
             payload.value.unique_id2 = u2;
+            // Buff-first flow: убираем уже выбранные здания, на которые этот бафф не применим.
+            const buffKey = bf.buffName_string;
+            if (buffKey) {
+                selectedBuildings.value = selectedBuildings.value.filter(bt =>
+                    canBuffTarget(buffKey, bt.building?.buildingName_string || bt.building?.buildingName || ''));
+            }
             closeBuffModal();
+        };
+
+        // Метка длительности бафа вида "2h 30m" (для зоны друга — friend-длительность).
+        const buffDurationLabel = (bf) => {
+            const d = getBuffDurations(bf?.buffName_string);
+            if (!d) return '';
+            const seconds = stepTargetScope.value === 'friend' ? (d.Friend ?? d.Player) : (d.Player ?? d.Friend);
+            return formatBuffDuration(seconds);
         };
 
         const availableSubTasks = computed(() => {
@@ -2461,6 +2505,7 @@ export default {
             getSpecialistIcon,
             handleSpecialistIconError,
             getStarBuffName,
+            buffDurationLabel,
             getBuffIcon,
             handleBuffIconError
         };
