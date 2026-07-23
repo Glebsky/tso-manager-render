@@ -213,27 +213,32 @@ class ScheduledTaskController extends Controller
     {
         $token = (string) Str::uuid();
 
-        if (! in_array($task->status, ['queued', 'running'], true)) {
-            $task->update([
-                'status' => 'queued',
-                'queued_at' => now(),
-                'execution_token' => $token,
-            ]);
+        $payload = $task->payload ?? [];
+        unset($payload['step_results']);
 
-            ExecuteScheduledTaskJob::dispatch($task->id, $token);
-        }
+        $task->update([
+            'status' => 'queued',
+            'queued_at' => now(),
+            'execution_token' => $token,
+            'completed_steps' => 0,
+            'last_result' => null,
+            'payload' => $payload,
+        ]);
+
+        ExecuteScheduledTaskJob::dispatch($task->id, $token);
 
         $task->refresh();
+        $task->load('account');
 
-        // With an async queue driver the job has not run yet at this point,
-        // so report the queued state instead of reading a stale last_result.
+        $isQueuedOrRunning = in_array($task->status, ['queued', 'running'], true);
+
         return response()->json([
             'success' => true,
-            'queued' => true,
+            'queued' => $isQueuedOrRunning,
             'task' => $task,
-            'message' => in_array($task->status, ['queued', 'running'], true)
+            'message' => $isQueuedOrRunning
                 ? 'Task queued for background execution.'
-                : ($task->last_result ?? 'Task execution queued.'),
+                : ($task->last_result ?? 'Task execution completed.'),
         ]);
     }
 
@@ -245,14 +250,20 @@ class ScheduledTaskController extends Controller
      */
     public function status(ScheduledTask $task)
     {
+        $task->load('account');
+
+        $isQueuedOrRunning = in_array($task->status, ['queued', 'running'], true);
+
         return response()->json([
             'success' => true,
             'task' => [
                 'id' => $task->id,
                 'status' => $task->status,
                 'is_active' => $task->is_active,
+                'account_id' => $task->account_id,
+                'account' => $task->account,
                 'completed_steps' => $task->completed_steps,
-                'last_result' => $task->last_result,
+                'last_result' => $isQueuedOrRunning ? null : $task->last_result,
                 'last_run_at' => $task->last_run_at?->toIso8601String(),
                 // payload is included because the UI reads payload.step_results
                 // to show per-step progress and error details.

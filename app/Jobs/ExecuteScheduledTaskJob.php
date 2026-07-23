@@ -64,12 +64,6 @@ class ExecuteScheduledTaskJob implements ShouldQueue
             return;
         }
 
-        if (! $task->is_active) {
-            Log::info("ExecuteScheduledTaskJob: Task #{$this->taskId} is no longer active. Skipping.");
-
-            return;
-        }
-
         if ($task->status !== 'queued' && $task->status !== 'running') {
             Log::info("ExecuteScheduledTaskJob: Task #{$this->taskId} status is '{$task->status}' (not queued). Skipping.");
 
@@ -78,6 +72,13 @@ class ExecuteScheduledTaskJob implements ShouldQueue
 
         if ($task->execution_token !== null && $task->execution_token !== $this->executionToken) {
             Log::warning("ExecuteScheduledTaskJob: Execution token mismatch for Task #{$this->taskId}. Expected {$this->executionToken}, found {$task->execution_token}. Skipping.");
+
+            return;
+        }
+
+        if (! $task->is_active && $task->execution_token === null) {
+            Log::info("ExecuteScheduledTaskJob: Task #{$this->taskId} is no longer active. Resetting status to pending.");
+            $task->update(['status' => 'pending']);
 
             return;
         }

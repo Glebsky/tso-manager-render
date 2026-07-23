@@ -183,6 +183,9 @@ class RunSchedulerCommand extends Command
 
             // Atomic reservation lock
             $token = (string) Str::uuid();
+            $payload = $task->payload ?? [];
+            unset($payload['step_results']);
+
             $reserved = ScheduledTask::where('id', $task->id)
                 ->where('is_active', true)
                 ->whereIn('status', ['pending', 'completed', 'failed'])
@@ -190,6 +193,8 @@ class RunSchedulerCommand extends Command
                     'status' => 'queued',
                     'queued_at' => now(),
                     'execution_token' => $token,
+                    'completed_steps' => 0,
+                    'payload' => $payload,
                 ]);
 
             if ($reserved === 0) {

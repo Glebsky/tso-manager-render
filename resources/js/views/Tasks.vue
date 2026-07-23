@@ -553,11 +553,11 @@
                                     </div>
 
                                     <!-- Последний результат выполнения -->
-                                    <span v-if="task.last_result"
-                                          class="badge text-[10px] flex-shrink-0 max-w-[100px] truncate"
-                                          :class="task.last_result.includes('OK') ? 'badge-success' : 'badge-danger'"
+                                    <span v-if="getTaskLastResultBadge(task)"
+                                          class="badge text-[10px] flex-shrink-0 max-w-[110px] truncate"
+                                          :class="getTaskLastResultBadge(task).class"
                                           :title="task.last_result">
-                                        {{ task.last_result.includes('OK') ? $lang.t('tasks.success') : $lang.t('tasks.error') }}
+                                        {{ getTaskLastResultBadge(task).label }}
                                     </span>
 
                                     <!-- Кнопка ручного запуска -->
@@ -2060,28 +2060,46 @@ export default {
             }
         };
 
+        const activePollTimers = {};
+
+        const stopPollingTask = (taskId) => {
+            if (activePollTimers[taskId]) {
+                clearTimeout(activePollTimers[taskId]);
+                delete activePollTimers[taskId];
+            }
+            executingTasks.value[taskId] = false;
+        };
+
         const pollTaskExecution = (taskId) => {
+            stopPollingTask(taskId);
+
             let attempts = 0;
             const maxAttempts = 150; // polling up to 5 minutes max
 
-            const timer = setInterval(async () => {
+            const doPoll = async () => {
                 attempts++;
                 try {
                     // Lightweight endpoint: only this task's state, not the full planner payload
                     const res = await axios.get(`/api/tasks/${taskId}/status`);
-                    const updatedTask = res.data.task;
+                    const updatedTask = res.data?.task;
 
                     // Refresh the affected row in place without reloading the whole list
                     const idx = tasks.value.findIndex(t => t.id === taskId);
                     if (idx !== -1 && updatedTask) {
-                        tasks.value[idx] = { ...tasks.value[idx], ...updatedTask };
+                        const oldAccount = tasks.value[idx].account;
+                        tasks.value[idx] = {
+                            ...tasks.value[idx],
+                            ...updatedTask,
+                            account: updatedTask.account || oldAccount
+                        };
                     }
 
-                    if (!updatedTask || (updatedTask.status !== 'queued' && updatedTask.status !== 'running') || attempts >= maxAttempts) {
-                        clearInterval(timer);
-                        executingTasks.value[taskId] = false;
+                    const isFinished = !updatedTask || (updatedTask.status !== 'queued' && updatedTask.status !== 'running');
 
-                        if (updatedTask) {
+                    if (isFinished || attempts >= maxAttempts) {
+                        stopPollingTask(taskId);
+
+                        if (updatedTask && isFinished) {
                             const isErr = updatedTask.status === 'failed' || (updatedTask.last_result && updatedTask.last_result.startsWith('ERROR:'));
                             if (isErr) {
                                 const err = getActionStepError(updatedTask, 0) || updatedTask.last_result || t('tasks.toast.unknown');
@@ -2093,34 +2111,58 @@ export default {
 
                         // One full refresh at the end to sync the planner state
                         loadPlanner();
+                        return;
                     }
                 } catch (e) {
                     // Task was deleted while polling: stop and resync
-                    if (e.response?.status === 404) {
-                        clearInterval(timer);
-                        executingTasks.value[taskId] = false;
+                    if (e.response?.status === 404 || attempts >= maxAttempts) {
+                        stopPollingTask(taskId);
                         loadPlanner();
                         return;
                     }
-                    if (attempts >= maxAttempts) {
-                        clearInterval(timer);
-                        executingTasks.value[taskId] = false;
-                    }
                 }
-            }, 2000);
+
+                if (executingTasks.value[taskId]) {
+                    activePollTimers[taskId] = setTimeout(doPoll, 5000);
+                }
+            };
+
+            executingTasks.value[taskId] = true;
+            activePollTimers[taskId] = setTimeout(doPoll, 5000);
         };
 
         const runTaskNow = async (task) => {
             if (executingTasks.value[task.id]) return;
             executingTasks.value[task.id] = true;
+
+            // Immediately reset local task state so UI doesn't show stale step_results/completed_steps
+            const idx = tasks.value.findIndex(t => t.id === task.id);
+            if (idx !== -1) {
+                const oldAccount = tasks.value[idx].account;
+                const cleanPayload = { ...tasks.value[idx].payload };
+                delete cleanPayload.step_results;
+                tasks.value[idx] = {
+                    ...tasks.value[idx],
+                    status: 'queued',
+                    completed_steps: 0,
+                    last_result: null,
+                    payload: cleanPayload,
+                    account: oldAccount
+                };
+            }
+
             try {
                 const res = await axios.post(`/api/tasks/${task.id}/execute`);
                 const currentTask = res.data.task || task;
 
                 // Update tasks list in state
-                const idx = tasks.value.findIndex(t => t.id === task.id);
                 if (idx !== -1 && res.data.task) {
-                    tasks.value[idx] = res.data.task;
+                    const oldAccount = tasks.value[idx].account;
+                    tasks.value[idx] = {
+                        ...tasks.value[idx],
+                        ...res.data.task,
+                        account: res.data.task.account || oldAccount
+                    };
                 }
 
                 if (currentTask.status !== 'queued' && currentTask.status !== 'running') {
@@ -2165,6 +2207,10 @@ export default {
 
         const getActionStepStatus = (task, aIdx) => {
             if (!task) return 'pending';
+
+            if (task.status === 'queued') {
+                return 'pending';
+            }
 
             const stepResults = task.payload?.step_results;
             if (Array.isArray(stepResults) && stepResults[aIdx] && stepResults[aIdx].status) {
@@ -2244,6 +2290,45 @@ export default {
                 }
             }
             return msg;
+        };
+
+        const getTaskLastResultBadge = (task) => {
+            if (!task || !task.last_result) return null;
+            const res = task.last_result;
+
+            if (res.startsWith('WARNING:') || res.includes('timed out') || res.includes('stuck in')) {
+                return {
+                    label: t('tasks.warning'),
+                    class: 'badge-warning'
+                };
+            }
+
+            if (res.startsWith('PARTIAL:') || res.includes('PARTIAL')) {
+                return {
+                    label: t('tasks.partial'),
+                    class: 'badge-warning'
+                };
+            }
+
+            const isErr = res.startsWith('ERROR:') || res.startsWith('FAILED:') || (task.status === 'failed' && !res.includes('OK'));
+            if (isErr) {
+                return {
+                    label: t('tasks.error'),
+                    class: 'badge-danger'
+                };
+            }
+
+            if (res.includes('ERROR') && res.includes('OK')) {
+                return {
+                    label: t('tasks.partial'),
+                    class: 'badge-warning'
+                };
+            }
+
+            return {
+                label: t('tasks.success'),
+                class: 'badge-success'
+            };
         };
 
         const getNextRunDate = (task) => {
@@ -2387,6 +2472,9 @@ export default {
         onUnmounted(() => {
             document.removeEventListener('click', closeAllDropdowns);
             if (countdownTimer) clearInterval(countdownTimer);
+            Object.keys(activePollTimers).forEach(id => {
+                stopPollingTask(id);
+            });
         });
 
         return {
@@ -2450,6 +2538,7 @@ export default {
             getTaskActionsList,
             getActionStepStatus,
             getActionStepError,
+            getTaskLastResultBadge,
             getNextRunDate,
             getTaskNextRunText,
             getBuildingDisplayName,

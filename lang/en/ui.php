@@ -530,6 +530,8 @@ return [
     'tasks.step_status.running' => 'Running...',
     'tasks.subtitle' => 'Automate actions on your accounts',
     'tasks.success' => 'Success',
+    'tasks.warning' => 'Warning',
+    'tasks.partial' => 'Partial',
     'tasks.task_number' => 'Task #{id}',
     'tasks.task_series' => 'Task series',
     'tasks.tasks_word' => 'tasks',

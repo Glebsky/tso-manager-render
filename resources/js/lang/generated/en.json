@@ -6315,6 +6315,7 @@
         "market.no_account": "No account",
         "market.no_data_for_server": "No data available for server {server}. Perform market synchronization first.",
         "market.no_nick": "No nickname",
+        "market.no_offers": "No market offers for this resource yet",
         "market.no_resources_for_server": "No resources available for server {server}. Perform market synchronization first.",
         "market.no_schemes_for_server": "No profitable exchange schemes found on server {server}.",
         "market.no_servers_row": "No servers added. Click “Add server” to create a new connection.",
@@ -6459,6 +6460,7 @@
         "tasks.buff_add_resource": "Add resource",
         "tasks.buff_adventure": "Adventure",
         "tasks.buff_build_license": "License",
+        "tasks.buff_first_hint": "Select a buff first — the list of available buildings depends on it",
         "tasks.buff_from_menu": "Buff from the menu",
         "tasks.buff_number": "Buff #{id}",
         "tasks.building": "Building",
@@ -6543,6 +6545,7 @@
         "tasks.offline": "offline",
         "tasks.once": "One-time",
         "tasks.online": "online",
+        "tasks.partial": "Partial",
         "tasks.planning_type": "Schedule type",
         "tasks.qty_short": "Qty",
         "tasks.quantity": "Quantity",
@@ -6652,9 +6655,8 @@
         "tasks.unknown_buff": "Unknown buff",
         "tasks.unknown_friend": "Unknown friend",
         "tasks.until_launch": "Until launch",
+        "tasks.warning": "Warning",
         "tasks.where_apply": "Where to apply",
-        "tasks.zone_load_failed": "Failed to load friend's zone",
-        "tasks.buff_first_hint": "Select a buff first — the list of available buildings depends on it",
-        "market.no_offers": "No market offers for this resource yet"
+        "tasks.zone_load_failed": "Failed to load friend's zone"
     }
 }

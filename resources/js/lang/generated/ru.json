@@ -6053,6 +6053,7 @@
         "market.no_account": "Без аккаунта",
         "market.no_data_for_server": "Нет данных для сервера {server}. Сначала выполните синхронизацию рынка.",
         "market.no_nick": "Без ника",
+        "market.no_offers": "По этому ресурсу пока нет предложений на рынке",
         "market.no_resources_for_server": "Нет ресурсов для сервера {server}. Сначала выполните синхронизацию рынка.",
         "market.no_schemes_for_server": "На сервере {server} не найдено выгодных схем обмена.",
         "market.no_servers_row": "Серверы не добавлены. Нажмите «Добавить сервер» для создания нового подключения.",
@@ -6197,6 +6198,7 @@
         "tasks.buff_add_resource": "Добавить ресурс",
         "tasks.buff_adventure": "Приключение",
         "tasks.buff_build_license": "Лицензия",
+        "tasks.buff_first_hint": "Сначала выберите бафф — от него зависит список доступных зданий",
         "tasks.buff_from_menu": "Бафф из меню",
         "tasks.buff_number": "Бафф #{id}",
         "tasks.building": "Здание",
@@ -6281,6 +6283,7 @@
         "tasks.offline": "не в сети",
         "tasks.once": "Одноразово",
         "tasks.online": "в сети",
+        "tasks.partial": "Частично",
         "tasks.planning_type": "Тип планирования",
         "tasks.qty_short": "Кол-во",
         "tasks.quantity": "Количество",
@@ -6390,9 +6393,8 @@
         "tasks.unknown_buff": "Неизвестный бафф",
         "tasks.unknown_friend": "Неизвестный друг",
         "tasks.until_launch": "До запуска",
+        "tasks.warning": "Предупреждение",
         "tasks.where_apply": "Где применить бафф?",
-        "tasks.zone_load_failed": "Не удалось загрузить зону друга",
-        "tasks.buff_first_hint": "Сначала выберите бафф — от него зависит список доступных зданий",
-        "market.no_offers": "По этому ресурсу пока нет предложений на рынке"
+        "tasks.zone_load_failed": "Не удалось загрузить зону друга"
     }
 }

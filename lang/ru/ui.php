@@ -530,6 +530,8 @@ return [
     'tasks.step_status.running' => 'Выполняется...',
     'tasks.subtitle' => 'Автоматизируйте действия на ваших аккаунтах',
     'tasks.success' => 'Успешно',
+    'tasks.warning' => 'Предупреждение',
+    'tasks.partial' => 'Частично',
     'tasks.task_number' => 'Задача #{id}',
     'tasks.task_series' => 'Серия задач',
     'tasks.tasks_word' => 'задач',

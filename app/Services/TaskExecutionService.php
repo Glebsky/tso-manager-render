@@ -338,6 +338,7 @@ class TaskExecutionService
         // Fresh run: drop step results left over from the previous run.
         if ($index === 0 && ! empty($stepResults)) {
             $stepResults = [];
+            unset($payload['step_results']);
         }
 
         if (empty($actions) || $index >= count($actions)) {
@@ -348,6 +349,7 @@ class TaskExecutionService
         $task->update([
             'status' => 'running',
             'queued_at' => now(),
+            'payload' => $payload,
         ]);
 
         if (! $this->authService->isAuthenticated($account)) {
@@ -414,6 +416,7 @@ class TaskExecutionService
     private function finalizeSequence(ScheduledTask $task, int $accountId, array $payload, array $stepResults): array
     {
         $hasStepError = false;
+        $hasStepSuccess = false;
         $summaryParts = [];
 
         foreach ($stepResults as $i => $stepResult) {
@@ -421,6 +424,7 @@ class TaskExecutionService
                 $hasStepError = true;
                 $summaryParts[] = 'Step '.($i + 1).': ERROR - '.($stepResult['error'] ?? 'unknown');
             } else {
+                $hasStepSuccess = true;
                 $summaryParts[] = 'Step '.($i + 1).': OK';
             }
         }
@@ -428,10 +432,14 @@ class TaskExecutionService
         $result = implode('; ', $summaryParts);
         $payload['step_results'] = $stepResults;
 
+        $lastResultPrefix = ($hasStepError && $hasStepSuccess)
+            ? 'PARTIAL: '
+            : ($hasStepError ? 'ERROR: ' : 'OK: ');
+
         $updateData = [
             'status' => $hasStepError ? 'failed' : 'completed',
             'last_run_at' => now(),
-            'last_result' => ($hasStepError ? 'ERROR: ' : 'OK: ').(strlen($result) > 150 ? substr($result, 0, 147).'...' : $result),
+            'last_result' => $lastResultPrefix.(strlen($result) > 150 ? substr($result, 0, 147).'...' : $result),
             'payload' => $payload,
             'completed_steps' => 0, // Reset step progress after run completion
             'execution_token' => null,
