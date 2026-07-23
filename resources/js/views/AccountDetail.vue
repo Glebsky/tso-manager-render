@@ -191,11 +191,12 @@
                                 </span>
 
                                 <button v-if="isStoppable(b) && !b.upgradeIsInProgress" @click="toggleBuilding(b)" :disabled="actionLoading"
-                                        class="btn-secondary btn-sm text-[10px] disabled:opacity-50"
+                                        class="btn-secondary btn-sm text-[10px] disabled:opacity-50 inline-flex items-center justify-center gap-1"
                                         :class="isBuildingActive(b)
                                             ? 'text-amber-400/60 hover:text-amber-400 hover:border-amber-500/30'
                                             : 'text-emerald-400/60 hover:text-emerald-400 hover:border-emerald-500/30'">
-                                    {{ actionLoading ? '...' : (isBuildingActive(b) ? 'Stop' : 'Start') }}
+                                    <spinner v-if="actionLoading" size="xs" />
+                                    <template v-else>{{ isBuildingActive(b) ? 'Stop' : 'Start' }}</template>
                                 </button>
                             </div>
                         </div>
@@ -701,9 +702,11 @@ const LEVEL_XP_TABLE = {
     71: 432700000, 72: 542500000, 73: 680200000, 74: 852800000, 75: 1069000000, 76: 1200000000, 77: 1360000000, 78: 1550000000, 79: 1780000000, 80: 2050000000
 };
 
+import Spinner from '../components/Spinner.vue';
+
 export default {
     name: 'AccountDetail',
-    components: { BuildingIcon, SpecialistIcon, BuffIcon, ResourceIcon, FriendIcon, SettingsIcon },
+    components: { BuildingIcon, SpecialistIcon, BuffIcon, ResourceIcon, FriendIcon, SettingsIcon, Spinner },
     setup() {
         const route = useRoute();
         const router = useRouter();

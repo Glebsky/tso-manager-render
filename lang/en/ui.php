@@ -658,4 +658,19 @@ return [
     'game_error.unknown' => 'Unknown game error ({code})',
     'tasks.my_city' => 'My city',
     'tasks.friend_city' => 'Friend\'s city',
+
+    // Loading indicators (spinners / skeletons)
+    'common.loading' => 'Loading…',
+    'common.loading_data' => 'Loading data…',
+    'common.updating' => 'Updating…',
+    'accounts.loading' => 'Loading accounts…',
+    'logs.loading' => 'Loading logs…',
+    'settings.loading' => 'Loading settings…',
+    'settings.clearing' => 'Clearing…',
+    'settings.deactivating' => 'Deactivating…',
+    'tasks.loading_tasks' => 'Loading tasks…',
+    'market.loading_data' => 'Loading market data…',
+    'market.loading_pairs' => 'Loading trading pairs…',
+    'market.loading_chart' => 'Loading analytics…',
+    'market.loading_servers' => 'Loading servers…',
 ];

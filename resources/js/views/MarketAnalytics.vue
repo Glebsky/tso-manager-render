@@ -36,8 +36,14 @@
 
         <!-- TAB 1: ANALYTICS -->
         <div v-if="activeTab === 'analytics'" class="space-y-6">
+            <!-- Servers loading placeholder -->
+            <div v-if="loadingServers && servers.length === 0" class="glass-card p-10 flex flex-col items-center justify-center gap-3 text-emerald-400">
+                <spinner size="lg" />
+                <p class="text-xs text-white/40">{{ t('market.loading_servers') }}</p>
+            </div>
+
             <!-- Active Server Status Notice / Empty State -->
-            <div v-if="servers.length === 0" class="glass-card p-8 text-center space-y-4">
+            <div v-else-if="servers.length === 0" class="glass-card p-8 text-center space-y-4">
                 <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 mx-auto">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
@@ -70,11 +76,11 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-2 shrink-0">
-                        <button v-if="currentServerConnection.account_id" @click="syncServerNow(currentServerConnection)" :disabled="syncing" class="btn-secondary py-1.5 px-3 text-xs flex items-center gap-1.5">
+                        <button v-if="currentServerConnection.account_id" @click="syncServerNow(currentServerConnection)" :disabled="syncing" class="btn-secondary py-1.5 px-3 text-xs flex items-center gap-1.5 disabled:opacity-50">
                             <svg class="w-3.5 h-3.5" :class="{ 'animate-spin': syncing }" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182" />
                             </svg>
-                            Sync Now
+                            <span>{{ syncing ? 'Syncing...' : 'Sync Now' }}</span>
                         </button>
                         <button @click="activeTab = 'settings'" class="btn-secondary py-1.5 px-3 text-xs">
                             Manage Server
@@ -186,7 +192,11 @@
                             <img :src="getResourceIcon(good.item_id)" @error="handleIconError($event, good.item_id)" class="w-6 h-6 object-contain mb-1 pointer-events-none" />
                             <span class="text-[9px] font-medium text-white/90 truncate w-full" :title="good.item_name">{{ good.item_name }}</span>
                         </div>
-                        <div v-if="allGoods.length === 0" class="col-span-full py-8 text-center text-xs text-white/30">
+                        <div v-if="loading && allGoods.length === 0" class="col-span-full py-8 flex items-center justify-center gap-2 text-xs text-emerald-400">
+                            <spinner size="sm" />
+                            <span>{{ t('common.loading_data') }}</span>
+                        </div>
+                        <div v-else-if="allGoods.length === 0" class="col-span-full py-8 text-center text-xs text-white/30">
                             {{ t('market.no_resources_for_server', { server: selectedServerId }) }}
                         </div>
                     </div>
@@ -200,7 +210,11 @@
                             <img :src="getResourceIcon(target.target_item_id)" @error="handleIconError($event, target.target_item_id)" class="w-6 h-6 object-contain mb-1 pointer-events-none" />
                             <span class="text-[9px] font-medium text-white/90 truncate w-full" :title="target.target_item_name">{{ target.target_item_name }}</span>
                         </div>
-                        <div v-if="targets.length === 0" class="col-span-full py-8 text-center text-xs text-white/30">
+                        <div v-if="loadingPairs" class="col-span-full py-8 flex items-center justify-center gap-2 text-xs text-emerald-400">
+                            <spinner size="sm" />
+                            <span>{{ t('market.loading_pairs') }}</span>
+                        </div>
+                        <div v-else-if="targets.length === 0" class="col-span-full py-8 text-center text-xs text-white/30">
                             Please select a selling item first.
                         </div>
                     </div>
@@ -218,8 +232,15 @@
                 </div>
             </div>
 
+            <!-- Analytics loading placeholder (first fetch for a pair) -->
+            <div v-if="loadingChart && !stats" class="glass-card p-12 flex flex-col items-center justify-center gap-3 text-emerald-400">
+                <spinner size="lg" />
+                <p class="text-xs text-white/40">{{ t('market.loading_chart') }}</p>
+            </div>
+
             <!-- Analysis Dashboard (Visible if both selected) -->
-            <div v-if="selectedItem && selectedTarget && stats" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div v-if="selectedItem && selectedTarget && stats" class="relative grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <loading-overlay :show="loadingChart" :label="t('market.loading_chart')" />
                 <!-- Stats Swarm (Left columns) -->
                 <div class="lg:col-span-2 space-y-6">
                     <!-- Pricing Stats -->
@@ -352,10 +373,58 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Demand Dynamic Chart Card -->
+                    <div class="glass-card p-6 transition-all duration-300">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-sm font-semibold text-white">{{ t('market.volume_offers') }}</h3>
+                            <div class="flex items-center gap-4 text-[10px] text-white/40">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="w-2.5 h-2.5 bg-blue-500/20 border border-blue-500 rounded-sm inline-block"></span>
+                                    <span>{{ t('market.sellers_count') }}</span>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="w-2.5 h-2.5 bg-indigo-500/20 border border-indigo-500 rounded-sm inline-block"></span>
+                                    <span>{{ t('market.active_offers') }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SVG Demand Chart -->
+                        <div class="h-64 w-full relative pt-2">
+                            <template v-if="history.length > 0">
+                                <svg class="w-full h-full" viewBox="0 0 600 220" preserveAspectRatio="none">
+                                    <line v-for="grid in 4" :key="'grid-dy-'+grid"
+                                          x1="40" :y1="20 + (grid - 1) * 50" x2="590" :y2="20 + (grid - 1) * 50"
+                                          stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+
+                                    <path :d="chartSellersAreaPath" fill="rgba(59, 130, 246, 0.1)" class="transition-all duration-500 ease-out"/>
+                                    <path :d="chartSellersLinePath" fill="none" stroke="#3b82f6" stroke-width="1.5" class="transition-all duration-500 ease-out"/>
+
+                                    <path :d="chartOffersAreaPath" fill="rgba(99, 102, 241, 0.1)" class="transition-all duration-500 ease-out"/>
+                                    <path :d="chartOffersLinePath" fill="none" stroke="#6366f1" stroke-width="1.5" class="transition-all duration-500 ease-out"/>
+
+                                    <rect v-for="(b, idx) in chartPoints" :key="'vol-bar-'+idx"
+                                          :x="b.x - 3" :y="b.vy" width="6" :height="220 - b.vy"
+                                          fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" stroke-width="0.5" rx="1"
+                                          class="transition-all duration-300"/>
+                                </svg>
+                                <div class="flex justify-between text-[8px] text-white/30 px-9 mt-1 font-mono">
+                                    <span>{{ history[0]?.collected_at }}</span>
+                                    <span>{{ history[Math.floor(history.length / 2)]?.collected_at }}</span>
+                                    <span>{{ history[history.length - 1]?.collected_at }}</span>
+                                </div>
+                            </template>
+                            <div v-else class="absolute inset-0 flex items-center justify-center text-xs text-white/20">
+                                Not enough historical data to display the chart
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Calculator Side Panel (Right columns) -->
+                <!-- Calculator & Market Details Side Panel (Right columns) -->
                 <div class="space-y-6">
+                    <!-- Calculator Card -->
                     <div class="glass-card p-6">
                         <div class="flex items-center gap-3 mb-5 border-b border-white/5 pb-3">
                             <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
@@ -372,20 +441,59 @@
                                 <input type="number" v-model.number="calcAmount" min="1" class="glass-input w-full font-mono text-white text-lg"/>
                             </div>
 
+                            <!-- Direct estimated revenue -->
                             <div class="p-4 rounded-xl border border-emerald-500/10 bg-emerald-500/[0.02]">
                                 <span class="text-[10px] font-semibold text-emerald-400/70 uppercase tracking-wider block">{{ t('market.estimated_revenue') }}</span>
                                 <div class="flex items-baseline gap-2 mt-1">
                                     <span class="text-2xl font-bold text-emerald-400 font-mono">{{ calculatedCost }}</span>
                                     <span class="text-xs text-white/40">{{ selectedTargetName }}</span>
                                 </div>
+                                <span class="text-[9px] text-white/20 block mt-2">Formula: {{ calcAmount || 0 }} * {{ stats.average }} average price</span>
+                            </div>
+
+                            <!-- Mirrored estimated cost -->
+                            <div v-if="mirroredStats" class="p-4 rounded-xl border border-blue-500/10 bg-blue-500/[0.02]">
+                                <span class="text-[10px] font-semibold text-blue-400/70 uppercase tracking-wider block">{{ t('market.estimated_cost') }}</span>
+                                <div class="flex items-baseline gap-2 mt-1">
+                                    <span class="text-2xl font-bold text-blue-400 font-mono">{{ calculatedMirroredCost }}</span>
+                                    <span class="text-xs text-white/40">{{ selectedTargetName }}</span>
+                                </div>
+                                <span class="text-[9px] text-white/20 block mt-2">Formula: {{ calcAmount || 0 }} / {{ mirroredStats.average }} average price</span>
+                            </div>
+                            <div v-else class="p-4 rounded-xl border border-white/5 bg-white/[0.01] text-center text-xs text-white/30">
+                                No mirrored trades ({{ selectedTargetName }} ➔ {{ selectedItemName }}) found to calculate mirrored cost.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Selected pair market details -->
+                    <div class="glass-card p-6">
+                        <h3 class="text-sm font-semibold text-white mb-4">{{ t('market.info') }}</h3>
+                        <div class="space-y-3 text-xs">
+                            <div class="flex justify-between py-2 border-b border-white/5">
+                                <span class="text-white/40">{{ t('market.total_volume') }}</span>
+                                <span class="text-white font-mono font-medium">{{ activeVolume }} {{ selectedItemName }}</span>
+                            </div>
+                            <div class="flex justify-between py-2 border-b border-white/5">
+                                <span class="text-white/40">{{ t('market.offers_count') }}</span>
+                                <span class="text-white font-mono font-medium">{{ activeOffersCount }}</span>
+                            </div>
+                            <div class="flex justify-between py-2 border-b border-white/5">
+                                <span class="text-white/40">{{ t('market.active_sellers') }}</span>
+                                <span class="text-white font-mono font-medium">{{ activeSellersCount }}</span>
+                            </div>
+                            <div class="flex justify-between py-2 last:border-0">
+                                <span class="text-white/40">{{ t('market.trend') }}</span>
+                                <span class="font-semibold" :class="priceTrendClass">{{ priceTrendText }}</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Popular Items & Current Active Market (Visible when nothing is selected) -->
-            <div v-else class="space-y-6">
+            <!-- Popular Items & Current Active Market -->
+            <div class="mt-8 space-y-6 relative">
+                <loading-overlay :show="loading" :label="t('market.loading_data')" />
                 <!-- Most Popular Items Card -->
                 <div class="glass-card p-6 animate-fade-in-up">
                     <div class="flex items-center justify-between gap-3 mb-6 border-b border-white/5 pb-3">
@@ -708,8 +816,11 @@
                                     <button @click="verifyServer(srv)" :disabled="verifyingId === srv.id" class="btn-secondary py-1 px-2.5 text-[11px]" :title="t('market.verify_hint')">
                                         {{ verifyingId === srv.id ? '...' : t('market.verify') }}
                                     </button>
-                                    <button @click="syncServerNow(srv)" :disabled="syncing || !srv.account_id" class="btn-secondary py-1 px-2.5 text-[11px] text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/10">
-                                        {{ t('market.sync_now') }}
+                                    <button @click="syncServerNow(srv)" :disabled="syncing || !srv.account_id" class="btn-secondary py-1 px-2.5 text-[11px] text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/10 inline-flex items-center gap-1.5 disabled:opacity-50">
+                                        <svg v-if="syncingServerId === srv.id" class="animate-spin w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                        </svg>
+                                        <span>{{ syncingServerId === srv.id ? '...' : t('market.sync_now') }}</span>
                                     </button>
                                     <button @click="openEditServerModal(srv)" class="btn-secondary py-1 px-2.5 text-[11px]">
                                         {{ t('market.edit') }}
@@ -801,7 +912,15 @@
                                 </td>
                                 <td class="py-3 px-4 text-xs text-white/50">{{ log.message }}</td>
                             </tr>
-                            <tr v-if="logs.length === 0">
+                            <tr v-if="loadingSyncLogs && logs.length === 0">
+                                <td colspan="5" class="py-8">
+                                    <div class="flex items-center justify-center gap-2 text-xs text-emerald-400">
+                                        <spinner size="sm" />
+                                        <span>{{ t('common.loading_data') }}</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr v-else-if="logs.length === 0">
                                 <td colspan="5" class="py-8 text-center text-white/20">
                                     No synchronization logs yet.
                                 </td>
@@ -887,13 +1006,22 @@ import { getGameImageUrl, handleGameImageError } from '../services/gameImageServ
 import { resourceName } from '../lang/gameNames';
 import { TRADABLE_RESOURCES } from '../lang/resourcesCatalog';
 
+import Spinner from '../components/Spinner.vue';
+import LoadingOverlay from '../components/LoadingOverlay.vue';
+
 export default {
     name: 'MarketAnalytics',
+    components: { Spinner, LoadingOverlay },
     setup() {
         const activeTab = ref('analytics');
         const loading = ref(false);
+        const loadingServers = ref(true);
+        const loadingPairs = ref(false);
+        const loadingChart = ref(false);
+        const loadingSyncLogs = ref(false);
         const saving = ref(false);
         const syncing = ref(false);
+        const syncingServerId = ref(null);
         const showPopularItems = ref(true);
         const showArbitrageSchemes = ref(true);
         const showActiveListings = ref(true);
@@ -1057,6 +1185,8 @@ export default {
         const stats = ref(null);
         const activeInfo = ref(null);
         const periodInfo = ref(null);
+        const mirroredStats = ref(null);
+        const mirroredHistory = ref(null);
         const hoveredPoint = ref(null);
 
         const logs = ref([]);
@@ -1098,6 +1228,30 @@ export default {
             if (!stats.value || !stats.value.average) return 0;
             const amt = parseFloat(calcAmount.value) || 0;
             return Math.round(amt * stats.value.average * 100) / 100;
+        });
+
+        const calculatedMirroredCost = computed(() => {
+            if (!mirroredStats.value || !mirroredStats.value.average || mirroredStats.value.average === 0) return 0;
+            const amt = parseFloat(calcAmount.value) || 0;
+            return Math.round((amt / mirroredStats.value.average) * 100) / 100;
+        });
+
+        const activeVolume = computed(() => formatVolume(activeInfo.value?.volume || 0));
+        const activeOffersCount = computed(() => activeInfo.value?.offers_count || 0);
+        const activeSellersCount = computed(() => activeInfo.value?.sellers_count || 0);
+
+        const priceTrendText = computed(() => {
+            if (!stats.value || !stats.value.current || !stats.value.average) return 'Stable';
+            const diff = stats.value.current - stats.value.average;
+            if (Math.abs(diff) < 0.01) return 'Stable';
+            return diff > 0 ? `+${((diff / stats.value.average) * 100).toFixed(1)}%` : `${((diff / stats.value.average) * 100).toFixed(1)}%`;
+        });
+
+        const priceTrendClass = computed(() => {
+            if (!stats.value || !stats.value.current || !stats.value.average) return 'text-white/60';
+            const diff = stats.value.current - stats.value.average;
+            if (Math.abs(diff) < 0.01) return 'text-white/60';
+            return diff > 0 ? 'text-emerald-400' : 'text-red-400';
         });
 
         const formatVolume = (val) => {
@@ -1147,17 +1301,23 @@ export default {
         const chartPoints = computed(() => {
             if (history.value.length === 0) return [];
             const w = 550;
-            const h = 200;
             const maxPrice = Math.max(...history.value.map(h => h.price)) || 1;
             const minPrice = Math.min(...history.value.map(h => h.price)) || 0;
             const priceDiff = (maxPrice - minPrice) || 1;
+
+            const maxSellers = Math.max(...history.value.map(h => h.sellers_count)) || 1;
+            const maxOffers = Math.max(...history.value.map(h => h.offers_count)) || 1;
+            const maxVolume = Math.max(...history.value.map(h => h.volume)) || 1;
 
             return history.value.map((d, idx) => {
                 const stepX = history.value.length > 1 ? w / (history.value.length - 1) : w;
                 const x = 40 + idx * stepX;
                 const py = maxPrice === minPrice ? 120 : 220 - ((d.price - minPrice) / priceDiff) * 180 - 10;
+                const sy = 220 - (d.sellers_count / maxSellers) * 180 - 10;
+                const oy = 220 - (d.offers_count / maxOffers) * 180 - 10;
+                const vy = 220 - (d.volume / maxVolume) * 180 - 10;
                 return {
-                    x, y: py,
+                    x, y: py, sy, oy, vy,
                     price: d.price,
                     volume: d.volume,
                     sellers_count: d.sellers_count,
@@ -1179,6 +1339,30 @@ export default {
             const pts = chartPoints.value;
             if (pts.length === 0) return '';
             return `${chartPriceLinePath.value} L ${pts[pts.length - 1].x} 220 L ${pts[0].x} 220 Z`;
+        });
+
+        const chartSellersLinePath = computed(() => {
+            const pts = chartPoints.value;
+            if (pts.length === 0) return '';
+            return pts.reduce((path, p, idx) => (idx === 0 ? `M ${p.x} ${p.sy}` : `${path} L ${p.x} ${p.sy}`), '');
+        });
+
+        const chartSellersAreaPath = computed(() => {
+            const pts = chartPoints.value;
+            if (pts.length === 0) return '';
+            return `${chartSellersLinePath.value} L ${pts[pts.length - 1].x} 220 L ${pts[0].x} 220 Z`;
+        });
+
+        const chartOffersLinePath = computed(() => {
+            const pts = chartPoints.value;
+            if (pts.length === 0) return '';
+            return pts.reduce((path, p, idx) => (idx === 0 ? `M ${p.x} ${p.oy}` : `${path} L ${p.x} ${p.oy}`), '');
+        });
+
+        const chartOffersAreaPath = computed(() => {
+            const pts = chartPoints.value;
+            if (pts.length === 0) return '';
+            return `${chartOffersLinePath.value} L ${pts[pts.length - 1].x} 220 L ${pts[0].x} 220 Z`;
         });
 
         const chartMeanY = computed(() => {
@@ -1221,6 +1405,8 @@ export default {
                 }
             } catch (e) {
                 console.error('Failed to load market servers:', e);
+            } finally {
+                loadingServers.value = false;
             }
         };
 
@@ -1258,6 +1444,7 @@ export default {
         };
 
         const loadSyncLogs = async (page = 1) => {
+            loadingSyncLogs.value = true;
             try {
                 const res = await axios.get('/api/market/logs', {
                     params: { server_id: selectedServerId.value, page, limit: 10 }
@@ -1270,6 +1457,8 @@ export default {
                 };
             } catch (e) {
                 console.error('Failed to load logs:', e);
+            } finally {
+                loadingSyncLogs.value = false;
             }
         };
 
@@ -1355,10 +1544,11 @@ export default {
         };
 
         const syncServerNow = async (srv) => {
+            const targetServer = srv || currentServerConnection.value;
+            if (!targetServer) return;
             syncing.value = true;
+            syncingServerId.value = targetServer.id;
             try {
-                const targetServer = srv || currentServerConnection.value;
-                if (!targetServer) return;
                 const res = await axios.post(`/api/market/servers/${targetServer.id}/sync`);
                 if (res.data.success) {
                     showToast(t('market.sync_complete', { message: res.data.message }));
@@ -1373,6 +1563,7 @@ export default {
                 showToast(msg, 'error');
             } finally {
                 syncing.value = false;
+                syncingServerId.value = null;
             }
         };
 
@@ -1393,9 +1584,14 @@ export default {
             targets.value = [];
             stats.value = null;
             history.value = [];
+            activeInfo.value = null;
+            periodInfo.value = null;
+            mirroredStats.value = null;
+            mirroredHistory.value = null;
 
             if (!selectedItem.value || !selectedServerId.value) return;
 
+            loadingPairs.value = true;
             try {
                 const res = await axios.get('/api/market/targets', {
                     params: { server_id: selectedServerId.value, item_id: selectedItem.value }
@@ -1403,12 +1599,15 @@ export default {
                 targets.value = res.data || [];
             } catch (e) {
                 showToast(t('market.targets_failed'), 'error');
+            } finally {
+                loadingPairs.value = false;
             }
         };
 
         const fetchAnalytics = async () => {
             if (!selectedItem.value || !selectedTarget.value || !selectedServerId.value) return;
 
+            loadingChart.value = true;
             try {
                 const res = await axios.get('/api/market/analytics', {
                     params: {
@@ -1420,8 +1619,14 @@ export default {
                 });
                 stats.value = res.data.stats || null;
                 history.value = res.data.history || [];
+                activeInfo.value = res.data.active_info || null;
+                periodInfo.value = res.data.period_info || null;
+                mirroredStats.value = res.data.mirrored_stats || null;
+                mirroredHistory.value = res.data.mirrored_history || null;
             } catch (e) {
                 showToast(t('market.charts_failed'), 'error');
+            } finally {
+                loadingChart.value = false;
             }
         };
 
@@ -1484,8 +1689,13 @@ export default {
         return {
             activeTab,
             loading,
+            loadingServers,
+            loadingPairs,
+            loadingChart,
+            loadingSyncLogs,
             saving,
             syncing,
+            syncingServerId,
             servers,
             presets,
             accounts,
@@ -1535,6 +1745,12 @@ export default {
             selectedItemName,
             selectedTargetName,
             calculatedCost,
+            calculatedMirroredCost,
+            activeVolume,
+            activeOffersCount,
+            activeSellersCount,
+            priceTrendText,
+            priceTrendClass,
             formatVolume,
             getResourceIcon,
             handleIconError,
@@ -1543,6 +1759,10 @@ export default {
             chartPoints,
             chartPriceLinePath,
             chartPriceAreaPath,
+            chartSellersLinePath,
+            chartSellersAreaPath,
+            chartOffersLinePath,
+            chartOffersAreaPath,
             chartMeanY,
             hoveredPoint,
             tooltipPositionClass,

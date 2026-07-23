@@ -27,11 +27,12 @@
 
             <!-- Action buttons -->
             <button @click="toggleProduction" :disabled="loading"
-                    class="btn-secondary btn-sm text-[10px] disabled:opacity-50"
+                    class="btn-secondary btn-sm text-[10px] disabled:opacity-50 inline-flex items-center justify-center gap-1"
                     :class="isProducing 
                         ? 'text-amber-400/60 hover:text-amber-400 hover:border-amber-500/30' 
                         : 'text-emerald-400/60 hover:text-emerald-400 hover:border-emerald-500/30'">
-                {{ loading ? '...' : (isProducing ? 'Stop' : 'Start') }}
+                <spinner v-if="loading" size="xs" />
+                <template v-else>{{ isProducing ? 'Stop' : 'Start' }}</template>
             </button>
         </div>
     </div>
@@ -42,9 +43,11 @@ import { ref, computed } from 'vue';
 import { buildingName } from '../lang/gameNames';
 import axios from 'axios';
 import { showToast } from '../toast';
+import Spinner from './Spinner.vue';
 
 export default {
     name: 'BuildingRow',
+    components: { Spinner },
     props: {
         building: {
             type: Object,

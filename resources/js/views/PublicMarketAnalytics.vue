@@ -134,14 +134,20 @@
                     <!-- Step 1: Selling resource grid -->
                     <transition name="smooth-fade" mode="out-in">
                         <div v-if="visualTab === 1" key="step1" class="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-8 lg:grid-cols-10 gap-2 max-h-60 overflow-y-auto p-1.5 scrollbar-thin">
-                            <div v-for="good in goods" :key="good.item_id"
+                            <div v-for="good in allGoods" :key="good.item_id"
                                  @click="selectVisualItem(good.item_id)"
                                  class="flex flex-col items-center justify-center p-1.5 rounded-lg border cursor-pointer hover:border-emerald-500/40 hover:bg-white/[0.05] hover:shadow-md hover:shadow-emerald-500/5 text-center select-none transition-all duration-300 ease-out transform hover:-translate-y-0.5"
-                                 :class="selectedItem === good.item_id ? 'bg-emerald-500/10 border-emerald-500 shadow-lg shadow-emerald-500/10 scale-[1.02]' : 'bg-white/[0.02] border-white/5 hover:border-emerald-500/30 hover:bg-white/[0.05] hover:shadow-md'">
+                                 :class="selectedItem === good.item_id ? 'bg-emerald-500/10 border-emerald-500 shadow-lg shadow-emerald-500/10 scale-[1.02]' : 'bg-white/[0.02] border-white/5 hover:border-emerald-500/30 hover:bg-white/[0.05] hover:shadow-md'"
+                                 :style="good.no_offers ? 'opacity:0.4' : ''"
+                                 :title="good.no_offers ? t('market.no_offers') : getItemName(good.item_name, good.item_id)">
                                 <img :src="getResourceIcon(good.item_id)" @error="handleIconError($event, good.item_id)" class="w-6 h-6 object-contain mb-1 pointer-events-none transition-transform duration-300 group-hover:scale-110" />
                                 <span class="text-[9px] font-medium text-white/90 truncate w-full text-center" :title="getItemName(good.item_name, good.item_id)">{{ getItemName(good.item_name, good.item_id) }}</span>
                             </div>
-                            <div v-if="goods.length === 0" class="col-span-full py-8 text-center text-xs text-white/30">
+                            <div v-if="loading && allGoods.length === 0" class="col-span-full py-8 flex items-center justify-center gap-2 text-xs text-emerald-400">
+                                <spinner size="sm" />
+                                <span>{{ t('common.loading_data') }}</span>
+                            </div>
+                            <div v-else-if="allGoods.length === 0" class="col-span-full py-8 text-center text-xs text-white/30">
                                 No resources available in the database.
                             </div>
                         </div>
@@ -155,7 +161,11 @@
                                 <img :src="getResourceIcon(target.target_item_id)" @error="handleIconError($event, target.target_item_id)" class="w-6 h-6 object-contain mb-1 pointer-events-none transition-transform duration-300 group-hover:scale-110" />
                                 <span class="text-[9px] font-medium text-white/90 truncate w-full text-center" :title="getItemName(target.target_item_name, target.target_item_id)">{{ getItemName(target.target_item_name, target.target_item_id) }}</span>
                             </div>
-                            <div v-if="targets.length === 0" class="col-span-full py-8 text-center text-xs text-white/30">
+                            <div v-if="loadingPairs" class="col-span-full py-8 flex items-center justify-center gap-2 text-xs text-emerald-400">
+                                <spinner size="sm" />
+                                <span>{{ t('market.loading_pairs') }}</span>
+                            </div>
+                            <div v-else-if="targets.length === 0" class="col-span-full py-8 text-center text-xs text-white/30">
                                 Please select a selling item first.
                             </div>
                         </div>
@@ -177,9 +187,16 @@
             </transition>
         </div>
 
+        <!-- Analytics loading placeholder (first fetch for a pair) -->
+        <div v-if="loadingChart && !stats" class="glass-card p-12 flex flex-col items-center justify-center gap-3 text-emerald-400">
+            <spinner size="lg" />
+            <p class="text-xs text-white/40">{{ t('market.loading_chart') }}</p>
+        </div>
+
         <!-- Analysis Dashboard (Visible if both selected) -->
         <transition name="smooth-fade">
-            <div v-if="selectedItem && selectedTarget && stats" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div v-if="selectedItem && selectedTarget && stats" class="relative grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <loading-overlay :show="loadingChart" :label="t('market.loading_chart')" />
                 <!-- Stats Swarm (Left columns) -->
                 <div class="lg:col-span-2 space-y-6">
                     <!-- Pricing Stats -->
@@ -448,7 +465,8 @@
         </transition>
 
         <!-- Popular Items, Arbitrage & Current Active Market -->
-        <div class="space-y-6">
+        <div class="space-y-6 relative">
+            <loading-overlay :show="loading" :label="t('market.loading_data')" />
             <!-- Most Popular Items Card -->
             <div class="glass-card p-6 animate-fade-in-up transition-all duration-500 hover:border-white/20">
                 <div class="flex items-center justify-between gap-3 mb-6 border-b border-white/5 pb-3">
@@ -703,14 +721,21 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { showToast } from '../toast';
 import { t,gameAnyLookup } from '../lang';
-import { humanizeGameId } from '../lang/gameNames';
+import { humanizeGameId, resourceName } from '../lang/gameNames';
+import { TRADABLE_RESOURCES } from '../lang/resourcesCatalog';
 import axios from 'axios';
 import { getGameImageUrl, handleGameImageError } from '../services/gameImageService';
 
+import Spinner from '../components/Spinner.vue';
+import LoadingOverlay from '../components/LoadingOverlay.vue';
+
 export default {
     name: 'PublicMarketAnalytics',
+    components: { Spinner, LoadingOverlay },
     setup() {
         const loading = ref(false);
+        const loadingPairs = ref(false);
+        const loadingChart = ref(false);
         const showPopularItems = ref(true);
         const showArbitrageSchemes = ref(true);
         const showActiveListings = ref(true);
@@ -722,6 +747,16 @@ export default {
         // API lists & Translations
         const goods = ref([]);
         const targets = ref([]);
+
+        // Полный каталог торгуемых ресурсов из игрового XML, объединённый с товарами с сервера:
+        // ресурсы без активных предложений тоже отображаются (приглушёнными), чтобы был виден весь рынок.
+        const allGoods = computed(() => {
+            const known = new Set(goods.value.map(g => g.item_id));
+            const extras = TRADABLE_RESOURCES
+                .filter(name => !known.has(name))
+                .map(name => ({ item_id: name, item_name: resourceName(name), no_offers: true }));
+            return [...goods.value, ...extras];
+        });
         const popular = ref([]);
         const history = ref([]);
         const stats = ref(null);
@@ -830,7 +865,7 @@ export default {
 
         // Dynamic translated names
         const selectedItemName = computed(() => {
-            const item = goods.value.find(g => g.item_id === selectedItem.value);
+            const item = allGoods.value.find(g => g.item_id === selectedItem.value);
             const name = item ? item.item_name : selectedItem.value;
             return getItemName(name, selectedItem.value);
         });
@@ -1071,6 +1106,7 @@ export default {
 
             if (!selectedItem.value || !selectedServerId.value) return;
 
+            loadingPairs.value = true;
             try {
                 const res = await axios.get('/api/public/market/targets', {
                     params: { server_id: selectedServerId.value, item_id: selectedItem.value }
@@ -1078,6 +1114,8 @@ export default {
                 targets.value = res.data || [];
             } catch (e) {
                 showToast(t('market.targets_failed'), 'error');
+            } finally {
+                loadingPairs.value = false;
             }
         };
 
@@ -1111,6 +1149,7 @@ export default {
                 return;
             }
 
+            loadingChart.value = true;
             try {
                 const res = await axios.get('/api/public/market/analytics', {
                     params: {
@@ -1128,6 +1167,8 @@ export default {
                 mirroredHistory.value = res.data.mirrored_history || null;
             } catch (e) {
                 showToast(t('market.charts_failed'), 'error');
+            } finally {
+                loadingChart.value = false;
             }
         };
 
@@ -1204,11 +1245,14 @@ export default {
 
         return {
             loading,
+            loadingPairs,
+            loadingChart,
             servers,
             selectedServerId,
             onServerChange,
             getLocaleFlag,
             goods,
+            allGoods,
             targets,
             popular,
             history,

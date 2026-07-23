@@ -33,7 +33,7 @@
                 </div>
 
                 <!-- Region & Submit -->
-                <div class="flex gap-3">
+                <div class="flex gap-3 items-end">
                     <div class="flex-1 relative">
                         <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('accounts.region') }}</label>
                         <select required v-model="form.region" class="glass-select w-full">
@@ -82,7 +82,31 @@
                 <span class="badge badge-neutral text-[10px]">{{ accounts.length }}</span>
             </h2>
 
-            <div v-if="accounts.length > 0" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+            <!-- Skeleton placeholders while accounts are loading -->
+            <div v-if="loading && accounts.length === 0" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                <div v-for="i in 3" :key="'acc-skeleton-' + i" class="glass-card overflow-hidden">
+                    <div class="h-[3px] skeleton"></div>
+                    <div class="p-5">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 rounded-xl skeleton flex-shrink-0"></div>
+                            <div class="flex-1 min-w-0">
+                                <div class="w-24 h-4 rounded skeleton mb-2"></div>
+                                <div class="w-32 h-3 rounded skeleton"></div>
+                            </div>
+                            <div class="w-16 h-5 rounded-full skeleton"></div>
+                        </div>
+                        <div class="flex gap-2 mb-4">
+                            <div class="w-20 h-5 rounded-full skeleton"></div>
+                            <div class="w-16 h-5 rounded-full skeleton"></div>
+                        </div>
+                        <div class="flex gap-2">
+                            <div class="w-20 h-8 rounded-lg skeleton"></div>
+                            <div class="w-24 h-8 rounded-lg skeleton"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div v-else-if="accounts.length > 0" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                 <account-card v-for="acc in accounts" :key="acc.id" :account="acc"
                               @sync-success="loadAccounts" @delete-success="loadAccounts" @action-success="loadAccounts" />
             </div>
@@ -105,6 +129,7 @@ export default {
     components: { AccountCard },
     setup() {
         const accounts = ref([]);
+        const loading = ref(true);
         const submitting = ref(false);
         const form = ref({
             username: '',
@@ -113,11 +138,14 @@ export default {
         });
 
         const loadAccounts = async () => {
+            if (accounts.value.length === 0) loading.value = true;
             try {
                 const res = await axios.get('/api/accounts');
                 accounts.value = res.data || [];
             } catch (e) {
                 showToast(t('accounts.load_failed'), 'error');
+            } finally {
+                loading.value = false;
             }
         };
 
@@ -144,6 +172,7 @@ export default {
 
         return {
             accounts,
+            loading,
             form,
             submitting,
             loadAccounts,

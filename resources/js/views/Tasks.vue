@@ -37,7 +37,7 @@
                     <!-- Название серии -->
                     <div>
                         <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('tasks.series_name') }}</label>
-                        <input type="text" v-model="taskName" :placeholder="t('tasks.series_name_placeholder')" class="glass-input w-full text-xs py-2.5">
+                        <input type="text" v-model="taskName" :placeholder="t('tasks.series_name_placeholder')" class="glass-input w-full text-left  py-2.5">
                     </div>
 
                     <!-- Выбор аккаунта -->
@@ -438,7 +438,8 @@
 
                 <button type="submit" :disabled="scheduling" class="btn-primary flex items-center gap-2 disabled:opacity-50"
                         :class="{ 'bg-gradient-to-r from-amber-500 to-orange-600 border-amber-500/30': editingTaskId }">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <spinner v-if="scheduling" size="sm" />
+                    <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                     </svg>
                     {{ scheduling ? t('tasks.saving') : (editingTaskId ? t('tasks.save_changes') : t('tasks.schedule_series')) }}
@@ -456,7 +457,26 @@
                 <span class="badge badge-neutral text-[10px]">{{ tasks.length }}</span>
             </h2>
 
-            <div v-if="tasks.length > 0" class="space-y-6">
+            <!-- Skeleton while tasks are loading -->
+            <div v-if="loadingPlanner && tasks.length === 0" class="space-y-6">
+                <div class="glass-card overflow-hidden">
+                    <div class="px-5 py-3 border-b border-white/5 bg-white/[0.02]">
+                        <div class="w-40 h-4 rounded skeleton"></div>
+                    </div>
+                    <div class="divide-y divide-white/5">
+                        <div v-for="i in 3" :key="'task-skeleton-' + i" class="p-5 flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl skeleton flex-shrink-0"></div>
+                            <div class="flex-1 min-w-0">
+                                <div class="w-48 h-4 rounded skeleton mb-2"></div>
+                                <div class="w-32 h-3 rounded skeleton"></div>
+                            </div>
+                            <div class="w-24 h-8 rounded-lg skeleton hidden sm:block"></div>
+                            <div class="w-16 h-8 rounded-lg skeleton"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div v-else-if="tasks.length > 0" class="space-y-6">
                 <div v-for="(groupTasks, accountName) in groupedTasks" :key="accountName" class="glass-card overflow-hidden">
                     <!-- Заголовок группы (Аккаунт) -->
                     <div class="px-5 py-3 border-b border-white/5 bg-white/[0.02]">
@@ -943,11 +963,15 @@ import { humanizeGameId, resourceName, buildingName, isBuffableBuilding, getBuil
 import { canBuffTarget, isBuildingBuff, isFriendZoneBuff, getBuffDurations, formatBuffDuration } from '../lang/buffTargets';
 import { getGameImageUrl, handleGameImageError } from '../services/gameImageService';
 
+import Spinner from '../components/Spinner.vue';
+
 export default {
     name: 'Tasks',
+    components: { Spinner },
     setup() {
         const tasks = ref([]);
         const accounts = ref([]);
+        const loadingPlanner = ref(true);
         const scheduling = ref(false);
         const executingTasks = ref({});
 
@@ -1156,7 +1180,7 @@ export default {
             selectedFriend.value = friend;
             selectedFriendBuilding.value = null;
             payload.value.grid = '';
-            
+
             if (friend) {
                 if (!friend.id) {
                     showToast(t('tasks.toast.friend_no_id'), 'error');
@@ -1277,12 +1301,15 @@ export default {
         };
 
         const loadPlanner = async () => {
+            if (tasks.value.length === 0 && accounts.value.length === 0) loadingPlanner.value = true;
             try {
                 const res = await axios.get('/api/tasks');
                 tasks.value = res.data.tasks || [];
                 accounts.value = res.data.accounts || [];
             } catch (e) {
                 showToast(t('tasks.toast.load_failed'), 'error');
+            } finally {
+                loadingPlanner.value = false;
             }
         };
 
@@ -2484,6 +2511,7 @@ export default {
         return {
             tasks,
             accounts,
+            loadingPlanner,
             scheduling,
             selectedAccountId,
             taskName,

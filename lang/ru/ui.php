@@ -658,4 +658,19 @@ return [
     'tasks.select_specialists' => 'Выберите специалистов...',
     'tasks.my_city' => 'Мой город',
     'tasks.friend_city' => 'Город друга',
+
+    // Loading indicators (spinners / skeletons)
+    'common.loading' => 'Загрузка…',
+    'common.loading_data' => 'Загрузка данных…',
+    'common.updating' => 'Обновление…',
+    'accounts.loading' => 'Загрузка аккаунтов…',
+    'logs.loading' => 'Загрузка журнала…',
+    'settings.loading' => 'Загрузка настроек…',
+    'settings.clearing' => 'Очистка…',
+    'settings.deactivating' => 'Деактивация…',
+    'tasks.loading_tasks' => 'Загрузка задач…',
+    'market.loading_data' => 'Загрузка данных рынка…',
+    'market.loading_pairs' => 'Загрузка торговых пар…',
+    'market.loading_chart' => 'Загрузка аналитики…',
+    'market.loading_servers' => 'Загрузка серверов…',
 ];

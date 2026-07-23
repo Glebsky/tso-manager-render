@@ -78,13 +78,26 @@
         </div>
 
         <!-- Logs Listing -->
-        <div class="glass-card overflow-hidden mb-6">
-            <div v-if="logs.length > 0" class="divide-y divide-white/5">
+        <div class="glass-card overflow-hidden mb-6 relative">
+            <!-- Skeleton placeholders on first load -->
+            <div v-if="loading && logs.length === 0" class="divide-y divide-white/5">
+                <div v-for="i in 8" :key="'log-skeleton-' + i" class="p-4 flex items-center gap-4">
+                    <div class="w-16 h-5 rounded-full skeleton flex-shrink-0"></div>
+                    <div class="flex-1 min-w-0">
+                        <div class="w-2/3 h-3 rounded skeleton mb-2"></div>
+                        <div class="w-1/3 h-2 rounded skeleton"></div>
+                    </div>
+                    <div class="w-20 h-3 rounded skeleton"></div>
+                </div>
+            </div>
+            <div v-else-if="logs.length > 0" class="divide-y divide-white/5">
                 <log-entry v-for="log in logs" :key="log.id" :log="log" />
             </div>
             <div v-else class="p-12 text-center text-white/30">
                 <p>{{ t('logs.empty') }}</p>
             </div>
+            <!-- Overlay while refreshing / paginating so content doesn't jump -->
+            <loading-overlay :show="loading && logs.length > 0" :label="t('logs.loading')" />
         </div>
 
         <!-- Pagination Controls -->
@@ -117,11 +130,12 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import { t } from '../lang';
 import axios from 'axios';
 import LogEntry from '../components/LogEntry.vue';
+import LoadingOverlay from '../components/LoadingOverlay.vue';
 import { showToast } from '../toast';
 
 export default {
     name: 'Logs',
-    components: { LogEntry },
+    components: { LogEntry, LoadingOverlay },
     setup() {
         const loading = ref(false);
         const logs = ref([]);

@@ -20,7 +20,18 @@
                 <h2 class="text-lg font-semibold text-white">{{ t('settings.general') }}</h2>
             </div>
 
-            <form @submit.prevent="saveSettings">
+            <!-- Skeleton while settings are loading -->
+            <div v-if="loading">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div v-for="i in 2" :key="'settings-skeleton-' + i">
+                        <div class="w-32 h-3 rounded skeleton mb-2"></div>
+                        <div class="w-full h-[46px] skeleton"></div>
+                    </div>
+                </div>
+                <div class="w-44 h-[46px] skeleton"></div>
+            </div>
+
+            <form v-else @submit.prevent="saveSettings">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <!-- Sync Interval -->
                     <div>
@@ -61,8 +72,9 @@
                     </div>
                 </div>
 
-                <button type="submit" :disabled="saving" class="btn-primary flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <button type="submit" :disabled="saving" class="btn-primary flex items-center gap-2 disabled:opacity-60">
+                    <spinner v-if="saving" size="sm" />
+                    <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
                     </svg>
                     {{ saving ? t('settings.saving') : t('settings.save') }}
@@ -89,8 +101,9 @@
                         <p class="text-xs text-white/30 mt-1">{{ t('settings.clear_logs_hint') }}</p>
                     </div>
                     <button @click="clearLogs" :disabled="clearingLogs"
-                            class="btn-danger flex items-center gap-1.5">
-                        {{ t('settings.clear_all_logs') }}
+                            class="btn-danger flex items-center gap-1.5 disabled:opacity-60">
+                        <spinner v-if="clearingLogs" size="xs" />
+                        {{ clearingLogs ? t('settings.clearing') : t('settings.clear_all_logs') }}
                     </button>
                 </div>
 
@@ -101,8 +114,9 @@
                         <p class="text-xs text-white/30 mt-1">{{ t('settings.pause_tasks_hint') }}</p>
                     </div>
                     <button @click="stopAllTasks" :disabled="stoppingTasks"
-                            class="btn-danger flex items-center gap-1.5">
-                        {{ t('settings.deactivate_all') }}
+                            class="btn-danger flex items-center gap-1.5 disabled:opacity-60">
+                        <spinner v-if="stoppingTasks" size="xs" />
+                        {{ stoppingTasks ? t('settings.deactivating') : t('settings.deactivate_all') }}
                     </button>
                 </div>
             </div>
@@ -115,10 +129,13 @@ import { ref, onMounted } from 'vue';
 import { t } from '../lang';
 import axios from 'axios';
 import { showToast } from '../toast';
+import Spinner from '../components/Spinner.vue';
 
 export default {
     name: 'Settings',
+    components: { Spinner },
     setup() {
+        const loading = ref(true);
         const saving = ref(false);
         const clearingLogs = ref(false);
         const stoppingTasks = ref(false);
@@ -137,6 +154,8 @@ export default {
                 };
             } catch (e) {
                 showToast(t('settings.load_failed'), 'error');
+            } finally {
+                loading.value = false;
             }
         };
 
@@ -189,6 +208,7 @@ export default {
         });
 
         return {
+            loading,
             saving,
             clearingLogs,
             stoppingTasks,
