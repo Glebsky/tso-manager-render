@@ -36719,6 +36719,7 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'BattleBuffKill_random_unit_type_limited' => 'Убийца',
         'BattleLance' => 'Тяжелое копье',
         'Battlehorse' => 'Боевой конь',
+        'BattleHorse' => 'Боевой конь',
         'Beer' => 'Квас',
         'Besieger' => 'Мастер осады',
         'BirthdayShaman' => 'Мистический шаман',

@@ -58,11 +58,29 @@ final class GameTranslationResolver
 
     private function lookup(string $section, string $id, ?string $locale): ?string
     {
+        $lcFirst = lcfirst($id);
+        $ucFirst = ucfirst($id);
+
         foreach ($this->localeChain($locale) as $chainLocale) {
             $catalog = $this->catalog($chainLocale);
 
             if (isset($catalog[$section][$id]) && is_string($catalog[$section][$id])) {
                 return $catalog[$section][$id];
+            }
+            if (isset($catalog[$section][$lcFirst]) && is_string($catalog[$section][$lcFirst])) {
+                return $catalog[$section][$lcFirst];
+            }
+            if (isset($catalog[$section][$ucFirst]) && is_string($catalog[$section][$ucFirst])) {
+                return $catalog[$section][$ucFirst];
+            }
+
+            if (isset($catalog[$section])) {
+                $idLower = strtolower($id);
+                foreach ($catalog[$section] as $k => $v) {
+                    if (strtolower($k) === $idLower && is_string($v)) {
+                        return $v;
+                    }
+                }
             }
         }
 

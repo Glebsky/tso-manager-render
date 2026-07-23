@@ -151,7 +151,7 @@ class MarketAnalyticsController extends Controller
                 $worldName = $server->account->server_name;
             }
 
-            if (!$worldName) {
+            if (! $worldName) {
                 $name = preg_replace('/\s+Settlers\s+Market$/i', '', (string) $server->display_name);
                 $name = preg_replace('/\s+Market\s*\([^)]*\)$/i', '', (string) $name);
                 $worldName = trim($name);

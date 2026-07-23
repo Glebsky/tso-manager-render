@@ -99,12 +99,12 @@
                             <button @click="selectionMode = 'dropdown'"
                                     class="px-3 py-1 rounded text-[10px] font-bold uppercase transition-all"
                                     :class="selectionMode === 'dropdown' ? 'bg-emerald-500 text-white' : 'text-white/50 hover:text-white'">
-                                Dropdowns
+                                {{ t('market.dropdowns') }}
                             </button>
                             <button @click="selectionMode = 'visual'"
                                     class="px-3 py-1 rounded text-[10px] font-bold uppercase transition-all"
                                     :class="selectionMode === 'visual' ? 'bg-emerald-500 text-white' : 'text-white/50 hover:text-white'">
-                                Visual Browser
+                                {{ t('market.visual_browser') }}
                             </button>
                         </div>
                     </div>
@@ -112,13 +112,13 @@
                     <!-- Reset Selection / Mirror Button -->
                     <div class="flex items-center gap-2">
                         <button v-if="selectedItem || selectedTarget" @click="resetSelection" class="btn-secondary py-1 px-3 text-xs bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition-all">
-                            Reset Selection
+                            {{ t('market.reset_selection') }}
                         </button>
                         <button v-if="selectedItem && selectedTarget" @click="mirrorSelection" class="btn-secondary py-1 px-3 text-xs bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all flex items-center gap-1">
                             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
                             </svg>
-                            Mirror Trade
+                            {{ t('market.mirror_trade') }}
                         </button>
                     </div>
                 </div>
@@ -132,7 +132,7 @@
                             <select v-model="selectedItem" @change="onItemChange" class="glass-select w-full">
                                 <option value="" class="bg-dark-900">{{ t('market.select_selling') }}</option>
                                 <option v-for="good in goods" :key="good.item_id" :value="good.item_id" class="bg-dark-900">
-                                    {{ good.item_name }} ({{ good.item_id }})
+                                    {{ getItemName(good.item_name, good.item_id) }} ({{ good.item_id }})
                                 </option>
                             </select>
                             <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
@@ -150,7 +150,7 @@
                             <select v-model="selectedTarget" :disabled="!selectedItem" @change="fetchAnalytics" class="glass-select w-full disabled:opacity-40">
                                 <option value="" class="bg-dark-900">{{ t('market.select_target') }}</option>
                                 <option v-for="target in targets" :key="target.target_item_id" :value="target.target_item_id" class="bg-dark-900">
-                                    {{ target.target_item_name }} ({{ target.target_item_id }})
+                                    {{ getItemName(target.target_item_name, target.target_item_id) }} ({{ target.target_item_id }})
                                 </option>
                             </select>
                             <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
@@ -169,14 +169,14 @@
                         <button @click="visualTab = 1"
                                 class="pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2"
                                 :class="visualTab === 1 ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-white/40 hover:text-white'">
-                            1. Sell Resource
+                            {{ t('market.sell_resource') }}
                             <span v-if="selectedItem" class="ml-1 text-[10px] text-emerald-500 font-mono font-medium">({{ selectedItemName }})</span>
                         </button>
                         <button @click="visualTab = 2"
                                 :disabled="!selectedItem"
                                 class="pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 disabled:opacity-30 disabled:cursor-not-allowed"
                                 :class="visualTab === 2 ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-white/40 hover:text-white'">
-                            2. Buy Resource
+                            {{ t('market.buy_resource') }}
                             <span v-if="selectedTarget" class="ml-1 text-[10px] text-emerald-500 font-mono font-medium">({{ selectedTargetName }})</span>
                         </button>
                     </div>
@@ -188,9 +188,9 @@
                              class="flex flex-col items-center justify-center p-1.5 rounded-lg border cursor-pointer hover:border-emerald-500/40 hover:bg-white/[0.05] hover:shadow-md hover:shadow-emerald-500/5 text-center select-none transition-all duration-200"
                              :class="selectedItem === good.item_id ? 'bg-emerald-500/10 border-emerald-500 shadow shadow-emerald-500/10' : 'bg-white/[0.02] border-white/5 hover:border-white/20 hover:bg-white/[0.04]'"
                              :style="good.no_offers ? 'opacity:0.4' : ''"
-                             :title="good.no_offers ? t('market.no_offers') : good.item_name">
+                             :title="good.no_offers ? t('market.no_offers') : getItemName(good.item_name, good.item_id)">
                             <img :src="getResourceIcon(good.item_id)" @error="handleIconError($event, good.item_id)" class="w-6 h-6 object-contain mb-1 pointer-events-none" />
-                            <span class="text-[9px] font-medium text-white/90 truncate w-full" :title="good.item_name">{{ good.item_name }}</span>
+                            <span class="text-[9px] font-medium text-white/90 truncate w-full" :title="getItemName(good.item_name, good.item_id)">{{ getItemName(good.item_name, good.item_id) }}</span>
                         </div>
                         <div v-if="loading && allGoods.length === 0" class="col-span-full py-8 flex items-center justify-center gap-2 text-xs text-emerald-400">
                             <spinner size="sm" />
@@ -208,7 +208,7 @@
                              class="flex flex-col items-center justify-center p-1.5 rounded-lg border cursor-pointer hover:border-emerald-500/40 hover:bg-white/[0.05] hover:shadow-md hover:shadow-emerald-500/5 text-center select-none transition-all duration-200"
                              :class="selectedTarget === target.target_item_id ? 'bg-emerald-500/10 border-emerald-500 shadow shadow-emerald-500/10' : 'bg-white/[0.02] border-white/5 hover:border-white/20 hover:bg-white/[0.04]'">
                             <img :src="getResourceIcon(target.target_item_id)" @error="handleIconError($event, target.target_item_id)" class="w-6 h-6 object-contain mb-1 pointer-events-none" />
-                            <span class="text-[9px] font-medium text-white/90 truncate w-full" :title="target.target_item_name">{{ target.target_item_name }}</span>
+                            <span class="text-[9px] font-medium text-white/90 truncate w-full" :title="getItemName(target.target_item_name, target.target_item_id)">{{ getItemName(target.target_item_name, target.target_item_id) }}</span>
                         </div>
                         <div v-if="loadingPairs" class="col-span-full py-8 flex items-center justify-center gap-2 text-xs text-emerald-400">
                             <spinner size="sm" />
@@ -531,13 +531,13 @@
                                     <td class="py-3 px-4 font-semibold text-white">
                                         <div class="flex items-center gap-2">
                                             <img :src="getResourceIcon(item.item_id)" @error="handleIconError($event, item.item_id)" class="w-5 h-5 object-contain" />
-                                            <span>{{ item.item_name }}</span>
+                                            <span>{{ getItemName(item.item_name, item.item_id) }}</span>
                                         </div>
                                     </td>
                                     <td class="py-3 px-4 font-mono text-xs text-white/35">{{ item.item_id }}</td>
                                     <td class="py-3 px-4 text-right text-emerald-400 font-mono font-medium">{{ item.offers_count }} offers</td>
                                     <td class="py-3 px-4 text-right text-blue-400 font-mono">{{ item.sellers_count }} sellers</td>
-                                    <td class="py-3 px-4 text-right font-mono">{{ formatVolume(item.total_volume) }} units</td>
+                                    <td class="py-3 px-4 text-right font-mono">{{ formatVolume(item.total_volume) }} {{ t('market.units_short') }}</td>
                                 </tr>
                                 <tr v-if="popular.length === 0">
                                     <td colspan="5" class="py-8 text-center text-white/20">
@@ -565,7 +565,7 @@
                         </div>
                         <div class="flex items-center gap-4">
                             <span class="badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs py-1 px-3">
-                                {{ arbitrageLoops.length }} schemes found
+                                {{ t('market.schemes_found', { count: arbitrageLoops.length }) }}
                             </span>
                             <button @click="toggleArbitrageSchemes" class="text-white/40 hover:text-white transition-colors">
                                 <svg v-if="showArbitrageSchemes" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -603,7 +603,7 @@
                                         <div class="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg py-1 px-2">
                                             <img :src="getResourceIcon(scheme.profit.item_id)" @error="handleIconError($event, scheme.profit.item_id)" class="w-4 h-4 object-contain" />
                                             <span class="font-mono text-sm font-bold text-emerald-400">+{{ formatVolume(scheme.profit.amount) }}</span>
-                                            <span class="text-xs text-emerald-400/70 truncate max-w-[80px]">{{ scheme.profit.item_name }}</span>
+                                            <span class="text-xs text-emerald-400/70 truncate max-w-[80px]">{{ getItemName(scheme.profit.item_name, scheme.profit.item_id) }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -695,14 +695,14 @@
                                             <div class="flex items-center gap-2">
                                                 <img :src="getResourceIcon(offer.item_id)" @error="handleIconError($event, offer.item_id)" class="w-5 h-5 object-contain" />
                                                 <span class="font-mono text-white/90">{{ formatVolume(offer.amount) }}</span>
-                                                <span class="text-xs text-white/40 truncate max-w-[100px]">{{ offer.item_name }}</span>
+                                                <span class="text-xs text-white/40 truncate max-w-[100px]">{{ getItemName(offer.item_name, offer.item_id) }}</span>
                                             </div>
                                         </td>
                                         <td class="py-3 px-4">
                                             <div class="flex items-center gap-2">
                                                 <img :src="getResourceIcon(offer.target_item_id)" @error="handleIconError($event, offer.target_item_id)" class="w-5 h-5 object-contain" />
                                                 <span class="font-mono text-white/90">{{ formatVolume(offer.target_amount) }}</span>
-                                                <span class="text-xs text-white/40 truncate max-w-[100px]">{{ offer.target_item_name }}</span>
+                                                <span class="text-xs text-white/40 truncate max-w-[100px]">{{ getItemName(offer.target_item_name, offer.target_item_id) }}</span>
                                             </div>
                                         </td>
                                         <td class="py-3 px-4 text-right text-emerald-400 font-mono font-medium">
@@ -1001,7 +1001,7 @@
 
 <script>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { t } from '../lang';
+import { t, gameAnyLookup } from '../lang';
 import axios from 'axios';
 import { showToast } from '../toast';
 import { getGameImageUrl, handleGameImageError } from '../services/gameImageService';
@@ -1051,7 +1051,7 @@ export default {
         };
 
         const formatTimeLeft = (seconds) => {
-            if (!seconds || seconds <= 0) return 'Expired';
+            if (!seconds || seconds <= 0) return t('market.expired');
             const h = Math.floor(seconds / 3600);
             const m = Math.floor((seconds % 3600) / 60);
             const s = seconds % 60;
@@ -1216,14 +1216,29 @@ export default {
             custom_interval_minutes: 15,
         });
 
+        const getItemName = (name, id) => {
+            const raw = id || name || '';
+            if (!raw) return '';
+
+            const translated = (id ? gameAnyLookup(String(id)) : null) ?? gameAnyLookup(String(raw));
+
+            if (translated) {
+                return translated;
+            }
+
+            return resourceName(raw) || name || '';
+        };
+
         const selectedItemName = computed(() => {
             const item = allGoods.value.find(g => g.item_id === selectedItem.value);
-            return item ? item.item_name : '';
+            const name = item ? item.item_name : selectedItem.value;
+            return getItemName(name, selectedItem.value);
         });
 
         const selectedTargetName = computed(() => {
             const item = targets.value.find(t => t.target_item_id === selectedTarget.value);
-            return item ? item.target_item_name : '';
+            const name = item ? item.target_item_name : selectedTarget.value;
+            return getItemName(name, selectedTarget.value);
         });
 
         const calculatedCost = computed(() => {
@@ -1782,6 +1797,7 @@ export default {
             resetSelection,
             mirrorSelection,
             changePeriod,
+            getItemName,
         };
     }
 };

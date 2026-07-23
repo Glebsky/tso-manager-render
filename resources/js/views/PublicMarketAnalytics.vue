@@ -52,12 +52,12 @@
                         <button @click="selectionMode = 'dropdown'"
                                 class="px-3 py-1 rounded text-[10px] font-bold uppercase transition-all duration-300"
                                 :class="selectionMode === 'dropdown' ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/20' : 'text-white/50 hover:text-white'">
-                            Dropdowns
+                            {{ t('market.dropdowns') }}
                         </button>
                         <button @click="selectionMode = 'visual'"
                                 class="px-3 py-1 rounded text-[10px] font-bold uppercase transition-all duration-300"
                                 :class="selectionMode === 'visual' ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/20' : 'text-white/50 hover:text-white'">
-                            Visual Browser
+                            {{ t('market.visual_browser') }}
                         </button>
                     </div>
                 </div>
@@ -65,13 +65,13 @@
                 <!-- Reset Selection / Mirror Button -->
                 <div class="flex items-center gap-2">
                     <button v-if="selectedItem || selectedTarget" @click="resetSelection" class="btn-secondary py-1 px-3 text-xs bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-300">
-                        Reset Selection
+                        {{ t('market.reset_selection') }}
                     </button>
                     <button v-if="selectedItem && selectedTarget" @click="mirrorSelection" class="btn-secondary py-1 px-3 text-xs bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-300 flex items-center gap-1">
                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
                         </svg>
-                        Mirror Trade
+                        {{ t('market.mirror_trade') }}
                     </button>
                 </div>
             </div>
@@ -123,14 +123,14 @@
                         <button @click="visualTab = 1"
                                 class="pb-3 text-xs font-bold uppercase tracking-wider transition-all duration-300 border-b-2"
                                 :class="visualTab === 1 ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-white/40 hover:text-white'">
-                            1. Sell Resource
+                            {{ t('market.sell_resource') }}
                             <span v-if="selectedItem" class="ml-1 text-[10px] text-emerald-500 font-mono font-medium">({{ selectedItemName }})</span>
                         </button>
                         <button @click="visualTab = 2"
                                 :disabled="!selectedItem"
                                 class="pb-3 text-xs font-bold uppercase tracking-wider transition-all duration-300 border-b-2 disabled:opacity-30 disabled:cursor-not-allowed"
                                 :class="visualTab === 2 ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-white/40 hover:text-white'">
-                            2. Buy Resource
+                            {{ t('market.buy_resource') }}
                             <span v-if="selectedTarget" class="ml-1 text-[10px] text-emerald-500 font-mono font-medium">({{ selectedTargetName }})</span>
                         </button>
                     </div>
@@ -515,7 +515,7 @@
                                     <td class="py-3 px-4 font-mono text-xs text-white/35">{{ item.item_id }}</td>
                                     <td class="py-3 px-4 text-right text-emerald-400 font-mono font-medium">{{ item.offers_count }} offers</td>
                                     <td class="py-3 px-4 text-right text-blue-400 font-mono">{{ item.sellers_count }} sellers</td>
-                                    <td class="py-3 px-4 text-right font-mono">{{ formatVolume(item.total_volume) }} units</td>
+                                    <td class="py-3 px-4 text-right font-mono">{{ formatVolume(item.total_volume) }} {{ t('market.units_short') }}</td>
                                 </tr>
                                 <tr v-if="popular.length === 0">
                                     <td colspan="5" class="py-8 text-center text-white/20">
@@ -544,7 +544,7 @@
                     </div>
                     <div class="flex items-center gap-4">
                         <span class="badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs py-1 px-3">
-                            {{ arbitrageLoops.length }} schemes found
+                            {{ t('market.schemes_found', { count: arbitrageLoops.length }) }}
                         </span>
                         <button @click="toggleArbitrageSchemes" class="text-white/40 hover:text-white transition-colors duration-300">
                             <svg v-if="showArbitrageSchemes" class="w-5 h-5 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -981,7 +981,7 @@ export default {
             handleGameImageError(event, 'resource', itemId || 'addresource', '/images/resources/addresource.webp');
 
         const formatTimeLeft = (seconds) => {
-            if (seconds <= 0) return 'Expired';
+            if (seconds <= 0) return t('market.expired');
             const h = Math.floor(seconds / 3600);
             const m = Math.floor((seconds % 3600) / 60);
             const s = seconds % 60;

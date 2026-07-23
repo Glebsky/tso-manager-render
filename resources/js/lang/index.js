@@ -112,11 +112,24 @@ export function t(key, params = null) {
 
 /** Raw game catalog lookup by (section, id); null when missing everywhere. */
 export function gameLookup(section, id) {
-    for (const chainLocale of localeChain) {
-        const text = catalogs[chainLocale]?.game?.[section]?.[id];
+    if (!id) return null;
+    const strId = String(id);
+    const lcFirst = strId.charAt(0).toLowerCase() + strId.slice(1);
+    const ucFirst = strId.charAt(0).toUpperCase() + strId.slice(1);
 
-        if (typeof text === 'string') {
-            return text;
+    for (const chainLocale of localeChain) {
+        const sec = catalogs[chainLocale]?.game?.[section];
+        if (sec) {
+            if (typeof sec[strId] === 'string') return sec[strId];
+            if (typeof sec[lcFirst] === 'string') return sec[lcFirst];
+            if (typeof sec[ucFirst] === 'string') return sec[ucFirst];
+
+            const lower = strId.toLowerCase();
+            for (const key of Object.keys(sec)) {
+                if (key.toLowerCase() === lower && typeof sec[key] === 'string') {
+                    return sec[key];
+                }
+            }
         }
     }
 
