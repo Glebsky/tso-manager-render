@@ -224,8 +224,54 @@
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                     <!-- Селекторы целевой зоны и зданий/друзей -->
                                     <div class="col-span-2">
-                                        <!-- БАФФ (для apply_buff выбирается ПЕРВЫМ: от баффа зависят доступные здания) -->
+                                        <!-- 1. ЗОНА (для apply_buff выбирается ПЕРВОЙ) -->
                                         <div v-if="stepActionType === 'apply_buff'" class="mb-3">
+                                            <label class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">{{ t('tasks.where_apply') }}</label>
+                                            <div class="grid grid-cols-2 gap-2">
+                                                <button type="button" @click="stepTargetScope = 'self'; onTargetScopeChange()"
+                                                        class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all duration-300"
+                                                        :class="stepTargetScope === 'self' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
+                                                    🏡 {{ t('tasks.my_zone') }}
+                                                </button>
+                                                <button type="button" @click="stepTargetScope = 'friend'; onTargetScopeChange()"
+                                                        class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all duration-300"
+                                                        :class="stepTargetScope === 'friend' ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
+                                                    👤 {{ t('tasks.friend_zone') }}
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- 2. ВЫБОР ДРУГА (если выбрана Зона друга) -->
+                                        <div v-if="stepActionType === 'apply_buff' && stepTargetScope === 'friend'" class="mb-3">
+                                            <label class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">{{ t('tasks.friend') }}</label>
+                                            <div class="relative">
+                                                <button type="button" @click.stop="activeDropdown = activeDropdown === 'friendList' ? null : 'friendList'"
+                                                        class="glass-select w-full flex items-center justify-between text-left text-xs py-2 bg-dark-900/40 transition-all duration-300"
+                                                        :class="{ 'border-amber-500/40 bg-amber-500/5': !selectedFriend }">
+                                                    <span v-if="selectedFriend" class="flex items-center gap-2">
+                                                        <span>👤 {{ selectedFriend.nickname || selectedFriend.username }} ({{ t('tasks.level') }} {{ selectedFriend.playerLevel }})</span>
+                                                    </span>
+                                                    <span v-else class="text-amber-400/80 font-medium">{{ t('tasks.select_friend') }}</span>
+                                                    <svg class="w-3.5 h-3.5 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                                    </svg>
+                                                </button>
+                                                <div v-if="activeDropdown === 'friendList'" class="absolute z-50 mt-1.5 w-full glass-card border border-white/10 shadow-2xl rounded-xl py-1 max-h-60 overflow-y-auto">
+                                                    <button v-for="friend in friendsList" :key="friend.id" type="button" @click="selectFriend(friend); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors flex justify-between items-center">
+                                                        <span>👤 {{ friend.nickname || friend.username }} ({{ t('tasks.level') }} {{ friend.playerLevel }})</span>
+                                                        <span class="text-[9px]" :class="friend.onlineStatus ? 'text-green-400' : 'text-white/30'">
+                                                            {{ friend.onlineStatus ? t('tasks.online') : t('tasks.offline') }}
+                                                        </span>
+                                                    </button>
+                                                    <div v-if="friendsList.length === 0" class="px-3 py-1.5 text-xs text-white/40">
+                                                        {{ t('tasks.friends_empty') }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- 3. БАФФ (для домашней зоны — сразу; для друга — после выбора друга) -->
+                                        <div v-if="stepActionType === 'apply_buff' && (stepTargetScope === 'self' || (stepTargetScope === 'friend' && selectedFriend))" class="mb-3">
                                             <label class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">{{ t('tasks.buff') }}</label>
                                             <button type="button" @click="openBuffModal"
                                                     class="glass-select w-full flex items-center justify-between text-left text-xs py-2 bg-dark-900/40 transition-all duration-300"
@@ -243,54 +289,8 @@
                                             <p v-if="!selectedBuff" class="text-[10px] text-white/30 mt-1.5">{{ t('tasks.buff_first_hint') }}</p>
                                         </div>
 
-                                        <!-- ЗДАНИЯ (для остановки/запуска — сразу; для баффа — после выбора баффа) -->
+                                        <!-- 4. ЗДАНИЯ (для остановки/запуска — сразу; для баффа — после выбора баффа) -->
                                         <div v-if="['stop_production', 'start_production'].includes(stepActionType) || (stepActionType === 'apply_buff' && selectedBuff)" class="mb-3">
-                                            <!-- Переключатель: Моя зона / Зона друга (только для баффа) -->
-                                            <div v-if="stepActionType === 'apply_buff'" class="mb-3">
-                                                <label class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">{{ t('tasks.where_apply') }}</label>
-                                                <div class="grid grid-cols-2 gap-2">
-                                                    <button type="button" @click="stepTargetScope = 'self'; onTargetScopeChange()"
-                                                            class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all duration-300"
-                                                            :class="stepTargetScope === 'self' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
-                                                        🏡 {{ t('tasks.my_zone') }}
-                                                    </button>
-                                                    <button type="button" @click="stepTargetScope = 'friend'; onTargetScopeChange()"
-                                                            class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all duration-300"
-                                                            :class="stepTargetScope === 'friend' ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
-                                                        👤 {{ t('tasks.friend_zone') }}
-                                                    </button>
-                                                </div>
-                                            </div>
-
-                                            <!-- Выбор друга (отображается ТОЛЬКО если выбрана Зона друга) -->
-                                            <div v-if="stepActionType === 'apply_buff' && stepTargetScope === 'friend'" class="mb-3">
-                                                <label class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">{{ t('tasks.friend') }}</label>
-                                                <div class="relative">
-                                                    <button type="button" @click.stop="activeDropdown = activeDropdown === 'friendList' ? null : 'friendList'"
-                                                            class="glass-select w-full flex items-center justify-between text-left text-xs py-2 bg-dark-900/40 transition-all duration-300"
-                                                            :class="{ 'border-amber-500/40 bg-amber-500/5': !selectedFriend }">
-                                                        <span v-if="selectedFriend" class="flex items-center gap-2">
-                                                            <span>👤 {{ selectedFriend.nickname || selectedFriend.username }} ({{ t('tasks.level') }} {{ selectedFriend.playerLevel }})</span>
-                                                        </span>
-                                                        <span v-else class="text-amber-400/80 font-medium">{{ t('tasks.select_friend') }}</span>
-                                                        <svg class="w-3.5 h-3.5 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                                                        </svg>
-                                                    </button>
-                                                    <div v-if="activeDropdown === 'friendList'" class="absolute z-50 mt-1.5 w-full glass-card border border-white/10 shadow-2xl rounded-xl py-1 max-h-60 overflow-y-auto">
-                                                        <button v-for="friend in friendsList" :key="friend.id" type="button" @click="selectFriend(friend); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors flex justify-between items-center">
-                                                            <span>👤 {{ friend.nickname || friend.username }} ({{ t('tasks.level') }} {{ friend.playerLevel }})</span>
-                                                            <span class="text-[9px]" :class="friend.onlineStatus ? 'text-green-400' : 'text-white/30'">
-                                                                {{ friend.onlineStatus ? t('tasks.online') : t('tasks.offline') }}
-                                                            </span>
-                                                        </button>
-                                                        <div v-if="friendsList.length === 0" class="px-3 py-1.5 text-xs text-white/40">
-                                                            {{ t('tasks.friends_empty') }}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
                                             <div class="flex items-center justify-between mb-1.5">
                                                 <label class="block text-[10px] font-medium text-white/40 uppercase">
                                                     {{ t('tasks.selected_targets', { count: selectedBuildings.length }) }}
@@ -1678,6 +1678,10 @@ export default {
         const openBuffModal = () => {
             if (!selectedAccountId.value) {
                 showToast(t('tasks.toast.select_account_first'), 'warning');
+                return;
+            }
+            if (stepTargetScope.value === 'friend' && !selectedFriend.value) {
+                showToast(t('tasks.toast.select_friend_first'), 'warning');
                 return;
             }
             buffSearch.value = '';
