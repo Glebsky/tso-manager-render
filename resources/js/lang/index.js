@@ -22,7 +22,8 @@ const GAME_SECTION_LOOKUP_ORDER = ['RES', 'BUI', 'SPE', 'LAB'];
 const MAX_PLACEHOLDER_DEPTH = 3;
 
 function detectLocale() {
-    const raw = (typeof window !== 'undefined' && window.__APP_LOCALE__)
+    const raw = (typeof localStorage !== 'undefined' && localStorage.getItem('app_locale'))
+        || (typeof window !== 'undefined' && window.__APP_LOCALE__)
         || (typeof document !== 'undefined' && document.documentElement.lang)
         || FALLBACK_LOCALE;
     const normalized = String(raw).toLowerCase().split(/[-_]/)[0];
@@ -31,6 +32,17 @@ function detectLocale() {
 }
 
 export const locale = detectLocale();
+
+export function setLocale(newLocale) {
+    if (catalogs[newLocale]) {
+        if (typeof localStorage !== 'undefined') {
+            localStorage.setItem('app_locale', newLocale);
+        }
+        if (typeof window !== 'undefined') {
+            window.location.reload();
+        }
+    }
+}
 
 const localeChain = locale === FALLBACK_LOCALE ? [locale] : [locale, FALLBACK_LOCALE];
 

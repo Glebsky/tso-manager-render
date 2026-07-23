@@ -42,6 +42,9 @@
                         </svg>
                         <span>{{ t('dashboard.title') }}</span>
                     </router-link>
+
+                    <!-- Language Switcher -->
+                    <LanguageSwitcher />
                 </div>
             </div>
         </div>
@@ -736,10 +739,11 @@ import { getGameImageUrl, handleGameImageError } from '../services/gameImageServ
 
 import Spinner from '../components/Spinner.vue';
 import LoadingOverlay from '../components/LoadingOverlay.vue';
+import LanguageSwitcher from '../components/LanguageSwitcher.vue';
 
 export default {
     name: 'PublicMarketAnalytics',
-    components: { Spinner, LoadingOverlay },
+    components: { Spinner, LoadingOverlay, LanguageSwitcher },
     setup() {
         const loading = ref(false);
         const loadingPairs = ref(false);

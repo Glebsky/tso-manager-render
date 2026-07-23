@@ -153,15 +153,18 @@
                     <span class="text-xs text-white/40 font-medium">{{ t('nav.control_panel') }}</span>
                 </div>
 
-                <!-- Clock displays (Server & Local) -->
-                <div class="hidden sm:flex items-center gap-4 text-xs font-mono">
-                    <div v-if="serverTimeStr" class="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400" title="Server Time">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                        <span>Server: {{ serverTimeStr }}</span>
+                <!-- Right side controls (Clock displays & Language Switcher) -->
+                <div class="flex items-center gap-3">
+                    <div class="hidden sm:flex items-center gap-4 text-xs font-mono">
+                        <div v-if="serverTimeStr" class="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400" title="Server Time">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <span>Server: {{ serverTimeStr }}</span>
+                        </div>
+                        <div v-if="localTimeStr" class="text-white/40 text-[11px]" title="Local Time">
+                            {{ localTimeStr }}
+                        </div>
                     </div>
-                    <div v-if="localTimeStr" class="text-white/40 text-[11px]" title="Local Time">
-                        {{ localTimeStr }}
-                    </div>
+                    <LanguageSwitcher />
                 </div>
             </header>
 
@@ -219,9 +222,13 @@ import { useRoute } from 'vue-router';
 import { toasts } from './toast';
 import { intlLocale, t } from './lang';
 import axios from 'axios';
+import LanguageSwitcher from './components/LanguageSwitcher.vue';
 
 export default {
     name: 'App',
+    components: {
+        LanguageSwitcher
+    },
     setup() {
         const route = useRoute();
         const mobileMenuOpen = ref(false);
