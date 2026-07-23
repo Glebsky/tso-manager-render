@@ -7,8 +7,9 @@
  */
 import en from './generated/en.json';
 import ru from './generated/ru.json';
+import uk from './generated/uk.json';
 
-const catalogs = { en, ru };
+const catalogs = { en, ru, uk };
 
 const FALLBACK_LOCALE = 'en';
 
@@ -46,7 +47,7 @@ export function setLocale(newLocale) {
 
 const localeChain = locale === FALLBACK_LOCALE ? [locale] : [locale, FALLBACK_LOCALE];
 
-const INTL_LOCALES = { en: 'en-GB', ru: 'ru-RU' };
+const INTL_LOCALES = { en: 'en-GB', ru: 'ru-RU', uk: 'uk-UA' };
 
 /** BCP-47 locale for Intl / toLocaleString date & number formatting. */
 export const intlLocale = INTL_LOCALES[locale] || locale;
@@ -123,13 +124,6 @@ export function gameLookup(section, id) {
             if (typeof sec[strId] === 'string') return sec[strId];
             if (typeof sec[lcFirst] === 'string') return sec[lcFirst];
             if (typeof sec[ucFirst] === 'string') return sec[ucFirst];
-
-            const lower = strId.toLowerCase();
-            for (const key of Object.keys(sec)) {
-                if (key.toLowerCase() === lower && typeof sec[key] === 'string') {
-                    return sec[key];
-                }
-            }
         }
     }
 
