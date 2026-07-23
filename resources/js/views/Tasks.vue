@@ -1359,8 +1359,11 @@ export default {
                     };
 
                     if (stepActionType.value === 'apply_buff') {
-                        actionPayload.unique_id1 = selectedBuff.value.uniqueId1;
-                        actionPayload.unique_id2 = selectedBuff.value.uniqueID2 || selectedBuff.value.uniqueId2 || 0;
+                        const sb = selectedBuff.value || {};
+                        const u1 = sb.uniqueId1 ?? sb.uniqueID1 ?? sb.uniqueID?.uniqueID1 ?? sb.uniqueID?.uniqueId1 ?? sb.uniqueId?.uniqueId1 ?? 0;
+                        const u2 = sb.uniqueId2 ?? sb.uniqueID2 ?? sb.uniqueID?.uniqueID2 ?? sb.uniqueID?.uniqueId2 ?? sb.uniqueId?.uniqueId2 ?? 0;
+                        actionPayload.unique_id1 = u1;
+                        actionPayload.unique_id2 = u2;
                     }
 
                     const meta = {
@@ -1653,8 +1656,10 @@ export default {
         const closeBuffModal = () => { showBuffModal.value = false; };
         const selectBuff = (bf) => {
             selectedBuff.value = bf;
-            payload.value.unique_id1 = bf.uniqueId1;
-            payload.value.unique_id2 = bf.uniqueID2 || bf.uniqueId2 || 0;
+            const u1 = bf.uniqueId1 ?? bf.uniqueID1 ?? bf.uniqueID?.uniqueID1 ?? bf.uniqueID?.uniqueId1 ?? bf.uniqueId?.uniqueId1 ?? 0;
+            const u2 = bf.uniqueId2 ?? bf.uniqueID2 ?? bf.uniqueID?.uniqueID2 ?? bf.uniqueID?.uniqueId2 ?? bf.uniqueId?.uniqueId2 ?? 0;
+            payload.value.unique_id1 = u1;
+            payload.value.unique_id2 = u2;
             closeBuffModal();
         };
 
@@ -2102,6 +2107,12 @@ export default {
 
         const getActionStepStatus = (task, aIdx) => {
             if (!task) return 'pending';
+
+            const stepResults = task.payload?.step_results;
+            if (Array.isArray(stepResults) && stepResults[aIdx] && stepResults[aIdx].status) {
+                return stepResults[aIdx].status;
+            }
+
             const isFailed = task.status === 'failed' || (task.last_result && task.last_result.startsWith('ERROR:'));
             const isCompleted = task.status === 'completed';
             const isRunning = task.status === 'running';
@@ -2132,40 +2143,49 @@ export default {
         };
 
         const getActionStepError = (task, aIdx) => {
-            if (getActionStepStatus(task, aIdx) === 'failed') {
-                let msg = task.last_result || '';
-                if (msg.startsWith('ERROR: ')) {
-                    msg = msg.substring(7);
-                } else if (msg.startsWith('ERROR:')) {
-                    msg = msg.substring(6);
-                }
+            if (!task) return null;
 
-                if (msg.startsWith('{') && msg.endsWith('}')) {
-                    try {
-                        const parsed = JSON.parse(msg);
-                        if (parsed && parsed.key) {
-                            return t(parsed.key, parsed.params || {});
-                        }
-                    } catch (e) {
-                        // Not valid JSON, fallback to standard parsing
-                    }
-                }
-
-                const match = msg.match(/(?:ошибки|error|код|code)\D*(\d+)/i);
-                if (match) {
-                    const code = parseInt(match[1], 10);
-                    const translationKey = `game_error.${code}`;
-                    const translatedMsg = t(translationKey);
-                    if (translatedMsg && translatedMsg !== translationKey) {
-                        msg = msg.replace(/Неизвестная ошибка (?:сервера )?\(код \d+\)/gi, translatedMsg);
-                        msg = msg.replace(/Unknown game error \(code \d+\)/gi, translatedMsg);
-                        msg = msg.replace(/Неизвестная ошибка (?:сервера|игры)/gi, translatedMsg);
-                        msg = msg.replace(/Unknown game error/gi, translatedMsg);
-                    }
-                }
-                return msg;
+            let rawMsg = '';
+            const stepResults = task.payload?.step_results;
+            if (Array.isArray(stepResults) && stepResults[aIdx] && stepResults[aIdx].status === 'failed') {
+                rawMsg = stepResults[aIdx].error || '';
+            } else if (getActionStepStatus(task, aIdx) === 'failed') {
+                rawMsg = task.last_result || '';
+            } else {
+                return null;
             }
-            return null;
+
+            let msg = rawMsg;
+            if (msg.startsWith('ERROR: ')) {
+                msg = msg.substring(7);
+            } else if (msg.startsWith('ERROR:')) {
+                msg = msg.substring(6);
+            }
+
+            if (msg.startsWith('{') && msg.endsWith('}')) {
+                try {
+                    const parsed = JSON.parse(msg);
+                    if (parsed && parsed.key) {
+                        return t(parsed.key, parsed.params || {});
+                    }
+                } catch (e) {
+                    // Not valid JSON, fallback to standard parsing
+                }
+            }
+
+            const match = msg.match(/(?:ошибки|error|код|code)\D*(\d+)/i);
+            if (match) {
+                const code = parseInt(match[1], 10);
+                const translationKey = `game_error.${code}`;
+                const translatedMsg = t(translationKey);
+                if (translatedMsg && translatedMsg !== translationKey) {
+                    msg = msg.replace(/Неизвестная ошибка (?:сервера )?\(код \d+\)/gi, translatedMsg);
+                    msg = msg.replace(/Unknown game error \(code \d+\)/gi, translatedMsg);
+                    msg = msg.replace(/Неизвестная ошибка (?:сервера|игры)/gi, translatedMsg);
+                    msg = msg.replace(/Unknown game error/gi, translatedMsg);
+                }
+            }
+            return msg;
         };
 
         const getNextRunDate = (task) => {

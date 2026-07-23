@@ -259,8 +259,8 @@ class ScheduledTaskController extends Controller
         $buffs = $zoneData['availableBuffs'] ?? $zoneData['buffs'] ?? [];
         $buffFound = false;
         foreach ($buffs as $buff) {
-            $u1 = $buff['uniqueId1'] ?? $buff['uniqueID1'] ?? null;
-            $u2 = $buff['uniqueId2'] ?? $buff['uniqueID2'] ?? null;
+            $u1 = $buff['uniqueId1'] ?? $buff['uniqueID1'] ?? $buff['uniqueID']['uniqueID1'] ?? $buff['uniqueID']['uniqueId1'] ?? $buff['uniqueId']['uniqueId1'] ?? null;
+            $u2 = $buff['uniqueId2'] ?? $buff['uniqueID2'] ?? $buff['uniqueID']['uniqueID2'] ?? $buff['uniqueID']['uniqueId2'] ?? $buff['uniqueId']['uniqueId2'] ?? null;
             if ($u1 == $payload['unique_id1'] && $u2 == $payload['unique_id2']) {
                 $buffFound = true;
                 $availableAmount = $buff['amount'] ?? 0;

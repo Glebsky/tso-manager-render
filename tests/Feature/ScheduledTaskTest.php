@@ -245,4 +245,62 @@ class ScheduledTaskTest extends TestCase
             'run_at_time' => '09:30',
         ]);
     }
+
+    public function test_sequence_task_continues_on_step_failure_and_records_errors()
+    {
+        $account = Account::create([
+            'username' => 'seqerroruser',
+            'password' => 'secret',
+            'region' => 'ru',
+            'nickname' => 'seqerroruser',
+            'zone_data' => json_encode(['buildings' => []]),
+        ]);
+
+        $task = ScheduledTask::create([
+            'account_id' => $account->id,
+            'task_type' => 'sequence',
+            'payload' => [
+                'actions' => [
+                    [
+                        'task_type' => 'stop_production',
+                        'payload' => ['grid' => 101],
+                        'delay_seconds' => 0,
+                    ],
+                    [
+                        'task_type' => 'start_production',
+                        'payload' => ['grid' => 102],
+                        'delay_seconds' => 0,
+                    ],
+                ],
+            ],
+            'schedule_type' => 'once',
+            'run_at_datetime' => now()->subMinute(),
+            'is_active' => true,
+        ]);
+
+        $this->authMock->shouldReceive('isAuthenticated')->with(Mockery::any())->andReturn(true);
+
+        // Step 1 fails
+        $this->amfMock->shouldReceive('stopProduction')
+            ->once()
+            ->with(Mockery::any(), 101)
+            ->andThrow(new \Exception('Building not found on grid 101'));
+
+        // Step 2 MUST still be executed
+        $this->amfMock->shouldReceive('startProduction')
+            ->once()
+            ->with(Mockery::any(), 102)
+            ->andReturn('start_ok');
+
+        $service = $this->app->make(\App\Services\TaskExecutionService::class);
+        $service->execute($task);
+
+        $task->refresh();
+        $this->assertEquals('failed', $task->status);
+        $this->assertArrayHasKey('step_results', $task->payload);
+        $this->assertEquals('failed', $task->payload['step_results'][0]['status']);
+        $this->assertStringContainsString('Building not found on grid 101', $task->payload['step_results'][0]['error']);
+        $this->assertEquals('completed', $task->payload['step_results'][1]['status']);
+        $this->assertNull($task->payload['step_results'][1]['error']);
+    }
 }

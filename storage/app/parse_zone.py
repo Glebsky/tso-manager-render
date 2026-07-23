@@ -182,7 +182,7 @@ def recursive_extract(obj, buildings, specialists, buffs, resources, friends, pl
 
         elif 'dBuffVO' in full_name or 'BuffVO' in full_name:
             buff = {}
-            for attr in ['name', 'uniqueId', 'uniqueId1', 'uniqueId2',
+            for attr in ['name', 'uniqueId', 'uniqueId1', 'uniqueId2', 'uniqueID1', 'uniqueID2',
                          'amount', 'buffId', 'type']:
                 val = None
                 if hasattr(obj, attr):
@@ -192,6 +192,37 @@ def recursive_extract(obj, buildings, specialists, buffs, resources, friends, pl
 
                 if val is not None:
                     buff[attr] = val
+
+            # Extract uniqueId1 and uniqueId2 from nested uniqueID object if present
+            uid_obj = None
+            for attr in ['uniqueID', 'uniqueId']:
+                if hasattr(obj, attr):
+                    uid_obj = getattr(obj, attr)
+                elif isinstance(obj, dict) and attr in obj:
+                    uid_obj = obj[attr]
+
+            uid1, uid2 = None, None
+            if uid_obj is not None:
+                for attr in ['uniqueID1', 'uniqueId1']:
+                    if hasattr(uid_obj, attr):
+                        uid1 = getattr(uid_obj, attr)
+                    elif isinstance(uid_obj, dict) and attr in uid_obj:
+                        uid1 = uid_obj[attr]
+                for attr in ['uniqueID2', 'uniqueId2']:
+                    if hasattr(uid_obj, attr):
+                        uid2 = getattr(uid_obj, attr)
+                    elif isinstance(uid_obj, dict) and attr in uid_obj:
+                        uid2 = uid_obj[attr]
+
+            if uid1 is not None and 'uniqueId1' not in buff:
+                buff['uniqueId1'] = uid1
+            if uid2 is not None and 'uniqueId2' not in buff:
+                buff['uniqueId2'] = uid2
+            if 'uniqueId1' not in buff and 'uniqueID1' in buff:
+                buff['uniqueId1'] = buff['uniqueID1']
+            if 'uniqueId2' not in buff and 'uniqueID2' in buff:
+                buff['uniqueId2'] = buff['uniqueID2']
+
             if buff:
                 buffs.append(buff)
 

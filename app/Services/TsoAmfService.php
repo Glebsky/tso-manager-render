@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Account;
 use Exception;
-use Illuminate\Support\Facades\Cache;
 
 /**
  * Minimal AMF3 Encoder for TSO protocol.
@@ -529,23 +528,6 @@ class TsoAmfService
     public function getZone(Account $account, ?int $targetZoneId = null): string
     {
         $zoneId = $targetZoneId ?? (int) $account->dso_auth_user;
-
-        // Cache friend's zone data for 5 minutes (300 seconds) to avoid redundant requests
-        if ($zoneId !== (int) $account->dso_auth_user) {
-            $cacheKey = "friend-zone-raw:{$account->id}:{$zoneId}";
-
-            return Cache::remember($cacheKey, 3600, function () use ($account, $zoneId) {
-                return $this->sendServerCall(
-                    $account,
-                    self::CMD_GET_ZONE,
-                    false,
-                    'SMC',
-                    'ExecuteServerCall',
-                    'com.bluebyte.game.servlet.EventHandler',
-                    $zoneId
-                );
-            });
-        }
 
         return $this->sendServerCall(
             $account,
