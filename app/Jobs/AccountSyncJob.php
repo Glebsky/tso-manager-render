@@ -34,7 +34,7 @@ class AccountSyncJob implements ShouldQueue
     public function __construct(Account $account)
     {
         $this->account = $account;
-        $this->onQueue('tso-tasks');
+        $this->onQueue('tso-accounts');
     }
 
     /**

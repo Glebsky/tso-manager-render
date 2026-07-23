@@ -91,7 +91,7 @@ class RunSchedulerCommand extends Command
         if ($this->option('work') || ($mode === 'cron' && $this->option('work'))) {
             $this->info('Running inline TSO queue worker (--stop-when-empty --max-time=50)...');
             Artisan::call('queue:work', [
-                '--queue' => 'tso-tasks,tso-market',
+                '--queue' => 'tso-tasks,tso-accounts,tso-market',
                 '--stop-when-empty' => true,
                 '--max-time' => 50,
                 '--max-jobs' => 20,

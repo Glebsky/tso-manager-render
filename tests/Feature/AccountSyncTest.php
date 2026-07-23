@@ -56,7 +56,7 @@ class AccountSyncTest extends TestCase
 
         Artisan::call('tso:run-scheduler', ['--mode' => 'queue']);
 
-        Queue::assertPushedOn('tso-tasks', AccountSyncJob::class, function ($job) use ($account) {
+        Queue::assertPushedOn('tso-accounts', AccountSyncJob::class, function ($job) use ($account) {
             return $job->account->id === $account->id;
         });
     }
