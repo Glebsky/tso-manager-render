@@ -9,17 +9,17 @@
         </div>
 
         <!-- Add Account Form -->
-        <div class="glass-card p-6 mb-8">
+        <div class="glass-card p-4 sm:p-6 mb-8">
             <div class="flex items-center gap-3 mb-5">
-                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shrink-0">
                     <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                     </svg>
                 </div>
-                <h2 class="text-lg font-semibold text-white">{{ t('accounts.add_new') }}</h2>
+                <h2 class="text-base sm:text-lg font-semibold text-white">{{ t('accounts.add_new') }}</h2>
             </div>
 
-            <form @submit.prevent="addAccount" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+            <form @submit.prevent="addAccount" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
                 <!-- Username -->
                 <div>
                     <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('accounts.username_label') }}</label>
@@ -33,8 +33,8 @@
                 </div>
 
                 <!-- Region & Submit -->
-                <div class="flex gap-3 items-end">
-                    <div class="flex-1 relative">
+                <div class="flex flex-col sm:flex-row gap-3 items-end sm:col-span-2 lg:col-span-1">
+                    <div class="flex-1 relative w-full">
                         <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('accounts.region') }}</label>
                         <select required v-model="form.region" class="glass-select w-full">
                             <option value="ru" class="bg-dark-900">RU (Realm 2)</option>
@@ -59,14 +59,14 @@
                         </div>
                     </div>
 
-                    <button type="submit" :disabled="submitting" class="btn-primary px-6 h-[46px] flex items-center gap-2">
+                    <button type="submit" :disabled="submitting" class="btn-primary w-full sm:w-auto px-6 h-[46px] flex items-center justify-center gap-2 shrink-0">
                         <svg v-if="!submitting" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                         </svg>
                         <svg v-else class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182" />
                         </svg>
-                        {{ t('accounts.add') }}
+                        <span>{{ t('accounts.add') }}</span>
                     </button>
                 </div>
             </form>
@@ -74,16 +74,16 @@
 
         <!-- Accounts Listing -->
         <div>
-            <h2 class="text-lg font-semibold text-white flex items-center gap-2 mb-5">
+            <h2 class="text-base sm:text-lg font-semibold text-white flex items-center gap-2 mb-5">
                 <svg class="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
                 </svg>
-                {{ t('accounts.registered') }}
+                <span>{{ t('accounts.registered') }}</span>
                 <span class="badge badge-neutral text-[10px]">{{ accounts.length }}</span>
             </h2>
 
             <!-- Skeleton placeholders while accounts are loading -->
-            <div v-if="loading && accounts.length === 0" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+            <div v-if="loading && accounts.length === 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                 <div v-for="i in 3" :key="'acc-skeleton-' + i" class="glass-card overflow-hidden">
                     <div class="h-[3px] skeleton"></div>
                     <div class="p-5">
@@ -106,12 +106,12 @@
                     </div>
                 </div>
             </div>
-            <div v-else-if="accounts.length > 0" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+            <div v-else-if="accounts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                 <account-card v-for="acc in accounts" :key="acc.id" :account="acc"
                               @sync-success="loadAccounts" @delete-success="loadAccounts" @action-success="loadAccounts" />
             </div>
-            <div v-else class="glass-card p-12 text-center">
-                <p class="text-white/30 text-sm">{{ t('accounts.empty') }}</p>
+            <div v-else class="glass-card p-8 sm:p-12 text-center">
+                <p class="text-white/30 text-xs sm:text-sm">{{ t('accounts.empty') }}</p>
             </div>
         </div>
     </div>

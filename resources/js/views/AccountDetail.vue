@@ -11,11 +11,11 @@
 
         <div v-else-if="account" key="content">
             <!-- Back Button -->
-            <router-link to="/accounts" class="inline-flex items-center gap-2 text-white/40 hover:text-white mb-6 transition-colors">
+            <router-link to="/admin/accounts" class="inline-flex items-center gap-2 text-white/40 hover:text-white mb-6 transition-colors font-medium text-xs sm:text-sm">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
                 </svg>
-                Back to Accounts
+                <span>Back to Accounts</span>
             </router-link>
 
         <!-- Profile Header -->
@@ -27,42 +27,42 @@
             </div>
             <div class="p-6">
                 <!-- Main Info Section -->
-                <div class="flex items-start gap-6">
+                <div class="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
                     <!-- Avatar -->
-                    <div class="w-20 h-20 rounded-2xl overflow-hidden bg-gradient-to-br flex items-center justify-center shadow-lg flex-shrink-0"
+                    <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden bg-gradient-to-br flex items-center justify-center shadow-lg flex-shrink-0"
                          :class="statusClass.gradient">
                         <img v-if="avatarUrl" :src="avatarUrl" :alt="playerNickname" class="w-full h-full object-cover" @error="avatarError = true">
-                        <span v-else class="text-2xl font-bold text-white">{{ avatarLetters }}</span>
+                        <span v-else class="text-xl sm:text-2xl font-bold text-white">{{ avatarLetters }}</span>
                     </div>
 
                     <!-- Details -->
-                    <div class="flex-1 min-w-0">
-                        <h1 class="text-2xl font-bold text-white mb-1">{{ playerNickname || account.username }}</h1>
-                        <div class="flex items-center flex-wrap gap-4 text-sm text-white/40">
-                            <span class="flex items-center gap-1 text-white/80">
+                    <div class="flex-1 min-w-0 w-full">
+                        <h1 class="text-xl sm:text-2xl font-bold text-white mb-1 truncate">{{ playerNickname || account.username }}</h1>
+                        <div class="flex items-center flex-wrap gap-2.5 sm:gap-4 text-xs sm:text-sm text-white/40">
+                            <span class="flex items-center gap-1 text-white/80 whitespace-nowrap">
                                 <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 0 0-2.455 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
                                 </svg>
                                 {{ t('account.level') }} {{ level || '?' }}
                             </span>
-                            <span v-if="pvpLevel" class="flex items-center gap-1 text-rose-400">
+                            <span v-if="pvpLevel" class="flex items-center gap-1 text-rose-400 whitespace-nowrap">
                                 ⚔️ PvP {{ pvpLevel }}
                             </span>
-                            <span v-if="account.is_market_connected" class="badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5 text-[11px] py-0.5 px-2.5" title="Connected to Market Analysis">
+                            <span v-if="account.is_market_connected" class="badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5 text-[11px] py-0.5 px-2.5 whitespace-nowrap" title="Connected to Market Analysis">
                                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                                 <span class="font-medium">{{ t('card.market_connected') }}</span>
                             </span>
 
-                            <span v-if="serverName" class="badge badge-success bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[11px] flex items-center gap-1 py-0.5 px-2.5">
+                            <span v-if="serverName" class="badge badge-success bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[11px] flex items-center gap-1 py-0.5 px-2.5 whitespace-nowrap">
                                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 0 1-3-3V3.75a3 3 0 0 1 3-3h13.5a3 3 0 0 1 3 3v7.5a3 3 0 0 1-3 3m-13.5 0a3 3 0 0 0-3 3v3.75a3 3 0 0 0 3 3h13.5a3 3 0 0 0 3-3V17.25a3 3 0 0 0-3-3" />
                                 </svg>
                                 {{ serverName }}
                             </span>
-                            <span v-if="currentMaximumBuildingsCountAll" class="flex items-center gap-1 text-white/50 text-xs">
+                            <span v-if="currentMaximumBuildingsCountAll" class="flex items-center gap-1 text-white/50 text-xs whitespace-nowrap">
                                 🏰 {{ t('account.max_buildings') }}: {{ currentMaximumBuildingsCountAll }}
                             </span>
-                            <span v-if="account.last_sync_at" class="flex items-center gap-1">
+                            <span v-if="account.last_sync_at" class="flex items-center gap-1 whitespace-nowrap">
                                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                 </svg>
@@ -71,10 +71,10 @@
                         </div>
 
                         <!-- Specialists overview -->
-                        <div class="flex gap-4 mt-3 text-xs text-white/50 border-t border-white/5 pt-3">
-                            <span :title="t('account.generals')">🎖️ {{ t('account.generals') }}: <strong class="text-white">{{ generalsAmount || 0 }}</strong></span>
-                            <span :title="t('account.explorers')">🧭 {{ t('account.explorers') }}: <strong class="text-white">{{ explorersAmount || 0 }}</strong></span>
-                            <span :title="t('account.geologists')">🔨 {{ t('account.geologists') }}: <strong class="text-white">{{ geologistsAmount || 0 }}</strong></span>
+                        <div class="flex flex-wrap gap-x-4 gap-y-1.5 mt-3 text-xs text-white/50 border-t border-white/5 pt-3">
+                            <span :title="t('account.generals')" class="whitespace-nowrap">🎖️ {{ t('account.generals') }}: <strong class="text-white">{{ generalsAmount || 0 }}</strong></span>
+                            <span :title="t('account.explorers')" class="whitespace-nowrap">🧭 {{ t('account.explorers') }}: <strong class="text-white">{{ explorersAmount || 0 }}</strong></span>
+                            <span :title="t('account.geologists')" class="whitespace-nowrap">🔨 {{ t('account.geologists') }}: <strong class="text-white">{{ geologistsAmount || 0 }}</strong></span>
                         </div>
 
                         <!-- XP Progress Bar -->
@@ -174,9 +174,9 @@
                             </div>
                             <div class="flex-1 min-w-0">
                                 <p class="text-sm font-medium text-white/80 truncate" :title="getBuildingName(b)">{{ getBuildingName(b) }}</p>
-                                <div class="flex items-center gap-2 mt-1">
-                                    <span class="text-[10px] text-white/30 font-mono">{{ t('account.grid_number', { id: b.buildingGrid }) }}</span>
-                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400">{{ t('account.lvl_short') }} {{ b.upgradeLevel || 1 }}</span>
+                                <div class="flex items-center gap-2 mt-1 flex-wrap">
+                                    <span class="text-[10px] text-white/30 font-mono shrink-0">{{ t('account.grid_number', { id: b.buildingGrid }) }}</span>
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 whitespace-nowrap shrink-0">{{ t('account.lvl_short') }} {{ b.upgradeLevel || 1 }}</span>
                                 </div>
                             </div>
                             <div class="flex flex-col items-end gap-2 flex-shrink-0">
@@ -374,7 +374,7 @@
                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                             {{ gameAny('WarehouseTab1', null, t('account.warehouse.basic')) }}
                         </h4>
-                        <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2.5">
                             <div v-for="r in basicResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
                                     <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
@@ -394,7 +394,7 @@
                             <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
                             {{ gameAny('WarehouseTab2', null, t('account.warehouse.improved')) }}
                         </h4>
-                        <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2.5">
                             <div v-for="r in improvedResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
                                     <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
@@ -414,7 +414,7 @@
                             <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
                             {{ gameAny('WarehouseTab3', null, t('account.warehouse.advanced')) }}
                         </h4>
-                        <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2.5">
                             <div v-for="r in advancedResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
                                     <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
@@ -434,7 +434,7 @@
                             <span class="w-1.5 h-1.5 rounded-full bg-orange-400"></span>
                             {{ gameAny('WarehouseTab4', null, t('account.warehouse.master')) }}
                         </h4>
-                        <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2.5">
                             <div v-for="r in masterResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
                                     <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
@@ -454,7 +454,7 @@
                             <span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
                             {{ gameAny('WarehouseTab8', null, t('account.warehouse.elite')) }}
                         </h4>
-                        <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2.5">
                             <div v-for="r in eliteResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
                                     <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
@@ -474,7 +474,7 @@
                             <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
                             {{ gameAny('WarehouseTab6', null, t('account.warehouse.event')) }}
                         </h4>
-                        <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2.5">
                             <div v-for="r in eventResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
                                     <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
@@ -494,7 +494,7 @@
                             <span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>
                             {{ gameAny('WarehouseTab7', null, t('account.warehouse.collections')) }}
                         </h4>
-                        <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2.5">
                             <div v-for="r in collectibleResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
                                     <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
@@ -514,7 +514,7 @@
                             <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
                             {{ gameAny('WarehouseTab5', null, t('account.warehouse.military')) }}
                         </h4>
-                        <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2.5">
                             <div v-for="r in militaryResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
                                     <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
@@ -534,7 +534,7 @@
                             <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
                             {{ t('account.other_resources') }}
                         </h4>
-                        <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2.5">
                             <div v-for="r in otherResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
                                     <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">

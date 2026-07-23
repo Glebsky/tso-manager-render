@@ -1,17 +1,17 @@
 <template>
     <div>
         <!-- Page Header -->
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 sm:mb-8">
             <div>
-                <h1 class="text-3xl font-bold text-white">{{ t('market.title') }}</h1>
-                <p class="text-white/40 mt-1">{{ t('market.subtitle') }}</p>
+                <h1 class="text-2xl sm:text-3xl font-bold text-white">{{ t('market.title') }}</h1>
+                <p class="text-xs sm:text-sm text-white/40 mt-1">{{ t('market.subtitle') }}</p>
             </div>
 
-            <div class="flex flex-wrap items-center gap-3">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
                 <!-- Server Selector -->
-                <div v-if="servers.length > 0" class="flex items-center gap-2 bg-white/5 border border-white/10 p-1.5 rounded-xl">
-                    <span class="text-xs font-semibold text-white/40 uppercase tracking-wider px-2">{{ t('market.server') }}:</span>
-                    <select v-model="selectedServerId" @change="onServerChange" class="bg-dark-900 text-xs font-bold text-emerald-400 py-1.5 px-3 rounded-lg border border-emerald-500/20 focus:outline-none cursor-pointer">
+                <div v-if="servers.length > 0" class="flex items-center gap-2 bg-white/5 border border-white/10 p-1.5 rounded-xl w-full sm:w-auto">
+                    <span class="text-xs font-semibold text-white/40 uppercase tracking-wider px-2 shrink-0">{{ t('market.server') }}:</span>
+                    <select v-model="selectedServerId" @change="onServerChange" class="bg-dark-900 text-xs font-bold text-emerald-400 py-1.5 px-3 rounded-lg border border-emerald-500/20 focus:outline-none cursor-pointer w-full sm:max-w-[240px] truncate">
                         <option v-for="srv in servers" :key="srv.server_id" :value="srv.server_id">
                             {{ getLocaleFlag(srv.locale) }} {{ srv.display_name }} ({{ srv.account ? srv.account.username : t('market.no_account') }})
                         </option>
@@ -19,14 +19,14 @@
                 </div>
 
                 <!-- Tab Navigation -->
-                <div class="flex items-center gap-1 bg-white/5 border border-white/10 p-1 rounded-xl">
+                <div class="flex items-center gap-1 bg-white/5 border border-white/10 p-1 rounded-xl shrink-0">
                     <button @click="activeTab = 'analytics'"
-                            class="px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all"
+                            class="px-3 sm:px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all"
                             :class="activeTab === 'analytics' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'text-white/50 hover:text-white'">
                         {{ t('market.tab_analytics') }}
                     </button>
                     <button @click="activeTab = 'settings'"
-                            class="px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all"
+                            class="px-3 sm:px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all"
                             :class="activeTab === 'settings' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'text-white/50 hover:text-white'">
                         {{ t('market.tab_settings') }}
                     </button>
@@ -182,7 +182,7 @@
                     </div>
 
                     <!-- Step 1: Selling resource grid -->
-                    <div v-if="visualTab === 1" class="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-8 lg:grid-cols-10 gap-2 max-h-60 overflow-y-auto p-1.5">
+                    <div v-if="visualTab === 1" class="grid grid-cols-3 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-2 max-h-60 overflow-y-auto p-1.5">
                         <div v-for="good in allGoods" :key="good.item_id"
                              @click="selectVisualItem(good.item_id)"
                              class="flex flex-col items-center justify-center p-1.5 rounded-lg border cursor-pointer hover:border-emerald-500/40 hover:bg-white/[0.05] hover:shadow-md hover:shadow-emerald-500/5 text-center select-none transition-all duration-200"
@@ -202,7 +202,7 @@
                     </div>
 
                     <!-- Step 2: Buying target resource grid -->
-                    <div v-if="visualTab === 2" class="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-8 lg:grid-cols-10 gap-2 max-h-60 overflow-y-auto p-1.5">
+                    <div v-if="visualTab === 2" class="grid grid-cols-3 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-2 max-h-60 overflow-y-auto p-1.5">
                         <div v-for="target in targets" :key="target.target_item_id"
                              @click="selectVisualTarget(target.target_item_id)"
                              class="flex flex-col items-center justify-center p-1.5 rounded-lg border cursor-pointer hover:border-emerald-500/40 hover:bg-white/[0.05] hover:shadow-md hover:shadow-emerald-500/5 text-center select-none transition-all duration-200"

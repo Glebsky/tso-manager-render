@@ -11,7 +11,7 @@
 
             <div>
                 <p class="text-sm font-medium text-white/80 group-hover:text-white transition-colors">
-                    {{ formattedName }} <span class="text-white/30 text-xs">Lvl {{ building.upgradeLevel || 1 }}</span>
+                    {{ formattedName }} <span class="text-white/30 text-xs whitespace-nowrap">Lvl {{ building.upgradeLevel || 1 }}</span>
                 </p>
                 <div class="flex items-center gap-2 mt-0.5">
                     <span class="text-[10px] text-white/30 font-mono">Grid #{{ grid }}</span>

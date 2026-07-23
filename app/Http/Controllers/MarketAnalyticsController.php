@@ -137,22 +137,34 @@ class MarketAnalyticsController extends Controller
 
     public function getPublicServers(): JsonResponse
     {
-        $servers = MarketServerConnection::with('account:id,username,nickname,region,status,zone_data')
+        $servers = MarketServerConnection::whereNotNull('account_id')
+            ->whereHas('account')
+            ->with('account:id,username,nickname,region,status,zone_data')
             ->select('id', 'server_id', 'locale', 'display_name', 'sync_status', 'account_id')
             ->orderBy('id', 'asc')
-            ->get()
-            ->map(function ($server) {
-                if ($server->account && $server->account->server_name) {
-                    $server->display_name = "{$server->account->server_name} Settlers Market";
-                } elseif (str_contains($server->display_name, 'Market (The Settlers') || str_contains($server->display_name, 'Market (Die Siedler')) {
-                    $server->display_name = strtoupper($server->server_id).' Settlers Market';
-                }
+            ->get();
 
-                unset($server->account);
-                unset($server->account_id);
+        $servers = $servers->map(function ($server) {
+            $worldName = null;
 
-                return $server;
-            });
+            if ($server->account && $server->account->server_name) {
+                $worldName = $server->account->server_name;
+            }
+
+            if (!$worldName) {
+                $name = preg_replace('/\s+Settlers\s+Market$/i', '', (string) $server->display_name);
+                $name = preg_replace('/\s+Market\s*\([^)]*\)$/i', '', (string) $name);
+                $worldName = trim($name);
+            }
+
+            $server->display_name = $worldName ?: strtoupper((string) $server->server_id);
+            $server->world_name = $server->display_name;
+
+            unset($server->account);
+            unset($server->account_id);
+
+            return $server;
+        });
 
         return response()->json($servers);
     }

@@ -19,13 +19,13 @@
                     </div>
                 </div>
 
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-3 flex-wrap">
                     <!-- Server Selector -->
                     <div v-if="servers.length > 0" class="flex items-center gap-2">
                         <label class="text-xs text-white/40 uppercase font-semibold">{{ t('market.server') }}:</label>
-                        <select v-model="selectedServerId" @change="onServerChange" class="glass-select py-2 px-3 text-xs font-semibold bg-dark-900 border-white/10 text-white rounded-xl">
-                            <option v-for="srv in servers" :key="srv.id" :value="srv.server_id" class="bg-dark-900 text-white">
-                                {{ getLocaleFlag(srv.locale) }} {{ srv.display_name }}
+                        <select v-model="selectedServerId" @change="onServerChange" class="glass-select py-2 px-3 text-xs font-semibold bg-dark-900 border-white/10 text-white rounded-xl max-w-[200px] truncate">
+                            <option v-for="srv in servers" :key="srv.id || srv.server_id" :value="srv.server_id" class="bg-dark-900 text-white">
+                                {{ getLocaleFlag(srv.locale) }} {{ getServerWorldName(srv) }}
                             </option>
                         </select>
                     </div>
@@ -34,6 +34,14 @@
                         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                         <span>{{ t('market.live_title') }}</span>
                     </div>
+
+                    <!-- Admin Panel Link for Authenticated Users -->
+                    <router-link v-if="isAuthenticated" to="/admin/market" class="btn-primary py-2 px-3.5 text-xs font-semibold rounded-xl inline-flex items-center gap-1.5 shadow-lg shadow-emerald-500/20 transition-all duration-300 hover:scale-105">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 18H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 12h10.5" />
+                        </svg>
+                        <span>{{ t('dashboard.title') }}</span>
+                    </router-link>
                 </div>
             </div>
         </div>
@@ -133,7 +141,7 @@
 
                     <!-- Step 1: Selling resource grid -->
                     <transition name="smooth-fade" mode="out-in">
-                        <div v-if="visualTab === 1" key="step1" class="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-8 lg:grid-cols-10 gap-2 max-h-60 overflow-y-auto p-1.5 scrollbar-thin">
+                        <div v-if="visualTab === 1" key="step1" class="grid grid-cols-3 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-2 max-h-60 overflow-y-auto p-1.5 scrollbar-thin">
                             <div v-for="good in allGoods" :key="good.item_id"
                                  @click="selectVisualItem(good.item_id)"
                                  class="flex flex-col items-center justify-center p-1.5 rounded-lg border cursor-pointer hover:border-emerald-500/40 hover:bg-white/[0.05] hover:shadow-md hover:shadow-emerald-500/5 text-center select-none transition-all duration-300 ease-out transform hover:-translate-y-0.5"
@@ -153,7 +161,7 @@
                         </div>
 
                         <!-- Step 2: Buying target resource grid -->
-                        <div v-else-if="visualTab === 2" key="step2" class="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-8 lg:grid-cols-10 gap-2 max-h-60 overflow-y-auto p-1.5 scrollbar-thin">
+                        <div v-else-if="visualTab === 2" key="step2" class="grid grid-cols-3 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-2 max-h-60 overflow-y-auto p-1.5 scrollbar-thin">
                             <div v-for="target in targets" :key="target.target_item_id"
                                  @click="selectVisualTarget(target.target_item_id)"
                                  class="flex flex-col items-center justify-center p-1.5 rounded-lg border cursor-pointer hover:border-emerald-500/40 hover:bg-white/[0.05] hover:shadow-md hover:shadow-emerald-500/5 text-center select-none transition-all duration-300 ease-out transform hover:-translate-y-0.5"
@@ -797,8 +805,19 @@ export default {
         const loadingMore = ref(false);
         const arbitrageLoops = ref([]);
 
-        const servers = ref([]);
+        const defaultPublicServers = [
+            { id: 1, server_id: 'ru', locale: 'RU', display_name: 'RU' },
+            { id: 2, server_id: 'de', locale: 'DE', display_name: 'DE' },
+            { id: 3, server_id: 'en', locale: 'EN', display_name: 'EN' },
+            { id: 4, server_id: 'us', locale: 'EN', display_name: 'US' },
+            { id: 5, server_id: 'fr', locale: 'FR', display_name: 'FR' },
+            { id: 6, server_id: 'pl', locale: 'PL', display_name: 'PL' },
+            { id: 7, server_id: 'es', locale: 'ES', display_name: 'ES' },
+        ];
+
+        const servers = ref(defaultPublicServers);
         const selectedServerId = ref(localStorage.getItem('tso_market_selected_server') || 'ru');
+        const isAuthenticated = computed(() => !!(window.__AUTH_USER__ && window.__AUTH_USER__.id));
 
         const getLocaleFlag = (locale) => {
             switch (String(locale).toUpperCase()) {
@@ -811,6 +830,15 @@ export default {
                 case 'ES': return '🇪🇸';
                 default: return '🌐';
             }
+        };
+
+        const getServerWorldName = (srv) => {
+            if (!srv) return '';
+            let name = srv.display_name || srv.server_name || srv.server_id || '';
+            name = name.replace(/\s+Settlers\s+Market$/i, '')
+                       .replace(/\s+Market\s*\([^)]*\)$/i, '')
+                       .trim();
+            return name || (srv.server_id ? String(srv.server_id).toUpperCase() : '');
         };
 
         const loadServers = async () => {
@@ -828,6 +856,7 @@ export default {
                 }
             } catch (e) {
                 console.error('Failed to load public market servers:', e);
+                servers.value = [];
             }
         };
 
@@ -1249,8 +1278,10 @@ export default {
             loadingChart,
             servers,
             selectedServerId,
+            isAuthenticated,
             onServerChange,
             getLocaleFlag,
+            getServerWorldName,
             goods,
             allGoods,
             targets,

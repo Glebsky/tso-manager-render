@@ -15,8 +15,8 @@
                         <img v-if="avatarUrl" :src="avatarUrl" :alt="localAccount.nickname || localAccount.username" class="w-full h-full object-cover" @error="$event.target.style.display='none'">
                         <span v-else>{{ avatarLetters }}</span>
                     </div>
-                    <router-link :to="'/accounts/' + localAccount.id" class="block">
-                        <h3 class="font-semibold text-white hover:text-emerald-400 transition-colors cursor-pointer">
+                    <router-link :to="'/admin/accounts/' + localAccount.id" class="block min-w-0">
+                        <h3 class="font-semibold text-white hover:text-emerald-400 transition-colors cursor-pointer truncate">
                             {{ localAccount.nickname || localAccount.username }}
                         </h3>
                         <p class="text-xs text-white/40 truncate max-w-[150px]" :title="localAccount.username">
@@ -26,7 +26,7 @@
                 </div>
 
                 <!-- Status -->
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 shrink-0">
                     <div class="w-2 h-2 rounded-full" :class="statusDotClass"></div>
                     <span class="text-xs text-white/40 capitalize">{{ t('card.status.' + (localAccount.status || 'offline')) }}</span>
                 </div>
@@ -66,14 +66,14 @@
             </div>
 
             <!-- Action buttons -->
-            <div class="flex items-center gap-2 pt-3 border-t border-white/5">
+            <div class="flex items-center gap-2 pt-3 border-t border-white/5 flex-wrap">
                 <button @click="syncAccount" :disabled="syncing"
                         class="btn-secondary btn-sm flex items-center gap-1.5 hover:border-emerald-500/30 hover:text-emerald-400 disabled:opacity-50 transition-all duration-300"
                         :class="{ 'animate-pulse shadow-lg shadow-emerald-500/40': syncing }">
                     <svg class="w-3.5 h-3.5" :class="{ 'animate-spin': syncing }" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182" />
                     </svg>
-                    {{ syncing ? t('card.syncing') : t('card.sync') }}
+                    <span>{{ syncing ? t('card.syncing') : t('card.sync') }}</span>
                 </button>
 
                 <button @click="goToDetail"
@@ -81,7 +81,7 @@
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
                     </svg>
-                    {{ t('card.detail') }}
+                    <span>{{ t('card.detail') }}</span>
                 </button>
 
                 <button @click="deleteAccount"

@@ -33,7 +33,7 @@
             </div>
 
             <form @submit.prevent="scheduleTask">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                     <!-- Название серии -->
                     <div>
                         <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('tasks.series_name') }}</label>
@@ -490,138 +490,161 @@
                     </div>
 
                     <!-- Список задач -->
-                    <div class="divide-y divide-white/5">
-                        <div v-for="task in groupTasks" :key="task.id" class="p-5 hover:bg-white/[0.01] transition-all duration-200 group">
-                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                <div class="flex items-center gap-3">
+                    <div class="p-4 sm:p-5 space-y-4">
+                        <div v-for="task in groupTasks" :key="task.id"
+                             class="p-4 sm:p-5 rounded-2xl border transition-all duration-300 shadow-sm group"
+                             :class="task.is_active ? 'bg-white/[0.02] border-white/10 hover:border-emerald-500/30 hover:bg-emerald-500/[0.01]' : 'bg-white/[0.005] border-white/5 opacity-80 hover:opacity-100'">
+                            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                                <!-- Информация о задаче -->
+                                <div class="flex items-start sm:items-center gap-3.5 min-w-0 flex-1">
                                     <!-- Иконка действия -->
-                                    <div class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-xl flex-shrink-0 border border-white/5">
+                                    <div class="w-11 h-11 rounded-xl flex items-center justify-center text-xl flex-shrink-0 border transition-colors shadow-inner"
+                                         :class="task.is_active ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-white/5 border-white/10 text-white/40'">
                                         {{ task.task_type === 'sequence' ? '⛓️' : (typeIcons[task.task_type] || '📋') }}
                                     </div>
 
-                                    <!-- Информация о задаче -->
-                                    <div class="min-w-0">
-                                        <div class="flex items-center gap-2 flex-wrap">
-                                            <p class="text-sm font-semibold text-white/90 group-hover:text-white transition-colors">
-                                                <span v-if="task.name" class="text-emerald-400/90">{{ task.name }}</span>
+                                    <!-- Название и теги -->
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex items-center gap-2 flex-wrap mb-1">
+                                            <p class="text-sm font-bold text-white tracking-wide">
+                                                <span v-if="task.name" class="text-emerald-400">{{ task.name }}</span>
                                                 <span v-else-if="task.task_type === 'sequence'">{{ $lang.t('tasks.task_series') }} ({{ getTaskActionsList(task).length }})</span>
                                                 <span v-else>{{ typeLabels[task.task_type] || task.task_type }}</span>
                                             </p>
-                                            <span class="badge badge-neutral text-[9px] uppercase">
+
+                                            <!-- Статус активности -->
+                                            <span class="badge text-[10px] font-semibold uppercase px-2 py-0.5"
+                                                  :class="task.is_active ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'">
+                                                {{ task.is_active ? '● ' + $lang.t('tasks.status.active') : '○ ' + $lang.t('tasks.status.pause_short') }}
+                                            </span>
+
+                                            <!-- Тип расписания -->
+                                            <span class="badge badge-neutral text-[9px] uppercase tracking-wider">
                                                 {{ task.schedule_type === 'once' ? $lang.t('tasks.once') : task.schedule_type === 'interval' ? $lang.t('tasks.interval') : $lang.t('tasks.daily') }}
                                             </span>
                                         </div>
 
-                                        <div class="flex flex-wrap items-center gap-2 mt-1.5 text-[11px]">
-                                            <!-- Кнопка раскрывающегося списка всех действий -->
+                                        <div class="flex flex-wrap items-center gap-2 text-[11px] text-white/50">
+                                            <!-- Раскрытие списка действий -->
                                             <button type="button"
                                                     @click="toggleTaskExpanded(task.id)"
-                                                    class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-medium bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/20 transition-all duration-200">
+                                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/20 transition-all duration-200">
                                                 <span>{{ expandedTasks[task.id] ? '📖 ' + $lang.t('tasks.hide_actions') : '📘 ' + $lang.t('tasks.show_actions') }} ({{ getTaskActionsList(task).length }})</span>
                                                 <svg class="w-3 h-3 transition-transform duration-300" :class="{ 'rotate-180': expandedTasks[task.id] }" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                                                 </svg>
                                             </button>
 
-                                            <span v-if="task.task_type !== 'sequence' && task.payload && task.payload.grid" class="font-mono text-white/40">
+                                            <span v-if="task.task_type !== 'sequence' && task.payload && task.payload.grid" class="font-mono bg-white/5 px-2 py-0.5 rounded text-white/60">
                                                 {{ $lang.t('tasks.grid_number', { id: task.payload.grid }) }}
                                             </span>
-                                            <span v-if="task.task_type !== 'sequence' && task.payload && task.payload.sub_task_id !== undefined" class="text-white/40">
+                                            <span v-if="task.task_type !== 'sequence' && task.payload && task.payload.sub_task_id !== undefined" class="text-white/60 font-medium">
                                                 {{ getSubTaskLabel(task.task_type, task.payload.task_type, task.payload.sub_task_id) }}
                                             </span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <!-- Правая секция: До следующего запуска, Расписание, Статус и Действия -->
-                                <div class="flex items-center justify-end gap-4 ml-auto sm:ml-0">
-                                    <!-- Время до следующего запуска задачи -->
-                                    <div class="text-right px-3 py-1.5 rounded-xl bg-white/[0.02] border border-white/5 min-w-[130px]">
-                                        <div v-if="!task.is_active" class="flex items-center justify-end gap-1.5 text-xs text-amber-400/80 font-medium">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-                                            <span>{{ $lang.t('tasks.status.pause_short') }}</span>
+                                <!-- Время запуска, Расписание и Кнопки управления -->
+                                <div class="flex flex-wrap items-center justify-between lg:justify-end gap-3 w-full lg:w-auto pt-3 lg:pt-0 border-t lg:border-t-0 border-white/5">
+                                    <!-- Блок времени до запуска и расписания -->
+                                    <div class="flex items-center gap-3 bg-black/20 border border-white/5 px-3.5 py-2 rounded-xl">
+                                        <!-- Время до запуска -->
+                                        <div class="text-right">
+                                            <div v-if="!task.is_active" class="flex items-center justify-end gap-1.5 text-xs text-amber-400 font-semibold">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                                                <span>{{ $lang.t('tasks.status.pause_short') }}</span>
+                                            </div>
+                                            <div v-else-if="task.schedule_type === 'once' && task.last_run_at" class="flex items-center justify-end gap-1.5 text-xs text-white/40 font-medium">
+                                                <span>{{ $lang.t('tasks.status.completed') }}</span>
+                                            </div>
+                                            <div v-else class="flex flex-col items-end">
+                                                <span class="text-xs font-mono font-bold text-emerald-400 flex items-center gap-1.5">
+                                                    <svg class="w-3.5 h-3.5 text-emerald-400 animate-pulse" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                                    </svg>
+                                                    {{ getTaskNextRunText(task).label }}
+                                                </span>
+                                                <span class="text-[9px] text-white/40 font-mono" v-if="getTaskNextRunText(task).nextRunTime">
+                                                    ({{ $lang.t('tasks.at_time') }} {{ getTaskNextRunText(task).nextRunTime }})
+                                                </span>
+                                            </div>
+                                            <p class="text-[9px] text-white/30 uppercase tracking-wider mt-0.5 font-semibold">{{ $lang.t('tasks.until_launch') }}</p>
                                         </div>
-                                        <div v-else-if="task.schedule_type === 'once' && task.last_run_at" class="flex items-center justify-end gap-1.5 text-xs text-white/40">
-                                            <span>{{ $lang.t('tasks.status.completed') }}</span>
+
+                                        <!-- Разделитель -->
+                                        <div class="h-6 w-px bg-white/10 hidden sm:block"></div>
+
+                                        <!-- Расписание -->
+                                        <div class="text-right hidden sm:block">
+                                            <p v-if="task.schedule_type === 'once'" class="text-xs text-white/70 font-mono font-medium">
+                                                {{ formatDateTime(task.run_at_datetime) }}
+                                            </p>
+                                            <p v-else-if="task.schedule_type === 'interval'" class="text-xs text-white/70 font-mono font-medium">
+                                                {{ $lang.t('tasks.every') }} {{ formatInterval(task.interval_hours, task.interval_minutes) }}
+                                            </p>
+                                            <p v-else class="text-xs text-white/70 font-mono font-medium">
+                                                {{ $lang.t('tasks.daily_at') }} {{ task.run_at_time ? utcTimeToLocal(task.run_at_time.substring(0, 5)) : '—' }}
+                                            </p>
+                                            <p class="text-[9px] text-white/30 uppercase tracking-wider mt-0.5 font-semibold">{{ $lang.t('tasks.schedule') }}</p>
                                         </div>
-                                        <div v-else class="flex flex-col items-end">
-                                            <span class="text-xs font-mono font-bold text-emerald-400 flex items-center gap-1.5">
-                                                <svg class="w-3 h-3 text-emerald-400 animate-pulse" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                                                </svg>
-                                                {{ getTaskNextRunText(task).label }}
-                                            </span>
-                                            <span class="text-[9px] text-white/30 font-mono" v-if="getTaskNextRunText(task).nextRunTime">
-                                                ({{ $lang.t('tasks.at_time') }} {{ getTaskNextRunText(task).nextRunTime }})
-                                            </span>
-                                        </div>
-                                        <p class="text-[9px] text-white/30 uppercase tracking-wider mt-0.5 text-right font-medium">{{ $lang.t('tasks.until_launch') }}</p>
                                     </div>
 
-                                    <!-- Расписание -->
-                                    <div class="text-right hidden md:block">
-                                        <p v-if="task.schedule_type === 'once'" class="text-xs text-white/60 font-mono">
-                                            {{ formatDateTime(task.run_at_datetime) }}
-                                        </p>
-                                        <p v-else-if="task.schedule_type === 'interval'" class="text-xs text-white/60 font-mono">
-                                            {{ $lang.t('tasks.every') }} {{ formatInterval(task.interval_hours, task.interval_minutes) }}
-                                        </p>
-                                        <p v-else class="text-xs text-white/60 font-mono">
-                                            {{ $lang.t('tasks.daily_at') }} {{ task.run_at_time ? utcTimeToLocal(task.run_at_time.substring(0, 5)) : '—' }}
-                                        </p>
-                                        <p class="text-[9px] text-white/20 uppercase tracking-wider">{{ $lang.t('tasks.schedule') }}</p>
-                                    </div>
-
-                                    <!-- Последний результат выполнения -->
+                                    <!-- Последний результат -->
                                     <span v-if="getTaskLastResultBadge(task)"
-                                          class="badge text-[10px] flex-shrink-0 max-w-[110px] truncate"
+                                          class="badge text-[10px] flex-shrink-0 max-w-[120px] truncate py-1"
                                           :class="getTaskLastResultBadge(task).class"
                                           :title="task.last_result">
                                         {{ getTaskLastResultBadge(task).label }}
                                     </span>
 
-                                    <!-- Кнопка ручного запуска -->
-                                    <button @click="runTaskNow(task)"
-                                            :disabled="executingTasks[task.id]"
-                                            class="btn-secondary btn-sm flex items-center justify-center gap-1.5 flex-shrink-0"
-                                            :class="executingTasks[task.id] ? 'opacity-50 cursor-not-allowed' : 'hover:border-emerald-500/30 text-emerald-400/80 hover:text-emerald-400'"
-                                            :title="$lang.t('tasks.run_now')">
-                                        <svg v-if="executingTasks[task.id]" class="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
-                                        <svg v-else class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
-                                        </svg>
-                                        <span class="text-[9px] uppercase font-semibold">{{ executingTasks[task.id] ? $lang.t('tasks.status.launching') : $lang.t('tasks.run_short') }}</span>
-                                    </button>
+                                    <!-- Кнопки действий -->
+                                    <div class="flex items-center gap-1.5 flex-shrink-0">
+                                        <!-- Кнопка ручного запуска -->
+                                        <button @click="runTaskNow(task)"
+                                                :disabled="executingTasks[task.id]"
+                                                class="btn-secondary btn-sm flex items-center justify-center gap-1.5"
+                                                :class="executingTasks[task.id] ? 'opacity-50 cursor-not-allowed' : 'hover:border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10'"
+                                                :title="$lang.t('tasks.run_now')">
+                                            <svg v-if="executingTasks[task.id]" class="animate-spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            <svg v-else class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
+                                            </svg>
+                                            <span class="text-[10px] uppercase font-bold">{{ executingTasks[task.id] ? $lang.t('tasks.status.launching') : $lang.t('tasks.run_short') }}</span>
+                                        </button>
 
-                                    <!-- Кнопка редактирования -->
-                                    <button @click="editTask(task)"
-                                            class="btn-secondary btn-sm flex items-center justify-center gap-1.5 flex-shrink-0"
-                                            :class="editingTaskId === task.id ? 'border-amber-500/50 bg-amber-500/20 text-amber-300' : 'hover:border-amber-500/30 text-amber-400/80 hover:text-amber-400'"
-                                            :title="$lang.t('tasks.edit_task')">
-                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
-                                        </svg>
-                                        <span class="text-[9px] uppercase font-semibold">{{ $lang.t('tasks.edit_short') }}</span>
-                                    </button>
+                                        <!-- Кнопка редактирования -->
+                                        <button @click="editTask(task)"
+                                                class="btn-secondary btn-sm flex items-center justify-center gap-1.5"
+                                                :class="editingTaskId === task.id ? 'border-amber-500/50 bg-amber-500/20 text-amber-300' : 'hover:border-amber-500/40 text-amber-400 hover:bg-amber-500/10'"
+                                                :title="$lang.t('tasks.edit_task')">
+                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                                            </svg>
+                                            <span class="text-[10px] uppercase font-bold">{{ $lang.t('tasks.edit_short') }}</span>
+                                        </button>
 
-                                    <!-- Тумблер активации -->
-                                    <button @click="toggleTask(task)"
-                                            class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 flex-shrink-0"
-                                            :class="task.is_active ? 'bg-emerald-500' : 'bg-white/10'">
-                                        <span class="inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform duration-300"
-                                              :class="task.is_active ? 'translate-x-6' : 'translate-x-1'"></span>
-                                    </button>
+                                        <!-- Тумблер активации -->
+                                        <button @click="toggleTask(task)"
+                                                class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 flex-shrink-0"
+                                                :class="task.is_active ? 'bg-emerald-500' : 'bg-white/10'"
+                                                :title="task.is_active ? $lang.t('tasks.status.active') : $lang.t('tasks.status.pause_short')">
+                                            <span class="inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform duration-300"
+                                                  :class="task.is_active ? 'translate-x-6' : 'translate-x-1'"></span>
+                                        </button>
 
-                                    <!-- Кнопка удаления -->
-                                    <button @click="deleteTask(task.id)"
-                                            class="btn-secondary btn-sm text-red-400/60 hover:text-red-400 hover:border-red-500/30 flex-shrink-0">
-                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                                        </svg>
-                                    </button>
+                                        <!-- Кнопка удаления -->
+                                        <button @click="deleteTask(task.id)"
+                                                class="btn-secondary btn-sm text-red-400/60 hover:text-red-400 hover:border-red-500/40 hover:bg-red-500/10 flex-shrink-0 p-1.5"
+                                                :title="$lang.t('tasks.delete')">
+                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                            </svg>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
