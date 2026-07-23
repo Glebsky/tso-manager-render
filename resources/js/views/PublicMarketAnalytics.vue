@@ -1,8 +1,10 @@
 <template>
     <div class="max-w-7xl mx-auto space-y-8 pb-12 transition-all duration-500 ease-out">
         <!-- Page Header -->
-        <div class="glass-card p-6 border-white/10 shadow-2xl relative overflow-hidden transition-all duration-500 hover:border-white/20">
-            <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none transition-all duration-700"></div>
+        <div class="glass-card p-6 border-white/10 shadow-2xl relative transition-all duration-500 hover:border-white/20">
+            <div class="absolute inset-0 overflow-hidden rounded-[inherit] pointer-events-none">
+                <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl transition-all duration-700"></div>
+            </div>
 
             <!-- Language Switcher in Upper Right Corner -->
             <div class="absolute top-5 right-5 z-20">
@@ -718,6 +720,11 @@
                 </transition>
             </div>
         </div>
+
+        <!-- Subtle peace note -->
+        <p class="text-center text-[10px] leading-relaxed text-white/20 hover:text-white/35 transition-colors duration-500 select-none px-6">
+            {{ t('market.peace_note') }}
+        </p>
     </div>
 </template>
 
@@ -1261,6 +1268,10 @@ export default {
         };
 
         onMounted(async () => {
+            console.log(
+                '%c' + t('market.console_message'),
+                'color:#34d399;font-size:13px;font-weight:600;line-height:1.6;'
+            );
             await loadServers();
             await loadInitialData();
         });

@@ -54,7 +54,7 @@
 
 <script>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { locale as activeLocale, setLocale } from '../lang';
+import { locale as activeLocale, setLocale, AVAILABLE_LOCALES } from '../lang';
 
 export default {
     name: 'LanguageSwitcher',
@@ -63,11 +63,8 @@ export default {
         const dropdownRef = ref(null);
         const currentLocale = ref(activeLocale);
 
-        const availableLanguages = [
-            { code: 'uk', name: 'Українська', flag: '🇺🇦' },
-            { code: 'ru', name: 'Русский', flag: '🇷🇺' },
-            { code: 'en', name: 'English', flag: '🇺🇸' }
-        ];
+        // Rendered from the single locale registry in ../lang (no duplication).
+        const availableLanguages = AVAILABLE_LOCALES;
 
         const currentLangInfo = computed(() => {
             return availableLanguages.find(l => l.code === currentLocale.value) || availableLanguages[0];

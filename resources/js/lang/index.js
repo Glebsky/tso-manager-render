@@ -14,6 +14,20 @@ const catalogs = { en, ru, uk };
 const FALLBACK_LOCALE = 'en';
 
 /**
+ * Single source of truth for the languages available in the UI.
+ * Every language switcher must render this list; add a new locale here
+ * (plus its generated catalog) to expose it everywhere at once.
+ */
+export const AVAILABLE_LOCALES = [
+    { code: 'uk', name: 'Українська', flag: '🇺🇦' },
+    { code: 'ru', name: 'Русский', flag: '🇷🇺' },
+    { code: 'en', name: 'English', flag: '🇺🇸' },
+];
+
+/** Legacy/incorrect locale codes mapped to their canonical form. */
+const LOCALE_ALIASES = { ua: 'uk' };
+
+/**
  * Order in which game sections are scanned when a legacy caller looks up an
  * id without knowing its section (central compatibility map, replaces the
  * old per-component translation maps fed by /api/lang/res).
@@ -28,16 +42,18 @@ function detectLocale() {
         || (typeof document !== 'undefined' && document.documentElement.lang)
         || FALLBACK_LOCALE;
     const normalized = String(raw).toLowerCase().split(/[-_]/)[0];
+    const resolved = LOCALE_ALIASES[normalized] || normalized;
 
-    return catalogs[normalized] ? normalized : FALLBACK_LOCALE;
+    return catalogs[resolved] ? resolved : FALLBACK_LOCALE;
 }
 
 export const locale = detectLocale();
 
 export function setLocale(newLocale) {
-    if (catalogs[newLocale]) {
+    const resolved = LOCALE_ALIASES[newLocale] || newLocale;
+    if (catalogs[resolved]) {
         if (typeof localStorage !== 'undefined') {
-            localStorage.setItem('app_locale', newLocale);
+            localStorage.setItem('app_locale', resolved);
         }
         if (typeof window !== 'undefined') {
             window.location.reload();
@@ -189,4 +205,4 @@ export function gameAny(id, params = null, fallback = null) {
     return interpolateGame(template, params);
 }
 
-export default { locale, intlLocale, t, game, gameAny, gameLookup, gameAnyLookup };
+export default { locale, intlLocale, AVAILABLE_LOCALES, setLocale, t, game, gameAny, gameLookup, gameAnyLookup };
