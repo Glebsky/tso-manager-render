@@ -1,66 +1,118 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# TSO Manager Admin
 
 <p align="center">
+<a href="https://www.foglamp.dev/scan/tso-manager-admin-fs2rdm"><img src="https://img.shields.io/badge/Foglamp-Codebase%20Scan-brightgreen?style=flat-square" alt="Foglamp Codebase Scan"></a>
 <a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
-## About Laravel
+TSO Manager Admin — это панель управления и планировщик автоматизации для игры **The Settlers Online**. Проект позволяет подключать игровые аккаунты, синхронизировать состояние игровых зон (зданий, специалистов, ресурсов), планировать повторяющиеся задачи (наложение баффов, отправка геологов/исследователей, управление производством) и вести мониторинг/аналитику рынка.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Технологический стек
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+* **Backend**: PHP 8.1 / Laravel 10 (Sanctum для авторизации)
+* **Frontend**: Vue 3 (`<script setup>`) + Vite + Tailwind CSS (SPA интегрировано в Laravel)
+* **Data parsing**: Python 3 + PyAMF (используется для декодирования игровых AMF3/AMF0 пакетов)
+* **Database**: PostgreSQL / MySQL / SQLite (для тестов)
+* **Queue / Cache**: Redis / Database
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## Начало работы
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### 1. Требования
+* PHP 8.1
+* Composer
+* Node.js & npm
+* Python 3 с установленными зависимостями (`pip install PyAMF` или аналогичный парсер AMF в зависимости от используемой среды).
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### 2. Установка
+Клонируйте репозиторий и установите PHP и JS зависимости:
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```bash
+composer install
+npm install
+```
 
-## Laravel Sponsors
+### 3. Настройка окружения
+Создайте файл `.env` из примера:
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```bash
+copy .env.example .env
+# Сгенерируйте ключ приложения
+php artisan key:generate
+```
 
-### Premium Partners
+Настройте параметры подключения к базе данных (`DB_CONNECTION`, `DB_HOST`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`) в `.env`.
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+### 4. Миграции базы данных
+Создайте структуру таблиц:
 
-## Contributing
+```bash
+php artisan migrate
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+## Запуск в режиме разработки
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Запуск бэкенда
+Вы можете использовать встроенный сервер Laravel:
+```bash
+php artisan serve
+```
 
-## Security Vulnerabilities
+### Сборка и запуск фронтенда (Vite)
+Для разработки с HMR (Hot Module Replacement):
+```bash
+npm run dev
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Для продакшн сборки фронтенда:
+```bash
+npm run build
+```
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Специальные команды Artisan (`tso:*`)
+
+Проект расширяет стандартный CLI Laravel следующими командами для управления автоматизацией:
+
+* **`php artisan tso:run-scheduler`**
+  Запускает главный шедулер автоматизации TSO. Обрабатывает активные задачи планировщика (Task Planner) и запускает аналитику/синхронизацию рынка.
+  
+* **`php artisan tso:sync-market`**
+  Запускает синхронизацию рынка для настроенных подключений к игровым серверам. Загружает лоты, парсит их с помощью Python и сохраняет историю цен.
+
+* **`php artisan tso:execute-tasks`**
+  Выполняет зависшие/очередные задачи на аккаунтах (баффы, специалисты, шахты).
+
+* **`php artisan tso:lang:export-frontend`**
+  Экспортирует языковые строки приложения и игровые переводы в `resources/js/lang/generated/<locale>.json` для SPA-бандла.
+
+* **`php artisan tso:lang:import`**
+  Импортирует игровые переводы из XML-экспорта игры в `lang/<locale>/game.php`.
+
+---
+
+## Фоновые воркеры и Деплой
+
+В продакшн-окружении для автоматической работы бота необходимо настроить следующие процессы в фоновом режиме (например, через **Supervisor** или **systemd**):
+
+1. **Очереди Laravel (Queue Worker)**:
+   ```bash
+   php artisan queue:work --queue=default
+   ```
+2. **Планировщик задач Laravel (Cron)**:
+   Добавьте запись в crontab сервера:
+   ```cron
+   * * * * * cd /path-to-your-project && php artisan schedule:run >> /dev/null 2>&1
+   ```
+3. **Пингование шедулера TSO**:
+   Команда `tso:run-scheduler` может быть запущена как демон или настроена в Laravel Scheduler (`app/Console/Kernel.php`).
+
+## Архитектура системы
+
+Полная визуализированная схема зависимостей фронтенда, контроллеров, сервисов, фоновых Python-парсеров и внешних API Ubisoft/TSO доступна на Foglamp:
+👉 **[Посмотреть Codebase Scan на Foglamp](https://www.foglamp.dev/scan/tso-manager-admin-fs2rdm)**
+
