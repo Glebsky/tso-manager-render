@@ -246,7 +246,7 @@ def recursive_extract(obj, buildings, specialists, buffs, resources, friends, pl
             friend = {}
             for attr in [
                 'id', 'avatarId', 'username', 'username_string', 'nickname',
-                'playerLevel', 'level', 'friendSince', 'onlineStatus',
+                'playerLevel', 'level', 'friendSince',
                 'adventureVO'
             ]:
                 val = None
@@ -294,7 +294,7 @@ def recursive_extract(obj, buildings, specialists, buffs, resources, friends, pl
             player = {}
             for attr in ['avatarId', 'playerLevel', 'level', 'nickname', 'username', 'username_string', 'xp',
                          'userID', 'pvpLevel', 'admiralAmount', 'generalsAmount', 'explorersAmount', 'geologistsAmount',
-                         'currentMaximumBuildingsCountAll', 'availableBuffs_vector', 'onlineStatus']:
+                         'currentMaximumBuildingsCountAll', 'availableBuffs_vector']:
                 val = None
                 if hasattr(obj, attr):
                     val = getattr(obj, attr)
@@ -349,7 +349,7 @@ def recursive_extract(obj, buildings, specialists, buffs, resources, friends, pl
                         if friend_obj is None:
                             continue
                         friend = {}
-                        for fattr in ['username', 'nickname', 'playerLevel', 'level', 'avatarId', 'onlineStatus']:
+                        for fattr in ['username', 'nickname', 'playerLevel', 'level', 'avatarId']:
                             fval = None
                             if hasattr(friend_obj, fattr):
                                 fval = getattr(friend_obj, fattr)

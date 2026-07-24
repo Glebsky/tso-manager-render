@@ -175,7 +175,6 @@ class AccountSyncService
                         'playerLevel' => $p['playerLevel'] ?? $p['level'] ?? 1,
                         'level' => $p['playerLevel'] ?? $p['level'] ?? 1,
                         'avatarId' => $p['avatarId'] ?? 1,
-                        'onlineStatus' => $p['onlineStatus'] ?? false,
                         'friendSince' => $p['friendSince'] ?? null,
                     ];
                 }

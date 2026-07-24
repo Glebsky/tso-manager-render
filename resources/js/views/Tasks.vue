@@ -259,9 +259,6 @@
                                                 <div v-if="activeDropdown === 'friendList'" class="absolute z-50 mt-1.5 w-full glass-card border border-white/10 shadow-2xl rounded-xl py-1 max-h-60 overflow-y-auto">
                                                     <button v-for="friend in friendsList" :key="friend.id" type="button" @click="selectFriend(friend); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors flex justify-between items-center">
                                                         <span>👤 {{ friend.nickname || friend.username }} ({{ t('tasks.level') }} {{ friend.playerLevel }})</span>
-                                                        <span class="text-[9px]" :class="friend.onlineStatus ? 'text-green-400' : 'text-white/30'">
-                                                            {{ friend.onlineStatus ? t('tasks.online') : t('tasks.offline') }}
-                                                        </span>
                                                     </button>
                                                     <div v-if="friendsList.length === 0" class="px-3 py-1.5 text-xs text-white/40">
                                                         {{ t('tasks.friends_empty') }}

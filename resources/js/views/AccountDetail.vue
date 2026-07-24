@@ -565,10 +565,6 @@
                             <p class="text-sm font-medium text-white/80 truncate">{{ f.username || f.nickname || t('common.unknown') }}</p>
                             <p class="text-[10px] text-white/30">{{ t('account.level') }} {{ f.level || f.playerLevel || '?' }}</p>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <div class="w-2.5 h-2.5 rounded-full" :class="f.onlineStatus ? 'bg-emerald-500 shadow-lg shadow-emerald-500/50' : 'bg-gray-500'"></div>
-                            <span class="text-[10px] text-white/30">{{ f.onlineStatus ? t('common.online') : t('common.offline') }}</span>
-                        </div>
                     </div>
                 </div>
                 <div v-else class="text-center py-12">
