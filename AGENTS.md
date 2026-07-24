@@ -1,8 +1,8 @@
 # AGENTS.md
 
 ## CONSTITUTION POLICY
-- **НЕ читай** `specs/constitution.md` автоматически.
-- Читай `specs/constitution.md` **ТОЛЬКО** по явному указанию пользователя или при выполнении сложных архитектурных задач.
+- **НЕ читай** `docs/spec/constitution.md` и `docs/spec/constitution.md` автоматически.
+- Читай `docs/spec/constitution.md` и и `docs/spec/constitution.md` **ТОЛЬКО** по явному указанию пользователя или при выполнении сложных архитектурных задач.
 
 ## QUICK RULES
 1. **Stack**: PHP 8.1 (без PHP 8.2+ синтаксиса), Laravel 10, Vue 3 (`<script setup>`), Vite, Tailwind, Postgres/Redis.
