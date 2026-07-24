@@ -851,26 +851,21 @@ export default {
 
         const getServerWorldName = (srv) => {
             if (!srv) return '';
-            let name = srv.display_name || srv.server_name || srv.server_id || '';
-            name = name.replace(/\s+Settlers\s+Market$/i, '')
-                       .replace(/\s+Market\s*\([^)]*\)$/i, '')
-                       .trim();
+            let name = srv.world_name;
             return name || (srv.server_id ? String(srv.server_id).toUpperCase() : '');
         };
 
         /** "🇷🇺 RU · Мир" — подпись опции в селекторе серверов. */
         const serverOptionLabel = (srv) => {
             if (!srv) return '';
-            const code = String(srv.server_id || '').toUpperCase();
             const world = getServerWorldName(srv);
-            const label = (world && world.toUpperCase() !== code) ? `${code} · ${world}` : code;
-            return `${getLocaleFlag(srv.locale)} ${label}`.trim();
+            return `${getLocaleFlag(srv.locale)} ${world}`.trim();
         };
 
         const loadServers = async () => {
             try {
                 const res = await axios.get('/api/public/market/servers');
-                servers.value = res.data || [];
+                servers.value = res.data.data || [];
                 if (servers.value.length > 0) {
                     const exists = servers.value.some(s => s.server_id === selectedServerId.value);
                     if (!exists) {

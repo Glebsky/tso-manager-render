@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\PublicServerResource;
 use App\Models\Account;
 use App\Models\MarketHistory;
 use App\Models\MarketOffer;
@@ -141,32 +142,10 @@ class MarketAnalyticsController extends Controller
             ->whereHas('account')
             ->with('account:id,username,nickname,region,status,zone_data')
             ->select('id', 'server_id', 'locale', 'display_name', 'sync_status', 'account_id')
-            ->orderBy('id', 'asc')
+            ->orderBy('id')
             ->get();
 
-        $servers = $servers->map(function ($server) {
-            $worldName = null;
-
-            if ($server->account && $server->account->server_name) {
-                $worldName = $server->account->server_name;
-            }
-
-            if (! $worldName) {
-                $name = preg_replace('/\s+Settlers\s+Market$/i', '', (string) $server->display_name);
-                $name = preg_replace('/\s+Market\s*\([^)]*\)$/i', '', (string) $name);
-                $worldName = trim($name);
-            }
-
-            $server->display_name = $worldName ?: strtoupper((string) $server->server_id);
-            $server->world_name = $server->display_name;
-
-            unset($server->account);
-            unset($server->account_id);
-
-            return $server;
-        });
-
-        return response()->json($servers);
+        return PublicServerResource::collection($servers)->response();
     }
 
     public function storeServer(Request $request): JsonResponse

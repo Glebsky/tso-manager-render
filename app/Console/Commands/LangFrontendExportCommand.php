@@ -12,7 +12,7 @@ class LangFrontendExportCommand extends Command
     /**
      * Locales bundled into the SPA.
      */
-    private const LOCALES = ['en', 'ru'];
+    private const LOCALES = ['en', 'ru', 'uk'];
 
     /**
      * Game sections actually consumed by the frontend bundle.
