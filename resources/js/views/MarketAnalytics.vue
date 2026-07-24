@@ -132,7 +132,7 @@
                             <select v-model="selectedItem" @change="onItemChange" class="glass-select w-full">
                                 <option value="" class="bg-dark-900">{{ t('market.select_selling') }}</option>
                                 <option v-for="good in goods" :key="good.item_id" :value="good.item_id" class="bg-dark-900">
-                                    {{ good.item_name }} ({{ good.item_id }})
+                                    {{ getItemName(good.item_name, good.item_id) }} ({{ good.item_id }})
                                 </option>
                             </select>
                             <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
@@ -150,7 +150,7 @@
                             <select v-model="selectedTarget" :disabled="!selectedItem" @change="fetchAnalytics" class="glass-select w-full disabled:opacity-40">
                                 <option value="" class="bg-dark-900">{{ t('market.select_target') }}</option>
                                 <option v-for="target in targets" :key="target.target_item_id" :value="target.target_item_id" class="bg-dark-900">
-                                    {{ target.target_item_name }} ({{ target.target_item_id }})
+                                    {{ getItemName(target.target_item_name, target.target_item_id) }} ({{ target.target_item_id }})
                                 </option>
                             </select>
                             <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
@@ -188,11 +188,11 @@
                              class="flex flex-col items-center justify-center p-1.5 rounded-lg border cursor-pointer hover:border-emerald-500/40 hover:bg-white/[0.05] hover:shadow-md hover:shadow-emerald-500/5 text-center select-none transition-all duration-200"
                              :class="selectedItem === good.item_id ? 'bg-emerald-500/10 border-emerald-500 shadow shadow-emerald-500/10' : 'bg-white/[0.02] border-white/5 hover:border-white/20 hover:bg-white/[0.04]'"
                              :style="good.no_offers ? 'opacity:0.4' : ''"
-                             :title="good.no_offers ? t('market.no_offers') : good.item_name">
+                             :title="good.no_offers ? t('market.no_offers') : getItemName(good.item_name, good.item_id)">
                             <img :src="getResourceIcon(good.item_id)" @error="handleIconError($event, good.item_id)" class="w-6 h-6 object-contain mb-1 pointer-events-none" />
-                            <span class="text-[9px] font-medium text-white/90 truncate w-full" :title="good.item_name">{{ good.item_name }}</span>
+                            <span class="text-[9px] font-medium text-white/90 truncate w-full" :title="getItemName(good.item_name, good.item_id)">{{ getItemName(good.item_name, good.item_id) }}</span>
                         </div>
-                        <div v-if="loading && allGoods.length === 0" class="col-span-full py-8 flex items-center justify-center gap-2 text-xs text-emerald-400">
+                        <div v-if="loading && goods.length === 0" class="col-span-full py-8 flex items-center justify-center gap-2 text-xs text-emerald-400">
                             <spinner size="sm" />
                             <span>{{ t('common.loading_data') }}</span>
                         </div>
@@ -208,7 +208,7 @@
                              class="flex flex-col items-center justify-center p-1.5 rounded-lg border cursor-pointer hover:border-emerald-500/40 hover:bg-white/[0.05] hover:shadow-md hover:shadow-emerald-500/5 text-center select-none transition-all duration-200"
                              :class="selectedTarget === target.target_item_id ? 'bg-emerald-500/10 border-emerald-500 shadow shadow-emerald-500/10' : 'bg-white/[0.02] border-white/5 hover:border-white/20 hover:bg-white/[0.04]'">
                             <img :src="getResourceIcon(target.target_item_id)" @error="handleIconError($event, target.target_item_id)" class="w-6 h-6 object-contain mb-1 pointer-events-none" />
-                            <span class="text-[9px] font-medium text-white/90 truncate w-full" :title="target.target_item_name">{{ target.target_item_name }}</span>
+                            <span class="text-[9px] font-medium text-white/90 truncate w-full" :title="getItemName(target.target_item_name, target.target_item_id)">{{ getItemName(target.target_item_name, target.target_item_id) }}</span>
                         </div>
                         <div v-if="loadingPairs" class="col-span-full py-8 flex items-center justify-center gap-2 text-xs text-emerald-400">
                             <spinner size="sm" />
@@ -531,7 +531,7 @@
                                     <td class="py-3 px-4 font-semibold text-white">
                                         <div class="flex items-center gap-2">
                                             <img :src="getResourceIcon(item.item_id)" @error="handleIconError($event, item.item_id)" class="w-5 h-5 object-contain" />
-                                            <span>{{ item.item_name }}</span>
+                                            <span>{{ getItemName(item.item_name, item.item_id) }}</span>
                                         </div>
                                     </td>
                                     <td class="py-3 px-4 font-mono text-xs text-white/35">{{ item.item_id }}</td>
@@ -603,7 +603,7 @@
                                         <div class="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg py-1 px-2">
                                             <img :src="getResourceIcon(scheme.profit.item_id)" @error="handleIconError($event, scheme.profit.item_id)" class="w-4 h-4 object-contain" />
                                             <span class="font-mono text-sm font-bold text-emerald-400">+{{ formatVolume(scheme.profit.amount) }}</span>
-                                            <span class="text-xs text-emerald-400/70 truncate max-w-[80px]">{{ scheme.profit.item_name }}</span>
+                                            <span class="text-xs text-emerald-400/70 truncate max-w-[80px]">{{ getItemName(scheme.profit.item_name, scheme.profit.item_id) }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -695,14 +695,14 @@
                                             <div class="flex items-center gap-2">
                                                 <img :src="getResourceIcon(offer.item_id)" @error="handleIconError($event, offer.item_id)" class="w-5 h-5 object-contain" />
                                                 <span class="font-mono text-white/90">{{ formatVolume(offer.amount) }}</span>
-                                                <span class="text-xs text-white/40 truncate max-w-[100px]">{{ offer.item_name }}</span>
+                                                <span class="text-xs text-white/40 truncate max-w-[100px]">{{ getItemName(offer.item_name, offer.item_id) }}</span>
                                             </div>
                                         </td>
                                         <td class="py-3 px-4">
                                             <div class="flex items-center gap-2">
                                                 <img :src="getResourceIcon(offer.target_item_id)" @error="handleIconError($event, offer.target_item_id)" class="w-5 h-5 object-contain" />
                                                 <span class="font-mono text-white/90">{{ formatVolume(offer.target_amount) }}</span>
-                                                <span class="text-xs text-white/40 truncate max-w-[100px]">{{ offer.target_item_name }}</span>
+                                                <span class="text-xs text-white/40 truncate max-w-[100px]">{{ getItemName(offer.target_item_name, offer.target_item_id) }}</span>
                                             </div>
                                         </td>
                                         <td class="py-3 px-4 text-right text-emerald-400 font-mono font-medium">
@@ -1005,7 +1005,7 @@ import { t } from '../lang';
 import axios from 'axios';
 import { showToast } from '../toast';
 import { getGameImageUrl, handleGameImageError } from '../services/gameImageService';
-import { resourceName } from '../lang/gameNames';
+import { resourceName, marketItemName } from '../lang/gameNames';
 import { TRADABLE_RESOURCES } from '../lang/resourcesCatalog';
 
 import Spinner from '../components/Spinner.vue';
@@ -1173,6 +1173,10 @@ export default {
         const goods = ref([]);
         const targets = ref([]);
 
+        // Единая точка перевода названий предметов рынка (общая с публичной
+        // страницей): см. resources/js/lang/gameNames.js -> marketItemName().
+        const getItemName = marketItemName;
+
         // Полный каталог торгуемых ресурсов из игрового XML, объединённый с товарами с сервера:
         // ресурсы без активных предложений тоже отображаются (приглушёнными), чтобы был виден весь рынок.
         const allGoods = computed(() => {
@@ -1218,12 +1222,12 @@ export default {
 
         const selectedItemName = computed(() => {
             const item = allGoods.value.find(g => g.item_id === selectedItem.value);
-            return item ? item.item_name : '';
+            return item ? getItemName(item.item_name, item.item_id) : '';
         });
 
         const selectedTargetName = computed(() => {
             const item = targets.value.find(t => t.target_item_id === selectedTarget.value);
-            return item ? item.target_item_name : '';
+            return item ? getItemName(item.target_item_name, item.target_item_id) : '';
         });
 
         const calculatedCost = computed(() => {
@@ -1415,6 +1419,9 @@ export default {
         const onServerChange = () => {
             localStorage.setItem('tso_market_selected_server', selectedServerId.value);
             resetSelection();
+            // Сбросить товары прошлого сервера, чтобы сетка ресурсов показала
+            // спиннер загрузки (в том же стиле, что и остальные окна).
+            goods.value = [];
             loadAnalyticsData();
         };
 
@@ -1691,6 +1698,7 @@ export default {
         return {
             activeTab,
             loading,
+            getItemName,
             loadingServers,
             loadingPairs,
             loadingChart,

@@ -28,6 +28,25 @@ export function resourceName(id) {
     return gameAnyLookup(String(id)) ?? humanizeGameId(id);
 }
 
+/**
+ * Market item -> localized display name. The SINGLE entry point for
+ * translating market item names everywhere (admin + public market views).
+ * Robust by design: tries the locale catalog by item id first, then by the
+ * raw backend-provided name, and finally falls back to the backend name (or
+ * a humanized id), so a missing translation can never blank out the UI.
+ *
+ *   marketItemName(good.item_name, good.item_id)
+ */
+export function marketItemName(name, id) {
+    const rawId = (id === null || id === undefined) ? '' : String(id).trim();
+    const rawName = (name === null || name === undefined) ? '' : String(name).trim();
+    if (!rawId && !rawName) return '';
+    const translated = (rawId ? gameAnyLookup(rawId) : null)
+        ?? (rawName ? gameAnyLookup(rawName) : null);
+    if (translated) return translated;
+    return rawName || humanizeGameId(rawId);
+}
+
 /** Strip level / decoration suffixes from a raw building id. */
 export function buildingBaseId(raw) {
     return String(raw || '').replace(/_lvl_\d+/i, '').replace(/decoration_/gi, '').trim();
@@ -130,5 +149,5 @@ export function getBuildingCategory(b) {
     return 'Basic';
 }
 
-export default { humanizeGameId, resourceName, buildingBaseId, buildingName, isBuffableBuilding, getBuildingCategory };
+export default { humanizeGameId, resourceName, marketItemName, buildingBaseId, buildingName, isBuffableBuilding, getBuildingCategory };
 

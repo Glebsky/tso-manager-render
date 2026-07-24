@@ -28,6 +28,19 @@
                 </div>
 
                 <div class="flex justify-end items-center gap-3 flex-wrap">
+                    <!-- Server selector: country code + game world name -->
+                    <div v-if="servers.length" class="relative">
+                        <select v-model="selectedServerId" @change="onServerChange"
+                                class="appearance-none bg-white/5 border border-white/10 rounded-xl pl-3.5 pr-9 py-2 text-xs text-white/80 cursor-pointer transition-all duration-300 hover:bg-white/10 hover:border-white/20 focus:outline-none focus:border-emerald-500/50">
+                            <option v-for="srv in servers" :key="srv.server_id" :value="srv.server_id" class="bg-dark-900">
+                                {{ serverOptionLabel(srv) }}
+                            </option>
+                        </select>
+                        <svg class="w-3.5 h-3.5 text-white/40 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                        </svg>
+                    </div>
+
                     <div class="flex items-center gap-2 bg-white/5 border border-white/10 px-3.5 py-2 rounded-xl text-xs text-white/70 transition-all duration-300 hover:bg-white/10">
                         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                         <span>{{ t('market.live_title') }}</span>
@@ -149,7 +162,7 @@
                                 <img :src="getResourceIcon(good.item_id)" @error="handleIconError($event, good.item_id)" class="w-6 h-6 object-contain mb-1 pointer-events-none transition-transform duration-300 group-hover:scale-110" />
                                 <span class="text-[9px] font-medium text-white/90 truncate w-full text-center" :title="getItemName(good.item_name, good.item_id)">{{ getItemName(good.item_name, good.item_id) }}</span>
                             </div>
-                            <div v-if="loading && allGoods.length === 0" class="col-span-full py-8 flex items-center justify-center gap-2 text-xs text-emerald-400">
+                            <div v-if="loading && goods.length === 0" class="col-span-full py-8 flex items-center justify-center gap-2 text-xs text-emerald-400">
                                 <spinner size="sm" />
                                 <span>{{ t('common.loading_data') }}</span>
                             </div>
@@ -731,8 +744,8 @@
 <script>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { showToast } from '../toast';
-import { t,gameAnyLookup } from '../lang';
-import { humanizeGameId, resourceName } from '../lang/gameNames';
+import { t } from '../lang';
+import { resourceName, marketItemName } from '../lang/gameNames';
 import { TRADABLE_RESOURCES } from '../lang/resourcesCatalog';
 import axios from 'axios';
 import { getGameImageUrl, handleGameImageError } from '../services/gameImageService';
@@ -845,6 +858,15 @@ export default {
             return name || (srv.server_id ? String(srv.server_id).toUpperCase() : '');
         };
 
+        /** "🇷🇺 RU · Мир" — подпись опции в селекторе серверов. */
+        const serverOptionLabel = (srv) => {
+            if (!srv) return '';
+            const code = String(srv.server_id || '').toUpperCase();
+            const world = getServerWorldName(srv);
+            const label = (world && world.toUpperCase() !== code) ? `${code} · ${world}` : code;
+            return `${getLocaleFlag(srv.locale)} ${label}`.trim();
+        };
+
         const loadServers = async () => {
             try {
                 const res = await axios.get('/api/public/market/servers');
@@ -867,6 +889,9 @@ export default {
         const onServerChange = () => {
             localStorage.setItem('tso_market_selected_server', selectedServerId.value);
             resetSelection();
+            // Сбросить товары прошлого сервера, чтобы сетка ресурсов показала
+            // спиннер загрузки (в том же стиле, что и остальные окна).
+            goods.value = [];
             loadInitialData();
         };
 
@@ -883,18 +908,9 @@ export default {
         const selectedTarget = ref('');
         const calcAmount = ref(100);
 
-        const getItemName = (name, id) => {
-            const raw = name || id || '';
-            if (!raw) return '';
-
-            const translated = (id ? gameAnyLookup(String(id)) : null) ?? gameAnyLookup(String(raw));
-
-            if (translated) {
-                return translated;
-            }
-
-            return humanizeGameId(raw);
-        };
+        // Единая точка перевода названий предметов рынка (общая с админкой):
+        // см. resources/js/lang/gameNames.js -> marketItemName().
+        const getItemName = marketItemName;
 
         // Dynamic translated names
         const selectedItemName = computed(() => {
@@ -1290,6 +1306,7 @@ export default {
             onServerChange,
             getLocaleFlag,
             getServerWorldName,
+            serverOptionLabel,
             goods,
             allGoods,
             targets,
