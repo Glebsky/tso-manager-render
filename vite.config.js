@@ -10,4 +10,30 @@ export default defineConfig({
         }),
         vue(),
     ],
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks(id) {
+                    if (id.includes('resources/js/lang/buffTargets')) {
+                        return 'lang-buffs';
+                    }
+                    if (id.includes('resources/js/lang/generated/ru.json')) {
+                        return 'lang-ru';
+                    }
+                    if (id.includes('resources/js/lang/generated/en.json')) {
+                        return 'lang-en';
+                    }
+                    if (id.includes('resources/js/lang/generated/uk.json')) {
+                        return 'lang-uk';
+                    }
+                    if (id.includes('node_modules')) {
+                        if (id.includes('vue') || id.includes('vue-router')) {
+                            return 'vendor-vue';
+                        }
+                        return 'vendor';
+                    }
+                },
+            },
+        },
+    },
 });
