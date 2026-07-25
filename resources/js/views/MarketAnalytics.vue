@@ -309,6 +309,10 @@
                                           x1="40" :y1="20 + (grid - 1) * 50" x2="590" :y2="20 + (grid - 1) * 50"
                                           stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
 
+                                    <text x="35" y="23" fill="rgba(255,255,255,0.3)" font-size="8" text-anchor="end" font-family="monospace">{{ chartMaxPriceLabel }}</text>
+                                    <text x="35" y="123" fill="rgba(255,255,255,0.2)" font-size="8" text-anchor="end" font-family="monospace">{{ chartMidPriceLabel }}</text>
+                                    <text x="35" y="215" fill="rgba(255,255,255,0.3)" font-size="8" text-anchor="end" font-family="monospace">{{ chartMinPriceLabel }}</text>
+
                                     <path :d="chartPriceAreaPath" fill="url(#priceGrad)"/>
                                     <path :d="chartPriceLinePath" fill="none" stroke="#10b981" stroke-width="2"/>
                                     <line x1="40" :y1="chartMeanY" x2="590" :y2="chartMeanY"
@@ -362,7 +366,10 @@
                                     </div>
                                 </div>
 
-                                <div class="flex justify-between text-[8px] text-white/30 px-9 mt-1 font-mono">
+                                <div v-if="history.length === 1" class="flex justify-center text-[8px] text-white/30 px-9 mt-1 font-mono">
+                                    <span>{{ history[0]?.collected_at }}</span>
+                                </div>
+                                <div v-else class="flex justify-between text-[8px] text-white/30 px-9 mt-1 font-mono">
                                     <span>{{ history[0]?.collected_at }}</span>
                                     <span>{{ history[Math.floor(history.length / 2)]?.collected_at }}</span>
                                     <span>{{ history[history.length - 1]?.collected_at }}</span>
@@ -398,6 +405,9 @@
                                           x1="40" :y1="20 + (grid - 1) * 50" x2="590" :y2="20 + (grid - 1) * 50"
                                           stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
 
+                                    <text x="35" y="23" fill="rgba(255,255,255,0.3)" font-size="8" text-anchor="end" font-family="monospace">{{ chartMaxOffersLabel }}</text>
+                                    <text x="35" y="215" fill="rgba(255,255,255,0.3)" font-size="8" text-anchor="end" font-family="monospace">0</text>
+
                                     <path :d="chartSellersAreaPath" fill="rgba(59, 130, 246, 0.1)" class="transition-all duration-500 ease-out"/>
                                     <path :d="chartSellersLinePath" fill="none" stroke="#3b82f6" stroke-width="1.5" class="transition-all duration-500 ease-out"/>
 
@@ -405,11 +415,14 @@
                                     <path :d="chartOffersLinePath" fill="none" stroke="#6366f1" stroke-width="1.5" class="transition-all duration-500 ease-out"/>
 
                                     <rect v-for="(b, idx) in chartPoints" :key="'vol-bar-'+idx"
-                                          :x="b.x - 3" :y="b.vy" width="6" :height="220 - b.vy"
+                                          :x="b.x - (history.length === 1 ? 12 : 3)" :y="b.vy" :width="history.length === 1 ? 24 : 6" :height="Math.max(2, 220 - b.vy)"
                                           fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" stroke-width="0.5" rx="1"
                                           class="transition-all duration-300"/>
                                 </svg>
-                                <div class="flex justify-between text-[8px] text-white/30 px-9 mt-1 font-mono">
+                                <div v-if="history.length === 1" class="flex justify-center text-[8px] text-white/30 px-9 mt-1 font-mono">
+                                    <span>{{ history[0]?.collected_at }}</span>
+                                </div>
+                                <div v-else class="flex justify-between text-[8px] text-white/30 px-9 mt-1 font-mono">
                                     <span>{{ history[0]?.collected_at }}</span>
                                     <span>{{ history[Math.floor(history.length / 2)]?.collected_at }}</span>
                                     <span>{{ history[history.length - 1]?.collected_at }}</span>
@@ -1003,7 +1016,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { t } from '../lang';
 import axios from 'axios';
-import { cachedGet } from '../services/apiCacheService';
+import { cachedGet, clearApiCache } from '../services/apiCacheService';
 import { showToast } from '../toast';
 import { getGameImageUrl, handleGameImageError } from '../services/gameImageService';
 import { resourceName, marketItemName } from '../lang/gameNames';
@@ -1308,6 +1321,7 @@ export default {
         const chartPoints = computed(() => {
             if (history.value.length === 0) return [];
             const w = 550;
+            const isSingle = history.value.length === 1;
             const maxPrice = Math.max(...history.value.map(h => h.price)) || 1;
             const minPrice = Math.min(...history.value.map(h => h.price)) || 0;
             const priceDiff = (maxPrice - minPrice) || 1;
@@ -1317,8 +1331,8 @@ export default {
             const maxVolume = Math.max(...history.value.map(h => h.volume)) || 1;
 
             return history.value.map((d, idx) => {
-                const stepX = history.value.length > 1 ? w / (history.value.length - 1) : w;
-                const x = 40 + idx * stepX;
+                const stepX = isSingle ? 0 : w / (history.value.length - 1);
+                const x = isSingle ? 315 : 40 + idx * stepX;
                 const py = maxPrice === minPrice ? 120 : 220 - ((d.price - minPrice) / priceDiff) * 180 - 10;
                 const sy = 220 - (d.sellers_count / maxSellers) * 180 - 10;
                 const oy = 220 - (d.offers_count / maxOffers) * 180 - 10;
@@ -1339,45 +1353,80 @@ export default {
         const chartPriceLinePath = computed(() => {
             const pts = chartPoints.value;
             if (pts.length === 0) return '';
+            if (pts.length === 1) return `M 40 ${pts[0].y} L 590 ${pts[0].y}`;
             return pts.reduce((path, p, idx) => (idx === 0 ? `M ${p.x} ${p.y}` : `${path} L ${p.x} ${p.y}`), '');
         });
 
         const chartPriceAreaPath = computed(() => {
             const pts = chartPoints.value;
             if (pts.length === 0) return '';
+            if (pts.length === 1) return `M 40 ${pts[0].y} L 590 ${pts[0].y} L 590 220 L 40 220 Z`;
             return `${chartPriceLinePath.value} L ${pts[pts.length - 1].x} 220 L ${pts[0].x} 220 Z`;
         });
 
         const chartSellersLinePath = computed(() => {
             const pts = chartPoints.value;
             if (pts.length === 0) return '';
+            if (pts.length === 1) return `M 40 ${pts[0].sy} L 590 ${pts[0].sy}`;
             return pts.reduce((path, p, idx) => (idx === 0 ? `M ${p.x} ${p.sy}` : `${path} L ${p.x} ${p.sy}`), '');
         });
 
         const chartSellersAreaPath = computed(() => {
             const pts = chartPoints.value;
             if (pts.length === 0) return '';
+            if (pts.length === 1) return `M 40 ${pts[0].sy} L 590 ${pts[0].sy} L 590 220 L 40 220 Z`;
             return `${chartSellersLinePath.value} L ${pts[pts.length - 1].x} 220 L ${pts[0].x} 220 Z`;
         });
 
         const chartOffersLinePath = computed(() => {
             const pts = chartPoints.value;
             if (pts.length === 0) return '';
+            if (pts.length === 1) return `M 40 ${pts[0].oy} L 590 ${pts[0].oy}`;
             return pts.reduce((path, p, idx) => (idx === 0 ? `M ${p.x} ${p.oy}` : `${path} L ${p.x} ${p.oy}`), '');
         });
 
         const chartOffersAreaPath = computed(() => {
             const pts = chartPoints.value;
             if (pts.length === 0) return '';
+            if (pts.length === 1) return `M 40 ${pts[0].oy} L 590 ${pts[0].oy} L 590 220 L 40 220 Z`;
             return `${chartOffersLinePath.value} L ${pts[pts.length - 1].x} 220 L ${pts[0].x} 220 Z`;
         });
 
         const chartMeanY = computed(() => {
-            if (!stats.value || !stats.value.average) return 120;
+            if (!stats.value || !stats.value.average || history.value.length === 0) return 120;
             const maxPrice = Math.max(...history.value.map(h => h.price)) || 1;
             const minPrice = Math.min(...history.value.map(h => h.price)) || 0;
             const priceDiff = (maxPrice - minPrice) || 1;
-            return maxPrice === minPrice ? 120 : 220 - ((stats.value.average - minPrice) / priceDiff) * 180 - 10;
+            const calcY = maxPrice === minPrice ? 120 : 220 - ((stats.value.average - minPrice) / priceDiff) * 180 - 10;
+            return Math.max(20, Math.min(210, calcY));
+        });
+
+        const chartMaxPriceLabel = computed(() => {
+            if (history.value.length === 0) return '';
+            const max = Math.max(...history.value.map(h => h.price));
+            return max >= 1000 ? formatVolume(max) : max.toFixed(2);
+        });
+
+        const chartMinPriceLabel = computed(() => {
+            if (history.value.length === 0) return '';
+            const min = Math.min(...history.value.map(h => h.price));
+            return min >= 1000 ? formatVolume(min) : min.toFixed(2);
+        });
+
+        const chartMidPriceLabel = computed(() => {
+            if (history.value.length === 0) return '';
+            const max = Math.max(...history.value.map(h => h.price));
+            const min = Math.min(...history.value.map(h => h.price));
+            const mid = (max + min) / 2;
+            return mid >= 1000 ? formatVolume(mid) : mid.toFixed(2);
+        });
+
+        const chartMaxOffersLabel = computed(() => {
+            if (history.value.length === 0) return '';
+            const maxSellers = Math.max(...history.value.map(h => h.sellers_count)) || 0;
+            const maxOffers = Math.max(...history.value.map(h => h.offers_count)) || 0;
+            const maxVal = Math.max(maxSellers, maxOffers);
+            return maxVal >= 1000 ? formatVolume(maxVal) : String(maxVal);
         });
 
         const tooltipPositionClass = computed(() => {
@@ -1420,28 +1469,26 @@ export default {
         const onServerChange = () => {
             localStorage.setItem('tso_market_selected_server', selectedServerId.value);
             resetSelection();
-            // Сбросить товары прошлого сервера, чтобы сетка ресурсов показала
-            // спиннер загрузки (в том же стиле, что и остальные окна).
             goods.value = [];
-            loadAnalyticsData();
+            loadAnalyticsData({ bypass: true });
         };
 
-        const loadAnalyticsData = async () => {
+        const loadAnalyticsData = async (options = {}) => {
             if (!selectedServerId.value) return;
             loading.value = true;
             try {
                 const params = { server_id: selectedServerId.value };
-                const goodsData = await cachedGet('/api/market/goods', { params, ttlMs: 1800000 });
+                const goodsData = await cachedGet('/api/market/goods', { params, ttlMs: 1800000, ...options });
                 goods.value = goodsData || [];
 
-                const analyticsData = await cachedGet('/api/market/analytics', { params, ttlMs: 300000 });
+                const analyticsData = await cachedGet('/api/market/analytics', { params, ttlMs: 300000, ...options });
                 popular.value = analyticsData.popular || [];
                 activeOffers.value = analyticsData.active_offers || [];
                 totalActiveCount.value = analyticsData.total_active_count || 0;
                 activeOffersPage.value = 1;
                 hasMoreActiveOffers.value = analyticsData.has_more || false;
 
-                const arbitrageData = await cachedGet('/api/market/arbitrage', { params, ttlMs: 900000 });
+                const arbitrageData = await cachedGet('/api/market/arbitrage', { params, ttlMs: 900000, ...options });
                 arbitrageLoops.value = arbitrageData || [];
 
                 startCountdown();
@@ -1518,7 +1565,7 @@ export default {
                 }
                 closeServerModal();
                 await loadServers();
-                loadAnalyticsData();
+                loadAnalyticsData({ bypass: true });
             } catch (e) {
                 const msg = e.response?.data?.message || t('market.server_save_failed');
                 showToast(msg, 'error');
@@ -1533,7 +1580,7 @@ export default {
                 await axios.delete(`/api/market/servers/${srv.id}`);
                 showToast(t('market.server_deleted'));
                 await loadServers();
-                loadAnalyticsData();
+                loadAnalyticsData({ bypass: true });
             } catch (e) {
                 showToast(t('market.server_delete_failed'), 'error');
             }
@@ -1562,10 +1609,11 @@ export default {
                 const res = await axios.post(`/api/market/servers/${targetServer.id}/sync`);
                 if (res.data.success) {
                     showToast(t('market.sync_complete', { message: res.data.message }));
+                    clearApiCache();
                     await loadServers();
-                    await loadAnalyticsData();
+                    await loadAnalyticsData({ bypass: true });
                     if (selectedItem.value && selectedTarget.value) {
-                        await fetchAnalytics();
+                        await fetchAnalytics({ bypass: true });
                     }
                 }
             } catch (e) {
@@ -1615,7 +1663,7 @@ export default {
             }
         };
 
-        const fetchAnalytics = async () => {
+        const fetchAnalytics = async (options = {}) => {
             if (!selectedItem.value || !selectedTarget.value || !selectedServerId.value) return;
 
             loadingChart.value = true;
@@ -1627,7 +1675,8 @@ export default {
                         target_item_id: selectedTarget.value,
                         period: selectedPeriod.value
                     },
-                    ttlMs: 900000
+                    ttlMs: 900000,
+                    ...options
                 });
                 stats.value = data.stats || null;
                 history.value = data.history || [];

@@ -496,7 +496,7 @@ class MarketAnalyticsController extends Controller
 
             if ($minDateStr && $maxDateStr) {
                 $daysSpan = Carbon::parse($minDateStr)->diffInDays(Carbon::parse($maxDateStr));
-                if ($period === '1d') {
+                if ($period === '1d' || $daysSpan <= 2) {
                     $groupByExpression = 'hour';
                 } elseif ($daysSpan <= 90) {
                     $groupByExpression = 'day';
