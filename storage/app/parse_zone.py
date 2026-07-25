@@ -594,15 +594,6 @@ def main():
         'visitors': make_serializable(visitors)
     }
 
-    # Write the entire raw envelope tree as JSON for debugging fields
-    try:
-        import os
-        envelope_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'debug_envelope.json')
-        with open(envelope_path, 'w', encoding='utf-16') as debug_f:
-            json.dump(make_serializable(envelope), debug_f, ensure_ascii=False, indent=2)
-    except Exception as e:
-        sys.stderr.write(f"Warning: Could not save raw debug envelope: {e}\n")
-
     print(json.dumps(result, ensure_ascii=False, indent=2))
 
 
