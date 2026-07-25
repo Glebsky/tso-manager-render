@@ -119,7 +119,6 @@ class AccountSyncService
                 }
 
                 if ($errorCode === 0 && $buildingCount > 0) {
-                    file_put_contents(storage_path('app/debug_zone.amf'), $rawAmf);
                     $zoneData = $this->fetchFriendsListIfPossible($account, $zoneData);
                     break;
                 }
@@ -154,7 +153,6 @@ class AccountSyncService
         try {
             Log::info("[AccountSync] Loading friend list for account #{$account->id}");
             $rawFriendsAmf = $this->amfService->getFriendList($account);
-            file_put_contents(storage_path('app/debug_friends_list.amf'), $rawFriendsAmf);
             $friendsData = $this->zoneParser->parse($rawFriendsAmf);
 
             $parsedPlayers = $friendsData['friends'] ?? [];

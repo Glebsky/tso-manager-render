@@ -352,12 +352,6 @@ class TsoAmfClient
             'Referer: http://game-cdn.thesettlersonline.net/prestaging/PS5724/SWMMO/debug/SWMMO.swf',
             'x-flash-version: 11,4,402,287',
         ]);
-        $accountId = 'unknown';
-        if (preg_match('/account_(\d+)\.txt/', $this->cookieFile, $matches)) {
-            $accountId = $matches[1];
-        }
-        @file_put_contents(storage_path("app/debug_request_{$accountId}.amf"), $amf0Envelope);
-
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $amf0Envelope);
 
@@ -365,10 +359,6 @@ class TsoAmfClient
         $error = curl_error($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
-
-        if ($response) {
-            @file_put_contents(storage_path("app/debug_response_{$accountId}.amf"), $response);
-        }
 
         if ($error) {
             throw new Exception('AMF cURL Error: '.$error);
