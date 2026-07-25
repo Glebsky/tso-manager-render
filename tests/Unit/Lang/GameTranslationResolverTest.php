@@ -31,6 +31,21 @@ class GameTranslationResolverTest extends TestCase
         $this->assertTrue($resolver->has('RES', 'Water'));
     }
 
+    public function test_resolves_normalized_resource_names_with_spaces_and_casing_variations(): void
+    {
+        $resolver = $this->makeResolver([
+            'RES' => [
+                'Mahoganyplank' => 'Доски из махагониевого дерева',
+                'Platinumsword' => 'Платиновый меч',
+            ],
+        ]);
+
+        $this->assertSame('Доски из махагониевого дерева', $resolver->name('RES', 'Mahogany Plank'));
+        $this->assertSame('Доски из махагониевого дерева', $resolver->name('RES', 'MahoganyPlank'));
+        $this->assertSame('Платиновый меч', $resolver->name('RES', 'Platinum Sword'));
+        $this->assertSame('Платиновый меч', $resolver->name('RES', 'PlatinumSword'));
+    }
+
     public function test_missing_id_falls_back_to_fallback_then_id(): void
     {
         $resolver = $this->makeResolver(['RES' => []]);

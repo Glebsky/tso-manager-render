@@ -1,13 +1,13 @@
 <template>
     <div class="max-w-7xl mx-auto space-y-8 pb-12 transition-all duration-500 ease-out">
         <!-- Page Header -->
-        <div class="glass-card p-6 border-white/10 shadow-2xl relative transition-all duration-500 hover:border-white/20">
+        <div class="glass-card p-6 border-white/10 shadow-2xl relative z-30 transition-all duration-500 hover:border-white/20">
             <div class="absolute inset-0 overflow-hidden rounded-[inherit] pointer-events-none">
                 <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl transition-all duration-700"></div>
             </div>
 
             <!-- Language Switcher in Upper Right Corner -->
-            <div class="absolute top-5 right-5 z-20">
+            <div class="absolute top-5 right-5 z-50">
                 <LanguageSwitcher />
             </div>
 
@@ -58,7 +58,8 @@
         </div>
 
         <!-- Selection Card (Dropdowns or Visual Grid) -->
-        <div class="glass-card p-6 transition-all duration-500 hover:border-white/20">
+        <div class="glass-card p-6 relative transition-all duration-500 hover:border-white/20">
+            <loading-overlay :show="loading || loadingPairs" :label="loadingPairs ? t('market.loading_pairs') : t('common.loading_data')" />
             <!-- Selector Header: Mode Switch & Mirror Button -->
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-white/5 pb-4">
                 <div class="flex items-center gap-2">
@@ -162,11 +163,7 @@
                                 <img :src="getResourceIcon(good.item_id)" @error="handleIconError($event, good.item_id)" class="w-6 h-6 object-contain mb-1 pointer-events-none transition-transform duration-300 group-hover:scale-110" />
                                 <span class="text-[9px] font-medium text-white/90 truncate w-full text-center" :title="getItemName(good.item_name, good.item_id)">{{ getItemName(good.item_name, good.item_id) }}</span>
                             </div>
-                            <div v-if="loading && goods.length === 0" class="col-span-full py-8 flex items-center justify-center gap-2 text-xs text-emerald-400">
-                                <spinner size="sm" />
-                                <span>{{ t('common.loading_data') }}</span>
-                            </div>
-                            <div v-else-if="allGoods.length === 0" class="col-span-full py-8 text-center text-xs text-white/30">
+                            <div v-if="allGoods.length === 0 && !loading" class="col-span-full py-8 text-center text-xs text-white/30">
                                 No resources available in the database.
                             </div>
                         </div>
@@ -180,11 +177,7 @@
                                 <img :src="getResourceIcon(target.target_item_id)" @error="handleIconError($event, target.target_item_id)" class="w-6 h-6 object-contain mb-1 pointer-events-none transition-transform duration-300 group-hover:scale-110" />
                                 <span class="text-[9px] font-medium text-white/90 truncate w-full text-center" :title="getItemName(target.target_item_name, target.target_item_id)">{{ getItemName(target.target_item_name, target.target_item_id) }}</span>
                             </div>
-                            <div v-if="loadingPairs" class="col-span-full py-8 flex items-center justify-center gap-2 text-xs text-emerald-400">
-                                <spinner size="sm" />
-                                <span>{{ t('market.loading_pairs') }}</span>
-                            </div>
-                            <div v-else-if="targets.length === 0" class="col-span-full py-8 text-center text-xs text-white/30">
+                            <div v-if="targets.length === 0 && !loadingPairs" class="col-span-full py-8 text-center text-xs text-white/30">
                                 Please select a selling item first.
                             </div>
                         </div>

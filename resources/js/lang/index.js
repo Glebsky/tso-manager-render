@@ -130,16 +130,38 @@ export function t(key, params = null) {
 /** Raw game catalog lookup by (section, id); null when missing everywhere. */
 export function gameLookup(section, id) {
     if (!id) return null;
-    const strId = String(id);
+    const strId = String(id).trim();
     const lcFirst = strId.charAt(0).toLowerCase() + strId.slice(1);
     const ucFirst = strId.charAt(0).toUpperCase() + strId.slice(1);
+
+    const cleanId = strId.replace(/[\s_]+/g, '');
+    const cleanLcFirst = cleanId.charAt(0).toLowerCase() + cleanId.slice(1);
+    const cleanUcFirst = cleanId.charAt(0).toUpperCase() + cleanId.slice(1);
+    const cleanUcFirstLcRest = cleanId.charAt(0).toUpperCase() + cleanId.slice(1).toLowerCase();
+
+    const candidates = Array.from(new Set([
+        strId,
+        lcFirst,
+        ucFirst,
+        cleanId,
+        cleanLcFirst,
+        cleanUcFirst,
+        cleanUcFirstLcRest,
+    ]));
 
     for (const chainLocale of localeChain) {
         const sec = catalogs[chainLocale]?.game?.[section];
         if (sec) {
-            if (typeof sec[strId] === 'string') return sec[strId];
-            if (typeof sec[lcFirst] === 'string') return sec[lcFirst];
-            if (typeof sec[ucFirst] === 'string') return sec[ucFirst];
+            for (const cand of candidates) {
+                if (typeof sec[cand] === 'string') return sec[cand];
+            }
+
+            const idLowerClean = strId.replace(/[\s_]+/g, '').toLowerCase();
+            for (const k in sec) {
+                if (k.replace(/[\s_]+/g, '').toLowerCase() === idLowerClean && typeof sec[k] === 'string') {
+                    return sec[k];
+                }
+            }
         }
     }
 

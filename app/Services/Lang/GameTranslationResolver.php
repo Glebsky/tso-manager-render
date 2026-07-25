@@ -61,23 +61,36 @@ final class GameTranslationResolver
         $lcFirst = lcfirst($id);
         $ucFirst = ucfirst($id);
 
+        $cleanId = preg_replace('/[\s_]+/', '', $id) ?? $id;
+        $cleanLcFirst = lcfirst($cleanId);
+        $cleanUcFirst = ucfirst($cleanId);
+        $cleanUcFirstLcRest = ucfirst(strtolower($cleanId));
+
+        $candidates = array_values(array_unique([
+            $id,
+            $lcFirst,
+            $ucFirst,
+            $cleanId,
+            $cleanLcFirst,
+            $cleanUcFirst,
+            $cleanUcFirstLcRest,
+        ]));
+
         foreach ($this->localeChain($locale) as $chainLocale) {
             $catalog = $this->catalog($chainLocale);
 
-            if (isset($catalog[$section][$id]) && is_string($catalog[$section][$id])) {
-                return $catalog[$section][$id];
-            }
-            if (isset($catalog[$section][$lcFirst]) && is_string($catalog[$section][$lcFirst])) {
-                return $catalog[$section][$lcFirst];
-            }
-            if (isset($catalog[$section][$ucFirst]) && is_string($catalog[$section][$ucFirst])) {
-                return $catalog[$section][$ucFirst];
-            }
-
             if (isset($catalog[$section])) {
-                $idLower = strtolower($id);
-                foreach ($catalog[$section] as $k => $v) {
-                    if (strtolower($k) === $idLower && is_string($v)) {
+                $sec = $catalog[$section];
+                foreach ($candidates as $cand) {
+                    if (isset($sec[$cand]) && is_string($sec[$cand])) {
+                        return $sec[$cand];
+                    }
+                }
+
+                $idLowerClean = str_replace([' ', '_'], '', strtolower($id));
+                foreach ($sec as $k => $v) {
+                    $kLowerClean = str_replace([' ', '_'], '', strtolower($k));
+                    if ($kLowerClean === $idLowerClean && is_string($v)) {
                         return $v;
                     }
                 }
