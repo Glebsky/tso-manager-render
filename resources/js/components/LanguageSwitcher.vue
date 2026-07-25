@@ -31,7 +31,7 @@
         >
             <div
                 v-if="isOpen"
-                class="absolute right-0 mt-2 w-36 rounded-xl bg-dark-900/95 border border-white/10 shadow-2xl backdrop-blur-xl py-1.5 z-50 overflow-hidden"
+                class="absolute right-0 mt-2 w-36 rounded-xl bg-dark-900/95 border border-white/10 shadow-2xl backdrop-blur-xl py-1.5 z-[100] overflow-hidden"
             >
                 <button
                     v-for="lang in availableLanguages"
