@@ -531,6 +531,7 @@ return [
     'tasks.series_name_placeholder' => 'E.g. Buff a friend\'s town hall',
     'tasks.show_actions' => 'Task actions',
     'tasks.specialist' => 'Specialist',
+    'tasks.status.active' => 'Active',
     'tasks.status.completed' => 'Completed',
     'tasks.status.launching' => 'Starting...',
     'tasks.status.pause_short' => 'Paused',

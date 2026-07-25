@@ -531,6 +531,7 @@ return [
     'tasks.series_name_placeholder' => 'Напр. Бафф ратуши друга',
     'tasks.show_actions' => 'Действия задачи',
     'tasks.specialist' => 'Специалист',
+    'tasks.status.active' => 'Активна',
     'tasks.status.completed' => 'Завершена',
     'tasks.status.launching' => 'Запуск...',
     'tasks.status.pause_short' => 'Пауза',

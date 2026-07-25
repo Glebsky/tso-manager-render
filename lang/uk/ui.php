@@ -613,6 +613,7 @@ return [
     'tasks.series_name_placeholder' => 'Напр. Баф ратуші друга',
     'tasks.show_actions' => 'Дії завдання',
     'tasks.specialist' => 'Спеціаліст',
+    'tasks.status.active' => 'Активне',
     'tasks.status.completed' => 'Завершено',
     'tasks.status.launching' => 'Запуск...',
     'tasks.status.pause_short' => 'Пауза',

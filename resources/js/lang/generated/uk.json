@@ -122,13 +122,13 @@
     "locale": "uk",
     "tasks": {
         "error": {
-            "account_not_found": "Акаунт для завдання #:id не знайдено.",
-            "friend_building_not_found": "Крок не виконано: будівлю Grid #:grid не знайдено в зоні :friendName",
-            "friend_not_found": "Крок пропущено: гравець більше не перебуває у списку друзів",
-            "friend_zone_failed": "Не вдалося завантажити зону друга (код помилки сервера :err: :errMsg)",
-            "server_error": "Код помилки сервера :errorCode: :errorMsg",
             "task_inactive": "Завдання #:id неактивне або призупинене.",
             "token_mismatch": "Невідповідність токена виконання для завдання #:id. Очікувався: :expected, знайдено: :found",
+            "account_not_found": "Акаунт для завдання #:id не знайдено.",
+            "friend_not_found": "Крок пропущено: гравець більше не перебуває у списку друзів",
+            "friend_zone_failed": "Не вдалося завантажити зону друга (код помилки сервера :err: :errMsg)",
+            "friend_building_not_found": "Крок не виконано: будівлю Grid #:grid не знайдено в зоні :friendName",
+            "server_error": "Код помилки сервера :errorCode: :errorMsg",
             "unknown_action_type": "Невідомий тип дії: :taskType"
         },
         "log": {
@@ -136,8 +136,8 @@
             "task_success": "Scheduled [:type] executed successfully. :result"
         },
         "step": {
-            "ok": "Step :step [:type]: OK (:bytes bytes)",
-            "skipped": "Step :step [:type]: SKIPPED (already executed)"
+            "skipped": "Step :step [:type]: SKIPPED (already executed)",
+            "ok": "Step :step [:type]: OK (:bytes bytes)"
         }
     },
     "ui": {
@@ -318,7 +318,7 @@
         "game_error.1006": "Зону заблоковано",
         "game_error.1007": "В обов'язковому полі відсутнє значення",
         "game_error.1008": "Значення виходить за допустимий діапазон",
-        "game_error.1009": "Передано неправильний тип AMF-об'єкта",
+        "game_error.1009": "Передано неправильний тип AMF-об'єкт��",
         "game_error.1010": "Ігровий сервер перевантажено",
         "game_error.1011": "Зону заблоковано службою підтримки",
         "game_error.1012": "Виявлено новішу ігрову сесію",
@@ -352,7 +352,7 @@
         "game_error.534": "Вказане місце заблоковано",
         "game_error.535": "Вказане місце заблоковано",
         "game_error.540": "Помилка бази даних гри",
-        "game_error.550": "Передано неприпустиме значення",
+        "game_error.550": "Передано неприпустиме з��ачення",
         "game_error.551": "Помилка тригера завдання",
         "game_error.552": "Неприпустимий текст",
         "game_error.60": "У вказаній позиції немає будівлі",
@@ -735,7 +735,7 @@
         "tasks.select_buildings": "Виберіть будівлі...",
         "tasks.select_friend": "Виберіть друга...",
         "tasks.select_friend_building": "Виберіть будівлю друга...",
-        "tasks.select_search_type": "Виберіть ��ип пошуку",
+        "tasks.select_search_type": "Виберіть тип пошуку",
         "tasks.select_specialist": "Виберіть спеціаліста...",
         "tasks.select_specialists": "Виберіть спеціалістів...",
         "tasks.select_target": "Виберіть ціль",
@@ -746,6 +746,7 @@
         "tasks.series_name_placeholder": "Напр. Баф ратуші друга",
         "tasks.show_actions": "Дії завдання",
         "tasks.specialist": "Спеціаліст",
+        "tasks.status.active": "Активне",
         "tasks.status.completed": "Завершено",
         "tasks.status.launching": "Запуск...",
         "tasks.status.pause_short": "Пауза",
