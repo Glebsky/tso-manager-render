@@ -741,7 +741,7 @@
         </div>
 
         <!-- Subtle peace note -->
-        <p class="text-center text-[10px] leading-relaxed text-white/20 hover:text-white/35 transition-colors duration-500 select-none px-6">
+        <p class="text-center text-[10px] leading-relaxed text-white/5 hover:text-white/35 transition-colors duration-500 select-none px-6">
             {{ t('market.peace_note') }}
         </p>
     </div>
