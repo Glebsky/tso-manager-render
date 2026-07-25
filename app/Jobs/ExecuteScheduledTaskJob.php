@@ -59,31 +59,31 @@ class ExecuteScheduledTaskJob implements ShouldQueue
         $task = ScheduledTask::find($this->taskId);
 
         if (! $task) {
-            Log::warning("ExecuteScheduledTaskJob: Task #{$this->taskId} not found. Skipping.");
+            Log::warning("[TaskJob] Task #{$this->taskId} not found; skipping");
 
             return;
         }
 
         if ($task->status !== 'queued' && $task->status !== 'running') {
-            Log::info("ExecuteScheduledTaskJob: Task #{$this->taskId} status is '{$task->status}' (not queued). Skipping.");
+            Log::info("[TaskJob] Task #{$this->taskId} has status '{$task->status}' instead of 'queued'; skipping");
 
             return;
         }
 
         if ($task->execution_token !== null && $task->execution_token !== $this->executionToken) {
-            Log::warning("ExecuteScheduledTaskJob: Execution token mismatch for Task #{$this->taskId}. Expected {$this->executionToken}, found {$task->execution_token}. Skipping.");
+            Log::warning("[TaskJob] Execution token mismatch for task #{$this->taskId} (expected {$this->executionToken}, found {$task->execution_token}); skipping");
 
             return;
         }
 
         if (! $task->is_active && $task->execution_token === null) {
-            Log::info("ExecuteScheduledTaskJob: Task #{$this->taskId} is no longer active. Resetting status to pending.");
+            Log::info("[TaskJob] Task #{$this->taskId} is no longer active; resetting status to 'pending'");
             $task->update(['status' => 'pending']);
 
             return;
         }
 
-        Log::info("Executing Task #{$this->taskId} via ExecuteScheduledTaskJob (attempt {$this->attempts()})");
+        Log::info("[TaskJob] Executing task #{$this->taskId} (attempt {$this->attempts()})");
 
         // Non-sequence tasks are a single action: run them as before.
         if ($task->task_type !== 'sequence') {
@@ -122,7 +122,7 @@ class ExecuteScheduledTaskJob implements ShouldQueue
             self::dispatch($this->taskId, $this->executionToken)
                 ->delay(now()->addSeconds(max($delay, 1)));
 
-            Log::info("Task #{$this->taskId}: handed off to a delayed job (next step in {$delay}s, completed_steps={$task->completed_steps}).");
+            Log::info("[TaskJob] Task #{$this->taskId} handed off to a delayed job (next step in {$delay}s, completed steps: {$task->completed_steps})");
 
             return;
         }
@@ -133,7 +133,7 @@ class ExecuteScheduledTaskJob implements ShouldQueue
      */
     public function failed(Throwable $exception): void
     {
-        Log::error("ExecuteScheduledTaskJob failed permanently for task #{$this->taskId}: {$exception->getMessage()}");
+        Log::error("[TaskJob] Task #{$this->taskId} failed permanently after all retries: {$exception->getMessage()}");
 
         $task = ScheduledTask::find($this->taskId);
         if ($task) {
@@ -147,7 +147,7 @@ class ExecuteScheduledTaskJob implements ShouldQueue
             BotLog::create([
                 'account_id' => $task->account_id,
                 'level' => 'error',
-                'message' => "Job for scheduled task #{$task->id} [{$task->task_type}] failed after all retries: {$exception->getMessage()}",
+                'message' => __('logs.task.job_failed', ['id' => $task->id, 'type' => $task->task_type, 'error' => $exception->getMessage()]),
             ]);
         }
     }

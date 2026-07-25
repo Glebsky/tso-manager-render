@@ -47,7 +47,7 @@ class MarketSyncService
 
     public function sync(Account $account, ?string $serverId = null): array
     {
-        $action = 'Market synchronized';
+        $action = 'Market sync';
         $collectedAt = now();
 
         if (empty($serverId)) {
@@ -61,7 +61,7 @@ class MarketSyncService
         }
 
         try {
-            $this->logEvent($account, $action, 'INFO', "Starting market synchronization for server [{$serverId}]", $serverId);
+            $this->logEvent($account, $action, 'INFO', __('logs.market.sync_started', ['server' => $serverId]), $serverId);
 
             // 1. Authenticate if needed
             if (! $this->authService->isAuthenticated($account)) {
@@ -78,7 +78,7 @@ class MarketSyncService
 
             for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
                 try {
-                    $this->logEvent($account, $action, 'INFO', "Fetching market offers AMF (attempt {$attempt}/{$maxRetries})", $serverId);
+                    $this->logEvent($account, $action, 'INFO', __('logs.market.fetch_attempt', ['attempt' => $attempt, 'max' => $maxRetries]), $serverId);
                     $rawAmf = $this->amfService->getMarketOffers($account);
 
                     $scriptPath = storage_path('app/parse_market.py');
@@ -113,7 +113,7 @@ class MarketSyncService
                     $errorCode = $parsed['errorCode'] ?? 0;
 
                     if ($errorCode === 1012) {
-                        $this->logEvent($account, $action, 'WARNING', "Received error 1012 (Zone loading). Waiting {$retryDelay}s and retrying...", $serverId);
+                        $this->logEvent($account, $action, 'WARNING', __('logs.market.zone_loading_retry', ['delay' => $retryDelay]), $serverId);
                         sleep($retryDelay);
 
                         continue;
@@ -123,7 +123,7 @@ class MarketSyncService
                         if ($hasResetSession) {
                             throw new Exception(__('ui.sync.session_intercepted_market', ['code' => $errorCode]));
                         }
-                        $this->logEvent($account, $action, 'WARNING', "Received error {$errorCode} (Session expired). Resetting session...", $serverId);
+                        $this->logEvent($account, $action, 'WARNING', __('logs.market.session_expired_retry', ['code' => $errorCode]), $serverId);
                         @unlink($this->authService->getCookieFile($account));
                         $this->authService->login($account);
                         $this->amfService->resetClient();
@@ -137,7 +137,7 @@ class MarketSyncService
                     // Success or other unhandled code
                     break;
                 } catch (Exception $attemptEx) {
-                    $this->logEvent($account, $action, 'WARNING', "Attempt {$attempt}/{$maxRetries} failed: ".$attemptEx->getMessage(), $serverId);
+                    $this->logEvent($account, $action, 'WARNING', __('logs.market.attempt_failed', ['attempt' => $attempt, 'max' => $maxRetries, 'error' => $attemptEx->getMessage()]), $serverId);
                     if ($attempt === $maxRetries) {
                         throw $attemptEx;
                     }
@@ -286,7 +286,7 @@ class MarketSyncService
             });
 
             $count = count($offersToInsertList);
-            $message = "{$count} offers received for server [{$serverId}]";
+            $message = __('logs.market.sync_success', ['count' => $count, 'server' => $serverId]);
 
             $this->logEvent($account, $action, 'SUCCESS', $message, $serverId);
 
@@ -308,7 +308,7 @@ class MarketSyncService
             ];
 
         } catch (Exception $e) {
-            $this->logEvent($account, $action, 'ERROR', $e->getMessage(), $serverId);
+            $this->logEvent($account, $action, 'ERROR', __('logs.market.sync_failed', ['error' => $e->getMessage()]), $serverId);
 
             if ($connection) {
                 $connection->update([
@@ -324,7 +324,7 @@ class MarketSyncService
     private function logEvent(Account $account, string $action, string $status, string $message, ?string $serverId = null): void
     {
         // 1. Write to standard Laravel file logs (storage/logs/laravel.log)
-        $logMessage = "[MarketSync] [{$account->username}] [server:{$serverId}] {$action} - {$status}: {$message}";
+        $logMessage = "[MarketSync][server:{$serverId}][{$account->username}] {$status}: {$message}";
         if ($status === 'FAILED' || $status === 'ERROR') {
             Log::error($logMessage);
         } elseif ($status === 'WARNING') {
@@ -354,11 +354,11 @@ class MarketSyncService
             BotLog::create([
                 'account_id' => $account->id,
                 'level' => $botLogLevel,
-                'message' => "[Market][{$serverId}] {$action}: {$message}",
+                'message' => "[Market][{$serverId}] {$message}",
                 'created_at' => now(),
             ]);
         } catch (Exception $dbEx) {
-            Log::error('Failed to write market sync log to database: '.$dbEx->getMessage());
+            Log::error("[MarketSync] Failed to write sync log to database: {$dbEx->getMessage()}");
         }
     }
 }

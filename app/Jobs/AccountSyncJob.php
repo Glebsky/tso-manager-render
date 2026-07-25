@@ -43,10 +43,10 @@ class AccountSyncJob implements ShouldQueue
     public function handle(AccountSyncService $syncService): void
     {
         try {
-            Log::info("Running AccountSyncJob for account #{$this->account->id}");
+            Log::info("[AccountSyncJob] Started for account #{$this->account->id} ({$this->account->username})");
             $syncService->sync($this->account);
         } catch (Throwable $e) {
-            Log::error("AccountSyncJob failed for account #{$this->account->id}: {$e->getMessage()}");
+            Log::error("[AccountSyncJob] Failed for account #{$this->account->id}: {$e->getMessage()}");
             throw $e;
         } finally {
             Cache::forget("account_sync_lock:{$this->account->id}");
@@ -58,12 +58,12 @@ class AccountSyncJob implements ShouldQueue
      */
     public function failed(Throwable $exception): void
     {
-        Log::error("AccountSyncJob failed permanently for account #{$this->account->id}: {$exception->getMessage()}");
+        Log::error("[AccountSyncJob] Failed permanently for account #{$this->account->id} after all retries: {$exception->getMessage()}");
 
         BotLog::create([
             'account_id' => $this->account->id,
             'level' => 'error',
-            'message' => "Account sync job failed permanently: {$exception->getMessage()}",
+            'message' => __('logs.account.sync_job_failed', ['error' => $exception->getMessage()]),
         ]);
 
         Cache::forget("account_sync_lock:{$this->account->id}");

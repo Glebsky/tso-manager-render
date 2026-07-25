@@ -68,12 +68,12 @@ class TsoAuthService
             // Try CipSoft migrated login first (simple form POST, matching C# CipMigratedAuth)
             $params = $this->loginLegacy($account, $cookieFile, $server);
         } catch (Exception $e) {
-            \Illuminate\Support\Facades\Log::warning("CipMigrated login failed for account {$account->id}: ".$e->getMessage());
+            \Illuminate\Support\Facades\Log::warning("[TsoAuth] Legacy (CipMigrated) login failed for account #{$account->id}: ".$e->getMessage());
             // If CipMigrated failed, try Ubisoft OAuth flow (C# CipAuth) as fallback
             try {
                 $params = $this->loginOAuth($account, $cookieFile, $server);
             } catch (Exception $e2) {
-                \Illuminate\Support\Facades\Log::warning("OAuth login also failed for account {$account->id}: ".$e2->getMessage());
+                \Illuminate\Support\Facades\Log::warning("[TsoAuth] OAuth fallback login also failed for account #{$account->id}: ".$e2->getMessage());
                 // Re-throw the original CipMigrated error as it's more likely relevant
                 throw $e;
             }
@@ -113,7 +113,7 @@ class TsoAuthService
             'password' => $account->password,
         ], $cookieFile);
 
-        \Illuminate\Support\Facades\Log::info('CipMigratedAuth login response: '.substr($loginRes, 0, 500));
+        \Illuminate\Support\Facades\Log::info('[TsoAuth] Legacy (CipMigrated) login response: '.substr($loginRes, 0, 500));
 
         if (strpos($loginRes, 'OKAY') === false) {
             if (str_contains($loginRes, 'CAPTCHA') || str_contains($loginRes, 'captcha') || str_contains($loginRes, 'Captcha')) {

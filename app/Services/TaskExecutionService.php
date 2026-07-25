@@ -113,7 +113,7 @@ class TaskExecutionService
                         BotLog::create([
                             'account_id' => $account->id,
                             'level' => 'success',
-                            'message' => __('tasks.log.step_success', ['id' => $task->id, 'step' => $index + 1, 'type' => $actionType]),
+                            'message' => __('logs.task.step_completed', ['id' => $task->id, 'step' => $index + 1, 'type' => $actionType]),
                         ]);
                     } catch (Throwable $e) {
                         $hasStepError = true;
@@ -126,12 +126,12 @@ class TaskExecutionService
                             'error' => $errorMsg,
                         ];
 
-                        $resultsSummary[] = 'Step '.($index + 1)." [{$actionType}]: ERROR - {$errorMsg}";
+                        $resultsSummary[] = __('tasks.step.error', ['step' => $index + 1, 'type' => $actionType, 'error' => $errorMsg]);
 
                         BotLog::create([
                             'account_id' => $account->id,
                             'level' => 'error',
-                            'message' => "Sequence task #{$task->id} step ".($index + 1)." [{$actionType}] failed: {$errorMsg}",
+                            'message' => __('logs.task.step_failed', ['id' => $task->id, 'step' => $index + 1, 'type' => $actionType, 'error' => $errorMsg]),
                         ]);
                     }
 
@@ -172,7 +172,9 @@ class TaskExecutionService
                 BotLog::create([
                     'account_id' => $account->id,
                     'level' => $logLevel,
-                    'message' => __('tasks.log.task_success', ['type' => $task->task_type, 'result' => strlen($result) > 100 ? substr($result, 0, 97).'...' : $result]),
+                    'message' => $hasStepError
+                        ? __('logs.task.completed_with_errors', ['type' => $task->task_type, 'result' => strlen($result) > 100 ? substr($result, 0, 97).'...' : $result])
+                        : __('logs.task.completed', ['type' => $task->task_type, 'result' => strlen($result) > 100 ? substr($result, 0, 97).'...' : $result]),
                 ]);
 
                 return $result;
@@ -204,7 +206,7 @@ class TaskExecutionService
                     BotLog::create([
                         'account_id' => $account->id,
                         'level' => 'success',
-                        'message' => __('tasks.log.task_success', ['type' => $task->task_type, 'result' => strlen($result) > 100 ? substr($result, 0, 97).'...' : $result]),
+                        'message' => __('logs.task.completed', ['type' => $task->task_type, 'result' => strlen($result) > 100 ? substr($result, 0, 97).'...' : $result]),
                     ]);
 
                     return $result;
@@ -238,7 +240,7 @@ class TaskExecutionService
                     BotLog::create([
                         'account_id' => $account->id,
                         'level' => 'error',
-                        'message' => "Scheduled [{$task->task_type}] failed: {$errorMsg}",
+                        'message' => __('logs.task.failed', ['type' => $task->task_type, 'error' => $errorMsg]),
                     ]);
 
                     throw $e;
@@ -287,7 +289,7 @@ class TaskExecutionService
             BotLog::create([
                 'account_id' => $account->id,
                 'level' => 'error',
-                'message' => "Scheduled [{$task->task_type}] failed: {$errorMsg}",
+                'message' => __('logs.task.failed', ['type' => $task->task_type, 'error' => $errorMsg]),
             ]);
 
             throw $e;
@@ -373,7 +375,7 @@ class TaskExecutionService
             BotLog::create([
                 'account_id' => $account->id,
                 'level' => 'success',
-                'message' => __('tasks.log.step_success', ['id' => $task->id, 'step' => $index + 1, 'type' => $actionType]),
+                'message' => __('logs.task.step_completed', ['id' => $task->id, 'step' => $index + 1, 'type' => $actionType]),
             ]);
         } catch (Throwable $e) {
             $errorMsg = $e instanceof TaskExecutionException
@@ -388,7 +390,7 @@ class TaskExecutionService
             BotLog::create([
                 'account_id' => $account->id,
                 'level' => 'error',
-                'message' => "Sequence task #{$task->id} step ".($index + 1)." [{$actionType}] failed: {$errorMsg}",
+                'message' => __('logs.task.step_failed', ['id' => $task->id, 'step' => $index + 1, 'type' => $actionType, 'error' => $errorMsg]),
             ]);
         }
 
@@ -422,10 +424,10 @@ class TaskExecutionService
         foreach ($stepResults as $i => $stepResult) {
             if (($stepResult['status'] ?? null) === 'failed') {
                 $hasStepError = true;
-                $summaryParts[] = 'Step '.($i + 1).': ERROR - '.($stepResult['error'] ?? 'unknown');
+                $summaryParts[] = __('tasks.step.error_short', ['step' => $i + 1, 'error' => $stepResult['error'] ?? 'unknown']);
             } else {
                 $hasStepSuccess = true;
-                $summaryParts[] = 'Step '.($i + 1).': OK';
+                $summaryParts[] = __('tasks.step.ok_short', ['step' => $i + 1]);
             }
         }
 
@@ -454,7 +456,9 @@ class TaskExecutionService
         BotLog::create([
             'account_id' => $accountId,
             'level' => $hasStepError ? 'error' : 'success',
-            'message' => __('tasks.log.task_success', ['type' => $task->task_type, 'result' => strlen($result) > 100 ? substr($result, 0, 97).'...' : $result]),
+            'message' => $hasStepError
+                ? __('logs.task.completed_with_errors', ['type' => $task->task_type, 'result' => strlen($result) > 100 ? substr($result, 0, 97).'...' : $result])
+                : __('logs.task.completed', ['type' => $task->task_type, 'result' => strlen($result) > 100 ? substr($result, 0, 97).'...' : $result]),
         ]);
 
         return [
@@ -473,7 +477,7 @@ class TaskExecutionService
                 return $this->executeSingleAction($account, $taskType, $payload);
             } catch (GameServerErrorException $e) {
                 if (in_array($e->getCode(), [1005, 1012], true) && $attempt < $maxAttempts) {
-                    \Illuminate\Support\Facades\Log::info("Task action [{$taskType}] encountered game error {$e->getCode()}. Resetting session and retrying (attempt {$attempt}/{$maxAttempts})...");
+                    \Illuminate\Support\Facades\Log::info("[TaskExecution] Action [{$taskType}] hit game error {$e->getCode()}; resetting session and retrying (attempt {$attempt}/{$maxAttempts})");
                     @unlink($this->authService->getCookieFile($account));
                     $this->authService->login($account);
                     $this->amfService->resetClient();

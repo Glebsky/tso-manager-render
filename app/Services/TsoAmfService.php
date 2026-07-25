@@ -195,7 +195,7 @@ function getRealAmfUrl(string $bbUrl, string $dsoAuthUser, string $dsoAuthToken,
     $lsUrl = $bbUrl;
     $amfServerUrl = '';
 
-    \Illuminate\Support\Facades\Log::info("getRealAmfUrl: bbUrl={$lsUrl}, user={$dsoAuthUser}, targetZoneId={$targetZoneId}");
+    \Illuminate\Support\Facades\Log::info("[TsoAmf] Resolving real AMF server: bbUrl={$lsUrl}, user={$dsoAuthUser}, targetZoneId={$targetZoneId}");
 
     // 1. Authenticate session on Load Server (as in C# FastAuth / game boot sequence)
     $authUrl = rtrim($lsUrl, '/').'/authenticate';
@@ -219,7 +219,7 @@ function getRealAmfUrl(string $bbUrl, string $dsoAuthUser, string $dsoAuthToken,
     $authStatus = curl_getinfo($chAuth, CURLINFO_HTTP_CODE);
     curl_close($chAuth);
 
-    \Illuminate\Support\Facades\Log::info("LoadServer authenticate: HTTP={$authStatus}, Resp=".trim($authRes));
+    \Illuminate\Support\Facades\Log::info("[TsoAmf] Load server authentication: HTTP {$authStatus}, response: ".trim($authRes));
 
     // Extract Flex DSId session hash (third parameter in TOKEN|NICKNAME|HASH) and convert to UUID
     if ($authStatus === 200 && ! empty($authRes)) {
@@ -232,7 +232,7 @@ function getRealAmfUrl(string $bbUrl, string $dsoAuthUser, string $dsoAuthToken,
                         substr($hash, 12, 4).'-'.
                         substr($hash, 16, 4).'-'.
                         substr($hash, 20);
-                \Illuminate\Support\Facades\Log::info("Extracted DSId from authenticate response: {$dsId}");
+                \Illuminate\Support\Facades\Log::info("[TsoAmf] Extracted DSId from authentication response: {$dsId}");
             }
         }
     }
@@ -265,7 +265,7 @@ function getRealAmfUrl(string $bbUrl, string $dsoAuthUser, string $dsoAuthToken,
         $lsStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
-        \Illuminate\Support\Facades\Log::info("LoadServer attempt {$i}: URL={$requestUrl}, HTTP={$lsStatus}, Resp=".substr($lsRes, 0, 300));
+        \Illuminate\Support\Facades\Log::info("[TsoAmf] Load server attempt {$i}: HTTP {$lsStatus}, URL {$requestUrl}, response: ".substr($lsRes, 0, 300));
 
         if ($lsStatus != 202) {
             $amfServerUrl = str_replace(':123443', '', trim($lsRes));
@@ -286,7 +286,7 @@ function getRealAmfUrl(string $bbUrl, string $dsoAuthUser, string $dsoAuthToken,
         }
     }
 
-    \Illuminate\Support\Facades\Log::info("getRealAmfUrl resolved to: {$amfServerUrl}");
+    \Illuminate\Support\Facades\Log::info("[TsoAmf] Real AMF server resolved: {$amfServerUrl}");
 
     return $amfServerUrl;
 }

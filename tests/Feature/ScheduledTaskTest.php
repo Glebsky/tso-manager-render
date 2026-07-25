@@ -141,12 +141,12 @@ class ScheduledTaskTest extends TestCase
         $this->assertDatabaseHas('bot_logs', [
             'account_id' => $account->id,
             'level' => 'success',
-            'message' => "Sequence task #{$task->id} step 1 [stop_production] executed successfully.",
+            'message' => "Task #{$task->id}: step 1 (stop_production) completed successfully.",
         ]);
         $this->assertDatabaseHas('bot_logs', [
             'account_id' => $account->id,
             'level' => 'success',
-            'message' => "Sequence task #{$task->id} step 2 [start_production] executed successfully.",
+            'message' => "Task #{$task->id}: step 2 (start_production) completed successfully.",
         ]);
     }
 

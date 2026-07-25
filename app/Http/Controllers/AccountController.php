@@ -179,23 +179,23 @@ class AccountController extends Controller
             BotLog::create([
                 'account_id' => $account->id,
                 'level' => 'success',
-                'message' => "Action [{$actionType}] executed successfully.",
+                'message' => __('logs.account.action_success', ['type' => $actionType]),
             ]);
 
             return response()->json([
                 'success' => true,
-                'message' => "Action [{$actionType}] executed successfully.",
+                'message' => __('logs.account.action_success', ['type' => $actionType]),
             ]);
         } catch (Exception $e) {
             BotLog::create([
                 'account_id' => $account->id,
                 'level' => 'error',
-                'message' => "Action [{$request->input('action_type')}] failed: ".$e->getMessage(),
+                'message' => __('logs.account.action_failed', ['type' => $request->input('action_type'), 'error' => $e->getMessage()]),
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Action failed: '.$e->getMessage(),
+                'message' => __('logs.account.action_failed', ['type' => $request->input('action_type'), 'error' => $e->getMessage()]),
             ], 500);
         }
     }
@@ -224,12 +224,12 @@ class AccountController extends Controller
         BotLog::create([
             'account_id' => $account->id,
             'level' => 'success',
-            'message' => 'Сессия обновлена вручную.',
+            'message' => __('logs.account.session_updated'),
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Сессия успешно обновлена вручную.',
+            'message' => __('logs.account.session_updated'),
             'account' => $account,
         ]);
     }
@@ -277,7 +277,7 @@ class AccountController extends Controller
                     $account->refresh();
                 }
 
-                Log::info("Fetching friend zone AMF for account {$account->id}, friend {$friendId}");
+                Log::info("[FriendZone] Loading zone of friend #{$friendId} for account #{$account->id}");
                 $rawAmf = $this->amfService->getZone($account, $friendId);
                 $friendZoneData = $this->zoneParser->parse($rawAmf);
 
@@ -285,7 +285,7 @@ class AccountController extends Controller
                 if ($errorCode !== 0) {
                     $staleCache = Cache::get($staleCacheKey);
                     if ($staleCache) {
-                        Log::warning("Game server error {$errorCode} when fetching friend zone {$friendId} for account {$account->id}, falling back to stale cache");
+                        Log::warning("[FriendZone] Game server returned error {$errorCode} while loading zone of friend #{$friendId} for account #{$account->id}; falling back to stale cache");
                         $friendZoneData = json_decode($staleCache, true);
                     } else {
                         return response()->json([
@@ -302,11 +302,11 @@ class AccountController extends Controller
                     Cache::put($staleCacheKey, $jsonEncoded, 86400);
                 }
             } catch (Exception $e) {
-                Log::error("Failed to fetch zone of friend {$friendId} for account {$account->id}: ".$e->getMessage());
+                Log::error("[FriendZone] Failed to load zone of friend #{$friendId} for account #{$account->id}: ".$e->getMessage());
 
                 $staleCache = Cache::get($staleCacheKey);
                 if ($staleCache) {
-                    Log::warning("Exception when fetching friend zone {$friendId} for account {$account->id}, falling back to stale cache");
+                    Log::warning("[FriendZone] Exception while loading zone of friend #{$friendId} for account #{$account->id}; falling back to stale cache");
                     $friendZoneData = json_decode($staleCache, true);
                 } else {
                     return response()->json([

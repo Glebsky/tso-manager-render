@@ -34,7 +34,7 @@ class SystemLogCleanupService
 
             return $now->diffInHours($lastRunTime) >= 24;
         } catch (Throwable $e) {
-            Log::warning("Failed to parse last_log_cleanup_at timestamp: {$e->getMessage()}");
+            Log::warning("[LogCleanup] Failed to parse last_log_cleanup_at timestamp: {$e->getMessage()}");
 
             return true;
         }
@@ -79,11 +79,11 @@ class SystemLogCleanupService
 
         try {
             $deleted = $this->cleanExpiredLogs($now);
-            Log::info("System log retention cleanup completed successfully. Pruned {$deleted} log records.");
+            Log::info("[LogCleanup] Retention cleanup finished: pruned {$deleted} expired log records");
 
             return true;
         } catch (Throwable $e) {
-            Log::error("System log retention cleanup failed: {$e->getMessage()}", [
+            Log::error("[LogCleanup] Retention cleanup failed: {$e->getMessage()}", [
                 'exception' => $e,
             ]);
 

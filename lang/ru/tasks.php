@@ -14,11 +14,10 @@ return [
         'unknown_action_type' => 'Неизвестный тип действия: :taskType',
     ],
     'step' => [
-        'skipped' => 'Step :step [:type]: SKIPPED (already executed)',
-        'ok' => 'Step :step [:type]: OK (:bytes bytes)',
-    ],
-    'log' => [
-        'step_success' => 'Sequence task #:id step :step [:type] executed successfully.',
-        'task_success' => 'Scheduled [:type] executed successfully. :result',
+        'skipped' => 'Шаг :step [:type]: пропущен (уже выполнен)',
+        'ok' => 'Шаг :step [:type]: OK (:bytes байт)',
+        'error' => 'Шаг :step [:type]: ОШИБКА - :error',
+        'ok_short' => 'Шаг :step: OK',
+        'error_short' => 'Шаг :step: ОШИБКА - :error',
     ],
 ];

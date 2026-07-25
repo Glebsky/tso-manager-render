@@ -132,7 +132,7 @@ class SystemLogCleanupTest extends TestCase
         Log::shouldHaveReceived('error')
             ->once()
             ->withArgs(function ($message) {
-                return str_contains($message, 'System log retention cleanup failed: DB connection failed');
+                return str_contains($message, 'Retention cleanup failed: DB connection failed');
             });
     }
 

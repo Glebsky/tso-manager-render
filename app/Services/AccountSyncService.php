@@ -35,7 +35,7 @@ class AccountSyncService
     public function sync(Account $account): array
     {
         try {
-            Log::info("Syncing account {$account->id} ({$account->username})");
+            Log::info("[AccountSync] Started for account #{$account->id} ({$account->username})");
             $account->update(['status' => 'syncing']);
 
             $this->ensureAuthenticated($account);
@@ -52,7 +52,7 @@ class AccountSyncService
 
             return $zoneData;
         } catch (Exception $e) {
-            Log::error("Sync failed for account {$account->id}: ".$e->getMessage(), ['exception' => $e]);
+            Log::error("[AccountSync] Failed for account #{$account->id}: ".$e->getMessage(), ['exception' => $e]);
 
             if ($account->status !== 'error') {
                 $account->update(['status' => 'error']);
@@ -61,7 +61,7 @@ class AccountSyncService
             BotLog::create([
                 'account_id' => $account->id,
                 'level' => 'error',
-                'message' => 'Sync failed: '.$e->getMessage(),
+                'message' => __('logs.account.sync_failed', ['error' => $e->getMessage()]),
             ]);
 
             throw $e;
@@ -71,7 +71,7 @@ class AccountSyncService
     private function ensureAuthenticated(Account $account): void
     {
         if (! $this->authService->isAuthenticated($account)) {
-            Log::info("Account {$account->id} token missing or expired, performing login");
+            Log::info("[AccountSync] Session token for account #{$account->id} is missing or expired; logging in");
             $this->authService->login($account);
             $account->refresh();
         }
@@ -89,7 +89,7 @@ class AccountSyncService
 
         for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
             try {
-                Log::info("Fetching zone AMF for account {$account->id} (attempt {$attempt}/{$maxRetries})");
+                Log::info("[AccountSync] Loading zone for account #{$account->id} (attempt {$attempt}/{$maxRetries})");
                 $rawAmf = $this->amfService->getZone($account);
                 $zoneData = $this->zoneParser->parse($rawAmf);
 
@@ -97,7 +97,7 @@ class AccountSyncService
                 $buildingCount = count($zoneData['buildings'] ?? []);
 
                 if ($errorCode === 1012) {
-                    Log::info("Received error 1012 (Zone loading) for account {$account->id}. Waiting {$retryDelay}s and retrying...");
+                    Log::info("[AccountSync] Zone is still loading (error 1012) for account #{$account->id}; retrying in {$retryDelay}s");
                     sleep($retryDelay);
 
                     continue;
@@ -107,7 +107,7 @@ class AccountSyncService
                     if ($hasResetSession) {
                         throw new Exception(__('ui.sync.session_intercepted', ['code' => $errorCode]));
                     }
-                    Log::info("Received error {$errorCode} (Session expired) for account {$account->id}. Resetting session...");
+                    Log::info("[AccountSync] Session expired (error {$errorCode}) for account #{$account->id}; resetting session and logging in again");
                     @unlink($this->authService->getCookieFile($account));
                     $this->authService->login($account);
                     $this->amfService->resetClient();
@@ -124,7 +124,7 @@ class AccountSyncService
                     break;
                 }
             } catch (Exception $e) {
-                Log::warning("Attempt {$attempt}/{$maxRetries} failed for account {$account->id}: ".$e->getMessage());
+                Log::warning("[AccountSync] Attempt {$attempt}/{$maxRetries} failed for account #{$account->id}: ".$e->getMessage());
                 $lastException = $e;
             }
 
@@ -152,14 +152,14 @@ class AccountSyncService
     private function fetchFriendsListIfPossible(Account $account, array $zoneData): array
     {
         try {
-            Log::info("Fetching friend list AMF for account {$account->id}");
+            Log::info("[AccountSync] Loading friend list for account #{$account->id}");
             $rawFriendsAmf = $this->amfService->getFriendList($account);
             file_put_contents(storage_path('app/debug_friends_list.amf'), $rawFriendsAmf);
             $friendsData = $this->zoneParser->parse($rawFriendsAmf);
 
             $parsedPlayers = $friendsData['friends'] ?? [];
             if (! empty($parsedPlayers)) {
-                Log::info('Successfully fetched '.count($parsedPlayers)." players from friends list for account {$account->id}");
+                Log::info("[AccountSync] Friend list loaded for account #{$account->id}: ".count($parsedPlayers).' players');
                 $friendsList = [];
                 $ownerUid = $zoneData['userID'] ?? null;
 
@@ -181,7 +181,7 @@ class AccountSyncService
                 $zoneData['friends'] = $friendsList;
             }
         } catch (Exception $fe) {
-            Log::warning("Failed to fetch friends list for account {$account->id}: ".$fe->getMessage());
+            Log::warning("[AccountSync] Failed to load friend list for account #{$account->id}: ".$fe->getMessage());
         }
 
         return $zoneData;
@@ -194,12 +194,17 @@ class AccountSyncService
         $buffCount = count($zoneData['buffs'] ?? []);
         $resourceCount = count($zoneData['resources'] ?? []);
 
-        Log::info("Account {$account->id} synced successfully. Level: ".($zoneData['level'] ?? 'N/A').', Server: '.($zoneData['gameWorldName'] ?? 'N/A').", Buildings: {$buildingCount}, Resources: {$resourceCount}");
+        Log::info("[AccountSync] Finished for account #{$account->id}: level ".($zoneData['level'] ?? 'N/A').', server '.($zoneData['gameWorldName'] ?? 'N/A').", buildings {$buildingCount}, resources {$resourceCount}");
 
         BotLog::create([
             'account_id' => $account->id,
             'level' => 'success',
-            'message' => 'Zone synced: '.$buildingCount.' buildings, '.$resourceCount.' resources, '.$specialistCount.' specialists, '.$buffCount.' buffs.',
+            'message' => __('logs.account.sync_success', [
+                'buildings' => $buildingCount,
+                'resources' => $resourceCount,
+                'specialists' => $specialistCount,
+                'buffs' => $buffCount,
+            ]),
         ]);
     }
 }

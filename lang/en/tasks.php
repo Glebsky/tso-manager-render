@@ -16,9 +16,8 @@ return [
     'step' => [
         'skipped' => 'Step :step [:type]: SKIPPED (already executed)',
         'ok' => 'Step :step [:type]: OK (:bytes bytes)',
-    ],
-    'log' => [
-        'step_success' => 'Sequence task #:id step :step [:type] executed successfully.',
-        'task_success' => 'Scheduled [:type] executed successfully. :result',
+        'error' => 'Step :step [:type]: ERROR - :error',
+        'ok_short' => 'Step :step: OK',
+        'error_short' => 'Step :step: ERROR - :error',
     ],
 ];

@@ -48,10 +48,10 @@ class MarketSyncJob implements ShouldQueue
     public function handle(MarketSyncService $syncService): void
     {
         try {
-            Log::info("Running MarketSyncJob for account #{$this->account->id} on server [{$this->serverId}]");
+            Log::info("[MarketSyncJob] Started for account #{$this->account->id} on server [{$this->serverId}]");
             $syncService->sync($this->account, $this->serverId);
         } catch (Throwable $e) {
-            Log::error("MarketSyncJob failed for account #{$this->account->id} on server [{$this->serverId}]: {$e->getMessage()}");
+            Log::error("[MarketSyncJob] Failed for account #{$this->account->id} on server [{$this->serverId}]: {$e->getMessage()}");
             throw $e;
         } finally {
             Cache::forget("market_sync_lock:server:{$this->serverId}");
@@ -64,14 +64,14 @@ class MarketSyncJob implements ShouldQueue
      */
     public function failed(Throwable $exception): void
     {
-        Log::error("MarketSyncJob failed permanently for account #{$this->account->id} on server [{$this->serverId}]: {$exception->getMessage()}");
+        Log::error("[MarketSyncJob] Failed permanently for account #{$this->account->id} on server [{$this->serverId}] after all retries: {$exception->getMessage()}");
 
         MarketSyncLog::create([
             'account_id' => $this->account->id,
             'server_id' => $this->serverId,
-            'action' => 'Sync Market',
+            'action' => 'Market sync',
             'status' => 'ERROR',
-            'message' => "Market sync job failed permanently: {$exception->getMessage()}",
+            'message' => __('logs.market.sync_job_failed', ['error' => $exception->getMessage()]),
         ]);
 
         try {
@@ -83,11 +83,11 @@ class MarketSyncJob implements ShouldQueue
             BotLog::create([
                 'account_id' => $this->account->id,
                 'level' => 'error',
-                'message' => "[Market][{$this->serverId}] Sync Market: Market sync job failed permanently: {$exception->getMessage()}",
+                'message' => "[Market][{$this->serverId}] ".__('logs.market.sync_job_failed', ['error' => $exception->getMessage()]),
                 'created_at' => now(),
             ]);
         } catch (Throwable $dbEx) {
-            Log::error('Failed to write bot log for market sync failure: '.$dbEx->getMessage());
+            Log::error("[MarketSyncJob] Failed to write market sync failure to the activity log: {$dbEx->getMessage()}");
         }
 
         Cache::forget("market_sync_lock:server:{$this->serverId}");

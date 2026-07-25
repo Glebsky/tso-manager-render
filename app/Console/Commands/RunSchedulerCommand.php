@@ -119,7 +119,7 @@ class RunSchedulerCommand extends Command
             ->get();
 
         foreach ($staleTasks as $task) {
-            Log::warning("Resetting stale task #{$task->id} [{$task->task_type}] from status '{$task->status}' to 'pending'");
+            Log::warning("[Scheduler] Resetting stale task #{$task->id} [{$task->task_type}] from status '{$task->status}' back to 'pending'");
             $task->update([
                 'status' => 'pending',
                 'execution_token' => null,

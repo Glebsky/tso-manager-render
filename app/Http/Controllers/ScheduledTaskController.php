@@ -83,7 +83,7 @@ class ScheduledTaskController extends Controller
         BotLog::create([
             'account_id' => $task->account_id,
             'level' => 'info',
-            'message' => "Task #{$task->id} [{$task->task_type}] scheduled with type [{$task->schedule_type}] for account.",
+            'message' => __('logs.task.scheduled', ['id' => $task->id, 'type' => $task->task_type, 'schedule' => $task->schedule_type]),
         ]);
 
         return response()->json([
@@ -151,7 +151,7 @@ class ScheduledTaskController extends Controller
         BotLog::create([
             'account_id' => $task->account_id,
             'level' => 'info',
-            'message' => "Task #{$task->id} [{$task->task_type}] updated.",
+            'message' => __('logs.task.updated', ['id' => $task->id, 'type' => $task->task_type]),
         ]);
 
         return response()->json([
@@ -172,7 +172,9 @@ class ScheduledTaskController extends Controller
         BotLog::create([
             'account_id' => $task->account_id,
             'level' => 'info',
-            'message' => "Task #{$task->id} [{$task->task_type}] toggled to ".($task->is_active ? 'active' : 'inactive').'.',
+            'message' => $task->is_active
+                ? __('logs.task.enabled', ['id' => $task->id, 'type' => $task->task_type])
+                : __('logs.task.disabled', ['id' => $task->id, 'type' => $task->task_type]),
         ]);
 
         return response()->json([
@@ -197,7 +199,7 @@ class ScheduledTaskController extends Controller
         BotLog::create([
             'account_id' => $accountId,
             'level' => 'info',
-            'message' => "Task #{$taskId} [{$taskType}] deleted.",
+            'message' => __('logs.task.deleted', ['id' => $taskId, 'type' => $taskType]),
         ]);
 
         return response()->json([
