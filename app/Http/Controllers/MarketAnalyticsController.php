@@ -12,6 +12,7 @@ use App\Models\MarketServerConnection;
 use App\Models\MarketSyncLog;
 use App\Models\Setting;
 use App\Services\Lang\GameTranslationResolver;
+use App\Services\MarketCacheService;
 use App\Services\MarketServerVerificationService;
 use App\Services\MarketSyncService;
 use Carbon\Carbon;
@@ -28,14 +29,18 @@ class MarketAnalyticsController extends Controller
 
     private MarketServerVerificationService $verificationService;
 
+    private MarketCacheService $cacheService;
+
     public function __construct(
         MarketSyncService $syncService,
         GameTranslationResolver $gameTranslations,
-        MarketServerVerificationService $verificationService
+        MarketServerVerificationService $verificationService,
+        MarketCacheService $cacheService
     ) {
         $this->syncService = $syncService;
         $this->gameTranslations = $gameTranslations;
         $this->verificationService = $verificationService;
+        $this->cacheService = $cacheService;
     }
 
     /**
@@ -138,14 +143,18 @@ class MarketAnalyticsController extends Controller
 
     public function getPublicServers(): JsonResponse
     {
-        $servers = MarketServerConnection::whereNotNull('account_id')
-            ->whereHas('account')
-            ->with('account:id,username,nickname,region,status,zone_data')
-            ->select('id', 'server_id', 'locale', 'display_name', 'sync_status', 'account_id')
-            ->orderBy('id')
-            ->get();
+        $data = $this->cacheService->remember('global', 'public_servers', [], 300, function () {
+            $servers = MarketServerConnection::whereNotNull('account_id')
+                ->whereHas('account')
+                ->with('account:id,username,nickname,region,status,zone_data')
+                ->select('id', 'server_id', 'locale', 'display_name', 'sync_status', 'account_id')
+                ->orderBy('id')
+                ->get();
 
-        return PublicServerResource::collection($servers)->response();
+            return PublicServerResource::collection($servers)->resolve();
+        });
+
+        return response()->json($data);
     }
 
     public function storeServer(Request $request): JsonResponse
@@ -189,6 +198,9 @@ class MarketAnalyticsController extends Controller
             'verification_status' => 'verified',
             'sync_status' => 'connected',
         ]);
+
+        $this->cacheService->bumpDataVersion($serverId);
+        $this->cacheService->bumpDataVersion('global');
 
         return response()->json([
             'success' => true,
@@ -245,6 +257,9 @@ class MarketAnalyticsController extends Controller
 
         $server->save();
 
+        $this->cacheService->bumpDataVersion($server->server_id);
+        $this->cacheService->bumpDataVersion('global');
+
         return response()->json([
             'success' => true,
             'message' => __('ui.market.api.server_updated'),
@@ -254,7 +269,11 @@ class MarketAnalyticsController extends Controller
 
     public function deleteServer(MarketServerConnection $server): JsonResponse
     {
+        $serverId = $server->server_id;
         $server->delete();
+
+        $this->cacheService->bumpDataVersion($serverId);
+        $this->cacheService->bumpDataVersion('global');
 
         return response()->json([
             'success' => true,
@@ -385,20 +404,23 @@ class MarketAnalyticsController extends Controller
     {
         $serverId = $this->resolveServerId($request);
 
-        $fromOffers = MarketOffer::where('server_id', $serverId)->select('item_id', 'item_name');
-        $fromHistory = MarketHistory::where('server_id', $serverId)->select('item_id', 'item_name');
+        $goods = $this->cacheService->remember($serverId, 'goods', [], 1800, function () use ($serverId) {
+            $fromOffers = MarketOffer::where('server_id', $serverId)->select('item_id', 'item_name');
+            $fromHistory = MarketHistory::where('server_id', $serverId)->select('item_id', 'item_name');
 
-        $goods = $fromOffers->union($fromHistory)
-            ->distinct()
-            ->orderBy('item_name')
-            ->get()
-            ->unique('item_id')
-            ->map(fn ($row) => [
-                'item_id' => $row->item_id,
-                'item_name' => $this->resourceName($row->item_id, $row->item_name),
-            ])
-            ->sortBy('item_name', SORT_NATURAL | SORT_FLAG_CASE)
-            ->values();
+            return $fromOffers->union($fromHistory)
+                ->distinct()
+                ->orderBy('item_name')
+                ->get()
+                ->unique('item_id')
+                ->map(fn ($row) => [
+                    'item_id' => $row->item_id,
+                    'item_name' => $this->resourceName($row->item_id, $row->item_name),
+                ])
+                ->sortBy('item_name', SORT_NATURAL | SORT_FLAG_CASE)
+                ->values()
+                ->toArray();
+        });
 
         return response()->json($goods);
     }
@@ -406,30 +428,33 @@ class MarketAnalyticsController extends Controller
     public function getTargets(Request $request): JsonResponse
     {
         $serverId = $this->resolveServerId($request);
-        $itemId = $request->input('item_id');
+        $itemId = (string) $request->input('item_id');
 
         if (empty($itemId)) {
             return response()->json([]);
         }
 
-        $fromOffers = MarketOffer::where('server_id', $serverId)
-            ->where('item_id', $itemId)
-            ->select('target_item_id', 'target_item_name');
-        $fromHistory = MarketHistory::where('server_id', $serverId)
-            ->where('item_id', $itemId)
-            ->select('target_item_id', 'target_item_name');
+        $targets = $this->cacheService->remember($serverId, 'targets', ['item_id' => $itemId], 1800, function () use ($serverId, $itemId) {
+            $fromOffers = MarketOffer::where('server_id', $serverId)
+                ->where('item_id', $itemId)
+                ->select('target_item_id', 'target_item_name');
+            $fromHistory = MarketHistory::where('server_id', $serverId)
+                ->where('item_id', $itemId)
+                ->select('target_item_id', 'target_item_name');
 
-        $targets = $fromOffers->union($fromHistory)
-            ->distinct()
-            ->orderBy('target_item_name')
-            ->get()
-            ->unique('target_item_id')
-            ->map(fn ($row) => [
-                'target_item_id' => $row->target_item_id,
-                'target_item_name' => $this->resourceName($row->target_item_id, $row->target_item_name),
-            ])
-            ->sortBy('target_item_name', SORT_NATURAL | SORT_FLAG_CASE)
-            ->values();
+            return $fromOffers->union($fromHistory)
+                ->distinct()
+                ->orderBy('target_item_name')
+                ->get()
+                ->unique('target_item_id')
+                ->map(fn ($row) => [
+                    'target_item_id' => $row->target_item_id,
+                    'target_item_name' => $this->resourceName($row->target_item_id, $row->target_item_name),
+                ])
+                ->sortBy('target_item_name', SORT_NATURAL | SORT_FLAG_CASE)
+                ->values()
+                ->toArray();
+        });
 
         return response()->json($targets);
     }
@@ -505,215 +530,234 @@ class MarketAnalyticsController extends Controller
         if (empty($itemId) || empty($targetItemId)) {
             $limit = (int) $request->input('limit', 100);
             $page = (int) $request->input('page', 1);
-            $offset = ($page - 1) * $limit;
 
-            $activeOffersQuery = MarketOffer::where('server_id', $serverId)
-                ->where('created_at', '>=', now()->subHours(6))
-                ->orderBy('created_at', 'desc');
-            $totalActive = $activeOffersQuery->count();
+            $payload = $this->cacheService->remember($serverId, 'analytics_overview', ['period' => $period, 'limit' => $limit, 'page' => $page], 300, function () use ($serverId, $popular, $limit, $page) {
+                $offset = ($page - 1) * $limit;
 
-            $activeOffers = $activeOffersQuery->offset($offset)
-                ->limit($limit)
-                ->get()
-                ->map(function ($offer) {
-                    $now = now();
-                    $expiresAt = $offer->created_at->copy()->addHours(6);
-                    $timeLeft = $now->diffInSeconds($expiresAt, false);
+                $activeOffersQuery = MarketOffer::where('server_id', $serverId)
+                    ->where('created_at', '>=', now()->subHours(6))
+                    ->orderBy('created_at', 'desc');
+                $totalActive = $activeOffersQuery->count();
 
-                    return [
-                        'id' => $offer->id,
-                        'server_id' => $offer->server_id,
-                        'offer_id' => $offer->offer_id,
-                        'sender_name' => $offer->sender_name,
-                        'item_id' => $offer->item_id,
-                        'item_name' => $this->resourceName($offer->item_id, $offer->item_name),
-                        'amount' => $offer->amount,
-                        'target_item_id' => $offer->target_item_id,
-                        'target_item_name' => $this->resourceName($offer->target_item_id, $offer->target_item_name),
-                        'target_amount' => $offer->target_amount,
-                        'price' => round((float) $offer->price, 4),
-                        'volume' => $offer->volume,
-                        'lots_remaining' => $offer->lots_remaining,
-                        'created_at' => $offer->created_at->toIso8601String(),
-                        'time_left' => $timeLeft > 0 ? $timeLeft : 0,
-                    ];
-                });
+                $activeOffers = $activeOffersQuery->offset($offset)
+                    ->limit($limit)
+                    ->get()
+                    ->map(function ($offer) {
+                        $expiresAt = $offer->created_at->copy()->addHours(6);
 
-            return response()->json([
-                'server_id' => $serverId,
-                'popular' => $popular,
-                'active_offers' => $activeOffers,
-                'total_active_count' => $totalActive,
-                'page' => $page,
-                'has_more' => ($offset + $limit) < $totalActive,
-            ]);
-        }
-
-        // 2. Active & closed history stats for selected server
-        $statsQuery = MarketHistory::where('server_id', $serverId)
-            ->where('item_id', $itemId)
-            ->where('target_item_id', $targetItemId);
-
-        if ($dateFilter) {
-            $statsQuery->where('collected_at', '>=', $dateFilter);
-        }
-
-        $stats = $statsQuery->selectRaw('avg(price) as average_price, min(price) as min_price, max(price) as max_price')
-            ->first();
-
-        // Latest price (current)
-        $current = MarketHistory::where('server_id', $serverId)
-            ->where('item_id', $itemId)
-            ->where('target_item_id', $targetItemId)
-            ->orderBy('collected_at', 'desc')
-            ->value('price');
-
-        // Fetch mirrored stats
-        $mirroredStatsQuery = MarketHistory::where('server_id', $serverId)
-            ->where('item_id', $targetItemId)
-            ->where('target_item_id', $itemId);
-
-        if ($dateFilter) {
-            $mirroredStatsQuery->where('collected_at', '>=', $dateFilter);
-        }
-
-        $mirroredStats = $mirroredStatsQuery->selectRaw('avg(price) as average_price, min(price) as min_price, max(price) as max_price')
-            ->first();
-
-        $mirroredCurrent = MarketHistory::where('server_id', $serverId)
-            ->where('item_id', $targetItemId)
-            ->where('target_item_id', $itemId)
-            ->orderBy('collected_at', 'desc')
-            ->value('price');
-
-        // Real-time live active market info for the selected pair
-        $activeOffersForPair = MarketOffer::where('server_id', $serverId)
-            ->where('item_id', $itemId)
-            ->where('target_item_id', $targetItemId)
-            ->where('created_at', '>=', now()->subHours(6))
-            ->get();
-
-        $activeInfo = [
-            'volume' => (int) $activeOffersForPair->sum('volume'),
-            'offers_count' => $activeOffersForPair->count(),
-            'sellers_count' => $activeOffersForPair->pluck('player_id')->unique()->count(),
-        ];
-
-        // Period aggregate summary
-        $periodSummary = MarketHistory::where('server_id', $serverId)
-            ->where('item_id', $itemId)
-            ->where('target_item_id', $targetItemId)
-            ->when($dateFilter, function ($q) use ($dateFilter) {
-                $q->where('collected_at', '>=', $dateFilter);
-            })
-            ->selectRaw('sum(volume) as total_volume, count(*) as offers_count, count(distinct player_id) as sellers_count')
-            ->first();
-
-        $periodInfo = [
-            'volume' => (int) ($periodSummary->total_volume ?? 0),
-            'offers_count' => (int) ($periodSummary->offers_count ?? 0),
-            'sellers_count' => (int) ($periodSummary->sellers_count ?? 0),
-        ];
-
-        // 3. Historical data
-        $driver = DB::connection()->getDriverName();
-
-        $buildHistoryQuery = function ($item, $target, $dateFilter, $groupByExpression, $driver) use ($serverId) {
-            $query = MarketHistory::where('server_id', $serverId)
-                ->where('item_id', $item)
-                ->where('target_item_id', $target);
-
-            if ($dateFilter) {
-                $query->where('collected_at', '>=', $dateFilter);
-            }
-
-            if ($driver === 'pgsql') {
-                $trunc = "date_trunc('{$groupByExpression}', collected_at)";
-                $query->selectRaw("{$trunc} as time_bucket, avg(price) as price, sum(volume) as volume, count(distinct player_id) as sellers_count, count(*) as offers_count, round(avg(amount)) as avg_amount, round(avg(target_amount)) as avg_target_amount")
-                    ->groupBy('time_bucket')
-                    ->orderBy('time_bucket', 'asc');
-            } elseif ($driver === 'mysql') {
-                if ($groupByExpression === 'hour') {
-                    $selectBucket = "DATE_FORMAT(collected_at, '%Y-%m-%d %H:00:00')";
-                } elseif ($groupByExpression === 'week') {
-                    $selectBucket = "DATE_FORMAT(DATE_SUB(collected_at, INTERVAL WEEKDAY(collected_at) DAY), '%Y-%m-%d')";
-                } elseif ($groupByExpression === 'month') {
-                    $selectBucket = "DATE_FORMAT(collected_at, '%Y-%m-01')";
-                } else {
-                    $selectBucket = "DATE_FORMAT(collected_at, '%Y-%m-%d')";
-                }
-                $query->selectRaw("{$selectBucket} as time_bucket, avg(price) as price, sum(volume) as volume, count(distinct player_id) as sellers_count, count(*) as offers_count, round(avg(amount)) as avg_amount, round(avg(target_amount)) as avg_target_amount")
-                    ->groupBy('time_bucket')
-                    ->orderBy('time_bucket', 'asc');
-            } else {
-                if ($groupByExpression === 'hour') {
-                    $selectBucket = "strftime('%Y-%m-%d %H:00:00', collected_at)";
-                } elseif ($groupByExpression === 'week') {
-                    $selectBucket = "date(collected_at, 'weekday 0', '-6 days')";
-                } elseif ($groupByExpression === 'month') {
-                    $selectBucket = "strftime('%Y-%m-01', collected_at)";
-                } else {
-                    $selectBucket = "strftime('%Y-%m-%d', collected_at)";
-                }
-                $query->selectRaw("{$selectBucket} as time_bucket, avg(price) as price, sum(volume) as volume, count(distinct player_id) as sellers_count, count(*) as offers_count, round(avg(amount)) as avg_amount, round(avg(target_amount)) as avg_target_amount")
-                    ->groupBy('time_bucket')
-                    ->orderBy('time_bucket', 'asc');
-            }
-
-            return $query->get()->map(function ($item) use ($groupByExpression) {
-                $dateVal = is_string($item->time_bucket) ? Carbon::parse($item->time_bucket) : new Carbon($item->time_bucket);
-                if ($groupByExpression === 'hour') {
-                    $formattedDate = $dateVal->format('d.m.Y H:i');
-                } elseif ($groupByExpression === 'month') {
-                    $formattedDate = $dateVal->format('m.Y');
-                } else {
-                    $formattedDate = $dateVal->format('d.m.Y');
-                }
+                        return [
+                            'id' => $offer->id,
+                            'server_id' => $offer->server_id,
+                            'offer_id' => $offer->offer_id,
+                            'sender_name' => $offer->sender_name,
+                            'item_id' => $offer->item_id,
+                            'item_name' => $this->resourceName($offer->item_id, $offer->item_name),
+                            'amount' => $offer->amount,
+                            'target_item_id' => $offer->target_item_id,
+                            'target_item_name' => $this->resourceName($offer->target_item_id, $offer->target_item_name),
+                            'target_amount' => $offer->target_amount,
+                            'price' => round((float) $offer->price, 4),
+                            'volume' => $offer->volume,
+                            'lots_remaining' => $offer->lots_remaining,
+                            'created_at' => $offer->created_at->toIso8601String(),
+                            'expires_at' => $expiresAt->toIso8601String(),
+                        ];
+                    })
+                    ->toArray();
 
                 return [
-                    'collected_at' => $formattedDate,
-                    'price' => round((float) $item->price, 4),
-                    'volume' => (int) $item->volume,
-                    'sellers_count' => (int) $item->sellers_count,
-                    'offers_count' => (int) $item->offers_count,
-                    'avg_amount' => (int) round((float) ($item->avg_amount ?? 1)),
-                    'avg_target_amount' => (int) round((float) ($item->avg_target_amount ?? 1)),
+                    'server_id' => $serverId,
+                    'popular' => $popular->toArray(),
+                    'active_offers' => $activeOffers,
+                    'total_active_count' => $totalActive,
+                    'page' => $page,
+                    'has_more' => ($offset + $limit) < $totalActive,
                 ];
             });
-        };
 
-        $history = $buildHistoryQuery($itemId, $targetItemId, $dateFilter, $groupByExpression, $driver);
+            $currentTime = now();
+            if (isset($payload['active_offers']) && is_array($payload['active_offers'])) {
+                foreach ($payload['active_offers'] as &$offer) {
+                    if (isset($offer['expires_at'])) {
+                        $expiresAt = Carbon::parse($offer['expires_at']);
+                        $timeLeft = $currentTime->diffInSeconds($expiresAt, false);
+                        $offer['time_left'] = $timeLeft > 0 ? $timeLeft : 0;
+                    }
+                }
+            }
 
-        $mirroredHistory = collect([]);
-        if ($itemId && $targetItemId) {
-            $mirroredHistory = $buildHistoryQuery($targetItemId, $itemId, $dateFilter, $groupByExpression, $driver);
+            return response()->json($payload);
         }
 
-        $mirroredStatsData = null;
-        if ($mirroredStats && $mirroredStats->average_price !== null) {
-            $mirroredStatsData = [
-                'average' => round((float) ($mirroredStats->average_price ?? 0), 2),
-                'minimum' => round((float) ($mirroredStats->min_price ?? 0), 2),
-                'maximum' => round((float) ($mirroredStats->max_price ?? 0), 2),
-                'current' => round((float) ($mirroredCurrent ?? 0), 2),
+        $pairPayload = $this->cacheService->remember($serverId, 'analytics_pair', ['item_id' => $itemId, 'target_item_id' => $targetItemId, 'period' => $period], 900, function () use ($serverId, $itemId, $targetItemId, $dateFilter, $groupByExpression, $popular) {
+            // 2. Active & closed history stats for selected server
+            $statsQuery = MarketHistory::where('server_id', $serverId)
+                ->where('item_id', $itemId)
+                ->where('target_item_id', $targetItemId);
+
+            if ($dateFilter) {
+                $statsQuery->where('collected_at', '>=', $dateFilter);
+            }
+
+            $stats = $statsQuery->selectRaw('avg(price) as average_price, min(price) as min_price, max(price) as max_price')
+                ->first();
+
+            // Latest price (current)
+            $current = MarketHistory::where('server_id', $serverId)
+                ->where('item_id', $itemId)
+                ->where('target_item_id', $targetItemId)
+                ->orderBy('collected_at', 'desc')
+                ->value('price');
+
+            // Fetch mirrored stats
+            $mirroredStatsQuery = MarketHistory::where('server_id', $serverId)
+                ->where('item_id', $targetItemId)
+                ->where('target_item_id', $itemId);
+
+            if ($dateFilter) {
+                $mirroredStatsQuery->where('collected_at', '>=', $dateFilter);
+            }
+
+            $mirroredStats = $mirroredStatsQuery->selectRaw('avg(price) as average_price, min(price) as min_price, max(price) as max_price')
+                ->first();
+
+            $mirroredCurrent = MarketHistory::where('server_id', $serverId)
+                ->where('item_id', $targetItemId)
+                ->where('target_item_id', $itemId)
+                ->orderBy('collected_at', 'desc')
+                ->value('price');
+
+            // Real-time live active market info for the selected pair
+            $activeOffersForPair = MarketOffer::where('server_id', $serverId)
+                ->where('item_id', $itemId)
+                ->where('target_item_id', $targetItemId)
+                ->where('created_at', '>=', now()->subHours(6))
+                ->get();
+
+            $activeInfo = [
+                'volume' => (int) $activeOffersForPair->sum('volume'),
+                'offers_count' => $activeOffersForPair->count(),
+                'sellers_count' => $activeOffersForPair->pluck('player_id')->unique()->count(),
             ];
-        }
 
-        return response()->json([
-            'server_id' => $serverId,
-            'popular' => $popular,
-            'stats' => [
-                'average' => round((float) ($stats->average_price ?? 0), 2),
-                'minimum' => round((float) ($stats->min_price ?? 0), 2),
-                'maximum' => round((float) ($stats->max_price ?? 0), 2),
-                'current' => round((float) ($current ?? 0), 2),
-            ],
-            'history' => $history,
-            'active_info' => $activeInfo,
-            'period_info' => $periodInfo,
-            'mirrored_stats' => $mirroredStatsData,
-            'mirrored_history' => $mirroredHistory->isEmpty() ? null : $mirroredHistory,
-        ]);
+            // Period aggregate summary
+            $periodSummary = MarketHistory::where('server_id', $serverId)
+                ->where('item_id', $itemId)
+                ->where('target_item_id', $targetItemId)
+                ->when($dateFilter, function ($q) use ($dateFilter) {
+                    $q->where('collected_at', '>=', $dateFilter);
+                })
+                ->selectRaw('sum(volume) as total_volume, count(*) as offers_count, count(distinct player_id) as sellers_count')
+                ->first();
+
+            $periodInfo = [
+                'volume' => (int) ($periodSummary->total_volume ?? 0),
+                'offers_count' => (int) ($periodSummary->offers_count ?? 0),
+                'sellers_count' => (int) ($periodSummary->sellers_count ?? 0),
+            ];
+
+            // 3. Historical data
+            $driver = DB::connection()->getDriverName();
+
+            $buildHistoryQuery = function ($item, $target, $dateFilter, $groupByExpression, $driver) use ($serverId) {
+                $query = MarketHistory::where('server_id', $serverId)
+                    ->where('item_id', $item)
+                    ->where('target_item_id', $target);
+
+                if ($dateFilter) {
+                    $query->where('collected_at', '>=', $dateFilter);
+                }
+
+                if ($driver === 'pgsql') {
+                    $trunc = "date_trunc('{$groupByExpression}', collected_at)";
+                    $query->selectRaw("{$trunc} as time_bucket, avg(price) as price, sum(volume) as volume, count(distinct player_id) as sellers_count, count(*) as offers_count, round(avg(amount)) as avg_amount, round(avg(target_amount)) as avg_target_amount")
+                        ->groupBy('time_bucket')
+                        ->orderBy('time_bucket', 'asc');
+                } elseif ($driver === 'mysql') {
+                    if ($groupByExpression === 'hour') {
+                        $selectBucket = "DATE_FORMAT(collected_at, '%Y-%m-%d %H:00:00')";
+                    } elseif ($groupByExpression === 'week') {
+                        $selectBucket = "DATE_FORMAT(DATE_SUB(collected_at, INTERVAL WEEKDAY(collected_at) DAY), '%Y-%m-%d')";
+                    } elseif ($groupByExpression === 'month') {
+                        $selectBucket = "DATE_FORMAT(collected_at, '%Y-%m-01')";
+                    } else {
+                        $selectBucket = "DATE_FORMAT(collected_at, '%Y-%m-%d')";
+                    }
+                    $query->selectRaw("{$selectBucket} as time_bucket, avg(price) as price, sum(volume) as volume, count(distinct player_id) as sellers_count, count(*) as offers_count, round(avg(amount)) as avg_amount, round(avg(target_amount)) as avg_target_amount")
+                        ->groupBy('time_bucket')
+                        ->orderBy('time_bucket', 'asc');
+                } else {
+                    if ($groupByExpression === 'hour') {
+                        $selectBucket = "strftime('%Y-%m-%d %H:00:00', collected_at)";
+                    } elseif ($groupByExpression === 'week') {
+                        $selectBucket = "date(collected_at, 'weekday 0', '-6 days')";
+                    } elseif ($groupByExpression === 'month') {
+                        $selectBucket = "strftime('%Y-%m-01', collected_at)";
+                    } else {
+                        $selectBucket = "strftime('%Y-%m-%d', collected_at)";
+                    }
+                    $query->selectRaw("{$selectBucket} as time_bucket, avg(price) as price, sum(volume) as volume, count(distinct player_id) as sellers_count, count(*) as offers_count, round(avg(amount)) as avg_amount, round(avg(target_amount)) as avg_target_amount")
+                        ->groupBy('time_bucket')
+                        ->orderBy('time_bucket', 'asc');
+                }
+
+                return $query->get()->map(function ($item) use ($groupByExpression) {
+                    $dateVal = is_string($item->time_bucket) ? Carbon::parse($item->time_bucket) : new Carbon($item->time_bucket);
+                    if ($groupByExpression === 'hour') {
+                        $formattedDate = $dateVal->format('d.m.Y H:i');
+                    } elseif ($groupByExpression === 'month') {
+                        $formattedDate = $dateVal->format('m.Y');
+                    } else {
+                        $formattedDate = $dateVal->format('d.m.Y');
+                    }
+
+                    return [
+                        'collected_at' => $formattedDate,
+                        'price' => round((float) $item->price, 4),
+                        'volume' => (int) $item->volume,
+                        'sellers_count' => (int) $item->sellers_count,
+                        'offers_count' => (int) $item->offers_count,
+                        'avg_amount' => (int) round((float) ($item->avg_amount ?? 1)),
+                        'avg_target_amount' => (int) round((float) ($item->avg_target_amount ?? 1)),
+                    ];
+                });
+            };
+
+            $history = $buildHistoryQuery($itemId, $targetItemId, $dateFilter, $groupByExpression, $driver);
+
+            $mirroredHistory = collect([]);
+            if ($itemId && $targetItemId) {
+                $mirroredHistory = $buildHistoryQuery($targetItemId, $itemId, $dateFilter, $groupByExpression, $driver);
+            }
+
+            $mirroredStatsData = null;
+            if ($mirroredStats && $mirroredStats->average_price !== null) {
+                $mirroredStatsData = [
+                    'average' => round((float) ($mirroredStats->average_price ?? 0), 2),
+                    'minimum' => round((float) ($mirroredStats->min_price ?? 0), 2),
+                    'maximum' => round((float) ($mirroredStats->max_price ?? 0), 2),
+                    'current' => round((float) ($mirroredCurrent ?? 0), 2),
+                ];
+            }
+
+            return [
+                'server_id' => $serverId,
+                'popular' => $popular->toArray(),
+                'stats' => [
+                    'average' => round((float) ($stats->average_price ?? 0), 2),
+                    'minimum' => round((float) ($stats->min_price ?? 0), 2),
+                    'maximum' => round((float) ($stats->max_price ?? 0), 2),
+                    'current' => round((float) ($current ?? 0), 2),
+                ],
+                'history' => $history->toArray(),
+                'active_info' => $activeInfo,
+                'period_info' => $periodInfo,
+                'mirrored_stats' => $mirroredStatsData,
+                'mirrored_history' => $mirroredHistory->isEmpty() ? null : $mirroredHistory->toArray(),
+            ];
+        });
+
+        return response()->json($pairPayload);
     }
 
     public function getLogs(Request $request): JsonResponse
@@ -748,225 +792,276 @@ class MarketAnalyticsController extends Controller
     {
         $serverId = $this->resolveServerId($request);
 
-        $offers = MarketOffer::where('server_id', $serverId)
-            ->where('created_at', '>=', now()->subHours(6))
-            ->get();
-        $byPair = [];
+        $result = $this->cacheService->remember($serverId, 'arbitrage', [], 900, function () use ($serverId) {
+            $offers = MarketOffer::where('server_id', $serverId)
+                ->where('created_at', '>=', now()->subHours(6))
+                ->get();
+            $byPair = [];
 
-        foreach ($offers as $offer) {
-            $from = $offer->target_item_id;
-            $to = $offer->item_id;
-            $byPair[$from][$to][] = [
-                'offer_id' => $offer->offer_id,
-                'sender_name' => $offer->sender_name,
-                'item_id' => $offer->item_id,
-                'item_name' => $this->resourceName($offer->item_id, $offer->item_name),
-                'amount' => $offer->amount,
-                'target_item_id' => $offer->target_item_id,
-                'target_item_name' => $this->resourceName($offer->target_item_id, $offer->target_item_name),
-                'target_amount' => $offer->target_amount,
-                'lots_remaining' => $offer->lots_remaining,
-            ];
-        }
-
-        $loops = [];
-        $resources = array_keys($byPair);
-
-        foreach ($resources as $A) {
-            if (! isset($byPair[$A])) {
-                continue;
+            foreach ($offers as $offer) {
+                $from = $offer->target_item_id;
+                $to = $offer->item_id;
+                $byPair[$from][$to][] = [
+                    'offer_id' => $offer->offer_id,
+                    'sender_name' => $offer->sender_name,
+                    'item_id' => $offer->item_id,
+                    'item_name' => $this->resourceName($offer->item_id, $offer->item_name),
+                    'amount' => $offer->amount,
+                    'target_item_id' => $offer->target_item_id,
+                    'target_item_name' => $this->resourceName($offer->target_item_id, $offer->target_item_name),
+                    'target_amount' => $offer->target_amount,
+                    'lots_remaining' => $offer->lots_remaining,
+                ];
             }
 
-            foreach ($byPair[$A] as $B => $t1List) {
-                if ($B === $A) {
+            $loops = [];
+            $resources = array_keys($byPair);
+
+            foreach ($resources as $A) {
+                if (! isset($byPair[$A])) {
                     continue;
                 }
 
-                // 1. 2-step loops: A -> B -> A
-                if (isset($byPair[$B][$A])) {
-                    $t2List = $byPair[$B][$A];
-                    foreach ($t1List as $t1) {
-                        foreach ($t2List as $t2) {
-                            $bestProfit = -99999999;
-                            $best_x = 0;
-                            $best_y = 0;
+                foreach ($byPair[$A] as $B => $t1List) {
+                    if ($B === $A) {
+                        continue;
+                    }
 
-                            for ($y = 1; $y <= $t2['lots_remaining']; $y++) {
-                                $neededB = $y * $t2['target_amount'];
-                                $x = (int) ceil($neededB / $t1['amount']);
-                                if ($x > $t1['lots_remaining']) {
-                                    continue;
-                                }
-                                $profitA = ($y * $t2['amount']) - ($x * $t1['target_amount']);
-                                if ($profitA > $bestProfit) {
-                                    $bestProfit = $profitA;
-                                    $best_x = $x;
-                                    $best_y = $y;
-                                }
-                            }
+                    // 1. 2-step loops: A -> B -> A
+                    if (isset($byPair[$B][$A])) {
+                        $t2List = $byPair[$B][$A];
+                        foreach ($t1List as $t1) {
+                            foreach ($t2List as $t2) {
+                                $bestProfit = -99999999;
+                                $best_x = 0;
+                                $best_y = 0;
 
-                            if ($bestProfit > 0 && $best_x >= 1 && $best_y >= 1) {
-                                $leftoverB = ($best_x * $t1['amount']) - ($best_y * $t2['target_amount']);
-                                $loops[] = [
-                                    'type' => '2-step',
-                                    'start_resource' => $A,
-                                    'start_resource_name' => $t1['target_item_name'],
-                                    'steps' => [
-                                        [
-                                            'sender' => $t1['sender_name'],
-                                            'offer_id' => $t1['offer_id'],
-                                            'give_item' => $A,
-                                            'give_name' => $t1['target_item_name'],
-                                            'give_amount' => $best_x * $t1['target_amount'],
-                                            'give_per_lot' => $t1['target_amount'],
-                                            'receive_item' => $B,
-                                            'receive_name' => $t1['item_name'],
-                                            'receive_amount' => $best_x * $t1['amount'],
-                                            'receive_per_lot' => $t1['amount'],
-                                            'lots' => $best_x,
+                                $maxX = $t1['lots_remaining'];
+                                $maxY = $t2['lots_remaining'];
+
+                                for ($x = 1; $x <= $maxX; $x++) {
+                                    $gotB = $x * $t1['amount'];
+                                    $neededForT2Lot = $t2['target_amount'];
+                                    if ($neededForT2Lot <= 0) {
+                                        continue;
+                                    }
+                                    $y = (int) floor($gotB / $neededForT2Lot);
+                                    if ($y > $maxY) {
+                                        $y = $maxY;
+                                    }
+                                    if ($y <= 0) {
+                                        continue;
+                                    }
+
+                                    $costA = $x * $t1['target_amount'];
+                                    $returnedA = $y * $t2['amount'];
+                                    $profitA = $returnedA - $costA;
+
+                                    if ($profitA > $bestProfit) {
+                                        $bestProfit = $profitA;
+                                        $best_x = $x;
+                                        $best_y = $y;
+                                    }
+                                }
+
+                                if ($bestProfit > 0) {
+                                    $gotB = $best_x * $t1['amount'];
+                                    $usedB = $best_y * $t2['target_amount'];
+                                    $leftoverB = $gotB - $usedB;
+
+                                    $loops[] = [
+                                        'type' => '2-step',
+                                        'start_resource' => $A,
+                                        'start_resource_name' => $t1['target_item_name'],
+                                        'steps' => [
+                                            [
+                                                'step' => 1,
+                                                'sender' => $t1['sender_name'],
+                                                'offer_id' => $t1['offer_id'],
+                                                'give_item' => $A,
+                                                'give_name' => $t1['target_item_name'],
+                                                'give_amount' => $best_x * $t1['target_amount'],
+                                                'give_per_lot' => $t1['target_amount'],
+                                                'receive_item' => $B,
+                                                'receive_name' => $t1['item_name'],
+                                                'receive_amount' => $best_x * $t1['amount'],
+                                                'receive_per_lot' => $t1['amount'],
+                                                'lots' => $best_x,
+                                            ],
+                                            [
+                                                'step' => 2,
+                                                'sender' => $t2['sender_name'],
+                                                'offer_id' => $t2['offer_id'],
+                                                'give_item' => $B,
+                                                'give_name' => $t2['target_item_name'],
+                                                'give_amount' => $best_y * $t2['target_amount'],
+                                                'give_per_lot' => $t2['target_amount'],
+                                                'receive_item' => $A,
+                                                'receive_name' => $t2['item_name'],
+                                                'receive_amount' => $best_y * $t2['amount'],
+                                                'receive_per_lot' => $t2['amount'],
+                                                'lots' => $best_y,
+                                            ],
                                         ],
-                                        [
-                                            'sender' => $t2['sender_name'],
-                                            'offer_id' => $t2['offer_id'],
-                                            'give_item' => $B,
-                                            'give_name' => $t2['target_item_name'],
-                                            'give_amount' => $best_y * $t2['target_amount'],
-                                            'give_per_lot' => $t2['target_amount'],
-                                            'receive_item' => $A,
-                                            'receive_name' => $t2['item_name'],
-                                            'receive_amount' => $best_y * $t2['amount'],
-                                            'receive_per_lot' => $t2['amount'],
-                                            'lots' => $best_y,
+                                        'profit' => [
+                                            'item_id' => $A,
+                                            'item_name' => $t1['target_item_name'],
+                                            'amount' => $bestProfit,
                                         ],
-                                    ],
-                                    'profit' => [
-                                        'item_id' => $A,
-                                        'item_name' => $t1['target_item_name'],
-                                        'amount' => $bestProfit,
-                                    ],
-                                    'leftovers' => $leftoverB > 0 ? [
-                                        [
-                                            'item_id' => $B,
-                                            'item_name' => $t1['item_name'],
-                                            'amount' => $leftoverB,
-                                        ],
-                                    ] : [],
-                                ];
+                                        'leftovers' => $leftoverB > 0 ? [
+                                            [
+                                                'item_id' => $B,
+                                                'item_name' => $t1['item_name'],
+                                                'amount' => $leftoverB,
+                                            ],
+                                        ] : [],
+                                    ];
+                                }
                             }
                         }
                     }
-                }
 
-                // 2. 3-step loops: A -> B -> C -> A
-                if (isset($byPair[$B])) {
-                    foreach ($byPair[$B] as $C => $t2List) {
-                        if ($C === $A || $C === $B) {
-                            continue;
-                        }
+                    // 2. 3-step loops: A -> B -> C -> A
+                    if (isset($byPair[$B])) {
+                        foreach ($byPair[$B] as $C => $t2List) {
+                            if ($C === $A || $C === $B) {
+                                continue;
+                            }
 
-                        if (isset($byPair[$C][$A])) {
-                            $t3List = $byPair[$C][$A];
-                            foreach ($t1List as $t1) {
-                                foreach ($t2List as $t2) {
-                                    foreach ($t3List as $t3) {
-                                        $bestProfit = -99999999;
-                                        $best_x = 0;
-                                        $best_y = 0;
-                                        $best_z = 0;
+                            if (isset($byPair[$C][$A])) {
+                                $t3List = $byPair[$C][$A];
+                                foreach ($t1List as $t1) {
+                                    foreach ($t2List as $t2) {
+                                        foreach ($t3List as $t3) {
+                                            $bestProfit = -99999999;
+                                            $best_x = 0;
+                                            $best_y = 0;
+                                            $best_z = 0;
 
-                                        for ($z = 1; $z <= $t3['lots_remaining']; $z++) {
-                                            $neededC = $z * $t3['target_amount'];
-                                            $y = (int) ceil($neededC / $t2['amount']);
-                                            if ($y > $t2['lots_remaining']) {
-                                                continue;
+                                            $maxX = $t1['lots_remaining'];
+                                            $maxY = $t2['lots_remaining'];
+                                            $maxZ = $t3['lots_remaining'];
+
+                                            for ($x = 1; $x <= $maxX; $x++) {
+                                                $gotB = $x * $t1['amount'];
+                                                $neededForT2Lot = $t2['target_amount'];
+                                                if ($neededForT2Lot <= 0) {
+                                                    continue;
+                                                }
+                                                $y = (int) floor($gotB / $neededForT2Lot);
+                                                if ($y > $maxY) {
+                                                    $y = $maxY;
+                                                }
+                                                if ($y <= 0) {
+                                                    continue;
+                                                }
+
+                                                $gotC = $y * $t2['amount'];
+                                                $neededForT3Lot = $t3['target_amount'];
+                                                if ($neededForT3Lot <= 0) {
+                                                    continue;
+                                                }
+                                                $z = (int) floor($gotC / $neededForT3Lot);
+                                                if ($z > $maxZ) {
+                                                    $z = $maxZ;
+                                                }
+                                                if ($z <= 0) {
+                                                    continue;
+                                                }
+
+                                                $costA = $x * $t1['target_amount'];
+                                                $returnedA = $z * $t3['amount'];
+                                                $profitA = $returnedA - $costA;
+
+                                                if ($profitA > $bestProfit) {
+                                                    $bestProfit = $profitA;
+                                                    $best_x = $x;
+                                                    $best_y = $y;
+                                                    $best_z = $z;
+                                                }
                                             }
-                                            $neededB = $y * $t2['target_amount'];
-                                            $x = (int) ceil($neededB / $t1['amount']);
-                                            if ($x > $t1['lots_remaining']) {
-                                                continue;
-                                            }
 
-                                            $profitA = ($z * $t3['amount']) - ($x * $t1['target_amount']);
-                                            if ($profitA > $bestProfit) {
-                                                $bestProfit = $profitA;
-                                                $best_x = $x;
-                                                $best_y = $y;
-                                                $best_z = $z;
-                                            }
-                                        }
+                                            if ($bestProfit > 0) {
+                                                $gotB = $best_x * $t1['amount'];
+                                                $usedB = $best_y * $t2['target_amount'];
+                                                $leftoverB = $gotB - $usedB;
 
-                                        if ($bestProfit > 0 && $best_x >= 1 && $best_y >= 1 && $best_z >= 1) {
-                                            $leftoverB = ($best_x * $t1['amount']) - ($best_y * $t2['target_amount']);
-                                            $leftoverC = ($best_y * $t2['amount']) - ($best_z * $t3['target_amount']);
+                                                $gotC = $best_y * $t2['amount'];
+                                                $usedC = $best_z * $t3['target_amount'];
+                                                $leftoverC = $gotC - $usedC;
 
-                                            $leftovers = [];
-                                            if ($leftoverB > 0) {
-                                                $leftovers[] = [
-                                                    'item_id' => $B,
-                                                    'item_name' => $t1['item_name'],
-                                                    'amount' => $leftoverB,
+                                                $leftovers = [];
+                                                if ($leftoverB > 0) {
+                                                    $leftovers[] = [
+                                                        'item_id' => $B,
+                                                        'item_name' => $t1['item_name'],
+                                                        'amount' => $leftoverB,
+                                                    ];
+                                                }
+                                                if ($leftoverC > 0) {
+                                                    $leftovers[] = [
+                                                        'item_id' => $C,
+                                                        'item_name' => $t2['item_name'],
+                                                        'amount' => $leftoverC,
+                                                    ];
+                                                }
+
+                                                $loops[] = [
+                                                    'type' => '3-step',
+                                                    'start_resource' => $A,
+                                                    'start_resource_name' => $t1['target_item_name'],
+                                                    'steps' => [
+                                                        [
+                                                            'step' => 1,
+                                                            'sender' => $t1['sender_name'],
+                                                            'offer_id' => $t1['offer_id'],
+                                                            'give_item' => $A,
+                                                            'give_name' => $t1['target_item_name'],
+                                                            'give_amount' => $best_x * $t1['target_amount'],
+                                                            'give_per_lot' => $t1['target_amount'],
+                                                            'receive_item' => $B,
+                                                            'receive_name' => $t1['item_name'],
+                                                            'receive_amount' => $best_x * $t1['amount'],
+                                                            'receive_per_lot' => $t1['amount'],
+                                                            'lots' => $best_x,
+                                                        ],
+                                                        [
+                                                            'step' => 2,
+                                                            'sender' => $t2['sender_name'],
+                                                            'offer_id' => $t2['offer_id'],
+                                                            'give_item' => $B,
+                                                            'give_name' => $t2['target_item_name'],
+                                                            'give_amount' => $best_y * $t2['target_amount'],
+                                                            'give_per_lot' => $t2['target_amount'],
+                                                            'receive_item' => $C,
+                                                            'receive_name' => $t2['item_name'],
+                                                            'receive_amount' => $best_y * $t2['amount'],
+                                                            'receive_per_lot' => $t2['amount'],
+                                                            'lots' => $best_y,
+                                                        ],
+                                                        [
+                                                            'step' => 3,
+                                                            'sender' => $t3['sender_name'],
+                                                            'offer_id' => $t3['offer_id'],
+                                                            'give_item' => $C,
+                                                            'give_name' => $t3['target_item_name'],
+                                                            'give_amount' => $best_z * $t3['target_amount'],
+                                                            'give_per_lot' => $t3['target_amount'],
+                                                            'receive_item' => $A,
+                                                            'receive_name' => $t3['item_name'],
+                                                            'receive_amount' => $best_z * $t3['amount'],
+                                                            'receive_per_lot' => $t3['amount'],
+                                                            'lots' => $best_z,
+                                                        ],
+                                                    ],
+                                                    'profit' => [
+                                                        'item_id' => $A,
+                                                        'item_name' => $t1['target_item_name'],
+                                                        'amount' => $bestProfit,
+                                                    ],
+                                                    'leftovers' => $leftovers,
                                                 ];
                                             }
-                                            if ($leftoverC > 0) {
-                                                $leftovers[] = [
-                                                    'item_id' => $C,
-                                                    'item_name' => $t2['item_name'],
-                                                    'amount' => $leftoverC,
-                                                ];
-                                            }
-
-                                            $loops[] = [
-                                                'type' => '3-step',
-                                                'start_resource' => $A,
-                                                'start_resource_name' => $t1['target_item_name'],
-                                                'steps' => [
-                                                    [
-                                                        'sender' => $t1['sender_name'],
-                                                        'offer_id' => $t1['offer_id'],
-                                                        'give_item' => $A,
-                                                        'give_name' => $t1['target_item_name'],
-                                                        'give_amount' => $best_x * $t1['target_amount'],
-                                                        'give_per_lot' => $t1['target_amount'],
-                                                        'receive_item' => $B,
-                                                        'receive_name' => $t1['item_name'],
-                                                        'receive_amount' => $best_x * $t1['amount'],
-                                                        'receive_per_lot' => $t1['amount'],
-                                                        'lots' => $best_x,
-                                                    ],
-                                                    [
-                                                        'sender' => $t2['sender_name'],
-                                                        'offer_id' => $t2['offer_id'],
-                                                        'give_item' => $B,
-                                                        'give_name' => $t2['target_item_name'],
-                                                        'give_amount' => $best_y * $t2['target_amount'],
-                                                        'give_per_lot' => $t2['target_amount'],
-                                                        'receive_item' => $C,
-                                                        'receive_name' => $t2['item_name'],
-                                                        'receive_amount' => $best_y * $t2['amount'],
-                                                        'receive_per_lot' => $t2['amount'],
-                                                        'lots' => $best_y,
-                                                    ],
-                                                    [
-                                                        'sender' => $t3['sender_name'],
-                                                        'offer_id' => $t3['offer_id'],
-                                                        'give_item' => $C,
-                                                        'give_name' => $t3['target_item_name'],
-                                                        'give_amount' => $best_z * $t3['target_amount'],
-                                                        'give_per_lot' => $t3['target_amount'],
-                                                        'receive_item' => $A,
-                                                        'receive_name' => $t3['item_name'],
-                                                        'receive_amount' => $best_z * $t3['amount'],
-                                                        'receive_per_lot' => $t3['amount'],
-                                                        'lots' => $best_z,
-                                                    ],
-                                                ],
-                                                'profit' => [
-                                                    'item_id' => $A,
-                                                    'item_name' => $t1['target_item_name'],
-                                                    'amount' => $bestProfit,
-                                                ],
-                                                'leftovers' => $leftovers,
-                                            ];
                                         }
                                     }
                                 }
@@ -975,10 +1070,12 @@ class MarketAnalyticsController extends Controller
                     }
                 }
             }
-        }
 
-        usort($loops, fn ($a, $b) => $b['profit']['amount'] <=> $a['profit']['amount']);
+            usort($loops, fn ($a, $b) => $b['profit']['amount'] <=> $a['profit']['amount']);
 
-        return response()->json(array_slice($loops, 0, 20));
+            return array_slice($loops, 0, 20);
+        });
+
+        return response()->json($result);
     }
 }

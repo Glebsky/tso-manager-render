@@ -21,11 +21,11 @@ class PublicServerResource extends JsonResource
         $worldName = $this->resolveWorldName();
 
         return [
-            'id'           => $this->id,
-            'server_id'    => $this->server_id,
-            'locale'       => $this->locale,
-            'world_name'   => $worldName,
-            'sync_status'  => $this->sync_status,
+            'id' => $this->id,
+            'server_id' => $this->server_id,
+            'locale' => $this->locale,
+            'world_name' => $worldName,
+            'sync_status' => $this->sync_status,
         ];
     }
 

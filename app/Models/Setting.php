@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 class Setting extends Model
 {
@@ -23,9 +24,11 @@ class Setting extends Model
 
     public static function get(string $key, mixed $default = null): mixed
     {
-        $setting = self::find($key);
+        return Cache::remember("setting:{$key}", 300, static function () use ($key, $default) {
+            $setting = self::find($key);
 
-        return $setting !== null ? $setting->value : $default;
+            return $setting !== null ? $setting->value : $default;
+        });
     }
 
     public static function set(string $key, mixed $value): void
@@ -34,5 +37,7 @@ class Setting extends Model
             ['key' => $key],
             ['value' => $value !== null ? (string) $value : null]
         );
+
+        Cache::forget("setting:{$key}");
     }
 }

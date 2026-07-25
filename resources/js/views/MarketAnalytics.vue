@@ -1003,6 +1003,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { t } from '../lang';
 import axios from 'axios';
+import { cachedGet } from '../services/apiCacheService';
 import { showToast } from '../toast';
 import { getGameImageUrl, handleGameImageError } from '../services/gameImageService';
 import { resourceName, marketItemName } from '../lang/gameNames';
@@ -1430,18 +1431,18 @@ export default {
             loading.value = true;
             try {
                 const params = { server_id: selectedServerId.value };
-                const goodsRes = await axios.get('/api/market/goods', { params });
-                goods.value = goodsRes.data || [];
+                const goodsData = await cachedGet('/api/market/goods', { params, ttlMs: 1800000 });
+                goods.value = goodsData || [];
 
-                const analyticsRes = await axios.get('/api/market/analytics', { params });
-                popular.value = analyticsRes.data.popular || [];
-                activeOffers.value = analyticsRes.data.active_offers || [];
-                totalActiveCount.value = analyticsRes.data.total_active_count || 0;
+                const analyticsData = await cachedGet('/api/market/analytics', { params, ttlMs: 300000 });
+                popular.value = analyticsData.popular || [];
+                activeOffers.value = analyticsData.active_offers || [];
+                totalActiveCount.value = analyticsData.total_active_count || 0;
                 activeOffersPage.value = 1;
-                hasMoreActiveOffers.value = analyticsRes.data.has_more || false;
+                hasMoreActiveOffers.value = analyticsData.has_more || false;
 
-                const arbitrageRes = await axios.get('/api/market/arbitrage', { params });
-                arbitrageLoops.value = arbitrageRes.data || [];
+                const arbitrageData = await cachedGet('/api/market/arbitrage', { params, ttlMs: 900000 });
+                arbitrageLoops.value = arbitrageData || [];
 
                 startCountdown();
                 await loadSyncLogs(1);
@@ -1602,10 +1603,11 @@ export default {
 
             loadingPairs.value = true;
             try {
-                const res = await axios.get('/api/market/targets', {
-                    params: { server_id: selectedServerId.value, item_id: selectedItem.value }
+                const data = await cachedGet('/api/market/targets', {
+                    params: { server_id: selectedServerId.value, item_id: selectedItem.value },
+                    ttlMs: 1800000
                 });
-                targets.value = res.data || [];
+                targets.value = data || [];
             } catch (e) {
                 showToast(t('market.targets_failed'), 'error');
             } finally {
@@ -1618,20 +1620,21 @@ export default {
 
             loadingChart.value = true;
             try {
-                const res = await axios.get('/api/market/analytics', {
+                const data = await cachedGet('/api/market/analytics', {
                     params: {
                         server_id: selectedServerId.value,
                         item_id: selectedItem.value,
                         target_item_id: selectedTarget.value,
                         period: selectedPeriod.value
-                    }
+                    },
+                    ttlMs: 900000
                 });
-                stats.value = res.data.stats || null;
-                history.value = res.data.history || [];
-                activeInfo.value = res.data.active_info || null;
-                periodInfo.value = res.data.period_info || null;
-                mirroredStats.value = res.data.mirrored_stats || null;
-                mirroredHistory.value = res.data.mirrored_history || null;
+                stats.value = data.stats || null;
+                history.value = data.history || [];
+                activeInfo.value = data.active_info || null;
+                periodInfo.value = data.period_info || null;
+                mirroredStats.value = data.mirrored_stats || null;
+                mirroredHistory.value = data.mirrored_history || null;
             } catch (e) {
                 showToast(t('market.charts_failed'), 'error');
             } finally {
@@ -1665,10 +1668,11 @@ export default {
             const tempTarget = selectedTarget.value;
             selectedItem.value = tempTarget;
             try {
-                const res = await axios.get('/api/market/targets', {
-                    params: { server_id: selectedServerId.value, item_id: selectedItem.value }
+                const data = await cachedGet('/api/market/targets', {
+                    params: { server_id: selectedServerId.value, item_id: selectedItem.value },
+                    ttlMs: 1800000
                 });
-                targets.value = res.data || [];
+                targets.value = data || [];
                 const hasOldItem = targets.value.some(t => t.target_item_id === tempItem);
                 if (hasOldItem) {
                     selectedTarget.value = tempItem;

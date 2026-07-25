@@ -748,6 +748,7 @@ import { t } from '../lang';
 import { resourceName, marketItemName } from '../lang/gameNames';
 import { TRADABLE_RESOURCES } from '../lang/resourcesCatalog';
 import axios from 'axios';
+import { cachedGet } from '../services/apiCacheService';
 import { getGameImageUrl, handleGameImageError } from '../services/gameImageService';
 
 import Spinner from '../components/Spinner.vue';
@@ -864,8 +865,8 @@ export default {
 
         const loadServers = async () => {
             try {
-                const res = await axios.get('/api/public/market/servers');
-                servers.value = res.data.data || [];
+                const data = await cachedGet('/api/public/market/servers', { ttlMs: 300000 });
+                servers.value = data.data || data || [];
                 if (servers.value.length > 0) {
                     const exists = servers.value.some(s => s.server_id === selectedServerId.value);
                     if (!exists) {
@@ -1119,18 +1120,18 @@ export default {
             loading.value = true;
             try {
                 const params = { server_id: selectedServerId.value };
-                const goodsRes = await axios.get('/api/public/market/goods', { params });
-                goods.value = goodsRes.data || [];
+                const goodsData = await cachedGet('/api/public/market/goods', { params, ttlMs: 1800000 });
+                goods.value = goodsData || [];
 
-                const analyticsRes = await axios.get('/api/public/market/analytics', { params });
-                popular.value = analyticsRes.data.popular || [];
-                activeOffers.value = analyticsRes.data.active_offers || [];
-                totalActiveCount.value = analyticsRes.data.total_active_count || 0;
+                const analyticsData = await cachedGet('/api/public/market/analytics', { params, ttlMs: 300000 });
+                popular.value = analyticsData.popular || [];
+                activeOffers.value = analyticsData.active_offers || [];
+                totalActiveCount.value = analyticsData.total_active_count || 0;
                 activeOffersPage.value = 1;
-                hasMoreActiveOffers.value = analyticsRes.data.has_more || false;
+                hasMoreActiveOffers.value = analyticsData.has_more || false;
 
-                const arbitrageRes = await axios.get('/api/public/market/arbitrage', { params });
-                arbitrageLoops.value = arbitrageRes.data || [];
+                const arbitrageData = await cachedGet('/api/public/market/arbitrage', { params, ttlMs: 900000 });
+                arbitrageLoops.value = arbitrageData || [];
 
                 startCountdown();
             } catch (e) {
@@ -1152,10 +1153,11 @@ export default {
 
             loadingPairs.value = true;
             try {
-                const res = await axios.get('/api/public/market/targets', {
-                    params: { server_id: selectedServerId.value, item_id: selectedItem.value }
+                const data = await cachedGet('/api/public/market/targets', {
+                    params: { server_id: selectedServerId.value, item_id: selectedItem.value },
+                    ttlMs: 1800000
                 });
-                targets.value = res.data || [];
+                targets.value = data || [];
             } catch (e) {
                 showToast(t('market.targets_failed'), 'error');
             } finally {
@@ -1168,13 +1170,14 @@ export default {
             loadingMore.value = true;
             try {
                 const nextPage = activeOffersPage.value + 1;
-                const res = await axios.get('/api/public/market/analytics', {
-                    params: { server_id: selectedServerId.value, page: nextPage }
+                const data = await cachedGet('/api/public/market/analytics', {
+                    params: { server_id: selectedServerId.value, page: nextPage },
+                    ttlMs: 300000
                 });
-                const newOffers = res.data.active_offers || [];
+                const newOffers = data.active_offers || [];
                 activeOffers.value.push(...newOffers);
                 activeOffersPage.value = nextPage;
-                hasMoreActiveOffers.value = res.data.has_more || false;
+                hasMoreActiveOffers.value = data.has_more || false;
             } catch (e) {
                 showToast(t('market.listings_failed'), 'error');
             } finally {
@@ -1195,20 +1198,21 @@ export default {
 
             loadingChart.value = true;
             try {
-                const res = await axios.get('/api/public/market/analytics', {
+                const data = await cachedGet('/api/public/market/analytics', {
                     params: {
                         server_id: selectedServerId.value,
                         item_id: selectedItem.value,
                         target_item_id: selectedTarget.value,
                         period: selectedPeriod.value
-                    }
+                    },
+                    ttlMs: 900000
                 });
-                stats.value = res.data.stats || null;
-                history.value = res.data.history || [];
-                activeInfo.value = res.data.active_info || null;
-                periodInfo.value = res.data.period_info || null;
-                mirroredStats.value = res.data.mirrored_stats || null;
-                mirroredHistory.value = res.data.mirrored_history || null;
+                stats.value = data.stats || null;
+                history.value = data.history || [];
+                activeInfo.value = data.active_info || null;
+                periodInfo.value = data.period_info || null;
+                mirroredStats.value = data.mirrored_stats || null;
+                mirroredHistory.value = data.mirrored_history || null;
             } catch (e) {
                 showToast(t('market.charts_failed'), 'error');
             } finally {

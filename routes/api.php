@@ -79,7 +79,7 @@ Route::middleware('auth:sanctum')->group(function () {
 | Public Market Analytics API
 |--------------------------------------------------------------------------
 */
-Route::prefix('public/market')->group(function () {
+Route::prefix('public/market')->middleware(\App\Http\Middleware\HttpCacheHeaders::class)->group(function () {
     Route::get('/servers', [MarketAnalyticsController::class, 'getPublicServers']);
     Route::get('/goods', [MarketAnalyticsController::class, 'getGoods']);
     Route::get('/targets', [MarketAnalyticsController::class, 'getTargets']);

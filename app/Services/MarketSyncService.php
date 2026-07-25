@@ -17,17 +17,18 @@ use Illuminate\Support\Facades\Log;
 
 class MarketSyncService
 {
-    private TsoAuthService $authService;
+    private MarketCacheService $cacheService;
 
-    private TsoAmfService $amfService;
-
-    private GameTranslationResolver $gameTranslations;
-
-    public function __construct(TsoAuthService $authService, TsoAmfService $amfService, GameTranslationResolver $gameTranslations)
-    {
+    public function __construct(
+        TsoAuthService $authService,
+        TsoAmfService $amfService,
+        GameTranslationResolver $gameTranslations,
+        MarketCacheService $cacheService
+    ) {
         $this->authService = $authService;
         $this->amfService = $amfService;
         $this->gameTranslations = $gameTranslations;
+        $this->cacheService = $cacheService;
     }
 
     private function findPython(): string
@@ -296,6 +297,8 @@ class MarketSyncService
                     'last_error' => null,
                 ]);
             }
+
+            $this->cacheService->bumpDataVersion($serverId);
 
             return [
                 'success' => true,
