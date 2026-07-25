@@ -11,7 +11,7 @@
                 <!-- Server Selector -->
                 <div v-if="servers.length > 0" class="flex items-center gap-2 bg-white/5 border border-white/10 p-1.5 rounded-xl w-full sm:w-auto">
                     <span class="text-xs font-semibold text-white/40 uppercase tracking-wider px-2 shrink-0">{{ t('market.server') }}:</span>
-                    <select v-model="selectedServerId" @change="onServerChange" class="bg-dark-900 text-xs font-bold text-emerald-400 py-1.5 px-3 rounded-lg border border-emerald-500/20 focus:outline-none cursor-pointer w-full sm:max-w-[240px] truncate">
+                    <select v-model="selectedServerId" @change="onServerChange" :aria-label="t('market.server')" class="bg-dark-900 text-xs font-bold text-emerald-400 py-1.5 px-3 rounded-lg border border-emerald-500/20 focus:outline-none cursor-pointer w-full sm:max-w-[240px] truncate">
                         <option v-for="srv in servers" :key="srv.server_id" :value="srv.server_id">
                             {{ getLocaleFlag(srv.locale) }} {{ srv.display_name }} ({{ srv.account ? srv.account.username : t('market.no_account') }})
                         </option>
@@ -130,7 +130,7 @@
                     <div>
                         <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('market.selling_item') }}</label>
                         <div class="relative">
-                            <select v-model="selectedItem" @change="onItemChange" class="glass-select w-full">
+                            <select v-model="selectedItem" @change="onItemChange" :aria-label="t('market.selling_item')" class="glass-select w-full">
                                 <option value="" class="bg-dark-900">{{ t('market.select_selling') }}</option>
                                 <option v-for="good in goods" :key="good.item_id" :value="good.item_id" class="bg-dark-900">
                                     {{ getItemName(good.item_name, good.item_id) }} ({{ good.item_id }})
@@ -148,7 +148,7 @@
                     <div>
                         <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('market.target_item') }}</label>
                         <div class="relative">
-                            <select v-model="selectedTarget" :disabled="!selectedItem" @change="fetchAnalytics" class="glass-select w-full disabled:opacity-40">
+                            <select v-model="selectedTarget" :disabled="!selectedItem" @change="fetchAnalytics" :aria-label="t('market.target_item')" class="glass-select w-full disabled:opacity-40">
                                 <option value="" class="bg-dark-900">{{ t('market.select_target') }}</option>
                                 <option v-for="target in targets" :key="target.target_item_id" :value="target.target_item_id" class="bg-dark-900">
                                     {{ getItemName(target.target_item_name, target.target_item_id) }} ({{ target.target_item_id }})
@@ -190,7 +190,7 @@
                              :class="selectedItem === good.item_id ? 'bg-emerald-500/10 border-emerald-500 shadow shadow-emerald-500/10' : 'bg-white/[0.02] border-white/5 hover:border-white/20 hover:bg-white/[0.04]'"
                              :style="good.no_offers ? 'opacity:0.4' : ''"
                              :title="good.no_offers ? t('market.no_offers') : getItemName(good.item_name, good.item_id)">
-                            <img :src="getResourceIcon(good.item_id)" @error="handleIconError($event, good.item_id)" class="w-6 h-6 object-contain mb-1 pointer-events-none" />
+                            <img :alt="getItemName(good.item_name, good.item_id)" :src="getResourceIcon(good.item_id)" @error="handleIconError($event, good.item_id)" class="w-6 h-6 object-contain mb-1 pointer-events-none" />
                             <span class="text-[9px] font-medium text-white/90 truncate w-full" :title="getItemName(good.item_name, good.item_id)">{{ getItemName(good.item_name, good.item_id) }}</span>
                         </div>
                         <div v-if="allGoods.length === 0 && !loading" class="col-span-full py-8 text-center text-xs text-white/30">
@@ -204,7 +204,7 @@
                              @click="selectVisualTarget(target.target_item_id)"
                              class="flex flex-col items-center justify-center p-1.5 rounded-lg border cursor-pointer hover:border-emerald-500/40 hover:bg-white/[0.05] hover:shadow-md hover:shadow-emerald-500/5 text-center select-none transition-all duration-200"
                              :class="selectedTarget === target.target_item_id ? 'bg-emerald-500/10 border-emerald-500 shadow shadow-emerald-500/10' : 'bg-white/[0.02] border-white/5 hover:border-white/20 hover:bg-white/[0.04]'">
-                            <img :src="getResourceIcon(target.target_item_id)" @error="handleIconError($event, target.target_item_id)" class="w-6 h-6 object-contain mb-1 pointer-events-none" />
+                            <img :alt="getItemName(target.target_item_name, target.target_item_id)" :src="getResourceIcon(target.target_item_id)" @error="handleIconError($event, target.target_item_id)" class="w-6 h-6 object-contain mb-1 pointer-events-none" />
                             <span class="text-[9px] font-medium text-white/90 truncate w-full" :title="getItemName(target.target_item_name, target.target_item_id)">{{ getItemName(target.target_item_name, target.target_item_id) }}</span>
                         </div>
                         <div v-if="targets.length === 0 && !loadingPairs" class="col-span-full py-8 text-center text-xs text-white/30">
@@ -215,12 +215,12 @@
 
                 <!-- Selection Path Indicator -->
                 <div v-if="selectedItemName && selectedTargetName" class="mt-5 pt-5 border-t border-white/5 flex items-center gap-3 text-lg font-semibold text-emerald-400">
-                    <img :src="getResourceIcon(selectedItem)" @error="handleIconError($event, selectedItem)" class="w-6 h-6 object-contain" />
+                    <img :alt="selectedItemName" :src="getResourceIcon(selectedItem)" @error="handleIconError($event, selectedItem)" class="w-6 h-6 object-contain" />
                     <span>{{ selectedItemName }}</span>
                     <svg class="w-5 h-5 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
                     </svg>
-                    <img :src="getResourceIcon(selectedTarget)" @error="handleIconError($event, selectedTarget)" class="w-6 h-6 object-contain" />
+                    <img :alt="selectedTargetName" :src="getResourceIcon(selectedTarget)" @error="handleIconError($event, selectedTarget)" class="w-6 h-6 object-contain" />
                     <span>{{ selectedTargetName }}</span>
                 </div>
             </div>
@@ -335,7 +335,7 @@
 
                                         <div class="flex items-center justify-between gap-2 py-1.5 bg-white/5 rounded-lg px-2 border border-white/5">
                                             <div class="flex items-center gap-1.5">
-                                                <img :src="getResourceIcon(selectedItem)" @error="handleIconError($event, selectedItem)" class="w-4 h-4 object-contain" />
+                                                <img :alt="selectedItemName" :src="getResourceIcon(selectedItem)" @error="handleIconError($event, selectedItem)" class="w-4 h-4 object-contain" />
                                                 <span class="font-mono font-bold text-white text-xs">{{ formatVolume(hoveredPoint.avg_amount) }}</span>
                                                 <span class="text-[10px] text-white/60 truncate max-w-[60px]" :title="selectedItemName">{{ selectedItemName }}</span>
                                             </div>
@@ -345,7 +345,7 @@
                                             </svg>
 
                                             <div class="flex items-center gap-1.5">
-                                                <img :src="getResourceIcon(selectedTarget)" @error="handleIconError($event, selectedTarget)" class="w-4 h-4 object-contain" />
+                                                <img :alt="selectedTargetName" :src="getResourceIcon(selectedTarget)" @error="handleIconError($event, selectedTarget)" class="w-4 h-4 object-contain" />
                                                 <span class="font-mono font-bold text-emerald-400 text-xs">{{ formatVolume(hoveredPoint.avg_target_amount) }}</span>
                                                 <span class="text-[10px] text-emerald-400/80 truncate max-w-[60px]" :title="selectedTargetName">{{ selectedTargetName }}</span>
                                             </div>
@@ -511,7 +511,7 @@
                             </div>
                             <h2 class="text-lg font-semibold text-white">{{ t('market.popular_items') }}</h2>
                         </div>
-                        <button @click="togglePopularItems" class="text-white/40 hover:text-white transition-colors">
+                        <button @click="togglePopularItems" :aria-label="t('market.popular_items')" :aria-expanded="showPopularItems ? 'true' : 'false'" class="text-white/40 hover:text-white transition-colors">
                             <svg v-if="showPopularItems" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
                             </svg>
@@ -536,7 +536,7 @@
                                 <tr v-for="item in popular" :key="item.item_id" class="hover:bg-white/[0.01] transition-all">
                                     <td class="py-3 px-4 font-semibold text-white">
                                         <div class="flex items-center gap-2">
-                                            <img :src="getResourceIcon(item.item_id)" @error="handleIconError($event, item.item_id)" class="w-5 h-5 object-contain" />
+                                            <img :alt="getItemName(item.item_name, item.item_id)" :src="getResourceIcon(item.item_id)" @error="handleIconError($event, item.item_id)" class="w-5 h-5 object-contain" />
                                             <span>{{ getItemName(item.item_name, item.item_id) }}</span>
                                         </div>
                                     </td>
@@ -573,7 +573,7 @@
                             <span class="badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs py-1 px-3">
                                 {{ t('market.schemes_found', { count: arbitrageLoops.length }) }}
                             </span>
-                            <button @click="toggleArbitrageSchemes" class="text-white/40 hover:text-white transition-colors">
+                            <button @click="toggleArbitrageSchemes" :aria-label="t('market.schemes')" :aria-expanded="showArbitrageSchemes ? 'true' : 'false'" class="text-white/40 hover:text-white transition-colors">
                                 <svg v-if="showArbitrageSchemes" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
                                 </svg>
@@ -599,7 +599,7 @@
                                     <div v-if="scheme.leftovers && scheme.leftovers.length" class="flex items-center gap-2 text-xs text-blue-400">
                                         <span class="text-white/30">{{ t('market.leftovers') }}</span>
                                         <span v-for="leftover in scheme.leftovers" :key="leftover.item_id" class="flex items-center gap-1 text-white/70">
-                                            <img :src="getResourceIcon(leftover.item_id)" @error="handleIconError($event, leftover.item_id)" class="w-3.5 h-3.5 object-contain" />
+                                            <img alt="" :src="getResourceIcon(leftover.item_id)" @error="handleIconError($event, leftover.item_id)" class="w-3.5 h-3.5 object-contain" />
                                             +{{ formatVolume(leftover.amount) }}
                                         </span>
                                     </div>
@@ -607,7 +607,7 @@
                                     <div class="flex items-center gap-2">
                                         <span class="text-xs text-white/40">{{ t('market.net_profit') }}</span>
                                         <div class="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg py-1 px-2">
-                                            <img :src="getResourceIcon(scheme.profit.item_id)" @error="handleIconError($event, scheme.profit.item_id)" class="w-4 h-4 object-contain" />
+                                            <img :alt="getItemName(scheme.profit.item_name, scheme.profit.item_id)" :src="getResourceIcon(scheme.profit.item_id)" @error="handleIconError($event, scheme.profit.item_id)" class="w-4 h-4 object-contain" />
                                             <span class="font-mono text-sm font-bold text-emerald-400">+{{ formatVolume(scheme.profit.amount) }}</span>
                                             <span class="text-xs text-emerald-400/70 truncate max-w-[80px]">{{ getItemName(scheme.profit.item_name, scheme.profit.item_id) }}</span>
                                         </div>
@@ -624,13 +624,13 @@
                                         <div class="flex flex-col gap-1.5">
                                             <div class="flex items-center gap-1.5 text-xs">
                                                 <span class="text-white/40 w-8">{{ t('market.give') }}</span>
-                                                <img :src="getResourceIcon(step.give_item)" @error="handleIconError($event, step.give_item)" class="w-4.5 h-4.5 object-contain" />
+                                                <img alt="" :src="getResourceIcon(step.give_item)" @error="handleIconError($event, step.give_item)" class="w-4.5 h-4.5 object-contain" />
                                                 <span class="font-mono font-semibold text-white/90">{{ formatVolume(step.give_per_lot) }}</span>
                                                 <span class="text-[10px] text-white/30">(total: {{ formatVolume(step.give_amount) }})</span>
                                             </div>
                                             <div class="flex items-center gap-1.5 text-xs">
                                                 <span class="text-white/40 w-8">{{ t('market.get') }}</span>
-                                                <img :src="getResourceIcon(step.receive_item)" @error="handleIconError($event, step.receive_item)" class="w-4.5 h-4.5 object-contain" />
+                                                <img alt="" :src="getResourceIcon(step.receive_item)" @error="handleIconError($event, step.receive_item)" class="w-4.5 h-4.5 object-contain" />
                                                 <span class="font-mono font-semibold text-emerald-400">{{ formatVolume(step.receive_per_lot) }}</span>
                                                 <span class="text-[10px] text-emerald-400/40">(total: {{ formatVolume(step.receive_amount) }})</span>
                                             </div>
@@ -670,7 +670,7 @@
                                 <span class="text-xs text-white/40">{{ totalActiveCount }} active trades</span>
                             </div>
                         </div>
-                        <button @click="toggleActiveListings" class="text-white/40 hover:text-white transition-colors duration-300">
+                        <button @click="toggleActiveListings" :aria-label="t('market.listings')" :aria-expanded="showActiveListings ? 'true' : 'false'" class="text-white/40 hover:text-white transition-colors duration-300">
                             <svg v-if="showActiveListings" class="w-5 h-5 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
                             </svg>
@@ -699,14 +699,14 @@
                                         <td class="py-3 px-4 font-semibold text-white">{{ offer.sender_name }}</td>
                                         <td class="py-3 px-4">
                                             <div class="flex items-center gap-2">
-                                                <img :src="getResourceIcon(offer.item_id)" @error="handleIconError($event, offer.item_id)" class="w-5 h-5 object-contain" />
+                                                <img :alt="getItemName(offer.item_name, offer.item_id)" :src="getResourceIcon(offer.item_id)" @error="handleIconError($event, offer.item_id)" class="w-5 h-5 object-contain" />
                                                 <span class="font-mono text-white/90">{{ formatVolume(offer.amount) }}</span>
                                                 <span class="text-xs text-white/40 truncate max-w-[100px]">{{ getItemName(offer.item_name, offer.item_id) }}</span>
                                             </div>
                                         </td>
                                         <td class="py-3 px-4">
                                             <div class="flex items-center gap-2">
-                                                <img :src="getResourceIcon(offer.target_item_id)" @error="handleIconError($event, offer.target_item_id)" class="w-5 h-5 object-contain" />
+                                                <img :alt="getItemName(offer.target_item_name, offer.target_item_id)" :src="getResourceIcon(offer.target_item_id)" @error="handleIconError($event, offer.target_item_id)" class="w-5 h-5 object-contain" />
                                                 <span class="font-mono text-white/90">{{ formatVolume(offer.target_amount) }}</span>
                                                 <span class="text-xs text-white/40 truncate max-w-[100px]">{{ getItemName(offer.target_item_name, offer.target_item_id) }}</span>
                                             </div>
@@ -1185,7 +1185,7 @@ export default {
         const getItemName = marketItemName;
 
         // Полный каталог торгуемых ресурсов из игрового XML, объединённый с товарами с сервера:
-        // ресурсы без активных предложений тоже отображаются (приглушёнными), чтобы был виден весь рынок.
+        // ресурсы без активных предложений тоже отображаются (приглушёнными), чтобы был виден вес�� рынок.
         const allGoods = computed(() => {
             const known = new Set(goods.value.map(g => g.item_id));
             const extras = TRADABLE_RESOURCES

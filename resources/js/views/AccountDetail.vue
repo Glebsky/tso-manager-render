@@ -208,7 +208,7 @@
                                 <span v-for="(bf, idx) in b.buffs" :key="idx"
                                       class="inline-flex items-center gap-1 bg-amber-500/10 text-amber-300 text-[10px] font-medium px-2 py-0.5 rounded-md border border-amber-500/20 truncate"
                                       :title="'ID: ' + (bf.buffID || bf.buffId || '?')">
-                                    <img v-if="getBuffIcon(bf)" :src="getBuffIcon(bf)" class="w-3.5 h-3.5 object-contain" @error="handleBuffIconError($event, bf)">
+                                    <img alt="{{ getBuffName(bf) }}" v-if="getBuffIcon(bf)" :src="getBuffIcon(bf)" class="w-3.5 h-3.5 object-contain" @error="handleBuffIconError($event, bf)">
                                     <span class="truncate">{{ getBuffName(bf) }}</span>
                                 </span>
                             </div>
@@ -259,7 +259,7 @@
                             <!-- Icon -->
                             <div class="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg overflow-hidden bg-white/5"
                                  :class="getSpecialistCategory(s.type) === 'General' ? 'text-rose-400 shadow-rose-500/5' : getSpecialistCategory(s.type) === 'Explorer' ? 'text-teal-400 shadow-teal-500/5' : 'text-amber-400 shadow-amber-500/5'">
-                                <img :src="getSpecialistIcon(s.type)" @error="handleSpecialistIconError($event, s.type)" class="w-full h-full object-contain p-1" v-if="!hasSpecialistIconError(s.type) && getSpecialistIcon(s.type)" />
+                                <img alt="{{ getSpecialistCategory(s.type) }}" :src="getSpecialistIcon(s.type)" @error="handleSpecialistIconError($event, s.type)" class="w-full h-full object-contain p-1" v-if="!hasSpecialistIconError(s.type) && getSpecialistIcon(s.type)" />
                                 <span v-else-if="getSpecialistCategory(s.type) === 'General'" class="text-xl">🎖️</span>
                                 <span v-else-if="getSpecialistCategory(s.type) === 'Explorer'" class="text-xl">🧭</span>
                                 <span v-else class="text-xl">🔨</span>
