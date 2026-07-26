@@ -348,6 +348,8 @@ return [
     'market.range_7d' => '7д',
     'market.range_all' => 'Усі',
     'market.region_label' => 'Регіон',
+    'market.copy_link' => 'Скопіювати посилання',
+    'market.link_copied' => 'Посилання на пару товарів скопійовано в буфер обміну',
     'market.reset_selection' => 'Скинути вибір',
     'market.save' => 'Зберегти',
     'market.save_schedule' => 'Зберегти розклад',

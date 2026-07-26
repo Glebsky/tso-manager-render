@@ -328,6 +328,8 @@ return [
     'market.buy_resource' => '2. Покупаемый ресурс',
     'market.dropdowns' => 'Списки',
     'market.expired' => 'Истёк',
+    'market.copy_link' => 'Скопировать ссылку',
+    'market.link_copied' => 'Ссылка на пару товаров скопирована в буфер обмена',
     'market.mirror_trade' => 'Зеркальная сделка',
     'market.reset_selection' => 'Сбросить выбор',
     'market.schemes_found' => 'схем найдено: {count}',

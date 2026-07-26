@@ -328,6 +328,8 @@ return [
     'market.buy_resource' => '2. Buy Resource',
     'market.dropdowns' => 'Dropdowns',
     'market.expired' => 'Expired',
+    'market.copy_link' => 'Copy Link',
+    'market.link_copied' => 'Link to pair copied to clipboard',
     'market.mirror_trade' => 'Mirror Trade',
     'market.reset_selection' => 'Reset Selection',
     'market.schemes_found' => '{count} schemes found',

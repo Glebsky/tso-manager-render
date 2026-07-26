@@ -110,7 +110,7 @@
                         </div>
                     </div>
 
-                    <!-- Reset Selection / Mirror Button -->
+                    <!-- Reset Selection / Mirror / Copy Link Button -->
                     <div class="flex items-center gap-2">
                         <button v-if="selectedItem || selectedTarget" @click="resetSelection" class="btn-secondary py-1 px-3 text-xs bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition-all">
                             {{ t('market.reset_selection') }}
@@ -120,6 +120,12 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
                             </svg>
                             {{ t('market.mirror_trade') }}
+                        </button>
+                        <button v-if="selectedItem && selectedTarget" @click="copyPairLink" class="btn-secondary py-1 px-3 text-xs bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all flex items-center gap-1">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
+                            </svg>
+                            {{ t('market.copy_link') }}
                         </button>
                     </div>
                 </div>
@@ -1007,6 +1013,7 @@
 
 <script>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { t } from '../lang';
 import axios from 'axios';
 import { cachedGet, clearApiCache } from '../services/apiCacheService';
@@ -1022,6 +1029,61 @@ export default {
     name: 'MarketAnalytics',
     components: { Spinner, LoadingOverlay },
     setup() {
+        const route = useRoute();
+        const router = useRouter();
+
+        const updateQueryParams = () => {
+            const query = { ...route.query };
+            if (selectedServerId.value) {
+                query.server = selectedServerId.value;
+            } else {
+                delete query.server;
+                delete query.server_id;
+            }
+            if (selectedItem.value) {
+                query.item = selectedItem.value;
+            } else {
+                delete query.item;
+                delete query.item_id;
+            }
+            if (selectedTarget.value) {
+                query.target = selectedTarget.value;
+            } else {
+                delete query.target;
+                delete query.target_item_id;
+            }
+            router.replace({ query }).catch(() => {});
+        };
+
+        const copyPairLink = async () => {
+            if (!selectedItem.value || !selectedTarget.value) return;
+
+            const url = new URL(window.location.href);
+            url.searchParams.set('item', selectedItem.value);
+            url.searchParams.set('target', selectedTarget.value);
+            if (selectedServerId.value) {
+                url.searchParams.set('server', selectedServerId.value);
+            }
+
+            try {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(url.toString());
+                } else {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = url.toString();
+                    textarea.style.position = 'fixed';
+                    textarea.style.opacity = '0';
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                }
+                showToast(t('market.link_copied'), 'success');
+            } catch (e) {
+                showToast('Failed to copy link', 'error');
+            }
+        };
+
         const activeTab = ref('analytics');
         const loading = ref(false);
         const loadingServers = ref(true);
@@ -1463,6 +1525,7 @@ export default {
             localStorage.setItem('tso_market_selected_server', selectedServerId.value);
             resetSelection();
             goods.value = [];
+            updateQueryParams();
             loadAnalyticsData({ bypass: true });
         };
 
@@ -1639,6 +1702,7 @@ export default {
             periodInfo.value = null;
             mirroredStats.value = null;
             mirroredHistory.value = null;
+            updateQueryParams();
 
             if (!selectedItem.value || !selectedServerId.value) return;
 
@@ -1657,6 +1721,7 @@ export default {
         };
 
         const fetchAnalytics = async (options = {}) => {
+            updateQueryParams();
             if (!selectedItem.value || !selectedTarget.value || !selectedServerId.value) return;
 
             loadingChart.value = true;
@@ -1702,6 +1767,7 @@ export default {
             stats.value = null;
             history.value = [];
             visualTab.value = 1;
+            updateQueryParams();
         };
 
         const mirrorSelection = async () => {
@@ -1709,6 +1775,7 @@ export default {
             const tempItem = selectedItem.value;
             const tempTarget = selectedTarget.value;
             selectedItem.value = tempTarget;
+            updateQueryParams();
             try {
                 const data = await cachedGet('/api/market/targets', {
                     params: { server_id: selectedServerId.value, item_id: selectedItem.value },
@@ -1721,6 +1788,7 @@ export default {
                     await fetchAnalytics();
                 } else {
                     selectedTarget.value = '';
+                    updateQueryParams();
                 }
             } catch (e) {
                 showToast(t('market.mirror_failed'), 'error');
@@ -1733,8 +1801,32 @@ export default {
         };
 
         onMounted(async () => {
+            const queryServer = route.query.server || route.query.server_id;
+            if (queryServer) {
+                selectedServerId.value = String(queryServer);
+            }
             await loadServers();
             await loadAnalyticsData();
+
+            const queryItem = route.query.item || route.query.item_id;
+            const queryTarget = route.query.target || route.query.target_item_id;
+
+            if (queryItem) {
+                const itemStr = String(queryItem);
+                const matchedGood = goods.value.find(g => String(g.item_id) === itemStr || String(g.item_name).toLowerCase() === itemStr.toLowerCase());
+                if (matchedGood) {
+                    selectedItem.value = matchedGood.item_id;
+                    await onItemChange();
+                    if (queryTarget) {
+                        const targetStr = String(queryTarget);
+                        const matchedTarget = targets.value.find(t => String(t.target_item_id) === targetStr || String(t.target_item_name).toLowerCase() === targetStr.toLowerCase());
+                        if (matchedTarget) {
+                            selectedTarget.value = matchedTarget.target_item_id;
+                            await fetchAnalytics();
+                        }
+                    }
+                }
+            }
         });
 
         onUnmounted(() => {
@@ -1835,6 +1927,7 @@ export default {
             selectVisualTarget,
             resetSelection,
             mirrorSelection,
+            copyPairLink,
             changePeriod,
         };
     }
