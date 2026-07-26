@@ -695,7 +695,6 @@
                                     <th class="py-3 px-4 text-right">{{ t('market.price') }}</th>
                                     <th class="py-3 px-4 text-right">{{ t('market.lots_remaining') }}</th>
                                     <th class="py-3 px-4 text-right">{{ t('market.time_left') }}</th>
-                                    <th class="py-3 px-4 text-right">{{ t('market.sync_time') }}</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-white/5 text-sm text-white/70">
@@ -722,7 +721,6 @@
                                     <td class="py-3 px-4 text-right font-mono text-xs" :class="offer.time_left > 0 ? 'text-amber-400' : 'text-red-500'">
                                         {{ formatTimeLeft(offer.time_left) }}
                                     </td>
-                                    <td class="py-3 px-4 text-right text-[10px] text-white/30 font-mono">{{ offer.created_at }}</td>
                                 </tr>
                                 <tr v-if="activeOffers.length === 0">
                                     <td colspan="7" class="py-8 text-center text-white/20">
