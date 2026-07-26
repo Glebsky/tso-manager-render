@@ -87,4 +87,22 @@ class MarketCacheTest extends TestCase
         Setting::set('test_key', 'new_val');
         $this->assertSame('new_val', Setting::get('test_key'));
     }
+
+    public function test_bump_data_version_forgets_old_keys(): void
+    {
+        $callback = fn () => ['data' => 'test'];
+
+        $this->cacheService->remember('ru', 'goods', [], 300, $callback);
+        $keysBefore = Cache::get('market:keys:ru', []);
+        $this->assertCount(1, $keysBefore);
+        $oldKey = $keysBefore[0];
+
+        $this->assertTrue(Cache::has($oldKey));
+
+        // Bumping data version invalidates and forgets the key explicitly
+        $this->cacheService->bumpDataVersion('ru');
+
+        $this->assertFalse(Cache::has($oldKey));
+        $this->assertEmpty(Cache::get('market:keys:ru', []));
+    }
 }
