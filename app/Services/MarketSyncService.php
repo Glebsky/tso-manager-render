@@ -344,6 +344,11 @@ class MarketSyncService
                 'created_at' => now(),
             ]);
 
+            // Skip intermediate INFO progress messages (e.g. sync_started, fetch_attempt) from BotLog to keep it concise
+            if (strtoupper($status) === 'INFO') {
+                return;
+            }
+
             $botLogLevel = match (strtoupper($status)) {
                 'FAILED', 'ERROR' => 'error',
                 'WARNING' => 'warning',
@@ -351,10 +356,12 @@ class MarketSyncService
                 default => 'info',
             };
 
+            $serverTag = $serverId ? "[Market][{$serverId}]" : '[Market]';
+
             BotLog::create([
                 'account_id' => $account->id,
                 'level' => $botLogLevel,
-                'message' => "[Market][{$serverId}] {$message}",
+                'message' => "{$serverTag} {$message}",
                 'created_at' => now(),
             ]);
         } catch (Exception $dbEx) {

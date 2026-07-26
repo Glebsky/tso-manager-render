@@ -38,7 +38,7 @@ return [
         'zone_loading_retry' => 'Game server is still loading the zone (error 1012). Retrying in :delay s...',
         'session_expired_retry' => 'Game session expired (error :code). Re-authenticating and retrying...',
         'attempt_failed' => 'Attempt :attempt of :max failed: :error',
-        'sync_success' => 'Market sync finished: :count offers received from server [:server].',
+        'sync_success' => 'Market sync finished: :count offers received.',
         'sync_failed' => 'Market sync failed: :error',
         'sync_job_failed' => 'Background market sync failed after all retry attempts: :error',
     ],

@@ -61,7 +61,7 @@ class AccountSyncService
             BotLog::create([
                 'account_id' => $account->id,
                 'level' => 'error',
-                'message' => __('logs.account.sync_failed', ['error' => $e->getMessage()]),
+                'message' => '[AccountSync] '.__('logs.account.sync_failed', ['error' => $e->getMessage()]),
             ]);
 
             throw $e;
@@ -197,7 +197,7 @@ class AccountSyncService
         BotLog::create([
             'account_id' => $account->id,
             'level' => 'success',
-            'message' => __('logs.account.sync_success', [
+            'message' => '[AccountSync] '.__('logs.account.sync_success', [
                 'buildings' => $buildingCount,
                 'resources' => $resourceCount,
                 'specialists' => $specialistCount,

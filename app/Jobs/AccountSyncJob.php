@@ -63,7 +63,7 @@ class AccountSyncJob implements ShouldQueue
         BotLog::create([
             'account_id' => $this->account->id,
             'level' => 'error',
-            'message' => __('logs.account.sync_job_failed', ['error' => $exception->getMessage()]),
+            'message' => '[AccountSync] '.__('logs.account.sync_job_failed', ['error' => $exception->getMessage()]),
         ]);
 
         Cache::forget("account_sync_lock:{$this->account->id}");

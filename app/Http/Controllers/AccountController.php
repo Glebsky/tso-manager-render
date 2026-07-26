@@ -179,7 +179,7 @@ class AccountController extends Controller
             BotLog::create([
                 'account_id' => $account->id,
                 'level' => 'success',
-                'message' => __('logs.account.action_success', ['type' => $actionType]),
+                'message' => '[Account] '.__('logs.account.action_success', ['type' => $actionType]),
             ]);
 
             return response()->json([
@@ -190,7 +190,7 @@ class AccountController extends Controller
             BotLog::create([
                 'account_id' => $account->id,
                 'level' => 'error',
-                'message' => __('logs.account.action_failed', ['type' => $request->input('action_type'), 'error' => $e->getMessage()]),
+                'message' => '[Account] '.__('logs.account.action_failed', ['type' => $request->input('action_type'), 'error' => $e->getMessage()]),
             ]);
 
             return response()->json([
@@ -224,7 +224,7 @@ class AccountController extends Controller
         BotLog::create([
             'account_id' => $account->id,
             'level' => 'success',
-            'message' => __('logs.account.session_updated'),
+            'message' => '[Account] '.__('logs.account.session_updated'),
         ]);
 
         return response()->json([

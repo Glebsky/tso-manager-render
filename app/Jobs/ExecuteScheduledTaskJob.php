@@ -147,7 +147,7 @@ class ExecuteScheduledTaskJob implements ShouldQueue
             BotLog::create([
                 'account_id' => $task->account_id,
                 'level' => 'error',
-                'message' => __('logs.task.job_failed', ['id' => $task->id, 'type' => $task->task_type, 'error' => $exception->getMessage()]),
+                'message' => "[Task][Task#{$task->id}] ".__('logs.task.job_failed', ['id' => $task->id, 'type' => $task->task_type, 'error' => $exception->getMessage()]),
             ]);
         }
     }
