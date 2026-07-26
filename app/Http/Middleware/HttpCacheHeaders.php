@@ -23,29 +23,33 @@ class HttpCacheHeaders
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $response = $next($request);
-
         // Only handle GET/HEAD requests
         if (! $request->isMethodCacheable()) {
-            return $response;
+            return $next($request);
         }
 
-        $serverId = (string) ($request->input('server_id') ?? 'ru');
+        $serverId = $this->cacheService->resolveServerId($request->input('server_id'));
         $endpoint = $request->path();
         $params = $request->query();
 
         $etag = $this->cacheService->generateETag($serverId, $endpoint, $params);
         $dataVersion = $this->cacheService->dataVersion($serverId);
 
+        $ifNoneMatch = $request->headers->get('If-None-Match');
+        if ($ifNoneMatch !== null && trim($ifNoneMatch) === $etag) {
+            $response = new Response(null, 304);
+            $response->headers->set('ETag', $etag);
+            $response->headers->set('X-Data-Version', (string) $dataVersion);
+            $response->headers->set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
+
+            return $response;
+        }
+
+        $response = $next($request);
+
         $response->headers->set('ETag', $etag);
         $response->headers->set('X-Data-Version', (string) $dataVersion);
         $response->headers->set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
-
-        $ifNoneMatch = $request->headers->get('If-None-Match');
-        if ($ifNoneMatch !== null && trim($ifNoneMatch) === $etag) {
-            $response->setStatusCode(304);
-            $response->setContent(null);
-        }
 
         return $response;
     }

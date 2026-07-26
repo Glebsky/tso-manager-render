@@ -48,16 +48,7 @@ class MarketAnalyticsController extends Controller
      */
     private function resolveServerId(Request $request): string
     {
-        $serverId = $request->input('server_id');
-        if (! empty($serverId)) {
-            return (string) $serverId;
-        }
-
-        $defaultServer = MarketServerConnection::whereNotNull('account_id')->value('server_id')
-            ?? MarketServerConnection::value('server_id')
-            ?? 'ru';
-
-        return (string) $defaultServer;
+        return $this->cacheService->resolveServerId($request->input('server_id'));
     }
 
     /**
@@ -459,6 +450,32 @@ class MarketAnalyticsController extends Controller
         return response()->json($targets);
     }
 
+    /**
+     * Get popular items per server and period, cached per server & period.
+     */
+    private function getPopularItems(string $serverId, ?Carbon $dateFilter, string $period): array
+    {
+        return $this->cacheService->remember($serverId, 'popular', ['period' => $period], 900, function () use ($serverId, $dateFilter) {
+            $popularQuery = MarketHistory::where('server_id', $serverId)
+                ->selectRaw('item_id, item_name, count(*) as offers_count, count(distinct player_id) as sellers_count, sum(volume) as total_volume');
+            if ($dateFilter) {
+                $popularQuery->where('collected_at', '>=', $dateFilter);
+            }
+
+            return $popularQuery->groupBy('item_id', 'item_name')
+                ->orderBy('offers_count', 'desc')
+                ->orderBy('total_volume', 'desc')
+                ->limit(10)
+                ->get()
+                ->map(function ($row) {
+                    $row->item_name = $this->resourceName($row->item_id, $row->item_name);
+
+                    return $row;
+                })
+                ->toArray();
+        });
+    }
+
     public function getAnalytics(Request $request): JsonResponse
     {
         $serverId = $this->resolveServerId($request);
@@ -475,9 +492,77 @@ class MarketAnalyticsController extends Controller
             default => null,
         };
 
-        // Determine dynamic group-by expression based on dataset date span
-        $groupByExpression = 'day';
-        if ($itemId && $targetItemId) {
+        if (empty($itemId) || empty($targetItemId)) {
+            $limit = (int) $request->input('limit', 100);
+            $page = (int) $request->input('page', 1);
+
+            $cachedOverview = $this->cacheService->remember($serverId, 'analytics_overview', ['period' => $period], 300, function () use ($serverId, $dateFilter, $period) {
+                $popular = $this->getPopularItems($serverId, $dateFilter, $period);
+
+                $activeOffersQuery = MarketOffer::where('server_id', $serverId)
+                    ->where('created_at', '>=', now()->subHours(6))
+                    ->orderBy('created_at', 'desc');
+
+                $allOffers = $activeOffersQuery->get()
+                    ->map(function ($offer) {
+                        $expiresAt = $offer->created_at->copy()->addHours(6);
+
+                        return [
+                            'id' => $offer->id,
+                            'server_id' => $offer->server_id,
+                            'offer_id' => $offer->offer_id,
+                            'sender_name' => $offer->sender_name,
+                            'item_id' => $offer->item_id,
+                            'item_name' => $this->resourceName($offer->item_id, $offer->item_name),
+                            'amount' => $offer->amount,
+                            'target_item_id' => $offer->target_item_id,
+                            'target_item_name' => $this->resourceName($offer->target_item_id, $offer->target_item_name),
+                            'target_amount' => $offer->target_amount,
+                            'price' => round((float) $offer->price, 4),
+                            'volume' => $offer->volume,
+                            'lots_remaining' => $offer->lots_remaining,
+                            'created_at' => $offer->created_at->toIso8601String(),
+                            'expires_at' => $expiresAt->toIso8601String(),
+                        ];
+                    })
+                    ->toArray();
+
+                return [
+                    'server_id' => $serverId,
+                    'popular' => $popular,
+                    'all_active_offers' => $allOffers,
+                    'total_active_count' => count($allOffers),
+                ];
+            });
+
+            $totalActive = $cachedOverview['total_active_count'];
+            $offset = max(0, ($page - 1) * $limit);
+            $slicedOffers = array_slice($cachedOverview['all_active_offers'], $offset, $limit);
+
+            $currentTime = now();
+            foreach ($slicedOffers as &$offer) {
+                if (isset($offer['expires_at'])) {
+                    $expiresAt = Carbon::parse($offer['expires_at']);
+                    $timeLeft = $currentTime->diffInSeconds($expiresAt, false);
+                    $offer['time_left'] = $timeLeft > 0 ? $timeLeft : 0;
+                }
+            }
+
+            return response()->json([
+                'server_id' => $cachedOverview['server_id'],
+                'popular' => $cachedOverview['popular'],
+                'active_offers' => $slicedOffers,
+                'total_active_count' => $totalActive,
+                'page' => $page,
+                'has_more' => ($offset + $limit) < $totalActive,
+            ]);
+        }
+
+        $pairPayload = $this->cacheService->remember($serverId, 'analytics_pair', ['item_id' => $itemId, 'target_item_id' => $targetItemId, 'period' => $period], 900, function () use ($serverId, $itemId, $targetItemId, $dateFilter, $period) {
+            $popular = $this->getPopularItems($serverId, $dateFilter, $period);
+
+            // Determine dynamic group-by expression based on dataset date span
+            $groupByExpression = 'day';
             $minDateStr = MarketHistory::where('server_id', $serverId)
                 ->where('item_id', $itemId)
                 ->where('target_item_id', $targetItemId)
@@ -508,88 +593,7 @@ class MarketAnalyticsController extends Controller
             } else {
                 $groupByExpression = ($period === '1d') ? 'hour' : 'day';
             }
-        }
 
-        // 1. Most popular items for this server
-        $popularQuery = MarketHistory::where('server_id', $serverId)
-            ->selectRaw('item_id, item_name, count(*) as offers_count, count(distinct player_id) as sellers_count, sum(volume) as total_volume');
-        if ($dateFilter) {
-            $popularQuery->where('collected_at', '>=', $dateFilter);
-        }
-        $popular = $popularQuery->groupBy('item_id', 'item_name')
-            ->orderBy('offers_count', 'desc')
-            ->orderBy('total_volume', 'desc')
-            ->limit(10)
-            ->get()
-            ->map(function ($row) {
-                $row->item_name = $this->resourceName($row->item_id, $row->item_name);
-
-                return $row;
-            });
-
-        if (empty($itemId) || empty($targetItemId)) {
-            $limit = (int) $request->input('limit', 100);
-            $page = (int) $request->input('page', 1);
-
-            $payload = $this->cacheService->remember($serverId, 'analytics_overview', ['period' => $period, 'limit' => $limit, 'page' => $page], 300, function () use ($serverId, $popular, $limit, $page) {
-                $offset = ($page - 1) * $limit;
-
-                $activeOffersQuery = MarketOffer::where('server_id', $serverId)
-                    ->where('created_at', '>=', now()->subHours(6))
-                    ->orderBy('created_at', 'desc');
-                $totalActive = $activeOffersQuery->count();
-
-                $activeOffers = $activeOffersQuery->offset($offset)
-                    ->limit($limit)
-                    ->get()
-                    ->map(function ($offer) {
-                        $expiresAt = $offer->created_at->copy()->addHours(6);
-
-                        return [
-                            'id' => $offer->id,
-                            'server_id' => $offer->server_id,
-                            'offer_id' => $offer->offer_id,
-                            'sender_name' => $offer->sender_name,
-                            'item_id' => $offer->item_id,
-                            'item_name' => $this->resourceName($offer->item_id, $offer->item_name),
-                            'amount' => $offer->amount,
-                            'target_item_id' => $offer->target_item_id,
-                            'target_item_name' => $this->resourceName($offer->target_item_id, $offer->target_item_name),
-                            'target_amount' => $offer->target_amount,
-                            'price' => round((float) $offer->price, 4),
-                            'volume' => $offer->volume,
-                            'lots_remaining' => $offer->lots_remaining,
-                            'created_at' => $offer->created_at->toIso8601String(),
-                            'expires_at' => $expiresAt->toIso8601String(),
-                        ];
-                    })
-                    ->toArray();
-
-                return [
-                    'server_id' => $serverId,
-                    'popular' => $popular->toArray(),
-                    'active_offers' => $activeOffers,
-                    'total_active_count' => $totalActive,
-                    'page' => $page,
-                    'has_more' => ($offset + $limit) < $totalActive,
-                ];
-            });
-
-            $currentTime = now();
-            if (isset($payload['active_offers']) && is_array($payload['active_offers'])) {
-                foreach ($payload['active_offers'] as &$offer) {
-                    if (isset($offer['expires_at'])) {
-                        $expiresAt = Carbon::parse($offer['expires_at']);
-                        $timeLeft = $currentTime->diffInSeconds($expiresAt, false);
-                        $offer['time_left'] = $timeLeft > 0 ? $timeLeft : 0;
-                    }
-                }
-            }
-
-            return response()->json($payload);
-        }
-
-        $pairPayload = $this->cacheService->remember($serverId, 'analytics_pair', ['item_id' => $itemId, 'target_item_id' => $targetItemId, 'period' => $period], 900, function () use ($serverId, $itemId, $targetItemId, $dateFilter, $groupByExpression, $popular) {
             // 2. Active & closed history stats for selected server
             $statsQuery = MarketHistory::where('server_id', $serverId)
                 ->where('item_id', $itemId)
@@ -742,7 +746,7 @@ class MarketAnalyticsController extends Controller
 
             return [
                 'server_id' => $serverId,
-                'popular' => $popular->toArray(),
+                'popular' => $popular,
                 'stats' => [
                     'average' => round((float) ($stats->average_price ?? 0), 2),
                     'minimum' => round((float) ($stats->min_price ?? 0), 2),

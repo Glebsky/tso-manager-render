@@ -10,6 +10,20 @@ use Illuminate\Support\Facades\Cache;
 class MarketCacheService
 {
     /**
+     * Resolve target server_id from string input or fallback to first available.
+     */
+    public function resolveServerId(?string $serverId = null): string
+    {
+        if (! empty($serverId)) {
+            return $serverId;
+        }
+
+        return (string) (\App\Models\MarketServerConnection::whereNotNull('account_id')->value('server_id')
+            ?? \App\Models\MarketServerConnection::value('server_id')
+            ?? 'ru');
+    }
+
+    /**
      * Get current data version for a given server.
      */
     public function dataVersion(string $serverId): int
@@ -18,10 +32,13 @@ class MarketCacheService
     }
 
     /**
-     * Increment data version for a server after successful sync or update.
+     * Increment data version for a server after successful sync or update,
+     * and forget all previous cached keys registered for this server.
      */
     public function bumpDataVersion(string $serverId): int
     {
+        $this->forgetRegisteredKeys($serverId);
+
         $key = $this->versionKey($serverId);
         if (! Cache::has($key)) {
             Cache::forever($key, 1);
@@ -39,6 +56,8 @@ class MarketCacheService
         $locale = (string) app()->getLocale();
         $paramsHash = md5((string) json_encode($this->canonicalizeParams($params)));
         $cacheKey = "market:v{$version}:{$serverId}:{$locale}:{$endpoint}:{$paramsHash}";
+
+        $this->registerKey($serverId, $cacheKey);
 
         return Cache::remember($cacheKey, $ttlSeconds, $callback);
     }
@@ -58,6 +77,36 @@ class MarketCacheService
     private function versionKey(string $serverId): string
     {
         return "market:data_version:{$serverId}";
+    }
+
+    private function keysListKey(string $serverId): string
+    {
+        return "market:keys:{$serverId}";
+    }
+
+    private function registerKey(string $serverId, string $cacheKey): void
+    {
+        $listKey = $this->keysListKey($serverId);
+        $keys = Cache::get($listKey, []);
+        if (! is_array($keys)) {
+            $keys = [];
+        }
+        if (! in_array($cacheKey, $keys, true)) {
+            $keys[] = $cacheKey;
+            Cache::forever($listKey, $keys);
+        }
+    }
+
+    private function forgetRegisteredKeys(string $serverId): void
+    {
+        $listKey = $this->keysListKey($serverId);
+        $keys = Cache::get($listKey, []);
+        if (is_array($keys)) {
+            foreach ($keys as $key) {
+                Cache::forget($key);
+            }
+        }
+        Cache::forget($listKey);
     }
 
     /**
