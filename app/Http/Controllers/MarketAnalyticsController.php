@@ -148,6 +148,24 @@ class MarketAnalyticsController extends Controller
         return response()->json($data);
     }
 
+    public function getVersion(Request $request): JsonResponse
+    {
+        $serverId = $this->resolveServerId($request);
+        $dataVersion = $this->cacheService->dataVersion($serverId);
+
+        $response = response()->json([
+            'server_id' => $serverId,
+            'data_version' => $dataVersion,
+        ]);
+
+        $response->headers->set('X-Data-Version', (string) $dataVersion);
+        $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+        $response->headers->set('Pragma', 'no-cache');
+        $response->headers->set('Expires', '0');
+
+        return $response;
+    }
+
     public function storeServer(Request $request): JsonResponse
     {
         $validated = $request->validate([

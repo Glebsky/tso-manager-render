@@ -1534,18 +1534,24 @@ export default {
             loading.value = true;
             try {
                 const params = { server_id: selectedServerId.value };
-                const goodsData = await cachedGet('/api/market/goods', { params, ttlMs: 1800000, ...options });
-                goods.value = goodsData || [];
+                const applyGoods = (data) => { goods.value = data || []; };
+                const applyAnalytics = (data) => {
+                    popular.value = data.popular || [];
+                    activeOffers.value = data.active_offers || [];
+                    totalActiveCount.value = data.total_active_count || 0;
+                    activeOffersPage.value = 1;
+                    hasMoreActiveOffers.value = data.has_more || false;
+                };
+                const applyArbitrage = (data) => { arbitrageLoops.value = data || []; };
 
-                const analyticsData = await cachedGet('/api/market/analytics', { params, ttlMs: 300000, ...options });
-                popular.value = analyticsData.popular || [];
-                activeOffers.value = analyticsData.active_offers || [];
-                totalActiveCount.value = analyticsData.total_active_count || 0;
-                activeOffersPage.value = 1;
-                hasMoreActiveOffers.value = analyticsData.has_more || false;
+                const goodsData = await cachedGet('/api/market/goods', { params, ttlMs: 1800000, onRevalidate: applyGoods, ...options });
+                applyGoods(goodsData);
 
-                const arbitrageData = await cachedGet('/api/market/arbitrage', { params, ttlMs: 900000, ...options });
-                arbitrageLoops.value = arbitrageData || [];
+                const analyticsData = await cachedGet('/api/market/analytics', { params, ttlMs: 60000, onRevalidate: applyAnalytics, ...options });
+                applyAnalytics(analyticsData);
+
+                const arbitrageData = await cachedGet('/api/market/arbitrage', { params, ttlMs: 300000, onRevalidate: applyArbitrage, ...options });
+                applyArbitrage(arbitrageData);
 
                 startCountdown();
                 await loadSyncLogs(1);
@@ -1726,6 +1732,14 @@ export default {
 
             loadingChart.value = true;
             try {
+                const applyPairAnalytics = (data) => {
+                    stats.value = data.stats || null;
+                    history.value = data.history || [];
+                    activeInfo.value = data.active_info || null;
+                    periodInfo.value = data.period_info || null;
+                    mirroredStats.value = data.mirrored_stats || null;
+                    mirroredHistory.value = data.mirrored_history || null;
+                };
                 const data = await cachedGet('/api/market/analytics', {
                     params: {
                         server_id: selectedServerId.value,
@@ -1733,15 +1747,11 @@ export default {
                         target_item_id: selectedTarget.value,
                         period: selectedPeriod.value
                     },
-                    ttlMs: 900000,
+                    ttlMs: 60000,
+                    onRevalidate: applyPairAnalytics,
                     ...options
                 });
-                stats.value = data.stats || null;
-                history.value = data.history || [];
-                activeInfo.value = data.active_info || null;
-                periodInfo.value = data.period_info || null;
-                mirroredStats.value = data.mirrored_stats || null;
-                mirroredHistory.value = data.mirrored_history || null;
+                applyPairAnalytics(data);
             } catch (e) {
                 showToast(t('market.charts_failed'), 'error');
             } finally {

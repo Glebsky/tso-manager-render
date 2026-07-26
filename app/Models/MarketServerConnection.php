@@ -21,10 +21,12 @@ class MarketServerConnection extends Model
         'sync_status',
         'last_synced_at',
         'last_error',
+        'data_version',
     ];
 
     protected $casts = [
         'last_synced_at' => 'datetime',
+        'data_version' => 'integer',
     ];
 
     public function account(): BelongsTo

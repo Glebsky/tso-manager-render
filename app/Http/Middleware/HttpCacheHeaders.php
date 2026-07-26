@@ -31,6 +31,7 @@ class HttpCacheHeaders
         $serverId = $this->cacheService->resolveServerId($request->input('server_id'));
         $endpoint = $request->path();
         $params = $request->query();
+        $cacheControl = $this->cacheControlValue($request);
 
         $etag = $this->cacheService->generateETag($serverId, $endpoint, $params);
         $dataVersion = $this->cacheService->dataVersion($serverId);
@@ -40,7 +41,7 @@ class HttpCacheHeaders
             $response = new Response(null, 304);
             $response->headers->set('ETag', $etag);
             $response->headers->set('X-Data-Version', (string) $dataVersion);
-            $response->headers->set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
+            $response->headers->set('Cache-Control', $cacheControl);
 
             return $response;
         }
@@ -49,8 +50,17 @@ class HttpCacheHeaders
 
         $response->headers->set('ETag', $etag);
         $response->headers->set('X-Data-Version', (string) $dataVersion);
-        $response->headers->set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
+        $response->headers->set('Cache-Control', $cacheControl);
 
         return $response;
+    }
+
+    private function cacheControlValue(Request $request): string
+    {
+        if ($request->is('api/public/market/*')) {
+            return 'public, max-age=60, stale-while-revalidate=240';
+        }
+
+        return 'private, max-age=60, stale-while-revalidate=240';
     }
 }

@@ -67,10 +67,17 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/market/settings', [MarketAnalyticsController::class, 'getSettings']);
     Route::put('/market/settings', [MarketAnalyticsController::class, 'updateSettings']);
     Route::post('/market/sync', [MarketAnalyticsController::class, 'syncNow']);
-    Route::get('/market/goods', [MarketAnalyticsController::class, 'getGoods']);
-    Route::get('/market/targets', [MarketAnalyticsController::class, 'getTargets']);
-    Route::get('/market/analytics', [MarketAnalyticsController::class, 'getAnalytics']);
-    Route::get('/market/arbitrage', [MarketAnalyticsController::class, 'getArbitrage']);
+    Route::get('/market/version', [MarketAnalyticsController::class, 'getVersion']);
+    // Cached market data endpoints share the same HTTP cache contract as the
+    // public API: ETag + X-Data-Version drive client-side (localStorage SWR)
+    // and browser cache invalidation. Live endpoints (servers, settings,
+    // logs) intentionally stay uncached.
+    Route::middleware(\App\Http\Middleware\HttpCacheHeaders::class)->group(function () {
+        Route::get('/market/goods', [MarketAnalyticsController::class, 'getGoods']);
+        Route::get('/market/targets', [MarketAnalyticsController::class, 'getTargets']);
+        Route::get('/market/analytics', [MarketAnalyticsController::class, 'getAnalytics']);
+        Route::get('/market/arbitrage', [MarketAnalyticsController::class, 'getArbitrage']);
+    });
     Route::get('/market/logs', [MarketAnalyticsController::class, 'getLogs']);
 });
 
@@ -79,10 +86,14 @@ Route::middleware('auth:sanctum')->group(function () {
 | Public Market Analytics API
 |--------------------------------------------------------------------------
 */
-Route::prefix('public/market')->middleware(\App\Http\Middleware\HttpCacheHeaders::class)->group(function () {
-    Route::get('/servers', [MarketAnalyticsController::class, 'getPublicServers']);
-    Route::get('/goods', [MarketAnalyticsController::class, 'getGoods']);
-    Route::get('/targets', [MarketAnalyticsController::class, 'getTargets']);
-    Route::get('/analytics', [MarketAnalyticsController::class, 'getAnalytics']);
-    Route::get('/arbitrage', [MarketAnalyticsController::class, 'getArbitrage']);
+Route::prefix('public/market')->group(function () {
+    Route::get('/version', [MarketAnalyticsController::class, 'getVersion']);
+
+    Route::middleware(\App\Http\Middleware\HttpCacheHeaders::class)->group(function () {
+        Route::get('/servers', [MarketAnalyticsController::class, 'getPublicServers']);
+        Route::get('/goods', [MarketAnalyticsController::class, 'getGoods']);
+        Route::get('/targets', [MarketAnalyticsController::class, 'getTargets']);
+        Route::get('/analytics', [MarketAnalyticsController::class, 'getAnalytics']);
+        Route::get('/arbitrage', [MarketAnalyticsController::class, 'getArbitrage']);
+    });
 });
