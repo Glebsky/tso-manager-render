@@ -11,7 +11,7 @@ services:
       - APP_ENV=production
       - APP_DEBUG=false
       - DB_HOST=postgres
-      - DB_DATABASE=tso_admin
+      - DB_DATABASE=tso_manager
       - DB_USERNAME=tso_admin
       - DB_PASSWORD=secret
       - REDIS_HOST=redis
@@ -41,7 +41,7 @@ services:
       - APP_ENV=production
       - APP_DEBUG=false
       - DB_HOST=postgres
-      - DB_DATABASE=tso_admin
+      - DB_DATABASE=tso_manager
       - DB_USERNAME=tso_admin
       - DB_PASSWORD=secret
       - REDIS_HOST=redis
@@ -61,7 +61,7 @@ services:
       - APP_ENV=production
       - APP_DEBUG=false
       - DB_HOST=postgres
-      - DB_DATABASE=tso_admin
+      - DB_DATABASE=tso_manager
       - DB_USERNAME=tso_admin
       - DB_PASSWORD=secret
       - REDIS_HOST=redis
@@ -72,6 +72,10 @@ services:
     restart: unless-stopped
 
   postgres:
+    environment:
+      POSTGRES_DB: tso_manager
+      POSTGRES_USER: tso_admin
+      POSTGRES_PASSWORD: secret
     restart: unless-stopped
 
   redis:

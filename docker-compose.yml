@@ -33,7 +33,7 @@ services:
     env_file: .env
     environment:
       - DB_HOST=postgres
-      - DB_DATABASE=tso_admin
+      - DB_DATABASE=tso_manager
       - DB_USERNAME=tso_admin
       - DB_PASSWORD=secret
       - REDIS_HOST=redis
@@ -141,7 +141,7 @@ services:
     env_file: .env
     environment:
       - DB_HOST=postgres
-      - DB_DATABASE=tso_admin
+      - DB_DATABASE=tso_manager
       - DB_USERNAME=tso_admin
       - DB_PASSWORD=secret
       - REDIS_HOST=redis
@@ -184,7 +184,7 @@ services:
     env_file: .env
     environment:
       - DB_HOST=postgres
-      - DB_DATABASE=tso_admin
+      - DB_DATABASE=tso_manager
       - DB_USERNAME=tso_admin
       - DB_PASSWORD=secret
       - REDIS_HOST=redis
