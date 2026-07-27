@@ -1,5 +1,6 @@
 services:
   app:
+    container_name: app
     build:
       context: .
       dockerfile: Dockerfile
@@ -44,6 +45,7 @@ services:
       - tso-network
 
   nginx:
+    container_name: nginx
     image: nginx:1.27-alpine
     ports:
       - "80:80"
@@ -61,6 +63,7 @@ services:
       retries: 3
 
   node:
+    container_name: node
     image: node:20-alpine
     working_dir: /var/www/html
     ports:
@@ -73,11 +76,12 @@ services:
       - tso-network
 
   postgres:
+    container_name: postgres
     image: postgres:17-alpine
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: tso_admin
+      POSTGRES_DB: tso_manager
       POSTGRES_USER: tso_admin
       POSTGRES_PASSWORD: secret
     volumes:
@@ -91,6 +95,7 @@ services:
       retries: 5
 
   redis:
+    container_name: redis
     image: redis:7-alpine
     ports:
       - "6379:6379"
@@ -106,6 +111,7 @@ services:
       retries: 5
 
   worker:
+    container_name: worker
     build:
       context: .
       dockerfile: Dockerfile
@@ -148,6 +154,7 @@ services:
     restart: unless-stopped
 
   scheduler:
+    container_name: scheduler
     build:
       context: .
       dockerfile: Dockerfile

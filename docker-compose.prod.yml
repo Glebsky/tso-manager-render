@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   app:
     build:
@@ -9,6 +7,18 @@ services:
     # Uses app_public volume to share public files with nginx
     volumes:
       - app_public:/var/www/html/public
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - DB_HOST=postgres
+      - DB_DATABASE=tso_admin
+      - DB_USERNAME=tso_admin
+      - DB_PASSWORD=secret
+      - REDIS_HOST=redis
+      - CACHE_DRIVER=redis
+      - QUEUE_CONNECTION=redis
+      - SESSION_DRIVER=redis
+      - LOG_CHANNEL=stderr
     restart: unless-stopped
 
   nginx:
@@ -26,10 +36,19 @@ services:
       context: .
       dockerfile: Dockerfile
       target: production
-    # In Compose V2, use !reset [] to clear volumes from base, or just mount dummy volume if !reset is unsupported.
-    # Here we specify an empty list. If your Compose version appends instead of overriding, 
-    # you may need to use `volumes: !reset []`
     volumes: []
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - DB_HOST=postgres
+      - DB_DATABASE=tso_admin
+      - DB_USERNAME=tso_admin
+      - DB_PASSWORD=secret
+      - REDIS_HOST=redis
+      - CACHE_DRIVER=redis
+      - QUEUE_CONNECTION=redis
+      - SESSION_DRIVER=redis
+      - LOG_CHANNEL=stderr
     restart: unless-stopped
 
   scheduler:
@@ -38,6 +57,18 @@ services:
       dockerfile: Dockerfile
       target: production
     volumes: []
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - DB_HOST=postgres
+      - DB_DATABASE=tso_admin
+      - DB_USERNAME=tso_admin
+      - DB_PASSWORD=secret
+      - REDIS_HOST=redis
+      - CACHE_DRIVER=redis
+      - QUEUE_CONNECTION=redis
+      - SESSION_DRIVER=redis
+      - LOG_CHANNEL=stderr
     restart: unless-stopped
 
   postgres:
