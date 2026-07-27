@@ -111,6 +111,74 @@ npm run build
 3. **Пингование шедулера TSO**:
    Команда `tso:run-scheduler` может быть запущена как демон или настроена в Laravel Scheduler (`app/Console/Kernel.php`).
 
+## Docker Development
+
+### Quick Start
+
+```bash
+# First-time setup
+make install
+
+# Or manually:
+cp .env.docker .env
+make build
+make up
+docker compose exec app php artisan key:generate
+docker compose exec app php artisan migrate
+```
+
+Visit `http://localhost` to access the application.
+
+### Services
+
+| Service | URL / Port | Description |
+|---|---|---|
+| **App** (PHP-FPM) | Internal :9000 | Laravel application |
+| **Nginx** | http://localhost:80 | Web server |
+| **Node** (Vite) | http://localhost:5173 | HMR dev server |
+| **PostgreSQL** | localhost:5432 | Database |
+| **Redis** | localhost:6379 | Cache / Queue / Sessions |
+| **Worker** | — | Queue worker |
+| **Scheduler** | — | Task scheduler |
+
+### Available Commands
+
+Run `make help` to see all commands:
+
+| Command | Description |
+|---|---|
+| `make install` | First-time setup |
+| `make up` | Start containers |
+| `make down` | Stop containers |
+| `make build` | Rebuild images |
+| `make fresh` | Full rebuild with migrate + seed |
+| `make shell` | Open app container shell |
+| `make test` | Run test suite |
+| `make lint` | Check code style |
+| `make analyse` | Run PHPStan |
+| `make logs` | Follow container logs |
+| `make prod-up` | Start production build |
+
+### Production
+
+```bash
+make prod-up
+```
+
+This uses `docker-compose.prod.yml` override which:
+- Builds optimized production images (no dev dependencies)
+- Bakes assets into the image (no Vite dev server)
+- Enables restart policies
+- Adds healthchecks
+
+### Troubleshooting
+
+**Port conflicts with OSPanel**: Stop OSPanel services before starting Docker, or change ports in `docker-compose.yml`.
+
+**Permission issues**: Run `docker compose exec app chown -R www-data:www-data storage bootstrap/cache`.
+
+**Fresh database**: Run `make fresh` to destroy volumes and rebuild everything.
+
 ## Архитектура системы
 
 Полная визуализированная схема зависимостей фронтенда, контроллеров, сервисов, фоновых Python-парсеров и внешних API Ubisoft/TSO доступна на Foglamp:

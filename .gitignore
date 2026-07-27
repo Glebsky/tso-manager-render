@@ -20,3 +20,6 @@ yarn-error.log
 /.mimocode
 /docs/foundbugs.md
 /.foglamp
+
+# Docker
+/docker/php/error.log
