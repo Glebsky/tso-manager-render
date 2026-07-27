@@ -35,7 +35,7 @@ class AuthController extends Controller
 
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
             throw ValidationException::withMessages([
-                'email' => 'Неверный email или пароль.',
+                'email' => __('auth.failed'),
             ]);
         }
 
@@ -49,7 +49,7 @@ class AuthController extends Controller
         if (User::query()->exists()) {
             return redirect()
                 ->route('login')
-                ->with('status', 'Администратор уже зарегистрирован. Войдите в систему.');
+                ->with('status', __('ui.auth.admin_registered'));
         }
 
         return view('app');
@@ -68,7 +68,7 @@ class AuthController extends Controller
             // being created by simultaneous registration requests.
             if (User::query()->lockForUpdate()->exists()) {
                 throw ValidationException::withMessages([
-                    'email' => 'Регистрация закрыта: администратор уже создан.',
+                    'email' => __('ui.auth.registration_closed'),
                 ]);
             }
 

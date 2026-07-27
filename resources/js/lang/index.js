@@ -55,6 +55,9 @@ export function setLocale(newLocale) {
         if (typeof localStorage !== 'undefined') {
             localStorage.setItem('app_locale', resolved);
         }
+        if (typeof document !== 'undefined') {
+            document.cookie = `app_locale=${resolved}; path=/; max-age=31536000; SameSite=Lax`;
+        }
         if (typeof window !== 'undefined') {
             window.location.reload();
         }

@@ -7,6 +7,11 @@
             <div class="liquid-orb liquid-orb--three"></div>
         </div>
 
+        <!-- Language Switcher in Upper Right Corner -->
+        <div class="absolute top-5 right-5 z-50">
+            <LanguageSwitcher />
+        </div>
+
         <main class="relative z-10 w-full max-w-md px-4 py-8 sm:px-6">
             <div class="liquid-card px-5 py-6 sm:px-8 sm:py-8">
                 <header class="mb-6 text-center">
@@ -86,7 +91,7 @@
                             for="email"
                             class="mb-2 block text-sm font-medium text-white/70"
                         >
-                            Email
+                            {{ t('register.email') }}
                         </label>
 
                         <input
@@ -181,9 +186,13 @@
 <script>
 import { ref } from 'vue';
 import axios from 'axios';
+import LanguageSwitcher from '../components/LanguageSwitcher.vue';
 
 export default {
     name: 'Register',
+    components: {
+        LanguageSwitcher
+    },
     setup() {
         const form = ref({
             name: '',
