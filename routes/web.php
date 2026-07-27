@@ -20,6 +20,8 @@ Route::get('/public/market', function () {
     return redirect('/');
 });
 
+Route::get('/healthz', fn () => response('ok', 200));
+
 /*
 |--------------------------------------------------------------------------
 | Administration Routes (/admin/*)
