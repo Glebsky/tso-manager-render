@@ -20,6 +20,15 @@ fi
 php artisan config:clear || true
 php artisan cache:clear || true
 
+# Auto-generate APP_KEY if not specified in environment
+if [ -z "$APP_KEY" ]; then
+    echo "APP_KEY is not specified. Generating a temporary key for this container session..."
+    GENERATED_KEY=$(php -r "echo 'base64:' . base64_encode(random_bytes(32));")
+    export APP_KEY="$GENERATED_KEY"
+    # Update Laravel config directly so it takes effect even if config is cached later
+    php artisan config:clear || true
+fi
+
 # Production-only optimizations and migrations
 if [ "$APP_ENV" = "production" ]; then
     echo "Optimizing Laravel for Production..."
