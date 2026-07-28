@@ -447,7 +447,7 @@
                     </div>
 
                     <div v-show="showArbitrageSchemes" class="space-y-4 max-h-[500px] overflow-y-auto pr-2 scrollbar-thin">
-                        <div v-for="(scheme, idx) in arbitrageLoops" :key="'scheme-'+idx" 
+                        <div v-for="(scheme, idx) in arbitrageLoops" :key="'scheme-'+idx"
                              class="p-4 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-all flex flex-col gap-4">
                             <!-- Card Header (Type & Profit) -->
                             <div class="flex items-center justify-between flex-wrap gap-2 border-b border-white/5 pb-2">
@@ -1051,6 +1051,10 @@ export default {
                 case 'FR': return '🇫🇷';
                 case 'PL': return '🇵🇱';
                 case 'ES': return '🇪🇸';
+                case 'IT': return '🇮🇹'; // Италия
+                case 'NL': return '🇳🇱'; // Нидерланды
+                case 'CZ': return '🇨🇿'; // Чехия
+                case 'RO': return '🇷🇴'; // Румыния
                 default: return '🌐';
             }
         };
@@ -1128,7 +1132,7 @@ export default {
         const selectedItem = ref('');
         const selectedTarget = ref('');
         const calcAmount = ref(100);
-        
+
         const settingsForm = ref({
             sync_interval: '15',
             custom_interval_minutes: 15,
