@@ -152,7 +152,7 @@ export default {
         });
 
         const avatarUrl = computed(() => {
-            const avatarId = zoneObject.value?.avatarId;
+            const avatarId = localAccount.value.avatar_id ?? zoneObject.value?.avatarId;
             if (!avatarId) return null;
             const idNum = parseInt(avatarId);
             if (idNum >= 1 && idNum <= 60) {
@@ -173,6 +173,9 @@ export default {
         });
 
         const buildingCount = computed(() => {
+            if (localAccount.value.building_count !== undefined && localAccount.value.building_count !== null) {
+                return localAccount.value.building_count;
+            }
             return zoneObject.value && zoneObject.value.buildings
                 ? zoneObject.value.buildings.length
                 : null;
@@ -257,7 +260,7 @@ export default {
         });
 
         const serverName = computed(() => {
-            return zoneObject.value?.gameWorldName || null;
+            return localAccount.value.server_name || zoneObject.value?.gameWorldName || null;
         });
 
         return {

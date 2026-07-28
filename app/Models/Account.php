@@ -27,11 +27,44 @@ class Account extends Model
     protected $appends = [
         'server_name',
         'is_market_connected',
+        'avatar_id',
+        'building_count',
     ];
 
     protected $hidden = [
         'password',
+        'zone_data',
     ];
+
+    public function getAvatarIdAttribute(): ?int
+    {
+        if (empty($this->zone_data)) {
+            return null;
+        }
+
+        try {
+            $data = is_array($this->zone_data) ? $this->zone_data : json_decode($this->zone_data, true);
+
+            return isset($data['avatarId']) ? (int) $data['avatarId'] : null;
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+    public function getBuildingCountAttribute(): ?int
+    {
+        if (empty($this->zone_data)) {
+            return null;
+        }
+
+        try {
+            $data = is_array($this->zone_data) ? $this->zone_data : json_decode($this->zone_data, true);
+
+            return isset($data['buildings']) && is_array($data['buildings']) ? count($data['buildings']) : null;
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
 
     public function getIsMarketConnectedAttribute(): bool
     {

@@ -13,7 +13,7 @@ class LogController extends Controller
      */
     public function index(Request $request)
     {
-        $query = BotLog::with('account')->latest('created_at');
+        $query = BotLog::with('account:id,username,nickname')->latest('created_at');
 
         if ($request->filled('account_id')) {
             $query->where('account_id', $request->input('account_id'));
@@ -24,7 +24,7 @@ class LogController extends Controller
         }
 
         $logs = $query->paginate(100);
-        $accounts = Account::orderBy('username')->get();
+        $accounts = Account::select('id', 'username', 'nickname')->orderBy('username')->get();
 
         return response()->json([
             'logs' => $logs,

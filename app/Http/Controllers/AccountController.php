@@ -63,6 +63,8 @@ class AccountController extends Controller
      */
     public function show(Account $account)
     {
+        $account->makeVisible('zone_data');
+
         return response()->json($account);
     }
 
@@ -93,18 +95,25 @@ class AccountController extends Controller
     {
         try {
             $zoneData = $syncService->sync($account);
+            $freshAccount = $account->fresh();
+            $freshAccount->makeVisible('zone_data');
 
             return response()->json([
                 'success' => true,
                 'message' => 'Zone synced successfully.',
-                'account' => $account->fresh(),
+                'account' => $freshAccount,
                 'zone_data' => $zoneData,
             ]);
         } catch (Exception $e) {
+            $freshAccount = $account->fresh();
+            if ($freshAccount) {
+                $freshAccount->makeVisible('zone_data');
+            }
+
             return response()->json([
                 'success' => false,
                 'message' => 'Sync failed: '.$e->getMessage(),
-                'account' => $account->fresh(),
+                'account' => $freshAccount,
             ], 500);
         }
     }

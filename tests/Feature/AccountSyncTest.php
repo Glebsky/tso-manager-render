@@ -179,4 +179,36 @@ class AccountSyncTest extends TestCase
         // Lock must be released, so we can acquire it again
         $this->assertTrue(Cache::add("account_sync_lock:{$account->id}", true, 300));
     }
+
+    public function test_zone_data_is_hidden_by_default_in_json_and_visible_when_explicit()
+    {
+        $account = Account::create([
+            'username' => 'test_user',
+            'password' => 'secret',
+            'region' => 'ru',
+            'nickname' => 'test_user',
+            'zone_data' => json_encode([
+                'avatarId' => 5,
+                'gameWorldName' => 'Tutum',
+                'buildings' => [['buildingName' => 'House']],
+            ]),
+        ]);
+
+        $array = $account->toArray();
+        $this->assertArrayNotHasKey('zone_data', $array);
+        $this->assertEquals(5, $array['avatar_id']);
+        $this->assertEquals(1, $array['building_count']);
+        $this->assertEquals('Tutum', $array['server_name']);
+
+        $account->makeVisible('zone_data');
+        $visibleArray = $account->toArray();
+        $this->assertArrayHasKey('zone_data', $visibleArray);
+
+        $response = $this->getJson('/api/dashboard');
+        $response->assertStatus(200);
+        $response->assertJsonMissingPath('accounts.0.zone_data');
+        $response->assertJsonPath('accounts.0.avatar_id', 5);
+        $response->assertJsonPath('accounts.0.building_count', 1);
+        $response->assertJsonPath('accounts.0.server_name', 'Tutum');
+    }
 }

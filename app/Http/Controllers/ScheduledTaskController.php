@@ -16,8 +16,9 @@ class ScheduledTaskController extends Controller
      */
     public function index()
     {
-        $tasks = ScheduledTask::with('account')->orderBy('id', 'desc')->get();
+        $tasks = ScheduledTask::with('account:id,username,nickname,region,status')->orderBy('id', 'desc')->get();
         $accounts = Account::orderBy('username')->get();
+        $accounts->makeVisible('zone_data');
 
         return response()->json([
             'tasks' => $tasks,
@@ -230,7 +231,7 @@ class ScheduledTaskController extends Controller
         ExecuteScheduledTaskJob::dispatch($task->id, $token);
 
         $task->refresh();
-        $task->load('account');
+        $task->load('account:id,username,nickname,region,status');
 
         $isQueuedOrRunning = in_array($task->status, ['queued', 'running'], true);
 
@@ -252,7 +253,7 @@ class ScheduledTaskController extends Controller
      */
     public function status(ScheduledTask $task)
     {
-        $task->load('account');
+        $task->load('account:id,username,nickname,region,status');
 
         $isQueuedOrRunning = in_array($task->status, ['queued', 'running'], true);
 

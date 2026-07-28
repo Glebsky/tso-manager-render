@@ -11,7 +11,7 @@ class DashboardController extends Controller
     public function index()
     {
         $accounts = Account::withCount('scheduledTasks')->get();
-        $logs = BotLog::with('account')
+        $logs = BotLog::with('account:id,username,nickname')
             ->latest('created_at')
             ->limit(50)
             ->get();
