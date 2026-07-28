@@ -306,7 +306,7 @@ class ScheduledTaskController extends Controller
                 $availableAmount = $buff['amount'] ?? 0;
                 if ($availableAmount < $amount) {
                     throw \Illuminate\Validation\ValidationException::withMessages([
-                        $prefix.'amount' => ["Недостаточно баффов в звездном меню (доступно: {$availableAmount}, требуется: {$amount})."],
+                        $prefix.'amount' => [__('tasks.error.insufficient_buffs', ['available' => $availableAmount, 'required' => $amount])],
                     ]);
                 }
                 break;
@@ -315,7 +315,7 @@ class ScheduledTaskController extends Controller
 
         if (! $buffFound) {
             throw \Illuminate\Validation\ValidationException::withMessages([
-                $prefix.'unique_id1' => ['Указанный бафф не найден в инвентаре звездного меню.'],
+                $prefix.'unique_id1' => [__('tasks.error.buff_not_found')],
             ]);
         }
 
@@ -324,7 +324,7 @@ class ScheduledTaskController extends Controller
 
             if ($friendId < 1) {
                 throw \Illuminate\Validation\ValidationException::withMessages([
-                    $prefix.'target_player_id' => ['Неверный ID друга.'],
+                    $prefix.'target_player_id' => [__('tasks.error.invalid_friend_id')],
                 ]);
             }
 
@@ -339,7 +339,7 @@ class ScheduledTaskController extends Controller
 
             if (! $friendFound) {
                 throw \Illuminate\Validation\ValidationException::withMessages([
-                    $prefix.'target_player_id' => ['Игрок отсутствует в вашем списке друзей.'],
+                    $prefix.'target_player_id' => [__('tasks.error.friend_not_in_list')],
                 ]);
             }
 
@@ -357,12 +357,12 @@ class ScheduledTaskController extends Controller
                 }
                 if (! $gridFound) {
                     throw \Illuminate\Validation\ValidationException::withMessages([
-                        $prefix.'grid' => ["Здание с сеткой #{$payload['grid']} не найдено в зоне друга."],
+                        $prefix.'grid' => [__('tasks.error.friend_building_not_found_grid', ['grid' => $payload['grid']])],
                     ]);
                 }
             } else {
                 throw \Illuminate\Validation\ValidationException::withMessages([
-                    $prefix.'target_player_id' => ['Зона друга не загружена или истек срок кеша. Пожалуйста, обновите ее в интерфейсе.'],
+                    $prefix.'target_player_id' => [__('tasks.error.friend_zone_not_cached')],
                 ]);
             }
         }

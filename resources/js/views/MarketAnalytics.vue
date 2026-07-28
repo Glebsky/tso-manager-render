@@ -1229,12 +1229,12 @@ export default {
         const goods = ref([]);
         const targets = ref([]);
 
-        // Единая точка перевода названий предметов рынка (общая с публичной
-        // страницей): см. resources/js/lang/gameNames.js -> marketItemName().
-        const getItemName = marketItemName;
+        // Single source of truth for market item names (shared with public portal):
+        // see resources/js/lang/gameNames.js -> marketItemName().
+        const getItemName = (name, id) => marketItemName(name, id);
 
-        // Полный каталог торгуемых ресурсов из игрового XML, объединённый с товарами с сервера:
-        // ресурсы без активных предложений тоже отображаются (приглушёнными), чтобы был виден вес�� рынок.
+        // Complete catalog of tradable resources from game XML combined with server items:
+        // resources without active offers are also displayed (dimmed) to show the whole market.
         const allGoods = computed(() => {
             const known = new Set(goods.value.map(g => g.item_id));
             const extras = TRADABLE_RESOURCES

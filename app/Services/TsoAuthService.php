@@ -96,7 +96,7 @@ class TsoAuthService
      *
      * Exactly mirrors the C# client's CipMigratedAuth() flow:
      * 1. POST /ru/api/user/login with name + password
-     * 2. POST /ru/главная-страница with start=1
+     * 2. POST /ru/main-page (главная-страница) with start=1
      * 3. GET /ru/play → parse HTML for tokens
      *
      * The C# client uses BouncyCastle TLS for these requests (useBC=true),

@@ -87,7 +87,7 @@ class ZoneParserService
         }
 
         $mapping = [
-            // WarehouseTab1 (CL1) — Базовые
+            // WarehouseTab1 (CL1) — Basic
             'tree' => 'WarehouseTab1',
             'wood' => 'WarehouseTab1',
             'plank' => 'WarehouseTab1',
@@ -102,7 +102,7 @@ class ZoneParserService
             'starfallstardust' => 'WarehouseTab1',
             'starfallstarshards' => 'WarehouseTab1',
 
-            // WarehouseTab2 (CL2) — Улучшенные
+            // WarehouseTab2 (CL2) — Advanced
             'coal' => 'WarehouseTab2',
             'bronzeore' => 'WarehouseTab2',
             'bronze' => 'WarehouseTab2',
@@ -124,7 +124,7 @@ class ZoneParserService
             'grain' => 'WarehouseTab2',
             'brew' => 'WarehouseTab2',
 
-            // WarehouseTab3 (CL3) — Усовершенствованные
+            // WarehouseTab3 (CL3) — Superior
             'realwood' => 'WarehouseTab3',
             'realplank' => 'WarehouseTab3',
             'ironore' => 'WarehouseTab3',
@@ -153,7 +153,7 @@ class ZoneParserService
             'letter' => 'WarehouseTab3',
             'tome' => 'WarehouseTab3',
 
-            // WarehouseTab4 (CL4) — Искусные
+            // WarehouseTab4 (CL4) — Expert
             'exoticwood' => 'WarehouseTab4',
             'exoticplank' => 'WarehouseTab4',
             'titaniumore' => 'WarehouseTab4',
@@ -180,7 +180,7 @@ class ZoneParserService
             'seed' => 'WarehouseTab4',
             'damascenesword' => 'WarehouseTab4',
 
-            // WarehouseTab8 (CL5) — Элита
+            // WarehouseTab8 (CL5) — Elite
             'mahoganywood' => 'WarehouseTab8',
             'mahoganyplank' => 'WarehouseTab8',
             'platinumore' => 'WarehouseTab8',
@@ -195,7 +195,7 @@ class ZoneParserService
             'archebuse' => 'WarehouseTab8',
             'mortar' => 'WarehouseTab8',
 
-            // WarehouseTab6 (Event) — Событие
+            // WarehouseTab6 (Event) — Event
             'rednose' => 'WarehouseTab6',
             'eventresource' => 'WarehouseTab6',
             'emeventresource' => 'WarehouseTab6',
@@ -208,7 +208,7 @@ class ZoneParserService
             'guildfestcommendation' => 'WarehouseTab6',
             'adventurerelics' => 'WarehouseTab6',
 
-            // WarehouseTab5 (DEF_MODE / Military) — Войска
+            // WarehouseTab5 (DEF_MODE / Military) — Troops
             'defensepoint' => 'WarehouseTab5',
         ];
 

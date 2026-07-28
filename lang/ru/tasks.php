@@ -12,6 +12,12 @@ return [
         'friend_building_not_found' => 'Шаг не выполнен: здание Grid #:grid не найдено в зоне :friendName',
         'server_error' => 'Код ошибки сервера :errorCode: :errorMsg',
         'unknown_action_type' => 'Неизвестный тип действия: :taskType',
+        'insufficient_buffs' => 'Недостаточно баффов в звездном меню (доступно: :available, требуется: :required).',
+        'buff_not_found' => 'Указанный бафф не найден в инвентаре звездного меню.',
+        'invalid_friend_id' => 'Неверный ID друга.',
+        'friend_not_in_list' => 'Игрок отсутствует в вашем списке друзей.',
+        'friend_building_not_found_grid' => 'Здание с сеткой #:grid не найдено в зоне друга.',
+        'friend_zone_not_cached' => 'Зона друга не загружена или истек срок кеша. Пожалуйста, обновите ее в интерфейсе.',
     ],
     'step' => [
         'skipped' => 'Шаг :step [:type]: пропущен (уже выполнен)',

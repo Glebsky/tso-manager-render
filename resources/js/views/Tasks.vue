@@ -1001,13 +1001,13 @@ export default {
         const taskType = ref('sequence');
         const runAtTime = ref('');
 
-        // Новые поля планирования
+        // New scheduling fields
         const scheduleType = ref('daily');
         const runAtDatetime = ref('');
         const intervalHours = ref(0);
         const intervalMinutes = ref(0);
 
-        // Серии действий
+        // Action series
         const sequenceActions = ref([]);
         const stepActionType = ref('stop_production');
         const stepDelay = ref(5);
@@ -1051,7 +1051,7 @@ export default {
         const zone = ref({ buildings: [], specialists: [], buffs: [] });
         const payload = ref({});
 
-        // Состояние модальных окон
+        // Modal state
         const showBuildingModal = ref(false);
         const showSpecialistModal = ref(false);
         const showBuffModal = ref(false);
@@ -1080,7 +1080,7 @@ export default {
         const showFriendBuildingModal = ref(false);
         const friendBuildingSearch = ref('');
 
-        // Хелперы выбора зданий (мультиселект)
+        // Multi-select building helpers
         const getBuildingTargetId = (buildingGrid, scope = 'self', friendId = null) => {
             return scope === 'friend' ? `friend:${friendId}:${buildingGrid}` : `self:${buildingGrid}`;
         };
@@ -1131,7 +1131,7 @@ export default {
             }
         };
 
-        // Хелперы выбора специалистов (мультиселект)
+        // Multi-select specialist helpers
         const getSpecialistId = (s) => {
             const u2 = s.uniqueID2 || s.uniqueId2 || 0;
             return `${s.uniqueId1}_${u2}`;
@@ -1174,7 +1174,7 @@ export default {
 
         const filteredFriendBuildings = computed(() => {
             let list = friendBuildings.value.filter(b => isBuffableBuilding(b));
-            // Buff-first flow: только здания, на которые применим выбранный бафф.
+            // Buff-first flow: filter buildings suitable for the selected buff.
             if (stepActionType.value === 'apply_buff' && selectedBuff.value?.buffName_string) {
                 const buffKey = selectedBuff.value.buffName_string;
                 list = list.filter(b => canBuffTarget(buffKey, b.buildingName_string || b.buildingName || ''));
@@ -1266,7 +1266,7 @@ export default {
             payload.value.grid = '';
             friendBuildings.value = [];
             friendZoneError.value = false;
-            // Buff-first flow: набор доступных бафов зависит от зоны (self/friend) — сбрасываем выбор баффа.
+            // Buff-first flow: available buffs depend on zone scope (self/friend) - reset buff selection.
             if (stepActionType.value === 'apply_buff') {
                 selectedBuff.value = null;
                 delete payload.value.unique_id1;
@@ -1543,7 +1543,7 @@ export default {
             if (!zone.value || !zone.value.buildings) return [];
             let list = zone.value.buildings.filter(b => isBuffableBuilding(b));
 
-            // Buff-first flow: когда бафф выбран, показываем только здания, на которые он применим.
+            // Buff-first flow: when a buff is selected, only show buildings where it can be applied.
             if (stepActionType.value === 'apply_buff' && selectedBuff.value?.buffName_string) {
                 const buffKey = selectedBuff.value.buffName_string;
                 list = list.filter(b => canBuffTarget(buffKey, b.buildingName_string || b.buildingName || ''));
@@ -1561,7 +1561,7 @@ export default {
             return list;
         });
 
-        // Логика специалистов
+        // Specialist logic
         const getSpecialistCategory = (type) => {
             const rawName = SPECIALIST_TYPES[type];
             if (!rawName) return 'Other';
@@ -1682,10 +1682,10 @@ export default {
             if (!zone.value || !zone.value.availableBuffs) return [];
             let list = zone.value.availableBuffs;
 
-            // Только настоящие бафы зданий (отсекаем AddResource / FillDeposit / Adventure и пр.).
+            // Only genuine building buffs (exclude AddResource, FillDeposit, Adventure, etc.).
             list = list.filter(bf => isBuildingBuff(bf.buffName_string));
 
-            // На зоне друга доступны только friend-бафы.
+            // On friend zone, only friend-compatible buffs are available.
             if (stepTargetScope.value === 'friend') {
                 list = list.filter(bf => isFriendZoneBuff(bf.buffName_string));
             }
@@ -1697,7 +1697,7 @@ export default {
             return list;
         });
 
-        // Управление модальными окнами
+        // Modal window management
         const openBuildingModal = (tab = 'self') => {
             if (!selectedAccountId.value) {
                 showToast(t('tasks.toast.select_account_first'), 'warning');
@@ -1741,7 +1741,7 @@ export default {
             const u2 = bf.uniqueId2 ?? bf.uniqueID2 ?? bf.uniqueID?.uniqueID2 ?? bf.uniqueID?.uniqueId2 ?? bf.uniqueId?.uniqueId2 ?? 0;
             payload.value.unique_id1 = u1;
             payload.value.unique_id2 = u2;
-            // Buff-first flow: убираем уже выбранные здания, на которые этот бафф не применим.
+            // Buff-first flow: remove selected buildings that cannot accept this buff.
             const buffKey = bf.buffName_string;
             if (buffKey) {
                 selectedBuildings.value = selectedBuildings.value.filter(bt =>
@@ -1750,7 +1750,7 @@ export default {
             closeBuffModal();
         };
 
-        // Метка длительности бафа вида "2h 30m" (для зоны друга — friend-длительность).
+        // Buff duration label e.g. "2h 30m" (friend duration for friend zone).
         const buffDurationLabel = (bf) => {
             const d = getBuffDurations(bf?.buffName_string);
             if (!d) return '';
@@ -1775,7 +1775,7 @@ export default {
 
             if (stepActionType.value === 'send_explorer') {
                 if (payload.value.task_type === 1) {
-                    // Поиск сокровищ
+                    // Treasure search
                     return [
                         {
                             id: 0,
@@ -1801,7 +1801,7 @@ export default {
                 }
 
                 if (payload.value.task_type === 2) {
-                    // Поиск приключений
+                    // Adventure search
                     return [
                         {
                             id: 0,
@@ -1843,7 +1843,7 @@ export default {
             subId
         ) => {
             const stNames = {
-                // Геолог
+                // Geologist
                 0: {
                     0: t('tasks.deposit_short.stone'),
                     1: t('tasks.deposit_short.copper'),
@@ -1856,7 +1856,7 @@ export default {
                     8: t('tasks.deposit_short.saltpeter')
                 },
 
-                // Разведчик: сокровища
+                // Explorer: treasure
                 1: {
                     0: t('tasks.treasure_short.short'),
                     1: t('tasks.treasure_short.medium'),
@@ -1867,7 +1867,7 @@ export default {
                     6: t('tasks.treasure_short.extra_long')
                 },
 
-                // Разведчик: приключения
+                // Explorer: adventure
                 2: {
                     0: t('tasks.adventure_short.short'),
                     1: t('tasks.adventure_short.medium'),
@@ -1886,14 +1886,14 @@ export default {
                 || t('tasks.task_number', { id: subId });
         };
 
-        // ===== Работа с часовыми поясами =====
-        // Сервер хранит и отдаёт время в UTC.
-        // Браузер конвертирует UTC -> локальный пояс при отображении
-        // и локальный пояс -> UTC при отправке на сервер.
+        // ===== Timezone Handling =====
+        // Server stores and returns timestamps in UTC.
+        // Browser converts UTC -> local timezone when displaying
+        // and local timezone -> UTC when sending to server.
 
         const pad2 = (n) => String(n).padStart(2, '0');
 
-        // Парсит дату с сервера. Строки без явного часового пояса считаем UTC.
+        // Parse server date string. Timestamps without explicit timezone are treated as UTC.
         const parseServerDate = (dtStr) => {
             if (!dtStr) return null;
             let s = String(dtStr).trim();
@@ -1903,7 +1903,7 @@ export default {
             return isNaN(d.getTime()) ? null : d;
         };
 
-        // 'HH:mm' (UTC, с сервера) -> 'HH:mm' в локальном поясе пользователя
+        // 'HH:mm' (UTC, from server) -> 'HH:mm' in user local timezone
         const utcTimeToLocal = (hhmm) => {
             if (!hhmm) return hhmm;
             const [h, m] = hhmm.split(':').map(Number);
@@ -1912,7 +1912,7 @@ export default {
             return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
         };
 
-        // 'HH:mm' (локальное, из input[type=time]) -> 'HH:mm' в UTC для сервера
+        // 'HH:mm' (local, from input[type=time]) -> 'HH:mm' in UTC for server
         const localTimeToUtc = (hhmm) => {
             if (!hhmm) return hhmm;
             const [h, m] = hhmm.split(':').map(Number);
@@ -1921,14 +1921,14 @@ export default {
             return `${pad2(d.getUTCHours())}:${pad2(d.getUTCMinutes())}`;
         };
 
-        // Значение input[type=datetime-local] (локальное) -> ISO-строка UTC для сервера
+        // Value of input[type=datetime-local] (local) -> ISO string in UTC for server
         const localDatetimeToUtcIso = (val) => {
             if (!val) return val;
-            const d = new Date(val); // datetime-local парсится браузером как локальное время
+            const d = new Date(val); // datetime-local parsed by browser as local time
             return isNaN(d.getTime()) ? val : d.toISOString();
         };
 
-        // UTC-дата с сервера -> значение для input[type=datetime-local] (локальное)
+        // UTC date from server -> value for input[type=datetime-local] (local)
         const utcToDatetimeLocalInput = (dtStr) => {
             const d = parseServerDate(dtStr);
             if (!d) return '';
@@ -2397,7 +2397,7 @@ export default {
                 const hours = parseInt(parts[0], 10);
                 const minutes = parseInt(parts[1], 10);
 
-                // run_at_time хранится в UTC, поэтому следующий запуск считаем в UTC
+                // run_at_time stored in UTC, calculate next run in UTC
                 const now = new Date(currentTimeMs.value);
                 const next = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), hours, minutes, 0, 0));
 
@@ -2617,7 +2617,7 @@ export default {
             selectFriendBuilding,
             onTargetScopeChange,
 
-            // Состояние модальных окон
+            // Modal state
             showBuildingModal,
             showSpecialistModal,
             showBuffModal,
@@ -2638,7 +2638,7 @@ export default {
             closeBuffModal,
             selectBuff,
 
-            // Мультиселект хелперы
+            // Multi-select helpers
             getBuildingTargetId,
             isSelectedBuilding,
             toggleBuildingSelection,
@@ -2652,7 +2652,7 @@ export default {
             clearSelectedSpecialists,
             selectAllFilteredSpecialists,
 
-            // Иконки и методы отображения
+            // Icons and display helpers
             getBuildingName,
             getBuildingIcon,
             handleBuildingIconError,

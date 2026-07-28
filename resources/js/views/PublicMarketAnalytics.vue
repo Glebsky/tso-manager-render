@@ -841,8 +841,6 @@ export default {
         const goods = ref([]);
         const targets = ref([]);
 
-        // Полный каталог торгуемых ресурсов из игрового XML, объединённый с товарами с сервера:
-        // ресурсы без активных предложений тоже отображаются (приглушёнными), чтобы был виден весь рынок.
         const allGoods = computed(() => {
             const known = new Set(goods.value.map(g => g.item_id));
             const extras = TRADABLE_RESOURCES
@@ -923,7 +921,7 @@ export default {
             return name || (srv.server_id ? String(srv.server_id).toUpperCase() : '');
         };
 
-        /** "🇷🇺 RU · Мир" — подпись опции в селекторе серверов. */
+        /** Server option label for the server selector. */
         const serverOptionLabel = (srv) => {
             if (!srv) return '';
             const world = getServerWorldName(srv);
@@ -970,8 +968,8 @@ export default {
         const selectedTarget = ref('');
         const calcAmount = ref(100);
 
-        // Единая точка перевода названий предметов рынка (общая с админкой):
-        // см. resources/js/lang/gameNames.js -> marketItemName().
+        // Single source of truth for market item names (shared with admin):
+        // see resources/js/lang/gameNames.js -> marketItemName().
         const getItemName = marketItemName;
 
         // Dynamic translated names
