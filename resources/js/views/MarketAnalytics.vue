@@ -69,9 +69,9 @@
                         <div class="space-y-0.5">
                             <p class="font-semibold text-white">
                                 Server {{ currentServerConnection.display_name }} ({{ currentServerConnection.locale }}):
-                                <span v-if="!currentServerConnection.account_id" class="text-amber-400">No account assigned</span>
+                                <span v-if="!currentServerConnection.account_id" class="text-amber-400">{{ t('market.no_account_assigned') }}</span>
                                 <span v-else-if="currentServerConnection.last_error" class="text-red-400">{{ currentServerConnection.last_error }}</span>
-                                <span v-else class="text-white/60">Not synchronized yet</span>
+                                <span v-else class="text-white/60">{{ t('market.not_synced_yet') }}</span>
                             </p>
                         </div>
                     </div>
@@ -80,10 +80,10 @@
                             <svg class="w-3.5 h-3.5" :class="{ 'animate-spin': syncing }" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182" />
                             </svg>
-                            <span>{{ syncing ? 'Syncing...' : 'Sync Now' }}</span>
+                            <span>{{ syncing ? t('card.syncing') : t('market.sync_now') }}</span>
                         </button>
                         <button @click="activeTab = 'settings'" class="btn-secondary py-1.5 px-3 text-xs">
-                            Manage Server
+                            {{ t('market.manage_server') }}
                         </button>
                     </div>
                 </div>
@@ -269,7 +269,7 @@
                     <!-- Price Dynamic Chart Card -->
                     <div class="glass-card p-6 relative transition-all duration-300" :class="hoveredPoint ? 'z-40' : 'z-10'">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-                            <h3 class="text-sm font-semibold text-white">Price History (1 {{ selectedItemName }} = X {{ selectedTargetName }})</h3>
+                            <h3 class="text-sm font-semibold text-white">{{ t('market.price_history', { item: selectedItemName, target: selectedTargetName }) }}</h3>
                             
                             <div class="flex items-center gap-4">
                                 <div class="flex items-center bg-white/5 border border-white/10 p-0.5 rounded-lg text-[10px] font-semibold">
@@ -375,7 +375,7 @@
                                 </div>
                             </template>
                             <div v-else class="absolute inset-0 flex items-center justify-center text-xs text-white/20">
-                                Not enough historical data to display the chart
+                                {{ t('market.not_enough_history') }}
                             </div>
                         </div>
                     </div>
@@ -428,7 +428,7 @@
                                 </div>
                             </template>
                             <div v-else class="absolute inset-0 flex items-center justify-center text-xs text-white/20">
-                                Not enough historical data to display the chart
+                                {{ t('market.not_enough_history') }}
                             </div>
                         </div>
                     </div>
@@ -449,7 +449,7 @@
 
                         <div class="space-y-5">
                             <div>
-                                <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">Amount of {{ selectedItemName }}</label>
+                                <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('market.amount_of', { item: selectedItemName }) }}</label>
                                 <input type="number" v-model.number="calcAmount" min="1" class="glass-input w-full font-mono text-white text-lg"/>
                             </div>
 
@@ -460,7 +460,7 @@
                                     <span class="text-2xl font-bold text-emerald-400 font-mono">{{ calculatedCost }}</span>
                                     <span class="text-xs text-white/40">{{ selectedTargetName }}</span>
                                 </div>
-                                <span class="text-[9px] text-white/20 block mt-2">Formula: {{ calcAmount || 0 }} * {{ stats.average }} average price</span>
+                                <span class="text-[9px] text-white/20 block mt-2">{{ t('market.formula_direct', { amount: calcAmount || 0, price: stats.average }) }}</span>
                             </div>
 
                             <!-- Mirrored estimated cost -->
@@ -470,10 +470,10 @@
                                     <span class="text-2xl font-bold text-blue-400 font-mono">{{ calculatedMirroredCost }}</span>
                                     <span class="text-xs text-white/40">{{ selectedTargetName }}</span>
                                 </div>
-                                <span class="text-[9px] text-white/20 block mt-2">Formula: {{ calcAmount || 0 }} / {{ mirroredStats.average }} average price</span>
+                                <span class="text-[9px] text-white/20 block mt-2">{{ t('market.formula_mirrored', { amount: calcAmount || 0, price: mirroredStats.average }) }}</span>
                             </div>
                             <div v-else class="p-4 rounded-xl border border-white/5 bg-white/[0.01] text-center text-xs text-white/30">
-                                No mirrored trades ({{ selectedTargetName }} ➔ {{ selectedItemName }}) found to calculate mirrored cost.
+                                {{ t('market.no_mirrored_trades', { target: selectedTargetName, item: selectedItemName }) }}
                             </div>
                         </div>
                     </div>
@@ -547,8 +547,8 @@
                                         </div>
                                     </td>
                                     <td class="py-3 px-4 font-mono text-xs text-white/35">{{ item.item_id }}</td>
-                                    <td class="py-3 px-4 text-right text-emerald-400 font-mono font-medium">{{ item.offers_count }} offers</td>
-                                    <td class="py-3 px-4 text-right text-blue-400 font-mono">{{ item.sellers_count }} sellers</td>
+                                    <td class="py-3 px-4 text-right text-emerald-400 font-mono font-medium">{{ t('market.offers_count_num', { count: item.offers_count }) }}</td>
+                                    <td class="py-3 px-4 text-right text-blue-400 font-mono">{{ t('market.sellers_count_num', { count: item.sellers_count }) }}</td>
                                     <td class="py-3 px-4 text-right font-mono">{{ formatVolume(item.total_volume) }} {{ t('market.units_short') }}</td>
                                 </tr>
                                 <tr v-if="popular.length === 0">
@@ -597,7 +597,7 @@
                             <div class="flex items-center justify-between flex-wrap gap-2 border-b border-white/5 pb-2">
                                 <span class="badge text-[10px] font-semibold tracking-wider uppercase"
                                       :class="scheme.type === '2-step' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-purple-500/10 text-purple-400 border border-purple-500/20'">
-                                    {{ scheme.type }} loop
+                                    {{ t('market.loop_type', { type: scheme.type }) }}
                                 </span>
 
                                 <div class="flex items-center gap-3">
@@ -625,7 +625,7 @@
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
                                 <div v-for="(step, sIdx) in scheme.steps" :key="sIdx" class="flex items-center gap-3">
                                     <div class="flex-1 p-3 rounded-lg bg-white/[0.02] border border-white/5 relative">
-                                        <div class="text-[10px] uppercase font-bold text-white/30 mb-2">Step {{ sIdx + 1 }}</div>
+                                        <div class="text-[10px] uppercase font-bold text-white/30 mb-2">{{ t('market.step_num', { step: sIdx + 1 }) }}</div>
 
                                         <div class="flex flex-col gap-1.5">
                                             <div class="flex items-center gap-1.5 text-xs">
@@ -673,7 +673,7 @@
                             </div>
                             <div class="flex flex-col">
                                 <h2 class="text-lg font-semibold text-white">{{ t('market.listings') }}</h2>
-                                <span class="text-xs text-white/40">{{ totalActiveCount }} active trades</span>
+                                <span class="text-xs text-white/40">{{ t('market.active_trades_count', { count: totalActiveCount }) }}</span>
                             </div>
                         </div>
                         <button @click="toggleActiveListings" :aria-label="t('market.listings')" :aria-expanded="showActiveListings ? 'true' : 'false'" class="text-white/40 hover:text-white transition-colors duration-300">
@@ -728,7 +728,7 @@
                                     </tr>
                                     <tr v-if="activeOffers.length === 0">
                                         <td colspan="7" class="py-8 text-center text-white/20">
-                                            No active listings found in database. Perform synchronization first.
+                                            {{ t('market.no_active_listings') }}
                                         </td>
                                     </tr>
                                 </tbody>
@@ -740,7 +740,7 @@
                                     <svg v-if="loadingMore" class="animate-spin w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                                     </svg>
-                                    {{ loadingMore ? 'Loading more...' : 'Load More Listings' }}
+                                    {{ loadingMore ? t('common.loading_more') : t('market.load_more_listings') }}
                                 </button>
                             </div>
                         </div>
@@ -936,7 +936,7 @@
                             </tr>
                             <tr v-else-if="logs.length === 0">
                                 <td colspan="5" class="py-8 text-center text-white/20">
-                                    No synchronization logs yet.
+                                    {{ t('market.no_sync_logs') }}
                                 </td>
                             </tr>
                         </tbody>
@@ -1080,7 +1080,7 @@ export default {
                 }
                 showToast(t('market.link_copied'), 'success');
             } catch (e) {
-                showToast('Failed to copy link', 'error');
+                showToast(t('market.copy_link_failed'), 'error');
             }
         };
 
