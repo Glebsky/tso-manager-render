@@ -12,7 +12,8 @@ function normalizeName(name) {
     return String(name || '')
         .trim()
         .replace(/^\/+|\/+$/g, '')
-        .replace(/\.webp$/i, '');
+        .replace(/\.webp$/i, '')
+        .toLowerCase();
 }
 
 export function getGameImageUrl(type, name) {
