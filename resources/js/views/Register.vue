@@ -15,21 +15,8 @@
         <main class="relative z-10 w-full max-w-md px-4 py-8 sm:px-6">
             <div class="liquid-card px-5 py-6 sm:px-8 sm:py-8">
                 <header class="mb-6 text-center">
-                    <div class="liquid-icon mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl">
-                        <svg
-                            class="h-8 w-8"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke-width="1.7"
-                            stroke="currentColor"
-                            aria-hidden="true"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 0 1 1.043-3.296 3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.745 3.745 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z"
-                            />
-                        </svg>
+                    <div class="liquid-icon mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl overflow-hidden p-0.5">
+                        <img :src="'/android-chrome-512x512.png'" alt="TSO Manager" class="w-full h-full object-cover rounded-[14px]" />
                     </div>
 
                     <h1 class="text-2xl font-bold tracking-tight text-white">
