@@ -1051,10 +1051,10 @@ export default {
                 case 'FR': return '🇫🇷';
                 case 'PL': return '🇵🇱';
                 case 'ES': return '🇪🇸';
-                case 'IT': return '🇮🇹'; // Италия
-                case 'NL': return '🇳🇱'; // Нидерланды
-                case 'CZ': return '🇨🇿'; // Чехия
-                case 'RO': return '🇷🇴'; // Румыния
+                case 'IT': return '🇮🇹';
+                case 'NL': return '🇳🇱';
+                case 'CZ': return '🇨🇿';
+                case 'RO': return '🇷🇴';
                 default: return '🌐';
             }
         };
