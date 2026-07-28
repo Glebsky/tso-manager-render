@@ -1016,7 +1016,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { t } from '../lang';
 import axios from 'axios';
-import { cachedGet, clearApiCache } from '../services/apiCacheService';
+import { cachedGet, clearApiCache, cachedGetBulk, readBulkCache } from '../services/apiCacheService';
 import { showToast } from '../toast';
 import { getGameImageUrl, handleGameImageError } from '../services/gameImageService';
 import { resourceName, marketItemName } from '../lang/gameNames';
@@ -1085,6 +1085,7 @@ export default {
         };
 
         const activeTab = ref('analytics');
+        const bulkCacheTtlMs = ref(300000);
         const loading = ref(false);
         const loadingServers = ref(true);
         const loadingPairs = ref(false);
@@ -1130,22 +1131,8 @@ export default {
         };
 
         const loadMoreActiveOffers = async () => {
-            if (loadingMore.value || !hasMoreActiveOffers.value) return;
-            loadingMore.value = true;
-            try {
-                const nextPage = activeOffersPage.value + 1;
-                const res = await axios.get('/api/market/analytics', {
-                    params: { server_id: selectedServerId.value, page: nextPage }
-                });
-                const newOffers = res.data.active_offers || [];
-                activeOffers.value.push(...newOffers);
-                activeOffersPage.value = nextPage;
-                hasMoreActiveOffers.value = res.data.has_more || false;
-            } catch (e) {
-                showToast('Failed to load active listings', 'error');
-            } finally {
-                loadingMore.value = false;
-            }
+            // All active offers are already loaded in bulk, no pagination needed
+            // This function is kept for backward compatibility but does nothing
         };
 
         // Multi-server state
@@ -1269,7 +1256,7 @@ export default {
 
         const selectionMode = ref('visual');
         const visualTab = ref(1);
-        const selectedPeriod = ref('all');
+        const selectedPeriod = ref('7d');
         const arbitrageLoops = ref([]);
 
         const periods = [
@@ -1533,25 +1520,31 @@ export default {
             if (!selectedServerId.value) return;
             loading.value = true;
             try {
-                const params = { server_id: selectedServerId.value };
-                const applyGoods = (data) => { goods.value = data || []; };
-                const applyAnalytics = (data) => {
-                    popular.value = data.popular || [];
-                    activeOffers.value = data.active_offers || [];
+                const applyBulkData = (data) => {
+                    goods.value = data.goods || [];
+                    popular.value = (data.popular && data.popular['1d']) || [];
+                    activeOffers.value = (data.active_offers || []).map(offer => {
+                        if (offer && offer.expires_at) {
+                            const expiresAt = new Date(offer.expires_at).getTime();
+                            const timeLeft = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
+                            return { ...offer, time_left: timeLeft };
+                        }
+                        return offer;
+                    });
                     totalActiveCount.value = data.total_active_count || 0;
                     activeOffersPage.value = 1;
-                    hasMoreActiveOffers.value = data.has_more || false;
+                    hasMoreActiveOffers.value = false;
+                    arbitrageLoops.value = data.arbitrage || [];
+                    if (data.cache_ttl_seconds) {
+                        bulkCacheTtlMs.value = data.cache_ttl_seconds * 1000;
+                    }
                 };
-                const applyArbitrage = (data) => { arbitrageLoops.value = data || []; };
 
-                const goodsData = await cachedGet('/api/market/goods', { params, ttlMs: 1800000, onRevalidate: applyGoods, ...options });
-                applyGoods(goodsData);
-
-                const analyticsData = await cachedGet('/api/market/analytics', { params, ttlMs: 60000, onRevalidate: applyAnalytics, ...options });
-                applyAnalytics(analyticsData);
-
-                const arbitrageData = await cachedGet('/api/market/arbitrage', { params, ttlMs: 300000, onRevalidate: applyArbitrage, ...options });
-                applyArbitrage(arbitrageData);
+                const bulkData = await cachedGetBulk('/api/market/bulk', selectedServerId.value, {
+                    onRevalidate: applyBulkData,
+                    ...options
+                });
+                applyBulkData(bulkData);
 
                 startCountdown();
                 await loadSyncLogs(1);
@@ -1714,11 +1707,18 @@ export default {
 
             loadingPairs.value = true;
             try {
-                const data = await cachedGet('/api/market/targets', {
-                    params: { server_id: selectedServerId.value, item_id: selectedItem.value },
-                    ttlMs: 1800000
-                });
-                targets.value = data || [];
+                // Try to get targets from bulk cache first (0 network requests)
+                const bulk = readBulkCache(selectedServerId.value);
+                if (bulk && bulk.targets_map && bulk.targets_map[selectedItem.value]) {
+                    targets.value = bulk.targets_map[selectedItem.value];
+                } else {
+                    // Fallback to individual request with sync-based TTL
+                    const data = await cachedGet('/api/market/targets', {
+                        params: { server_id: selectedServerId.value, item_id: selectedItem.value },
+                        ttlMs: bulkCacheTtlMs.value
+                    });
+                    targets.value = data || [];
+                }
             } catch (e) {
                 showToast(t('market.targets_failed'), 'error');
             } finally {
@@ -1740,14 +1740,52 @@ export default {
                     mirroredStats.value = data.mirrored_stats || null;
                     mirroredHistory.value = data.mirrored_history || null;
                 };
+
+                const period = selectedPeriod.value;
+                const itemId = selectedItem.value;
+                const targetId = selectedTarget.value;
+
+                // For 1d/7d periods, try to serve from bulk cache
+                if ((period === '1d' || period === '7d') && !options.bypass) {
+                    const bulk = readBulkCache(selectedServerId.value);
+                    if (bulk && bulk.pairs) {
+                        const pairKey = `${itemId}|${targetId}`;
+                        const pairData = bulk.pairs[pairKey]?.[period];
+                        if (pairData) {
+                            const result = { ...pairData };
+
+                            // Get active_info from pair level
+                            if (bulk.pairs[pairKey]?.active_info) {
+                                result.active_info = bulk.pairs[pairKey].active_info;
+                            }
+
+                            // Get mirrored data from reverse pair
+                            const mirroredKey = `${targetId}|${itemId}`;
+                            const mirroredPairData = bulk.pairs[mirroredKey]?.[period];
+                            if (mirroredPairData) {
+                                result.mirrored_stats = mirroredPairData.stats || null;
+                                result.mirrored_history = mirroredPairData.history || null;
+                            } else {
+                                result.mirrored_stats = null;
+                                result.mirrored_history = null;
+                            }
+
+                            applyPairAnalytics(result);
+                            loadingChart.value = false;
+                            return;
+                        }
+                    }
+                }
+
+                // Fallback to API request for periods > 7d or when bulk cache is unavailable
                 const data = await cachedGet('/api/market/analytics', {
                     params: {
                         server_id: selectedServerId.value,
-                        item_id: selectedItem.value,
-                        target_item_id: selectedTarget.value,
-                        period: selectedPeriod.value
+                        item_id: itemId,
+                        target_item_id: targetId,
+                        period: period
                     },
-                    ttlMs: 60000,
+                    ttlMs: bulkCacheTtlMs.value,
                     onRevalidate: applyPairAnalytics,
                     ...options
                 });
@@ -1781,17 +1819,22 @@ export default {
         };
 
         const mirrorSelection = async () => {
-            if (!selectedItem.value || !selectedTarget.value) return;
+            if (!selectedItem.value || !selectedTarget.value || !selectedServerId.value) return;
             const tempItem = selectedItem.value;
             const tempTarget = selectedTarget.value;
             selectedItem.value = tempTarget;
             updateQueryParams();
             try {
-                const data = await cachedGet('/api/market/targets', {
-                    params: { server_id: selectedServerId.value, item_id: selectedItem.value },
-                    ttlMs: 1800000
-                });
-                targets.value = data || [];
+                const bulk = readBulkCache(selectedServerId.value);
+                if (bulk && bulk.targets_map && bulk.targets_map[selectedItem.value]) {
+                    targets.value = bulk.targets_map[selectedItem.value];
+                } else {
+                    const data = await cachedGet('/api/market/targets', {
+                        params: { server_id: selectedServerId.value, item_id: selectedItem.value },
+                        ttlMs: bulkCacheTtlMs.value
+                    });
+                    targets.value = data || [];
+                }
                 const hasOldItem = targets.value.some(t => t.target_item_id === tempItem);
                 if (hasOldItem) {
                     selectedTarget.value = tempItem;

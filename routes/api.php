@@ -77,6 +77,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/market/targets', [MarketAnalyticsController::class, 'getTargets']);
         Route::get('/market/analytics', [MarketAnalyticsController::class, 'getAnalytics']);
         Route::get('/market/arbitrage', [MarketAnalyticsController::class, 'getArbitrage']);
+        Route::get('/market/bulk', [MarketAnalyticsController::class, 'getBulk']);
     });
     Route::get('/market/logs', [MarketAnalyticsController::class, 'getLogs']);
 });
@@ -95,5 +96,6 @@ Route::prefix('public/market')->group(function () {
         Route::get('/targets', [MarketAnalyticsController::class, 'getTargets']);
         Route::get('/analytics', [MarketAnalyticsController::class, 'getAnalytics']);
         Route::get('/arbitrage', [MarketAnalyticsController::class, 'getArbitrage']);
+        Route::get('/bulk', [MarketAnalyticsController::class, 'getBulk']);
     });
 });

@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 const CACHE_PREFIX = 'tso_cache:';
+const BULK_PREFIX = 'tso_bulk:';
 const DATA_VERSION_PREFIX = 'tso_data_version:';
 const VERSION_CHECKED_AT_PREFIX = 'tso_data_version_checked_at:';
 // v3: cache-first responses backed by lightweight server-version checks.
@@ -337,7 +338,8 @@ export function clearApiCache() {
                 (
                     key.startsWith(CACHE_PREFIX) ||
                     key.startsWith(DATA_VERSION_PREFIX) ||
-                    key.startsWith(VERSION_CHECKED_AT_PREFIX)
+                    key.startsWith(VERSION_CHECKED_AT_PREFIX) ||
+                    key.startsWith(BULK_PREFIX)
                 )
             ) {
                 keysToRemove.push(key);
@@ -347,4 +349,142 @@ export function clearApiCache() {
     } catch {
         // Ignore
     }
+}
+
+function buildBulkKey(serverId, locale) {
+    return `${BULK_PREFIX}${serverId}:${locale}`;
+}
+
+function readBulkEntry(serverId) {
+    try {
+        const locale = localStorage.getItem('app_locale') || 'RU';
+        const key = buildBulkKey(serverId, locale);
+        const raw = localStorage.getItem(key);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed || parsed.v !== CACHE_SCHEMA_VERSION) return null;
+        
+        // Check if TTL has expired
+        const age = Date.now() - parsed.savedAt;
+        if (parsed.ttlMs && age > parsed.ttlMs) return null;
+        
+        return parsed;
+    } catch {
+        return null;
+    }
+}
+
+function writeBulkEntry(serverId, payload, ttlMs) {
+    const locale = localStorage.getItem('app_locale') || 'RU';
+    const key = buildBulkKey(serverId, locale);
+    const serialized = JSON.stringify({
+        v: CACHE_SCHEMA_VERSION,
+        savedAt: Date.now(),
+        ttlMs,
+        payload,
+    });
+    try {
+        localStorage.setItem(key, serialized);
+    } catch {
+        purgeOldestEntries();
+        try {
+            localStorage.setItem(key, serialized);
+        } catch {
+            // Storage full
+        }
+    }
+}
+
+export async function cachedGetBulk(url, serverId, options = {}) {
+    const { bypass = false, onRevalidate = null } = options;
+    
+    if (!bypass) {
+        const cached = readBulkEntry(serverId);
+        if (cached) {
+            // Adjust time_left on active_offers
+            const adjusted = clonePayload(cached.payload);
+            if (adjusted && Array.isArray(adjusted.active_offers)) {
+                const ageSeconds = Math.max(0, Math.floor((Date.now() - cached.savedAt) / 1000));
+                adjusted.active_offers = adjusted.active_offers.map(offer => {
+                    if (offer && offer.expires_at) {
+                        const expiresAt = new Date(offer.expires_at).getTime();
+                        const timeLeft = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
+                        return { ...offer, time_left: timeLeft };
+                    }
+                    return offer;
+                });
+            }
+            
+            // Background revalidation via version check
+            if (serverId) {
+                checkServerVersion(url, serverId)
+                    .then(version => {
+                        const knownVersion = getKnownServerVersion(serverId);
+                        // If server has newer data, re-fetch bulk
+                        if (version !== null && version > (cached.payload?.data_version || 0)) {
+                            return axios.get(url, { params: { server_id: serverId } }).then(res => {
+                                const freshData = res.data;
+                                const ttlMs = (freshData.cache_ttl_seconds || 300) * 1000;
+                                writeBulkEntry(serverId, freshData, ttlMs);
+                                if (onRevalidate && freshData) {
+                                    onRevalidate(freshData);
+                                }
+                                const headerVersion = res.headers['x-data-version'];
+                                if (headerVersion) {
+                                    updateKnownServerVersion(serverId, parseInt(headerVersion, 10));
+                                }
+                            });
+                        }
+                    })
+                    .catch(() => {});
+            }
+            
+            return adjusted;
+        }
+    }
+    
+    // No cache or bypass - fetch from network
+    try {
+        const res = await axios.get(url, { params: { server_id: serverId } });
+        const payload = res.data;
+        const ttlMs = (payload.cache_ttl_seconds || 300) * 1000;
+        writeBulkEntry(serverId, payload, ttlMs);
+        
+        const headerVersion = res.headers['x-data-version'];
+        if (serverId && headerVersion) {
+            updateKnownServerVersion(serverId, parseInt(headerVersion, 10));
+        }
+        
+        return payload;
+    } catch (e) {
+        // Fallback to cached data even if expired
+        const cached = readBulkEntry(serverId);
+        if (cached) {
+            return clonePayload(cached.payload);
+        }
+        throw e;
+    }
+}
+
+/**
+ * Read bulk data from localStorage without any network requests.
+ * Returns null if no cached bulk data is available.
+ */
+export function readBulkCache(serverId) {
+    const entry = readBulkEntry(serverId);
+    if (!entry) return null;
+    
+    const adjusted = clonePayload(entry.payload);
+    if (adjusted && Array.isArray(adjusted.active_offers)) {
+        adjusted.active_offers = adjusted.active_offers.map(offer => {
+            if (offer && offer.expires_at) {
+                const expiresAt = new Date(offer.expires_at).getTime();
+                const timeLeft = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
+                return { ...offer, time_left: timeLeft };
+            }
+            return offer;
+        });
+    }
+    
+    return adjusted;
 }

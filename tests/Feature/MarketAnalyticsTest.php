@@ -297,5 +297,61 @@ class MarketAnalyticsTest extends TestCase
         $this->getJson('/api/public/market/targets?item_id=Bread')->assertStatus(200);
         $this->getJson('/api/public/market/analytics')->assertStatus(200);
         $this->getJson('/api/public/market/arbitrage')->assertStatus(200);
+        $this->getJson('/api/public/market/bulk')->assertStatus(200);
+    }
+
+    public function test_get_bulk_returns_complete_market_payload(): void
+    {
+        MarketOffer::create([
+            'offer_id' => 501,
+            'player_id' => 1,
+            'sender_name' => 'BulkSeller',
+            'item_id' => 'Oil',
+            'item_name' => 'Oil',
+            'amount' => 100,
+            'target_item_id' => 'Coin',
+            'target_item_name' => 'Coin',
+            'target_amount' => 50,
+            'price' => 0.5,
+            'volume' => 1000,
+            'lots_remaining' => 10,
+            'created_at' => now(),
+            'collected_at' => now(),
+        ]);
+
+        MarketHistory::create([
+            'offer_id' => 501,
+            'player_id' => 1,
+            'item_id' => 'Oil',
+            'item_name' => 'Oil',
+            'amount' => 100,
+            'target_item_id' => 'Coin',
+            'target_item_name' => 'Coin',
+            'target_amount' => 50,
+            'price' => 0.5,
+            'volume' => 1000,
+            'collected_at' => now()->subHour(),
+        ]);
+
+        $response = $this->getJson('/api/market/bulk');
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'server_id',
+                'cache_ttl_seconds',
+                'next_sync_at',
+                'data_version',
+                'goods',
+                'targets_map',
+                'popular',
+                'active_offers',
+                'total_active_count',
+                'arbitrage',
+                'pairs',
+            ]);
+
+        $this->assertNotEmpty($response->json('goods'));
+        $this->assertArrayHasKey('Oil', $response->json('targets_map'));
+        $this->assertArrayHasKey('Oil|Coin', $response->json('pairs'));
     }
 }
