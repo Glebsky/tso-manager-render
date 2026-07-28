@@ -78,9 +78,9 @@
         </div>
 
         <!-- Logs Listing -->
-        <div class="glass-card overflow-hidden mb-6 relative w-full overflow-x-auto custom-scrollbar">
+        <div class="glass-card overflow-hidden mb-6 relative w-full">
             <!-- Skeleton placeholders on first load -->
-            <div v-if="loading && logs.length === 0" class="divide-y divide-white/5 min-w-[500px]">
+            <div v-if="loading && logs.length === 0" class="divide-y divide-white/5">
                 <div v-for="i in 8" :key="'log-skeleton-' + i" class="p-4 flex items-center gap-4">
                     <div class="w-16 h-5 rounded-full skeleton flex-shrink-0"></div>
                     <div class="flex-1 min-w-0">
@@ -90,10 +90,10 @@
                     <div class="w-20 h-3 rounded skeleton"></div>
                 </div>
             </div>
-            <div v-else-if="logs.length > 0" class="divide-y divide-white/5 min-w-[500px]">
+            <div v-else-if="logs.length > 0" class="divide-y divide-white/5">
                 <log-entry v-for="log in logs" :key="log.id" :log="log" />
             </div>
-            <div v-else class="p-12 text-center text-white/30 min-w-[500px]">
+            <div v-else class="p-12 text-center text-white/30">
                 <p>{{ t('logs.empty') }}</p>
             </div>
             <!-- Overlay while refreshing / paginating so content doesn't jump -->
@@ -101,7 +101,7 @@
         </div>
 
         <!-- Pagination Controls -->
-        <div v-if="pagination.last_page > 1" class="flex items-center justify-between">
+        <div v-if="pagination.last_page > 1" class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <p class="text-xs text-white/30">
                 {{ t('logs.page_of', { current: pagination.current_page, last: pagination.last_page }) }}
             </p>

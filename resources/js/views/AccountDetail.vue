@@ -27,7 +27,7 @@
             </div>
             <div class="p-6">
                 <!-- Main Info Section -->
-                <div class="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
+                <div class="flex flex-row items-start gap-3 sm:gap-6">
                     <!-- Avatar -->
                     <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden bg-gradient-to-br flex items-center justify-center shadow-lg flex-shrink-0"
                          :class="statusClass.gradient">
@@ -37,7 +37,7 @@
 
                     <!-- Details -->
                     <div class="flex-1 min-w-0 w-full">
-                        <h1 class="text-xl sm:text-2xl font-bold text-white mb-1 truncate">{{ playerNickname || account.username }}</h1>
+                        <h1 class="text-lg sm:text-2xl font-bold text-white mb-1 wrap-anywhere leading-tight">{{ playerNickname || account.username }}</h1>
                         <div class="flex items-center flex-wrap gap-2.5 sm:gap-4 text-xs sm:text-sm text-white/40">
                             <span class="flex items-center gap-1 text-white/80 whitespace-nowrap">
                                 <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -76,21 +76,21 @@
                             <span :title="t('account.explorers')" class="whitespace-nowrap">🧭 {{ t('account.explorers') }}: <strong class="text-white">{{ explorersAmount || 0 }}</strong></span>
                             <span :title="t('account.geologists')" class="whitespace-nowrap">🔨 {{ t('account.geologists') }}: <strong class="text-white">{{ geologistsAmount || 0 }}</strong></span>
                         </div>
-
-                        <!-- XP Progress Bar -->
-                        <div v-if="xp !== null" class="mt-4">
-                            <div class="flex items-center justify-between text-xs text-white/30 mb-1">
-                                <span>{{ t('account.xp') }}: <strong class="text-white/70">{{ formatNumber(xp) }} XP</strong></span>
-                                <span v-if="level && level >= 80">{{ t('account.max_level') }}</span>
-                                <span v-else-if="xpNextTarget">{{ t('account.xp_to_next', { level: level + 1, xp: formatNumber(xpNextTarget - xp), total: formatNumber(xpNextTarget) }) }}</span>
-                            </div>
-                            <div class="h-2 bg-white/5 rounded-full overflow-hidden">
-                                <div class="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full transition-all duration-500"
-                                     :style="{ width: xpProgress + '%' }"></div>
-                            </div>
-                        </div>
                     </div>
                 </div>
+
+                    <!-- XP Progress Bar -->
+                    <div v-if="xp !== null" class="mt-5">
+                        <div class="flex items-center justify-between text-xs text-white/30 mb-1">
+                            <span>{{ t('account.xp') }}: <strong class="text-white/70">{{ formatNumber(xp) }} XP</strong></span>
+                            <span v-if="level && level >= 80">{{ t('account.max_level') }}</span>
+                            <span v-else-if="xpNextTarget">{{ t('account.xp_to_next', { level: level + 1, xp: formatNumber(xpNextTarget - xp), total: formatNumber(xpNextTarget) }) }}</span>
+                        </div>
+                        <div class="h-2 bg-white/5 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full transition-all duration-500"
+                                 :style="{ width: xpProgress + '%' }"></div>
+                        </div>
+                    </div>
 
                 <!-- Right Side: Visitors and Sync Button -->
                 <div class="flex items-center justify-end gap-4 mt-6 pt-4 border-t border-white/5 flex-wrap">
@@ -323,7 +323,7 @@
                     </h3>
                     <div v-if="availableBuffs.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                         <div v-for="(b, idx) in availableBuffs" :key="idx" class="glass-card p-4 hover:border-white/20 hover:scale-[1.02] transition-all duration-300">
-                            <div class="flex items-center gap-3">
+                            <div class="flex items-start gap-3">
                                 <div class="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
                                     <img :src="getBuffIcon(b)" :alt="getStarBuffName(b)" class="w-7 h-7 object-contain" @error="handleBuffIconError($event, b)">
                                     <span class="text-xl" style="display: none;">
@@ -331,13 +331,13 @@
                                     </span>
                                 </div>
                                 <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-medium text-white/80 truncate" :title="getStarBuffName(b)">
+                                    <p class="text-[13px] sm:text-sm font-medium text-white/80 wrap-anywhere leading-snug" :title="getStarBuffName(b)">
                                         {{ getStarBuffName(b) }}
                                     </p>
                                     <p class="text-[10px] text-white/30">ID: {{ b.uniqueId1 || 'N/A' }}</p>
                                 </div>
-                                <div class="text-right">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold"
+                                <div class="text-right flex-shrink-0">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold whitespace-nowrap"
                                           :class="b.buffName_string === 'AddResource' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'">
                                         {{ b.buffName_string === 'AddResource' ? '+' + formatNumber(b.amount) : 'x' + b.amount }}
                                     </span>

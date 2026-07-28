@@ -172,9 +172,9 @@
                 </router-link>
             </div>
 
-            <div class="glass-card overflow-hidden w-full overflow-x-auto custom-scrollbar">
+            <div class="glass-card overflow-hidden w-full">
                 <!-- Skeleton Logs -->
-                <div v-if="loading && logs.length === 0" class="p-5 space-y-3 min-w-[500px]">
+                <div v-if="loading && logs.length === 0" class="p-5 space-y-3">
                     <div v-for="n in 5" :key="'skel-log-' + n" class="flex items-center gap-3 py-3 border-b border-white/5 last:border-0">
                         <div class="w-16 h-5 rounded-full skeleton"></div>
                         <div class="flex-1">
@@ -185,7 +185,7 @@
                     </div>
                 </div>
                 <!-- Loaded Logs -->
-                <div v-else-if="logs.length > 0" class="divide-y divide-white/5 min-w-[500px]">
+                <div v-else-if="logs.length > 0" class="divide-y divide-white/5">
                     <log-entry v-for="log in logs.slice(0, 10)" :key="log.id" :log="log" />
                 </div>
                 <div v-else class="p-8 text-center">

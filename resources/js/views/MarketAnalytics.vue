@@ -266,172 +266,28 @@
                         </div>
                     </div>
 
-                    <!-- Price Dynamic Chart Card -->
-                    <div class="glass-card p-6 relative transition-all duration-300" :class="hoveredPoint ? 'z-40' : 'z-10'">
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-                            <h3 class="text-sm font-semibold text-white">{{ t('market.price_history', { item: selectedItemName, target: selectedTargetName }) }}</h3>
-                            
-                            <div class="flex items-center gap-4">
-                                <div class="flex items-center bg-white/5 border border-white/10 p-0.5 rounded-lg text-[10px] font-semibold">
-                                    <button v-for="p in periods" :key="p.value" @click="changePeriod(p.value)"
-                                            class="px-2.5 py-1 rounded transition-all uppercase tracking-wider"
-                                            :class="selectedPeriod === p.value ? 'bg-emerald-500 text-white shadow' : 'text-white/40 hover:text-white'">
-                                        {{ p.label }}
-                                    </button>
-                                </div>
+                    <!-- Price Dynamic Chart Card (shared component) -->
+                    <market-price-chart
+                        :history="history"
+                        :stats="stats"
+                        :periods="periods"
+                        :selected-period="selectedPeriod"
+                        :title="t('market.price_history', { item: selectedItemName, target: selectedTargetName })"
+                        :item-id="selectedItem"
+                        :target-id="selectedTarget"
+                        :item-name="selectedItemName"
+                        :target-name="selectedTargetName"
+                        gradient-id="adminPriceGrad"
+                        :get-resource-icon="getResourceIcon"
+                        :handle-icon-error="handleIconError"
+                        :format-volume="formatVolume"
+                        @change-period="changePeriod" />
 
-                                <div class="flex items-center gap-4 text-[10px] text-white/40">
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="w-2.5 h-0.5 bg-emerald-500 inline-block"></span>
-                                        Avg Price
-                                    </div>
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="w-2.5 h-0.5 bg-white/20 border-dashed border inline-block"></span>
-                                        Mean
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- SVG Price Chart -->
-                        <div class="h-64 w-full relative z-40 pt-2">
-                            <template v-if="history.length > 0">
-                                <svg class="w-full h-full" viewBox="0 0 600 220" preserveAspectRatio="none">
-                                    <defs>
-                                        <linearGradient id="priceGrad" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stop-color="#10b981" stop-opacity="0.2"/>
-                                            <stop offset="100%" stop-color="#10b981" stop-opacity="0.0"/>
-                                        </linearGradient>
-                                    </defs>
-                                    
-                                    <line v-for="grid in 4" :key="'grid-y-'+grid"
-                                          x1="40" :y1="20 + (grid - 1) * 50" x2="590" :y2="20 + (grid - 1) * 50"
-                                          stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
-
-                                    <text x="35" y="23" fill="rgba(255,255,255,0.3)" font-size="8" text-anchor="end" font-family="monospace">{{ chartMaxPriceLabel }}</text>
-                                    <text x="35" y="123" fill="rgba(255,255,255,0.2)" font-size="8" text-anchor="end" font-family="monospace">{{ chartMidPriceLabel }}</text>
-                                    <text x="35" y="215" fill="rgba(255,255,255,0.3)" font-size="8" text-anchor="end" font-family="monospace">{{ chartMinPriceLabel }}</text>
-
-                                    <path :d="chartPriceAreaPath" fill="url(#priceGrad)"/>
-                                    <path :d="chartPriceLinePath" fill="none" stroke="#10b981" stroke-width="2"/>
-                                    <line x1="40" :y1="chartMeanY" x2="590" :y2="chartMeanY"
-                                          stroke="rgba(255,255,255,0.2)" stroke-dasharray="4,4" stroke-width="1.5"/>
-
-                                    <g v-for="(p, idx) in chartPoints" :key="'dot-group-'+idx"
-                                       class="cursor-pointer"
-                                       @mouseenter="hoveredPoint = { ...p, index: idx }"
-                                       @mouseleave="hoveredPoint = null">
-                                        <circle :cx="p.x" :cy="p.y" r="14" fill="transparent" />
-                                        <circle :cx="p.x" :cy="p.y" :r="hoveredPoint?.index === idx ? 5.5 : 3.5"
-                                                :fill="hoveredPoint?.index === idx ? '#34d399' : '#10b981'"
-                                                stroke="#0b171c" stroke-width="1.5"
-                                                class="transition-all duration-200" />
-                                    </g>
-                                </svg>
-
-                                <div v-if="hoveredPoint"
-                                     class="absolute z-50 pointer-events-none transition-all duration-150 ease-out transform"
-                                     :class="tooltipPositionClass"
-                                     :style="{ left: (hoveredPoint.x / 600 * 100) + '%', top: (hoveredPoint.y / 220 * 100) + '%' }">
-                                    <div class="glass-card p-3 shadow-2xl border border-white/20 bg-dark-900/95 backdrop-blur-md rounded-xl text-xs space-y-2 min-w-[210px] animate-fade-in">
-                                        <div class="flex items-center justify-between border-b border-white/10 pb-1.5 text-[10px] text-white/50 font-mono">
-                                            <span>{{ hoveredPoint.collected_at }}</span>
-                                            <span class="text-emerald-400 font-bold">Price: {{ hoveredPoint.price }}</span>
-                                        </div>
-
-                                        <div class="flex items-center justify-between gap-2 py-1.5 bg-white/5 rounded-lg px-2 border border-white/5">
-                                            <div class="flex items-center gap-1.5">
-                                                <img :alt="selectedItemName" :src="getResourceIcon(selectedItem)" @error="handleIconError($event, selectedItem)" class="w-4 h-4 object-contain" />
-                                                <span class="font-mono font-bold text-white text-xs">{{ formatVolume(hoveredPoint.avg_amount) }}</span>
-                                                <span class="text-[10px] text-white/60 truncate max-w-[60px]" :title="selectedItemName">{{ selectedItemName }}</span>
-                                            </div>
-
-                                            <svg class="w-3.5 h-3.5 text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-                                            </svg>
-
-                                            <div class="flex items-center gap-1.5">
-                                                <img :alt="selectedTargetName" :src="getResourceIcon(selectedTarget)" @error="handleIconError($event, selectedTarget)" class="w-4 h-4 object-contain" />
-                                                <span class="font-mono font-bold text-emerald-400 text-xs">{{ formatVolume(hoveredPoint.avg_target_amount) }}</span>
-                                                <span class="text-[10px] text-emerald-400/80 truncate max-w-[60px]" :title="selectedTargetName">{{ selectedTargetName }}</span>
-                                            </div>
-                                        </div>
-
-                                        <div class="flex items-center justify-between text-[10px] text-white/40 font-mono pt-0.5">
-                                            <span>Offers: <strong class="text-white/80">{{ hoveredPoint.offers_count }}</strong></span>
-                                            <span>Sellers: <strong class="text-white/80">{{ hoveredPoint.sellers_count }}</strong></span>
-                                            <span>Vol: <strong class="text-white/80">{{ formatVolume(hoveredPoint.volume) }}</strong></span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div v-if="history.length === 1" class="flex justify-center text-[8px] text-white/30 px-9 mt-1 font-mono">
-                                    <span>{{ history[0]?.collected_at }}</span>
-                                </div>
-                                <div v-else class="flex justify-between text-[8px] text-white/30 px-9 mt-1 font-mono">
-                                    <span>{{ history[0]?.collected_at }}</span>
-                                    <span>{{ history[Math.floor(history.length / 2)]?.collected_at }}</span>
-                                    <span>{{ history[history.length - 1]?.collected_at }}</span>
-                                </div>
-                            </template>
-                            <div v-else class="absolute inset-0 flex items-center justify-center text-xs text-white/20">
-                                {{ t('market.not_enough_history') }}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Demand Dynamic Chart Card -->
-                    <div class="glass-card p-6 transition-all duration-300">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-sm font-semibold text-white">{{ t('market.volume_offers') }}</h3>
-                            <div class="flex items-center gap-4 text-[10px] text-white/40">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="w-2.5 h-2.5 bg-blue-500/20 border border-blue-500 rounded-sm inline-block"></span>
-                                    <span>{{ t('market.sellers_count') }}</span>
-                                </div>
-                                <div class="flex items-center gap-1.5">
-                                    <span class="w-2.5 h-2.5 bg-indigo-500/20 border border-indigo-500 rounded-sm inline-block"></span>
-                                    <span>{{ t('market.active_offers') }}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- SVG Demand Chart -->
-                        <div class="h-64 w-full relative pt-2">
-                            <template v-if="history.length > 0">
-                                <svg class="w-full h-full" viewBox="0 0 600 220" preserveAspectRatio="none">
-                                    <line v-for="grid in 4" :key="'grid-dy-'+grid"
-                                          x1="40" :y1="20 + (grid - 1) * 50" x2="590" :y2="20 + (grid - 1) * 50"
-                                          stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
-
-                                    <text x="35" y="23" fill="rgba(255,255,255,0.3)" font-size="8" text-anchor="end" font-family="monospace">{{ chartMaxOffersLabel }}</text>
-                                    <text x="35" y="215" fill="rgba(255,255,255,0.3)" font-size="8" text-anchor="end" font-family="monospace">0</text>
-
-                                    <path :d="chartSellersAreaPath" fill="rgba(59, 130, 246, 0.1)" class="transition-all duration-500 ease-out"/>
-                                    <path :d="chartSellersLinePath" fill="none" stroke="#3b82f6" stroke-width="1.5" class="transition-all duration-500 ease-out"/>
-
-                                    <path :d="chartOffersAreaPath" fill="rgba(99, 102, 241, 0.1)" class="transition-all duration-500 ease-out"/>
-                                    <path :d="chartOffersLinePath" fill="none" stroke="#6366f1" stroke-width="1.5" class="transition-all duration-500 ease-out"/>
-
-                                    <rect v-for="(b, idx) in chartPoints" :key="'vol-bar-'+idx"
-                                          :x="b.x - (history.length === 1 ? 12 : 3)" :y="b.vy" :width="history.length === 1 ? 24 : 6" :height="Math.max(2, 220 - b.vy)"
-                                          fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" stroke-width="0.5" rx="1"
-                                          class="transition-all duration-300"/>
-                                </svg>
-                                <div v-if="history.length === 1" class="flex justify-center text-[8px] text-white/30 px-9 mt-1 font-mono">
-                                    <span>{{ history[0]?.collected_at }}</span>
-                                </div>
-                                <div v-else class="flex justify-between text-[8px] text-white/30 px-9 mt-1 font-mono">
-                                    <span>{{ history[0]?.collected_at }}</span>
-                                    <span>{{ history[Math.floor(history.length / 2)]?.collected_at }}</span>
-                                    <span>{{ history[history.length - 1]?.collected_at }}</span>
-                                </div>
-                            </template>
-                            <div v-else class="absolute inset-0 flex items-center justify-center text-xs text-white/20">
-                                {{ t('market.not_enough_history') }}
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Demand Dynamic Chart Card (shared component) -->
+                    <market-demand-chart
+                        :history="history"
+                        :title="t('market.volume_offers')"
+                        :format-volume="formatVolume" />
                 </div>
 
                 <!-- Calculator & Market Details Side Panel (Right columns) -->
@@ -1024,10 +880,13 @@ import { TRADABLE_RESOURCES } from '../lang/resourcesCatalog';
 
 import Spinner from '../components/Spinner.vue';
 import LoadingOverlay from '../components/LoadingOverlay.vue';
+import MarketPriceChart from '../components/market/MarketPriceChart.vue';
+import MarketDemandChart from '../components/market/MarketDemandChart.vue';
+import MarketDataTable from '../components/market/MarketDataTable.vue';
 
 export default {
     name: 'MarketAnalytics',
-    components: { Spinner, LoadingOverlay },
+    components: { Spinner, LoadingOverlay, MarketPriceChart, MarketDemandChart, MarketDataTable },
     setup() {
         const route = useRoute();
         const router = useRouter();
@@ -1249,7 +1108,6 @@ export default {
         const periodInfo = ref(null);
         const mirroredStats = ref(null);
         const mirroredHistory = ref(null);
-        const hoveredPoint = ref(null);
 
         const logs = ref([]);
         const logsPagination = ref({ current_page: 1, last_page: 1, total: 0 });
@@ -1360,128 +1218,6 @@ export default {
             }
         };
 
-        const chartPoints = computed(() => {
-            if (history.value.length === 0) return [];
-            const w = 550;
-            const isSingle = history.value.length === 1;
-            const maxPrice = Math.max(...history.value.map(h => h.price)) || 1;
-            const minPrice = Math.min(...history.value.map(h => h.price)) || 0;
-            const priceDiff = (maxPrice - minPrice) || 1;
-
-            const maxSellers = Math.max(...history.value.map(h => h.sellers_count)) || 1;
-            const maxOffers = Math.max(...history.value.map(h => h.offers_count)) || 1;
-            const maxVolume = Math.max(...history.value.map(h => h.volume)) || 1;
-
-            return history.value.map((d, idx) => {
-                const stepX = isSingle ? 0 : w / (history.value.length - 1);
-                const x = isSingle ? 315 : 40 + idx * stepX;
-                const py = maxPrice === minPrice ? 120 : 220 - ((d.price - minPrice) / priceDiff) * 180 - 10;
-                const sy = 220 - (d.sellers_count / maxSellers) * 180 - 10;
-                const oy = 220 - (d.offers_count / maxOffers) * 180 - 10;
-                const vy = 220 - (d.volume / maxVolume) * 180 - 10;
-                return {
-                    x, y: py, sy, oy, vy,
-                    price: d.price,
-                    volume: d.volume,
-                    sellers_count: d.sellers_count,
-                    offers_count: d.offers_count,
-                    avg_amount: d.avg_amount || 1,
-                    avg_target_amount: d.avg_target_amount || 1,
-                    collected_at: d.collected_at
-                };
-            });
-        });
-
-        const chartPriceLinePath = computed(() => {
-            const pts = chartPoints.value;
-            if (pts.length === 0) return '';
-            if (pts.length === 1) return `M 40 ${pts[0].y} L 590 ${pts[0].y}`;
-            return pts.reduce((path, p, idx) => (idx === 0 ? `M ${p.x} ${p.y}` : `${path} L ${p.x} ${p.y}`), '');
-        });
-
-        const chartPriceAreaPath = computed(() => {
-            const pts = chartPoints.value;
-            if (pts.length === 0) return '';
-            if (pts.length === 1) return `M 40 ${pts[0].y} L 590 ${pts[0].y} L 590 220 L 40 220 Z`;
-            return `${chartPriceLinePath.value} L ${pts[pts.length - 1].x} 220 L ${pts[0].x} 220 Z`;
-        });
-
-        const chartSellersLinePath = computed(() => {
-            const pts = chartPoints.value;
-            if (pts.length === 0) return '';
-            if (pts.length === 1) return `M 40 ${pts[0].sy} L 590 ${pts[0].sy}`;
-            return pts.reduce((path, p, idx) => (idx === 0 ? `M ${p.x} ${p.sy}` : `${path} L ${p.x} ${p.sy}`), '');
-        });
-
-        const chartSellersAreaPath = computed(() => {
-            const pts = chartPoints.value;
-            if (pts.length === 0) return '';
-            if (pts.length === 1) return `M 40 ${pts[0].sy} L 590 ${pts[0].sy} L 590 220 L 40 220 Z`;
-            return `${chartSellersLinePath.value} L ${pts[pts.length - 1].x} 220 L ${pts[0].x} 220 Z`;
-        });
-
-        const chartOffersLinePath = computed(() => {
-            const pts = chartPoints.value;
-            if (pts.length === 0) return '';
-            if (pts.length === 1) return `M 40 ${pts[0].oy} L 590 ${pts[0].oy}`;
-            return pts.reduce((path, p, idx) => (idx === 0 ? `M ${p.x} ${p.oy}` : `${path} L ${p.x} ${p.oy}`), '');
-        });
-
-        const chartOffersAreaPath = computed(() => {
-            const pts = chartPoints.value;
-            if (pts.length === 0) return '';
-            if (pts.length === 1) return `M 40 ${pts[0].oy} L 590 ${pts[0].oy} L 590 220 L 40 220 Z`;
-            return `${chartOffersLinePath.value} L ${pts[pts.length - 1].x} 220 L ${pts[0].x} 220 Z`;
-        });
-
-        const chartMeanY = computed(() => {
-            if (!stats.value || !stats.value.average || history.value.length === 0) return 120;
-            const maxPrice = Math.max(...history.value.map(h => h.price)) || 1;
-            const minPrice = Math.min(...history.value.map(h => h.price)) || 0;
-            const priceDiff = (maxPrice - minPrice) || 1;
-            const calcY = maxPrice === minPrice ? 120 : 220 - ((stats.value.average - minPrice) / priceDiff) * 180 - 10;
-            return Math.max(20, Math.min(210, calcY));
-        });
-
-        const chartMaxPriceLabel = computed(() => {
-            if (history.value.length === 0) return '';
-            const max = Math.max(...history.value.map(h => h.price));
-            return max >= 1000 ? formatVolume(max) : max.toFixed(2);
-        });
-
-        const chartMinPriceLabel = computed(() => {
-            if (history.value.length === 0) return '';
-            const min = Math.min(...history.value.map(h => h.price));
-            return min >= 1000 ? formatVolume(min) : min.toFixed(2);
-        });
-
-        const chartMidPriceLabel = computed(() => {
-            if (history.value.length === 0) return '';
-            const max = Math.max(...history.value.map(h => h.price));
-            const min = Math.min(...history.value.map(h => h.price));
-            const mid = (max + min) / 2;
-            return mid >= 1000 ? formatVolume(mid) : mid.toFixed(2);
-        });
-
-        const chartMaxOffersLabel = computed(() => {
-            if (history.value.length === 0) return '';
-            const maxSellers = Math.max(...history.value.map(h => h.sellers_count)) || 0;
-            const maxOffers = Math.max(...history.value.map(h => h.offers_count)) || 0;
-            const maxVal = Math.max(maxSellers, maxOffers);
-            return maxVal >= 1000 ? formatVolume(maxVal) : String(maxVal);
-        });
-
-        const tooltipPositionClass = computed(() => {
-            if (!hoveredPoint.value) return '';
-            const xRatio = hoveredPoint.value.x / 600;
-            const yRatio = hoveredPoint.value.y / 220;
-            let translateX = '-translate-x-1/2';
-            if (xRatio > 0.75) translateX = '-translate-x-[90%]';
-            else if (xRatio < 0.25) translateX = '-translate-x-[10%]';
-            let translateY = '-translate-y-full mb-3';
-            if (yRatio < 0.3) translateY = 'translate-y-2 mt-2';
-            return `${translateX} ${translateY}`;
-        });
 
         // Server API methods
         const loadServers = async () => {
@@ -1957,16 +1693,6 @@ export default {
             handleIconError,
             getStatusBadgeClass,
             formatDateTime,
-            chartPoints,
-            chartPriceLinePath,
-            chartPriceAreaPath,
-            chartSellersLinePath,
-            chartSellersAreaPath,
-            chartOffersLinePath,
-            chartOffersAreaPath,
-            chartMeanY,
-            hoveredPoint,
-            tooltipPositionClass,
             showPopularItems,
             showArbitrageSchemes,
             showActiveListings,

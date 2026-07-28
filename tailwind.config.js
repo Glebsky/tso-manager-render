@@ -7,6 +7,10 @@ export default {
   ],
   theme: {
     extend: {
+      screens: {
+        // Narrow-phone breakpoint (360-412px devices sit below Tailwind's `sm`)
+        xs: '400px',
+      },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },

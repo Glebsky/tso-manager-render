@@ -1,37 +1,39 @@
 <template>
     <div class="max-w-7xl mx-auto space-y-8 pb-12 transition-all duration-500 ease-out">
         <!-- Page Header -->
-        <div class="glass-card p-6 border-white/10 shadow-2xl relative z-30 transition-all duration-500 hover:border-white/20">
+        <div class="glass-card p-4 sm:p-6 border-white/10 shadow-2xl relative z-30 transition-all duration-500 hover:border-white/20">
             <div class="absolute inset-0 overflow-hidden rounded-[inherit] pointer-events-none">
                 <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl transition-all duration-700"></div>
             </div>
 
-            <!-- Language Switcher in Upper Right Corner -->
-            <div class="absolute top-5 right-5 z-50">
-                <LanguageSwitcher />
-            </div>
-
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10 pr-16 md:pr-24">
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:scale-105 flex-shrink-0">
-                        <svg class="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18 9 11.25l4.306 4.307a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-3.75-1.002m3.75 1.002-1.002 3.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <div class="flex items-center gap-2 flex-wrap">
-                            <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">TSO Market Analytics</h1>
+            <div class="relative z-10 flex flex-col gap-3 sm:gap-4">
+                <!-- Row 1: brand + language switcher (switcher is in flow, so nothing overlaps) -->
+                <div class="flex items-start justify-between gap-3">
+                    <div class="flex items-start gap-3 sm:gap-4 min-w-0">
+                        <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:scale-105 flex-shrink-0">
+                            <svg class="w-6 h-6 sm:w-7 sm:h-7 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18 9 11.25l4.306 4.307a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-3.75-1.002m3.75 1.002-1.002 3.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                            </svg>
+                        </div>
+                        <div class="min-w-0 pill-row gap-x-2 gap-y-1">
+                            <h1 class="text-xl sm:text-3xl font-bold text-white tracking-tight wrap-anywhere">TSO Market Analytics</h1>
                             <span class="badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] uppercase font-bold px-2.5 py-0.5 rounded-full">{{ t('market.public_portal') }}</span>
                         </div>
-                        <p class="text-white/50 text-xs sm:text-sm mt-1">{{ t('market.public_subtitle') }}</p>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <LanguageSwitcher />
                     </div>
                 </div>
 
-                <div class="flex justify-end items-center gap-3 flex-wrap">
+                <!-- Row 2: subtitle runs the full width, right up to the card edge -->
+                <p class="text-white/50 text-xs sm:text-sm w-full">{{ t('market.public_subtitle') }}</p>
+
+                <!-- Row 3: controls, flush against the right edge -->
+                <div class="flex flex-wrap items-center justify-end gap-2 sm:gap-3 w-full">
                     <!-- Server selector: country code + game world name -->
-                    <div v-if="servers.length" class="relative">
+                    <div v-if="servers.length" class="relative flex-shrink-0">
                         <select v-model="selectedServerId" @change="onServerChange" :aria-label="t('market.server')"
-                                class="appearance-none bg-white/5 border border-white/10 rounded-xl pl-3.5 pr-9 py-2 text-xs text-white/80 cursor-pointer transition-all duration-300 hover:bg-white/10 hover:border-white/20 focus:outline-none focus:border-emerald-500/50">
+                                class="appearance-none bg-white/5 border border-white/10 rounded-xl pl-3.5 pr-9 py-2 text-xs text-white/80 cursor-pointer transition-all duration-300 hover:bg-white/10 hover:border-white/20 focus:outline-none focus:border-emerald-500/50 max-w-[60vw] truncate">
                             <option v-for="srv in servers" :key="srv.server_id" :value="srv.server_id" class="bg-dark-900">
                                 {{ serverOptionLabel(srv) }}
                             </option>
@@ -41,14 +43,14 @@
                         </svg>
                     </div>
 
-                    <div class="flex items-center gap-2 bg-white/5 border border-white/10 px-3.5 py-2 rounded-xl text-xs text-white/70 transition-all duration-300 hover:bg-white/10">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <div class="flex items-center gap-2 bg-white/5 border border-white/10 px-3.5 py-2 rounded-xl text-xs text-white/70 transition-all duration-300 hover:bg-white/10 flex-shrink-0 whitespace-nowrap">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0"></span>
                         <span>{{ t('market.live_title') }}</span>
                     </div>
 
                     <!-- Admin Panel Link for Authenticated Users -->
-                    <router-link v-if="isAuthenticated" to="/admin/market" class="btn-primary py-2 px-3.5 text-xs font-semibold rounded-xl inline-flex items-center gap-1.5 shadow-lg shadow-emerald-500/20 transition-all duration-300 hover:scale-105">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <router-link v-if="isAuthenticated" to="/admin/market" class="btn-primary py-2 px-3.5 text-xs font-semibold rounded-xl inline-flex items-center gap-1.5 shadow-lg shadow-emerald-500/20 transition-all duration-300 hover:scale-105 flex-shrink-0 whitespace-nowrap">
+                        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 18H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 12h10.5" />
                         </svg>
                         <span>{{ t('dashboard.title') }}</span>
@@ -245,184 +247,28 @@
                         </div>
                     </div>
 
-                    <!-- Price Dynamic Chart Card -->
-                    <div class="glass-card p-6 relative transition-all duration-300" :class="hoveredPoint ? 'z-40' : 'z-10'">
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-                            <h3 class="text-sm font-semibold text-white">{{ t('market.price_history', { item: selectedItemName, target: selectedTargetName }) }}</h3>
+                    <!-- Price Dynamic Chart Card (shared component) -->
+                    <market-price-chart
+                        :history="history"
+                        :stats="stats"
+                        :periods="periods"
+                        :selected-period="selectedPeriod"
+                        :title="t('market.price_history', { item: selectedItemName, target: selectedTargetName })"
+                        :item-id="selectedItem"
+                        :target-id="selectedTarget"
+                        :item-name="selectedItemName"
+                        :target-name="selectedTargetName"
+                        gradient-id="publicPriceGrad"
+                        :get-resource-icon="getResourceIcon"
+                        :handle-icon-error="handleIconError"
+                        :format-volume="formatVolume"
+                        @change-period="changePeriod" />
 
-                            <div class="flex items-center gap-4">
-                                <!-- Period Selection Buttons -->
-                                <div class="flex items-center bg-white/5 border border-white/10 p-0.5 rounded-lg text-[10px] font-semibold">
-                                    <button v-for="p in periods" :key="p.value" @click="changePeriod(p.value)"
-                                            class="px-2.5 py-1 rounded transition-all duration-300 uppercase tracking-wider"
-                                            :class="selectedPeriod === p.value ? 'bg-emerald-500 text-white shadow' : 'text-white/40 hover:text-white'">
-                                        {{ p.label }}
-                                    </button>
-                                </div>
-
-                                <!-- Chart Price Indicator Legend -->
-                                <div class="flex items-center gap-4 text-[10px] text-white/40">
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="w-2.5 h-0.5 bg-emerald-500 inline-block"></span>
-                                        <span>{{ t('market.average_price') }}</span>
-                                    </div>
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="w-2.5 h-0.5 bg-white/20 border-dashed border inline-block"></span>
-                                        <span>{{ t('market.global_mean') }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- SVG Price Chart -->
-                        <div class="h-64 w-full relative z-40 pt-2">
-                            <template v-if="history.length > 0">
-                                <svg class="w-full h-full" viewBox="0 0 600 220" preserveAspectRatio="none">
-                                    <defs>
-                                        <linearGradient id="publicPriceGrad" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stop-color="#10b981" stop-opacity="0.25"/>
-                                            <stop offset="100%" stop-color="#10b981" stop-opacity="0.0"/>
-                                        </linearGradient>
-                                    </defs>
-
-                                    <line v-for="grid in 4" :key="'grid-y-'+grid"
-                                          x1="40" :y1="20 + (grid - 1) * 50" x2="590" :y2="20 + (grid - 1) * 50"
-                                          stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
-
-                                    <text x="35" y="23" fill="rgba(255,255,255,0.3)" font-size="8" text-anchor="end" font-family="monospace">{{ chartMaxPriceLabel }}</text>
-                                    <text x="35" y="123" fill="rgba(255,255,255,0.2)" font-size="8" text-anchor="end" font-family="monospace">{{ chartMidPriceLabel }}</text>
-                                    <text x="35" y="215" fill="rgba(255,255,255,0.3)" font-size="8" text-anchor="end" font-family="monospace">{{ chartMinPriceLabel }}</text>
-
-                                    <path :d="chartPriceAreaPath" fill="url(#publicPriceGrad)" class="transition-all duration-500 ease-out"/>
-                                    <path :d="chartPriceLinePath" fill="none" stroke="#10b981" stroke-width="2" class="transition-all duration-500 ease-out"/>
-                                    <line x1="40" :y1="chartMeanY" x2="590" :y2="chartMeanY"
-                                          stroke="rgba(255,255,255,0.2)" stroke-dasharray="4,4" stroke-width="1.5" class="transition-all duration-500"/>
-
-                                    <!-- Data Dots with Stable Invisible Hit Targets -->
-                                    <g v-for="(p, idx) in chartPoints" :key="'dot-group-'+idx"
-                                       class="cursor-pointer"
-                                       @mouseenter="hoveredPoint = { ...p, index: idx }"
-                                       @mouseleave="hoveredPoint = null">
-                                        <!-- Invisible 14px Hit Target area -->
-                                        <circle :cx="p.x" :cy="p.y" r="14" fill="transparent" />
-                                        <!-- Visible Point -->
-                                        <circle :cx="p.x" :cy="p.y" :r="hoveredPoint?.index === idx ? 5.5 : 3.5"
-                                                :fill="hoveredPoint?.index === idx ? '#34d399' : '#10b981'"
-                                                stroke="#0b171c" stroke-width="1.5"
-                                                class="transition-all duration-200" />
-                                    </g>
-                                </svg>
-
-                                <!-- Floating Interactive Glassmorphism Tooltip -->
-                                <div v-if="hoveredPoint"
-                                     class="absolute z-50 pointer-events-none transition-all duration-150 ease-out transform"
-                                     :class="tooltipPositionClass"
-                                     :style="{ left: (hoveredPoint.x / 600 * 100) + '%', top: (hoveredPoint.y / 220 * 100) + '%' }">
-                                    <div class="glass-card p-3 shadow-2xl border border-white/20 bg-dark-900/95 backdrop-blur-md rounded-xl text-xs space-y-2 min-w-[210px] animate-fade-in">
-                                        <!-- Tooltip Header: Date & Rate -->
-                                        <div class="flex items-center justify-between border-b border-white/10 pb-1.5 text-[10px] text-white/50 font-mono">
-                                            <span>{{ hoveredPoint.collected_at }}</span>
-                                            <span class="text-emerald-400 font-bold">Price: {{ hoveredPoint.price }}</span>
-                                        </div>
-
-                                        <!-- Exchange Details: Amount Selling -> Amount Buying -->
-                                        <div class="flex items-center justify-between gap-2 py-1.5 bg-white/5 rounded-lg px-2 border border-white/5">
-                                            <!-- Selling Item -->
-                                            <div class="flex items-center gap-1.5">
-                                                <img :alt="selectedItemName" :src="getResourceIcon(selectedItem)" @error="handleIconError($event, selectedItem)" class="w-4 h-4 object-contain" />
-                                                <span class="font-mono font-bold text-white text-xs">{{ formatVolume(hoveredPoint.avg_amount) }}</span>
-                                                <span class="text-[10px] text-white/60 truncate max-w-[60px]" :title="selectedItemName">{{ selectedItemName }}</span>
-                                            </div>
-
-                                            <!-- Arrow -->
-                                            <svg class="w-3.5 h-3.5 text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-                                            </svg>
-
-                                            <!-- Buying Item -->
-                                            <div class="flex items-center gap-1.5">
-                                                <img :alt="selectedTargetName" :src="getResourceIcon(selectedTarget)" @error="handleIconError($event, selectedTarget)" class="w-4 h-4 object-contain" />
-                                                <span class="font-mono font-bold text-emerald-400 text-xs">{{ formatVolume(hoveredPoint.avg_target_amount) }}</span>
-                                                <span class="text-[10px] text-emerald-400/80 truncate max-w-[60px]" :title="selectedTargetName">{{ selectedTargetName }}</span>
-                                            </div>
-                                        </div>
-
-                                        <!-- Point Stats Summary -->
-                                        <div class="flex items-center justify-between text-[10px] text-white/40 font-mono pt-0.5">
-                                            <span>{{ t('market.offers') }} <strong class="text-white/80">{{ hoveredPoint.offers_count }}</strong></span>
-                                            <span>{{ t('market.sellers') }} <strong class="text-white/80">{{ hoveredPoint.sellers_count }}</strong></span>
-                                            <span>{{ t('market.vol') }} <strong class="text-white/80">{{ formatVolume(hoveredPoint.volume) }}</strong></span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div v-if="history.length === 1" class="flex justify-center text-[8px] text-white/30 px-9 mt-1 font-mono">
-                                    <span>{{ history[0]?.collected_at }}</span>
-                                </div>
-                                <div v-else class="flex justify-between text-[8px] text-white/30 px-9 mt-1 font-mono">
-                                    <span>{{ history[0]?.collected_at }}</span>
-                                    <span>{{ history[Math.floor(history.length / 2)]?.collected_at }}</span>
-                                    <span>{{ history[history.length - 1]?.collected_at }}</span>
-                                </div>
-                            </template>
-                            <div v-else class="absolute inset-0 flex items-center justify-center text-xs text-white/20">
-                                {{ t('market.not_enough_history') }}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Demand Dynamic Chart Card -->
-                    <div class="glass-card p-6 transition-all duration-300">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-sm font-semibold text-white">{{ t('market.volume_offers') }}</h3>
-                            <div class="flex items-center gap-4 text-[10px] text-white/40">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="w-2.5 h-2.5 bg-blue-500/20 border border-blue-500 rounded-sm inline-block"></span>
-                                    <span>{{ t('market.sellers_count') }}</span>
-                                </div>
-                                <div class="flex items-center gap-1.5">
-                                    <span class="w-2.5 h-2.5 bg-indigo-500/20 border border-indigo-500 rounded-sm inline-block"></span>
-                                    <span>{{ t('market.active_offers') }}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- SVG Demand Chart -->
-                        <div class="h-64 w-full relative pt-2">
-                            <template v-if="history.length > 0">
-                                <svg class="w-full h-full" viewBox="0 0 600 220" preserveAspectRatio="none">
-                                    <line v-for="grid in 4" :key="'grid-dy-'+grid"
-                                          x1="40" :y1="20 + (grid - 1) * 50" x2="590" :y2="20 + (grid - 1) * 50"
-                                          stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
-
-                                    <text x="35" y="23" fill="rgba(255,255,255,0.3)" font-size="8" text-anchor="end" font-family="monospace">{{ chartMaxOffersLabel }}</text>
-                                    <text x="35" y="215" fill="rgba(255,255,255,0.3)" font-size="8" text-anchor="end" font-family="monospace">0</text>
-
-                                    <path :d="chartSellersAreaPath" fill="rgba(59, 130, 246, 0.1)" class="transition-all duration-500 ease-out"/>
-                                    <path :d="chartSellersLinePath" fill="none" stroke="#3b82f6" stroke-width="1.5" class="transition-all duration-500 ease-out"/>
-
-                                    <path :d="chartOffersAreaPath" fill="rgba(99, 102, 241, 0.1)" class="transition-all duration-500 ease-out"/>
-                                    <path :d="chartOffersLinePath" fill="none" stroke="#6366f1" stroke-width="1.5" class="transition-all duration-500 ease-out"/>
-
-                                    <rect v-for="(b, idx) in chartPoints" :key="'vol-bar-'+idx"
-                                          :x="b.x - (history.length === 1 ? 12 : 3)" :y="b.vy" :width="history.length === 1 ? 24 : 6" :height="Math.max(2, 220 - b.vy)"
-                                          fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" stroke-width="0.5" rx="1"
-                                          class="transition-all duration-300"/>
-                                </svg>
-                                <div v-if="history.length === 1" class="flex justify-center text-[8px] text-white/30 px-9 mt-1 font-mono">
-                                    <span>{{ history[0]?.collected_at }}</span>
-                                </div>
-                                <div v-else class="flex justify-between text-[8px] text-white/30 px-9 mt-1 font-mono">
-                                    <span>{{ history[0]?.collected_at }}</span>
-                                    <span>{{ history[Math.floor(history.length / 2)]?.collected_at }}</span>
-                                    <span>{{ history[history.length - 1]?.collected_at }}</span>
-                                </div>
-                            </template>
-                            <div v-else class="absolute inset-0 flex items-center justify-center text-xs text-white/20">
-                                {{ t('market.not_enough_history') }}
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Demand Dynamic Chart Card (shared component) -->
+                    <market-demand-chart
+                        :history="history"
+                        :title="t('market.volume_offers')"
+                        :format-volume="formatVolume" />
                 </div>
 
                 <!-- Calculator Side Panel (Right columns) -->
@@ -557,8 +403,8 @@
 
             <!-- Profitable Exchange Schemes Card -->
             <div class="glass-card p-6 animate-fade-in-up transition-all duration-500 hover:border-white/20">
-                <div class="flex items-center justify-between mb-6 border-b border-white/5 pb-3">
-                    <div class="flex items-center gap-3">
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-6 border-b border-white/5 pb-3">
+                    <div class="flex items-center gap-3 min-w-0">
                         <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 0 0-3.7-3.7 48.656 48.656 0 0 0-7.324 0 4.006 4.006 0 0 0-3.7 3.7C4.547 9.547 4.5 10.768 4.5 12s.047 2.453.138 3.662a4.006 4.006 0 0 0 3.7 3.7 48.656 48.656 0 0 0 7.324 0 4.006 4.006 0 0 0 3.7-3.7C19.453 14.453 19.5 13.232 19.5 12Zm0 0h.008v.008h-.008V12Zm-3 0h.008v.008h-.008V12c0-1.68-.282-3.297-.802-4.806m-9.396 0A20.732 20.732 0 0 1 12 6.75c1.455 0 2.843.15 4.198.437M12 6.75a20.733 20.733 0 0 0-4.198.437m0 0A20.73 20.73 0 0 0 7 12c0 1.68.282 3.297.802 4.806m9.396 0A20.73 20.73 0 0 1 12 17.25c-1.455 0-2.843-.15-4.198-.437M12 17.25a20.73 20.73 0 0 0 4.198-.437" />
@@ -569,7 +415,7 @@
                             <span class="text-xs text-white/40">{{ t('market.schemes_hint') }}</span>
                         </div>
                     </div>
-                    <div class="flex items-center gap-4">
+                    <div class="pill-row gap-3 flex-shrink-0">
                         <span class="badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs py-1 px-3">
                             {{ t('market.schemes_found', { count: arbitrageLoops.length }) }}
                         </span>
@@ -765,10 +611,13 @@ import { getGameImageUrl, handleGameImageError } from '../services/gameImageServ
 import Spinner from '../components/Spinner.vue';
 import LoadingOverlay from '../components/LoadingOverlay.vue';
 import LanguageSwitcher from '../components/LanguageSwitcher.vue';
+import MarketPriceChart from '../components/market/MarketPriceChart.vue';
+import MarketDemandChart from '../components/market/MarketDemandChart.vue';
+import MarketDataTable from '../components/market/MarketDataTable.vue';
 
 export default {
     name: 'PublicMarketAnalytics',
-    components: { Spinner, LoadingOverlay, LanguageSwitcher },
+    components: { Spinner, LoadingOverlay, LanguageSwitcher, MarketPriceChart, MarketDemandChart, MarketDataTable },
     setup() {
         const route = useRoute();
         const router = useRouter();
@@ -853,28 +702,6 @@ export default {
         const stats = ref(null);
         const activeInfo = ref(null);
         const periodInfo = ref(null);
-        const hoveredPoint = ref(null);
-
-        const tooltipPositionClass = computed(() => {
-            if (!hoveredPoint.value) return '';
-            const xRatio = hoveredPoint.value.x / 600;
-            const yRatio = hoveredPoint.value.y / 220;
-
-            let translateX = '-translate-x-1/2';
-            if (xRatio > 0.75) {
-                translateX = '-translate-x-[90%]';
-            } else if (xRatio < 0.25) {
-                translateX = '-translate-x-[10%]';
-            }
-
-            let translateY = '-translate-y-full mb-3';
-            if (yRatio < 0.3) {
-                translateY = 'translate-y-2 mt-2';
-            }
-
-            return `${translateX} ${translateY}`;
-        });
-
         // Selection & Filter variables
         const selectionMode = ref('visual'); // 'dropdown' or 'visual'
         const visualTab = ref(1); // 1 = Sell, 2 = Buy
@@ -1069,136 +896,6 @@ export default {
             const s = seconds % 60;
             return `${h}h ${m}m ${s}s`;
         };
-
-        // Charts calculations
-        const chartPoints = computed(() => {
-            if (history.value.length === 0) return [];
-            const w = 550;
-            const isSingle = history.value.length === 1;
-
-            const maxPrice = Math.max(...history.value.map(h => h.price)) || 1;
-            const minPrice = Math.min(...history.value.map(h => h.price)) || 0;
-            const priceDiff = (maxPrice - minPrice) || 1;
-
-            const maxSellers = Math.max(...history.value.map(h => h.sellers_count)) || 1;
-            const maxOffers = Math.max(...history.value.map(h => h.offers_count)) || 1;
-            const maxVolume = Math.max(...history.value.map(h => h.volume)) || 1;
-
-            return history.value.map((d, idx) => {
-                const stepX = isSingle ? 0 : w / (history.value.length - 1);
-                const x = isSingle ? 315 : 40 + idx * stepX;
-
-                const py = maxPrice === minPrice
-                    ? 120
-                    : 220 - ((d.price - minPrice) / priceDiff) * 180 - 10;
-
-                const sy = 220 - (d.sellers_count / maxSellers) * 180 - 10;
-                const oy = 220 - (d.offers_count / maxOffers) * 180 - 10;
-                const vy = 220 - (d.volume / maxVolume) * 180 - 10;
-
-                return {
-                    x, y: py, sy, oy, vy,
-                    price: d.price,
-                    volume: d.volume,
-                    sellers_count: d.sellers_count,
-                    offers_count: d.offers_count,
-                    avg_amount: d.avg_amount || 1,
-                    avg_target_amount: d.avg_target_amount || 1,
-                    collected_at: d.collected_at
-                };
-            });
-        });
-
-        const chartPriceLinePath = computed(() => {
-            const pts = chartPoints.value;
-            if (pts.length === 0) return '';
-            if (pts.length === 1) return `M 40 ${pts[0].y} L 590 ${pts[0].y}`;
-            return pts.reduce((path, p, idx) => {
-                return idx === 0 ? `M ${p.x} ${p.y}` : `${path} L ${p.x} ${p.y}`;
-            }, '');
-        });
-
-        const chartPriceAreaPath = computed(() => {
-            const pts = chartPoints.value;
-            if (pts.length === 0) return '';
-            if (pts.length === 1) return `M 40 ${pts[0].y} L 590 ${pts[0].y} L 590 220 L 40 220 Z`;
-            const line = chartPriceLinePath.value;
-            return `${line} L ${pts[pts.length - 1].x} 220 L ${pts[0].x} 220 Z`;
-        });
-
-        const chartMeanY = computed(() => {
-            if (!stats.value || !stats.value.average || history.value.length === 0) return 120;
-            const maxPrice = Math.max(...history.value.map(h => h.price)) || 1;
-            const minPrice = Math.min(...history.value.map(h => h.price)) || 0;
-            const priceDiff = (maxPrice - minPrice) || 1;
-
-            const calcY = maxPrice === minPrice
-                ? 120
-                : 220 - ((stats.value.average - minPrice) / priceDiff) * 180 - 10;
-            return Math.max(20, Math.min(210, calcY));
-        });
-
-        const chartSellersLinePath = computed(() => {
-            const pts = chartPoints.value;
-            if (pts.length === 0) return '';
-            if (pts.length === 1) return `M 40 ${pts[0].sy} L 590 ${pts[0].sy}`;
-            return pts.reduce((path, p, idx) => {
-                return idx === 0 ? `M ${p.x} ${p.sy}` : `${path} L ${p.x} ${p.sy}`;
-            }, '');
-        });
-
-        const chartSellersAreaPath = computed(() => {
-            const pts = chartPoints.value;
-            if (pts.length === 0) return '';
-            if (pts.length === 1) return `M 40 ${pts[0].sy} L 590 ${pts[0].sy} L 590 220 L 40 220 Z`;
-            const line = chartSellersLinePath.value;
-            return `${line} L ${pts[pts.length - 1].x} 220 L ${pts[0].x} 220 Z`;
-        });
-
-        const chartOffersLinePath = computed(() => {
-            const pts = chartPoints.value;
-            if (pts.length === 0) return '';
-            if (pts.length === 1) return `M 40 ${pts[0].oy} L 590 ${pts[0].oy}`;
-            return pts.reduce((path, p, idx) => {
-                return idx === 0 ? `M ${p.x} ${p.oy}` : `${path} L ${p.x} ${p.oy}`;
-            }, '');
-        });
-
-        const chartOffersAreaPath = computed(() => {
-            const pts = chartPoints.value;
-            if (pts.length === 0) return '';
-            if (pts.length === 1) return `M 40 ${pts[0].oy} L 590 ${pts[0].oy} L 590 220 L 40 220 Z`;
-            const line = chartOffersLinePath.value;
-            return `${line} L ${pts[pts.length - 1].x} 220 L ${pts[0].x} 220 Z`;
-        });
-
-        const chartMaxPriceLabel = computed(() => {
-            if (history.value.length === 0) return '';
-            const max = Math.max(...history.value.map(h => h.price));
-            return max >= 1000 ? formatVolume(max) : max.toFixed(2);
-        });
-
-        const chartMinPriceLabel = computed(() => {
-            if (history.value.length === 0) return '';
-            const min = Math.min(...history.value.map(h => h.price));
-            return min >= 1000 ? formatVolume(min) : min.toFixed(2);
-        });
-
-        const chartMidPriceLabel = computed(() => {
-            if (history.value.length === 0) return '';
-            const max = Math.max(...history.value.map(h => h.price));
-            const min = Math.min(...history.value.map(h => h.price));
-            const mid = (max + min) / 2;
-            return mid >= 1000 ? formatVolume(mid) : mid.toFixed(2);
-        });
-
-        const chartMaxOffersLabel = computed(() => {
-            if (history.value.length === 0) return '';
-            const maxSellers = Math.max(...history.value.map(h => h.sellers_count)) || 0;
-            const maxOffers = Math.max(...history.value.map(h => h.offers_count)) || 0;
-            const maxVal = Math.max(maxSellers, maxOffers);
-            return maxVal >= 1000 ? formatVolume(maxVal) : String(maxVal);
-        });
 
         let countdownInterval = null;
         const startCountdown = () => {
@@ -1504,14 +1201,6 @@ export default {
             activeSellersCount,
             priceTrendText,
             priceTrendClass,
-            chartPoints,
-            chartPriceLinePath,
-            chartPriceAreaPath,
-            chartMeanY,
-            chartSellersLinePath,
-            chartSellersAreaPath,
-            chartOffersLinePath,
-            chartOffersAreaPath,
             onItemChange,
             fetchAnalytics,
             formatVolume,
@@ -1543,9 +1232,7 @@ export default {
             togglePopularItems,
             toggleArbitrageSchemes,
             toggleActiveListings,
-            getItemName,
-            hoveredPoint,
-            tooltipPositionClass
+            getItemName
         };
     }
 };

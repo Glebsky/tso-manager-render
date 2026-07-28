@@ -55,7 +55,16 @@
     @apply text-emerald-400;
   }
   .badge {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+    @apply inline-flex items-center whitespace-nowrap px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  /* Row of pills: pills stay on a single line each, and wrap as whole units. */
+  .pill-row {
+    @apply flex flex-wrap items-center gap-2 min-w-0;
+  }
+  /* Long strings (log messages, buff names) that must wrap instead of scrolling. */
+  .wrap-anywhere {
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
   .badge-success {
     @apply bg-emerald-500/20 text-emerald-400 border border-emerald-500/30;

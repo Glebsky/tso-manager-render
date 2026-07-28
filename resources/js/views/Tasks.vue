@@ -61,7 +61,7 @@
                     <!-- Режим запуска (Тип планирования) -->
                     <div>
                         <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('tasks.planning_type') }}</label>
-                        <div class="grid grid-cols-3 gap-2">
+                        <div class="grid grid-cols-1 xs:grid-cols-3 gap-2">
                             <button type="button" @click="scheduleType = 'daily'"
                                     class="px-3 py-2 rounded-lg text-xs font-semibold border transition-all duration-300"
                                     :class="scheduleType === 'daily' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
@@ -129,14 +129,14 @@
                         </button>
                     </div>
 
-                    <div v-if="sequenceActions.length > 0" class="space-y-2 mb-4 max-h-60 overflow-y-auto pr-2">
-                        <div v-for="(act, idx) in sequenceActions" :key="idx" class="glass-card p-3 flex items-center justify-between gap-4 border border-white/5 hover:border-white/10 transition-all duration-200">
-                            <div class="flex items-center gap-3 min-w-0">
+                    <div v-if="sequenceActions.length > 0" class="space-y-2 mb-4 max-h-72 sm:max-h-60 overflow-y-auto pr-1 sm:pr-2">
+                        <div v-for="(act, idx) in sequenceActions" :key="idx" class="glass-card p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 border border-white/5 hover:border-white/10 transition-all duration-200">
+                            <div class="flex items-start gap-3 min-w-0 w-full">
                                 <span class="w-5 h-5 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-[10px] font-bold font-mono flex-shrink-0">{{ idx + 1 }}</span>
                                 <span class="text-lg flex-shrink-0">{{ typeIcons[act.task_type] }}</span>
-                                <div class="text-xs min-w-0">
-                                    <p class="font-semibold text-white/90 truncate">{{ typeLabels[act.task_type] }}</p>
-                                    <p class="text-white/40 text-[10px] mt-0.5 truncate">
+                                <div class="text-xs min-w-0 flex-1">
+                                    <p class="font-semibold text-white/90 wrap-anywhere leading-snug">{{ typeLabels[act.task_type] }}</p>
+                                    <p class="text-white/40 text-[10px] mt-1 wrap-anywhere leading-relaxed">
                                         <span v-if="['stop_production', 'start_production'].includes(act.task_type)">
                                             {{ t('tasks.building') }}: {{ act.meta.building ? getBuildingName(act.meta.building) : t('tasks.grid_number', { id: act.payload.grid }) }}
                                         </span>
@@ -164,7 +164,7 @@
                                     </p>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-2 flex-shrink-0">
+                            <div class="flex items-center flex-wrap justify-end gap-1.5 sm:gap-2 flex-shrink-0 w-full sm:w-auto border-t sm:border-t-0 border-white/5 pt-2 sm:pt-0">
                                 <!-- Move Up -->
                                 <button type="button" :disabled="idx === 0" @click="moveActionUp(idx)" class="text-white/30 hover:text-emerald-400 disabled:opacity-20 transition-colors p-1" :title="t('tasks.move_up')">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
@@ -177,7 +177,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                                     </svg>
                                 </button>
-                                <span class="text-[10px] text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20 font-mono ml-1">
+                                <span class="text-[10px] text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20 font-mono ml-1 whitespace-nowrap order-first sm:order-none mr-auto sm:mr-0">
                                     {{ t('tasks.delay') }}: {{ act.delay_seconds }} {{ t('tasks.seconds_unit') }}.
                                 </span>
                                 <button type="button" @click="removeAction(idx)" class="text-white/30 hover:text-red-400 transition-colors p-1" :title="t('tasks.remove_step')">
@@ -227,7 +227,7 @@
                                         <!-- 1. ЗОНА (для apply_buff выбирается ПЕРВОЙ) -->
                                         <div v-if="stepActionType === 'apply_buff'" class="mb-3">
                                             <label class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">{{ t('tasks.where_apply') }}</label>
-                                            <div class="grid grid-cols-2 gap-2">
+                                            <div class="grid grid-cols-1 xs:grid-cols-2 gap-2">
                                                 <button type="button" @click="stepTargetScope = 'self'; onTargetScopeChange()"
                                                         class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all duration-300"
                                                         :class="stepTargetScope === 'self' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
