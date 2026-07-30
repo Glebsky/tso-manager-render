@@ -1,4 +1,4 @@
-# SOLID & Clean Layered Architecture Refactoring Requirements
+# SOLID & Clean Layered Architecture Requirements
 
 ## 1. Executive Summary
 
@@ -18,7 +18,7 @@ HTTP (Controllers / Form Requests / Resources) / Console Commands / Queue Jobs
 ```
 
 Rules:
-- **HTTP / Console / Jobs** layer depends on **Services**.
+- **HTTP / Console / Jobs** layer depends on **Services** and **Form Requests / JsonResources**.
 - **Services** layer depends on **Models** and explicit interfaces in `App\Services\*\Contracts\`.
 - **Models** do not contain business orchestration or HTTP logic.
 
@@ -29,7 +29,7 @@ Rules:
 #### Single Responsibility Principle (SRP)
 - Class size target: under 200 lines where practical. No "God Classes".
 - Controller methods must be thin (up to 10 lines), delegating validation to Form Requests and response mapping to JsonResources or dedicated Services.
-- Services must own a single domain boundary (e.g. `AccountService`, `ScheduledTaskService`, `MarketServerService`).
+- Services must own a single domain boundary (e.g. `AccountService`, `ScheduledTaskService`, `MarketServerService`, `PopularItemService`).
 
 #### Open/Closed Principle (OCP)
 - `switch` or `if/else` branching on entity/action type must be replaced with Strategy Pattern (`TaskActionHandlerInterface`) and dynamic container-bound Registries (`TaskHandlerRegistry`).
@@ -53,20 +53,13 @@ Rules:
 - **Laravel Framework**: `^10.10`.
 - **Strict Types**: `declare(strict_types=1);` in every PHP file.
 - **Form Requests**: All incoming HTTP input validated via Form Requests (`App\Http\Requests\...`).
+- **JsonResources**: All HTTP API responses serialized via JsonResources (`App\Http\Resources\...`).
 - **No Repository Wrappers**: Eloquent models serve directly as data layer without redundant repository wrappers.
 - **Environment Isolation**: `env()` function forbidden outside `config/` directory.
 
 ---
 
-## 4. Contract Safeguards & Non-Breaking Behavioral Guarantees
-
-1. **HTTP Endpoints & Verbs**: Every URI, HTTP method, and middleware group in `routes/api.php` remains identical.
-2. **Response Payloads**: JSON keys, nesting order, data types, status codes, and string literals must match existing contracts byte-for-byte.
-3. **Queue Jobs & Commands**: Payload signatures, queue names (`tso-tasks`), execution tokens, and lock keys remain unchanged.
-
----
-
-## 5. Quality & Verification Gates
+## 4. Quality & Verification Gates
 
 The following 4 automated quality gates are mandatory before any stage is considered complete:
 

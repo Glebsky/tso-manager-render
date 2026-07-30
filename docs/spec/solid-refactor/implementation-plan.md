@@ -1,50 +1,73 @@
-# SOLID Refactoring Implementation Plan & Backlog
+# SOLID Refactoring Implementation Plan & Roadmap
 
-## 1. Overview & Status
+## 1. Executive Summary & Progress Tracking
 
-| Stage | Focus Area | Status | Deliverables |
+| Stage | Domain / Focus Area | Status | Key Deliverables & Artifacts |
 | :--- | :--- | :--- | :--- |
-| **Stage 1 & 2** | Market Controllers & Services | **COMPLETED** | Split 1360-line `MarketAnalyticsController` into 9 focused controllers under `App\Http\Controllers\Market\*`, bound in `MarketServiceProvider`. |
-| **Stage 3** | Accounts & Task Handlers | **COMPLETED** | Refactored `AccountController` into Form Requests + `AccountService`. Extracted `TaskHandlerRegistry` + `TaskActionHandlerInterface` strategies (`StopProductionHandler`, `StartProductionHandler`, `ApplyBuffHandler`, `SendSpecialistHandler`). Extracted `Amf3Encoder`. |
-| **Stage 4** | Market Sync & Infrastructure | **PENDING** | Decompose `MarketSyncService` (310 lines) and `MarketServerService` (302 lines). |
-| **Stage 5** | Zone Parser & Game Error Domain | **PENDING** | Decompose `ZoneParserService` (211 lines) into dedicated AMF AST Nodes/Parsers. |
-| **Stage 6** | Console & Scheduler Command Slimming | **PENDING** | Slim `RunSchedulerCommand` (239 lines) and `ExecuteScheduledTasks` (124 lines). |
+| **Stage 1 & 2** | Market Controllers & Domain Services | **COMPLETED** | Split 1360-line `MarketAnalyticsController` into 9 focused controllers (`App\Http\Controllers\Market\*`). Created `MarketServerService`, `MarketSettingsService`, `MarketAnalyticsService`, `MarketBulkService`, `ServerPresetProvider`, `LoopArbitrageFinder`. Bound in `MarketServiceProvider`. |
+| **Stage 3** | Accounts & Task Planner Strategies | **COMPLETED** | Fixed `ScheduledTaskRequest` prefix bug. Refactored `AccountController` (351 -> 91 lines) with Form Requests (`StoreAccountRequest`, `ExecuteAccountActionRequest`, `UpdateAccountSessionRequest`) and `AccountService`. Extracted `TaskHandlerRegistry` + `TaskActionHandlerInterface` strategies (`StopProductionHandler`, `StartProductionHandler`, `ApplyBuffHandler`, `SendSpecialistHandler`). Extracted `Amf3Encoder`. |
+| **Stage 4** | Popular Items & Cache Strategy Config | **COMPLETED** | Added `PopularController`, `MarketPopularRequest`, `PopularItemResource`. Added configurable `cache_strategy` (`'bulk'` \| `'individual'`) in `config/market.php` and `MarketServerService`. |
+| **Stage 5** | Market Synchronization (`MarketSyncService`) | **PENDING** | Decompose 310-line `MarketSyncService` into `MarketOfferFetcher`, `MarketOfferPersister`, and `MarketSyncOrchestrator`. |
+| **Stage 6** | Game Zone Parser (`ZoneParserService`) | **PENDING** | Decompose 211-line `ZoneParserService` into `BuildingGridParser` and `FriendListParser`. |
+| **Stage 7** | Scheduled Task Validation & Form Requests | **PENDING** | Expand stubbed `StoreScheduledTaskRequest` and `UpdateScheduledTaskRequest` to cover all task payload types (`sequence`, `buff_self`, `buff_friend`, `send_specialist`). |
+| **Stage 8** | Scheduler Engine & Console Commands | **PENDING** | Slim `RunSchedulerCommand` (239 lines) and `ExecuteScheduledTasks` (124 lines) by extracting `TaskSchedulerEngine`. |
+| **Stage 9** | Account Sync & Session Pipeline | **PENDING** | Decompose `AccountSyncService` (172 lines) into pure auth, protocol, parsing, and persistence pipeline steps. |
 
 ---
 
-## 2. Completed Milestones (Stage 3 Detailed Audit)
+## 2. Detailed Breakdown of Completed Milestones
 
-### 2.1 Fixed Regression & Validation Alignment
-- **Fixed `ScheduledTaskRequest.php`**: Corrected array key iteration in `buffRules()` (`$prefix => $inputKey`), ensuring exact rule mapping for `payload.grid`, `payload.unique_id1`, etc.
-- **Removed Unused File**: Deleted `app/Http/Controllers/MarketAnalyticsController.php` (1183 lines) and updated `phpstan.neon`.
+### 2.1 Stage 1 & 2: Market Architecture (Delivered)
+- **Eliminated Monolith**: `MarketAnalyticsController.php` (1360 lines) was completely decomposed into single-action micro-controllers:
+  - `ServerController`
+  - `PublicServerController`
+  - `CatalogController`
+  - `AnalyticsController`
+  - `ArbitrageController`
+  - `BulkController`
+  - `SyncLogController`
+  - `VersionController`
+  - `SettingsController`
+- **Interfaces & Service Provider**: Bound `ResourceNameResolver` and `ArbitrageFinder` inside `MarketServiceProvider`.
 
-### 2.2 Controllers & Service Provider Registration
-- **Account Controllers**: Slimmed `AccountController.php` down to 91 lines using `StoreAccountRequest`, `ExecuteAccountActionRequest`, `UpdateAccountSessionRequest`, and `AccountService`.
-- **Task Providers**: Created `TaskServiceProvider` and registered in `config/app.php`.
-- **TSO Providers**: Created `TsoServiceProvider` and registered in `config/app.php`.
+### 2.2 Stage 3: Account & Task Execution Strategy (Delivered)
+- **Slim Controllers**: `AccountController` method size <= 10 lines, validation extracted to `StoreAccountRequest`, `ExecuteAccountActionRequest`, `UpdateAccountSessionRequest`.
+- **Strategy & Registry**: `TaskExecutionService` delegates single action execution to container-bound `TaskHandlerRegistry` via `TaskActionHandlerInterface` (`StopProductionHandler`, `StartProductionHandler`, `ApplyBuffHandler`, `SendSpecialistHandler`).
+- **Binary Protocol**: Extracted AMF3 serialization into `Amf3Encoder`.
+
+### 2.3 Stage 4: Popular Items & Config-driven Cache Strategy (Delivered)
+- **Popular Endpoints**: Added `PopularController`, `MarketPopularRequest`, and `PopularItemResource` for `/api/market/popular` and `/api/public/market/popular`.
+- **App Config**: Added `'cache_strategy' => env('MARKET_CACHE_STRATEGY', 'bulk')` to `config/market.php`, passed via `MarketServerService` settings payload.
 
 ---
 
-## 3. Remaining Backlog for Complete Refactoring (Stages 4–6)
+## 3. Detailed Backlog & Roadmap for Remaining Refactoring
 
-### Stage 4: Market Sync & Infrastructure Decomposition
-- **Target**: `MarketSyncService.php` (310 lines).
-- **Problem**: Holds network fetch calls, offer chunking, database transactions, history logging, and versioning.
-- **Proposed Extraction**:
-  - `App\Services\Market\Sync\MarketOfferFetcher`: Network retrieval of market offers via AMF.
-  - `App\Services\Market\Sync\MarketOfferPersister`: Batch database UPSERT and history record creation within database transactions.
-  - `App\Services\Market\Sync\MarketSyncOrchestrator`: Orchestrating fetcher and persister.
+### Stage 5: Market Synchronization Decomposition (`MarketSyncService`)
+- **Current State**: `MarketSyncService.php` (310 lines) performs HTTP AMF requests, chunking, database transactions, history aggregation, and cache invalidation.
+- **Refactoring Strategy**:
+  - `App\Services\Market\Sync\MarketOfferFetcher`: Network fetching of market offers via `TsoAmfService`.
+  - `App\Services\Market\Sync\MarketOfferPersister`: Batch database UPSERT, active offer replacement, and history generation within DB transactions.
+  - `App\Services\Market\Sync\MarketSyncOrchestrator`: Orchestrating fetcher and persister steps cleanly.
 
-### Stage 5: Game Zone Parser Refactoring
-- **Target**: `ZoneParserService.php` (211 lines).
-- **Problem**: Combines raw AMF array traversal, building extraction, friend list parsing, and error code parsing.
-- **Proposed Extraction**:
-  - `App\Services\Zone\BuildingExtractor`: Pure parser for zone building list.
-  - `App\Services\Zone\FriendListExtractor`: Pure parser for player friend lists.
+### Stage 6: Game Zone Parser Refactoring (`ZoneParserService`)
+- **Current State**: `ZoneParserService.php` (211 lines) traverses raw AMF array trees to extract buildings, specialist quests, and friend lists.
+- **Refactoring Strategy**:
+  - `App\Services\Zone\BuildingGridParser`: Extracts building grid positions, building types, levels, and active buff states.
+  - `App\Services\Zone\FriendListParser`: Extracts friend player IDs, nicknames, and building positions.
 
-### Stage 6: Console Command Refactoring
-- **Target**: `RunSchedulerCommand.php` (239 lines) & `ExecuteScheduledTasks.php` (124 lines).
-- **Problem**: Inline lock management, database queries, and task dispatch loops.
-- **Proposed Extraction**:
-  - Move scheduler reservation and job dispatch into `TaskSchedulerOrchestrator` service.
-  - Keep CLI commands strictly as input/output triggers.
+### Stage 7: Scheduled Task Form Requests & Validation
+- **Current State**: `StoreScheduledTaskRequest` and `UpdateScheduledTaskRequest` are stubs (7 lines). Validation is scattered in `ScheduledTaskRequest`.
+- **Refactoring Strategy**:
+  - Fully implement `StoreScheduledTaskRequest` and `UpdateScheduledTaskRequest` with strict validation rules for sequence steps, buff payloads (`unique_id1`, `unique_id2`, `grid`), and specialist search types.
+
+### Stage 8: Scheduler Engine & Console Command Slimming
+- **Current State**: `RunSchedulerCommand.php` (239 lines) and `ExecuteScheduledTasks.php` (124 lines) contain inline lock management, task queries, and dispatch loops.
+- **Refactoring Strategy**:
+  - Extract `App\Services\Tasks\TaskSchedulerEngine`: Handles atomic task reservation, interval checking, and queue dispatching.
+  - Slim `RunSchedulerCommand` and `ExecuteScheduledTasks` to under 30 lines.
+
+### Stage 9: Account Sync Pipeline Refactoring (`AccountSyncService`)
+- **Current State**: `AccountSyncService.php` (172 lines) mixes authentication, zone fetching, parsing, and model updates.
+- **Refactoring Strategy**:
+  - Refactor into a clean pipeline: Auth (`TsoAuthService`) -> Fetch Zone (`TsoAmfService`) -> Parse Zone (`ZoneParserService`) -> Update Account (`AccountService`).
