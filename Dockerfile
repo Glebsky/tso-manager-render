@@ -89,6 +89,7 @@ COPY . .
 RUN composer dump-autoload --optimize
 
 COPY --from=node-build /app/public/build /var/www/html/public/build
+COPY --from=node-build /app/public/build /tmp/build_assets
 
 RUN chown -R www-data:www-data storage bootstrap/cache
 

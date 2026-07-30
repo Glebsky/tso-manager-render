@@ -16,6 +16,12 @@ if [ "$(id -u)" = "0" ]; then
     chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 fi
 
+# Ensure production assets in app_public volume are synchronized
+if [ -d "/tmp/build_assets" ] && [ "$1" = "php-fpm" ]; then
+    mkdir -p /var/www/html/public/build
+    cp -r /tmp/build_assets/* /var/www/html/public/build/ 2>/dev/null || true
+fi
+
 # Clear runtime config caches first
 php artisan config:clear || true
 php artisan cache:clear || true

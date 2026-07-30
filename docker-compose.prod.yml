@@ -5,15 +5,12 @@ services:
       dockerfile: Dockerfile
       target: production
     # Uses app_public volume to share public files with nginx
-    volumes:
+    volumes: !reset
       - app_public:/var/www/html/public
     environment:
       - APP_ENV=production
       - APP_DEBUG=false
       - DB_HOST=postgres
-      - DB_DATABASE=tso_manager
-      - DB_USERNAME=tso_admin
-      - DB_PASSWORD=secret
       - REDIS_HOST=redis
       - CACHE_DRIVER=redis
       - QUEUE_CONNECTION=redis
@@ -22,10 +19,16 @@ services:
     restart: unless-stopped
 
   nginx:
+    ports: !override
+      - "80:80"
+      - "443:443"
     volumes:
-      - app_public:/var/www/html/public:ro
+      - ./public:/var/www/html/public:ro
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./docker/nginx/certs:/etc/nginx/certs:ro
     restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-check-certificate --spider -q https://127.0.0.1/ || exit 1" ]
 
   node:
     profiles:
@@ -36,14 +39,11 @@ services:
       context: .
       dockerfile: Dockerfile
       target: production
-    volumes: []
+    volumes: !reset []
     environment:
       - APP_ENV=production
       - APP_DEBUG=false
       - DB_HOST=postgres
-      - DB_DATABASE=tso_manager
-      - DB_USERNAME=tso_admin
-      - DB_PASSWORD=secret
       - REDIS_HOST=redis
       - CACHE_DRIVER=redis
       - QUEUE_CONNECTION=redis
@@ -56,14 +56,11 @@ services:
       context: .
       dockerfile: Dockerfile
       target: production
-    volumes: []
+    volumes: !reset []
     environment:
       - APP_ENV=production
       - APP_DEBUG=false
       - DB_HOST=postgres
-      - DB_DATABASE=tso_manager
-      - DB_USERNAME=tso_admin
-      - DB_PASSWORD=secret
       - REDIS_HOST=redis
       - CACHE_DRIVER=redis
       - QUEUE_CONNECTION=redis
@@ -73,13 +70,15 @@ services:
 
   postgres:
     environment:
-      POSTGRES_DB: tso_manager
-      POSTGRES_USER: tso_admin
-      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     restart: unless-stopped
+    ports: !reset []
 
   redis:
     restart: unless-stopped
+    ports: !reset []
 
 volumes:
   app_public:

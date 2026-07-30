@@ -28,14 +28,13 @@ services:
       - /var/www/html/storage/framework/views
       - /var/www/html/storage/logs
     depends_on:
-      - postgres
-      - redis
+        postgres:
+            condition: service_healthy
+        redis:
+            condition: service_healthy
     env_file: .env
     environment:
       - DB_HOST=postgres
-      - DB_DATABASE=tso_manager
-      - DB_USERNAME=tso_admin
-      - DB_PASSWORD=secret
       - REDIS_HOST=redis
       - CACHE_DRIVER=redis
       - QUEUE_CONNECTION=redis
@@ -81,15 +80,15 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: tso_manager
-      POSTGRES_USER: tso_admin
-      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - tso-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U tso_admin"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -141,9 +140,6 @@ services:
     env_file: .env
     environment:
       - DB_HOST=postgres
-      - DB_DATABASE=tso_manager
-      - DB_USERNAME=tso_admin
-      - DB_PASSWORD=secret
       - REDIS_HOST=redis
       - CACHE_DRIVER=redis
       - QUEUE_CONNECTION=redis
@@ -184,9 +180,6 @@ services:
     env_file: .env
     environment:
       - DB_HOST=postgres
-      - DB_DATABASE=tso_manager
-      - DB_USERNAME=tso_admin
-      - DB_PASSWORD=secret
       - REDIS_HOST=redis
       - CACHE_DRIVER=redis
       - QUEUE_CONNECTION=redis
