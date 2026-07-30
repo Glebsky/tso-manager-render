@@ -12,9 +12,11 @@
                 <div v-if="servers.length > 0" class="flex items-center gap-2 bg-white/5 border border-white/10 p-1.5 rounded-xl w-full sm:w-auto">
                     <span class="text-xs font-semibold text-white/40 uppercase tracking-wider px-2 shrink-0">{{ t('market.server') }}:</span>
                     <select v-model="selectedServerId" @change="onServerChange" :aria-label="t('market.server')" class="bg-dark-900 text-xs font-bold text-emerald-400 py-1.5 px-3 rounded-lg border border-emerald-500/20 focus:outline-none cursor-pointer w-full sm:max-w-[240px] truncate">
-                        <option v-for="srv in servers" :key="srv.server_id" :value="srv.server_id">
-                            {{ getLocaleFlag(srv.locale) }} {{ srv.display_name }} ({{ srv.account ? srv.account.username : t('market.no_account') }})
-                        </option>
+                        <optgroup v-for="(groupServers, countryCode) in groupedServers" :key="countryCode" :label="`${getLocaleFlag(countryCode)} ${countryCode}`">
+                            <option v-for="srv in groupServers" :key="srv.server_id" :value="srv.server_id">
+                                {{ srv.display_name }} ({{ srv.account ? srv.account.username : t('market.no_account') }})
+                            </option>
+                        </optgroup>
                     </select>
                 </div>
 
@@ -1013,6 +1015,18 @@ export default {
             return servers.value.find(s => s.server_id === selectedServerId.value) || servers.value[0] || null;
         });
 
+        const groupedServers = computed(() => {
+            const groups = {};
+            for (const srv of servers.value) {
+                const countryCode = String(srv.locale || 'OTHER').toUpperCase();
+                if (!groups[countryCode]) {
+                    groups[countryCode] = [];
+                }
+                groups[countryCode].push(srv);
+            }
+            return groups;
+        });
+
         const REGION_LOCALES = { ru: 'RU', de: 'DE', en: 'EN', us: 'EN', fr: 'FR', pl: 'PL', es: 'ES', es2: 'ES', nl: 'NL', cz: 'CZ', pt: 'PT', it: 'IT', el: 'EL', ro: 'RO' };
 
         const detectedServerInfo = computed(() => {
@@ -1638,6 +1652,7 @@ export default {
             syncing,
             syncingServerId,
             servers,
+            groupedServers,
             presets,
             accounts,
             selectedServerId,

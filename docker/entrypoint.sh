@@ -35,13 +35,14 @@ if [ "$APP_ENV" = "production" ]; then
     php artisan config:cache
     php artisan route:cache
     php artisan view:cache
-    
+    php artisan event:cache
+
     echo "Waiting for PostgreSQL to become ready..."
     until nc -z -v -w30 "$DB_HOST" "$DB_PORT"; do
         echo "Waiting for database connection on $DB_HOST:$DB_PORT..."
         sleep 1
     done
-    
+
     echo "Database port is open. Checking if database $DB_DATABASE exists..."
     php -r "
         try {
@@ -50,10 +51,10 @@ if [ "$APP_ENV" = "production" ]; then
             \$dbUser = getenv('DB_USERNAME') ?: 'tso_admin';
             \$dbPass = getenv('DB_PASSWORD') ?: 'secret';
             \$dbName = getenv('DB_DATABASE') ?: 'tso_admin';
-            
+
             \$pdo = new PDO('pgsql:host=' . \$dbHost . ';port=' . \$dbPort . ';dbname=postgres', \$dbUser, \$dbPass);
             \$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            
+
             \$stmt = \$pdo->query(\"SELECT 1 FROM pg_database WHERE datname = '\" . \$dbName . \"'\");
             if (!\$stmt->fetch()) {
                 echo 'Database ' . \$dbName . ' does not exist. Creating it...\n';
@@ -67,7 +68,7 @@ if [ "$APP_ENV" = "production" ]; then
             exit(1);
         }
     "
-    
+
     # Run migrations ONLY in the main app container
     if [ "$1" = "php-fpm" ]; then
         echo "Running database migrations..."

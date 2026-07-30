@@ -34,9 +34,11 @@
                     <div v-if="servers.length" class="relative flex-shrink-0">
                         <select v-model="selectedServerId" @change="onServerChange" :aria-label="t('market.server')"
                                 class="appearance-none bg-white/5 border border-white/10 rounded-xl pl-3.5 pr-9 py-2 text-xs text-white/80 cursor-pointer transition-all duration-300 hover:bg-white/10 hover:border-white/20 focus:outline-none focus:border-emerald-500/50 max-w-[60vw] truncate">
-                            <option v-for="srv in servers" :key="srv.server_id" :value="srv.server_id" class="bg-dark-900">
-                                {{ serverOptionLabel(srv) }}
-                            </option>
+                            <optgroup v-for="(groupServers, countryCode) in groupedServers" :key="countryCode" :label="`${getLocaleFlag(countryCode)} ${countryCode}`" class="bg-dark-900 text-white/70">
+                                <option v-for="srv in groupServers" :key="srv.server_id" :value="srv.server_id" class="bg-dark-900 text-white">
+                                    {{ getServerWorldName(srv) }}
+                                </option>
+                            </optgroup>
                         </select>
                         <svg class="w-3.5 h-3.5 text-white/40 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
@@ -759,6 +761,18 @@ export default {
             return `${getLocaleFlag(srv.locale)} ${world}`.trim();
         };
 
+        const groupedServers = computed(() => {
+            const groups = {};
+            for (const srv of servers.value) {
+                const countryCode = String(srv.locale || 'OTHER').toUpperCase();
+                if (!groups[countryCode]) {
+                    groups[countryCode] = [];
+                }
+                groups[countryCode].push(srv);
+            }
+            return groups;
+        });
+
         const loadServers = async () => {
             try {
                 const data = await cachedGet('/api/public/market/servers', { ttlMs: 300000 });
@@ -1181,6 +1195,7 @@ export default {
             loadingPairs,
             loadingChart,
             servers,
+            groupedServers,
             selectedServerId,
             isAuthenticated,
             onServerChange,
