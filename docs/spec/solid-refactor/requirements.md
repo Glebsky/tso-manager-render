@@ -2,13 +2,13 @@
 
 ## 1. Executive Summary
 
-This specification defines the mandatory architectural constraints, design principles, current implementation status, and remaining roadmap for transforming the Laravel administration application into a clean, layered, SOLID-compliant codebase.
+This specification defines the mandatory architectural constraints, design principles, RESTful API standards, current implementation status, and remaining roadmap for transforming the Laravel administration application into a clean, layered, SOLID-compliant codebase.
 
 ---
 
 ## 2. Core Architectural Principles (Non-Negotiable)
 
-### 2.1 Dependency Flow Direction
+### 2.1 Dependency Flow Direction & Strict Dependency Injection
 Strict single-direction dependency flow:
 
 ```text
@@ -18,13 +18,44 @@ HTTP (Controllers / Form Requests / Resources) / Console Commands / Queue Jobs
 ```
 
 Rules:
-- **HTTP / Console / Jobs** layer depends on **Services** and **Form Requests / JsonResources**.
-- **Services** layer depends on **Models** and explicit interfaces in `App\Services\*\Contracts\`.
-- **Models** do not contain business orchestration or HTTP logic.
+- **Mandatory Constructor Injection**: Every Controller, Service, Handler, Command, and Job MUST inject its dependencies via PHP 8.1 Constructor Property Promotion (`public function __construct(private readonly ServiceClass $service)`).
+- **No Static Facades or Helper Locators in Domain Services**: The use of static facades (`DB::`, `Cache::`, `Log::`, `Auth::`, `Storage::`) or `app()` / `resolve()` helpers inside domain services is strictly forbidden. Inject contracts, models, loggers, or `CacheManager` / `Repository` dependencies instead.
 
 ---
 
-### 2.2 SOLID Enforcement
+### 2.2 RESTful API Design Principles
+Every API endpoint exposed by the application MUST strictly adhere to REST standards:
+
+1. **Resource-Oriented URIs**:
+   - Use plural nouns for resource collections (e.g. `/api/accounts`, `/api/tasks`, `/api/market/servers`).
+   - Avoid verb-based URL paths (prefer `POST /api/accounts/{id}/actions` over `/api/execute-account-action`).
+2. **Correct Semantic HTTP Verbs**:
+   - `GET`: Safe & idempotent retrieval of resources/collections.
+   - `POST`: Creation of a new resource or execution of non-idempotent domain actions.
+   - `PUT` / `PATCH`: Idempotent or partial update of an existing resource.
+   - `DELETE`: Idempotent removal of a resource.
+3. **Standard HTTP Response Status Codes**:
+   - `200 OK`: Successful read, update, or action response.
+   - `201 Created`: Successful resource creation.
+   - `204 No Content`: Successful deletion without response body.
+   - `400 Bad Request`: Malformed request syntax or invalid operation state.
+   - `401 Unauthorized`: Missing or invalid authentication token.
+   - `403 Forbidden`: Authenticated user lacks permission for the resource.
+   - `404 Not Found`: Target resource identifier does not exist.
+   - `422 Unprocessable Entity`: Form Request validation failure.
+   - `500 Internal Server Error`: Unhandled server exception.
+4. **Stateless Request Processing**:
+   - Each HTTP request must contain all authorization tokens and contextual parameters necessary for processing without relying on server-side session state.
+
+---
+
+### 2.3 Presentation Separation & Mandatory JsonResources
+- **JsonResource Standard**: Every HTTP API endpoint returning domain entities, model collections, or complex structures MUST serialize data through a dedicated Laravel `JsonResource` or `ResourceCollection` (`App\Http\Resources\*`).
+- **No Manual Response Mapping in Controllers**: Controllers must not construct ad-hoc array structures for API entities when a domain `JsonResource` exists.
+
+---
+
+### 2.4 SOLID Enforcement
 
 #### Single Responsibility Principle (SRP)
 - Class size target: under 200 lines where practical. No "God Classes".
@@ -43,7 +74,7 @@ Rules:
 
 #### Dependency Inversion Principle (DIP)
 - High-level domain services depend on abstractions (`Contracts`), bound in dedicated `ServiceProviders` (`MarketServiceProvider`, `TaskServiceProvider`, `TsoServiceProvider`).
-- No facades or static service locators inside domain services; all dependencies injected via constructor property promotion.
+- Dependencies injected via constructor property promotion.
 
 ---
 
@@ -53,7 +84,7 @@ Rules:
 - **Laravel Framework**: `^10.10`.
 - **Strict Types**: `declare(strict_types=1);` in every PHP file.
 - **Form Requests**: All incoming HTTP input validated via Form Requests (`App\Http\Requests\...`).
-- **JsonResources**: All HTTP API responses serialized via JsonResources (`App\Http\Resources\...`).
+- **JsonResources**: All HTTP API entity responses serialized via JsonResources (`App\Http\Resources\...`).
 - **No Repository Wrappers**: Eloquent models serve directly as data layer without redundant repository wrappers.
 - **Environment Isolation**: `env()` function forbidden outside `config/` directory.
 

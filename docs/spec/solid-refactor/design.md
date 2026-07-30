@@ -4,12 +4,12 @@
 
 ```mermaid
 graph TD
-    Client[Vue 3 SPA / Public Portal] -->|HTTP / API| Controllers[Http Controllers]
+    Client[Vue 3 SPA / Public Portal] -->|RESTful HTTP API| Controllers[Http Controllers]
     Controllers -->|Form Requests| FormRequests[Form Requests Validation]
     Controllers -->|Json Resources| JsonResources[Json Resources Serialization]
-    Controllers -->|Delegate| Services[Domain Services]
+    Controllers -->|Constructor DI| Services[Domain Services]
     
-    subgraph "Domain Layer"
+    subgraph "Domain Layer (Constructor Injected Services)"
         Services -->|Strategy Call| TaskRegistry[TaskHandlerRegistry]
         TaskRegistry -->|Resolve| TaskHandlers[Task Action Handlers]
         Services -->|Protocol| AMFClient[Amf3Encoder / TsoAmfService]
@@ -25,26 +25,31 @@ graph TD
 
 ---
 
-## 2. Component Design & Abstractions
+## 2. Component Design, REST Principles & Serialization
 
-### 2.1 Task Planner Engine
+### 2.1 RESTful Routing & Status Codes
+All API routes in `routes/api.php` adhere to REST standards:
+- **Resource Nouns**: Plural resource naming (`/api/accounts`, `/api/tasks`, `/api/market/servers`, `/api/market/popular`).
+- **HTTP Methods**: `GET` for reads, `POST` for creations/actions, `PUT`/`PATCH` for updates, `DELETE` for removals.
+- **Consistent Response Envelopes**: `ApiResponder` standardizes HTTP status codes (`200`, `201`, `204`, `400`, `401`, `403`, `404`, `422`, `500`).
+
+### 2.2 Dependency Injection Rules
+- **Constructor Property Promotion**: All dependencies MUST be injected via constructor property promotion (`public function __construct(private readonly ServiceInterface $service)`).
+- **No Static Facades in Services**: Refactor any static calls (`DB::`, `Cache::`, `Log::`) in domain services into injected instances.
+
+### 2.3 JsonResources Serialization Standard
+All domain entity responses must be wrapped in explicit JsonResource classes:
+- `MarketOfferResource`: Serializes market offer listings with price, time left, and volume calculation.
+- `MarketSyncLogResource`: Serializes synchronization log entries.
+- `PublicServerResource`: Serializes public server connections with localized world names.
+- `PopularItemResource`: Serializes popular market items.
+- `AccountResource` *(Planned)*: Serializes account state, status badges, and connection indicators.
+- `ScheduledTaskResource` *(Planned)*: Serializes scheduled sequence, buff, and specialist tasks.
+
+### 2.4 Task Planner Engine
 - **Contract**: `App\Services\Tasks\Contracts\TaskActionHandlerInterface`
 - **Registry**: `TaskHandlerRegistry` receives all handlers lazily via container resolution to maintain compatibility with test mocking frameworks (`Mockery`).
 - **Service Providers**: Registered in `App\Providers\TaskServiceProvider`.
-
-### 2.2 Account Management Boundary
-- **Form Requests**: `StoreAccountRequest`, `ExecuteAccountActionRequest`, `UpdateAccountSessionRequest`.
-- **Domain Service**: `AccountService` encapsulates cookie cleanup, session updates, action delegation, and friend zone caching/stale fallback.
-- **Slim Controller**: `AccountController` contains methods strictly under 10 lines.
-
-### 2.3 Market Domain Boundary
-- **Form Requests**: `StoreMarketServerRequest`, `UpdateMarketServerRequest`, `UpdateMarketSettingsRequest`, `MarketPopularRequest`.
-- **Json Resources**: `MarketOfferResource`, `MarketSyncLogResource`, `PublicServerResource`, `PopularItemResource`.
-- **Controllers**: `ServerController`, `PublicServerController`, `CatalogController`, `AnalyticsController`, `ArbitrageController`, `BulkController`, `SyncLogController`, `VersionController`, `SettingsController`, `PopularController`.
-
-### 2.4 AMF & Protocol Isolation
-- **Encoder**: `App\Services\Amf\Amf3Encoder` handles binary serialization into AMF3.
-- **Service Provider**: `App\Providers\TsoServiceProvider` binds `TsoAuthService` and `TsoAmfService`.
 
 ---
 
@@ -74,10 +79,12 @@ app/
 │   │   ├── Market/
 │   │   └── Tasks/
 │   └── Resources/
+│       ├── AccountResource.php (Planned)
 │       ├── MarketOfferResource.php
 │       ├── MarketSyncLogResource.php
 │       ├── PopularItemResource.php
-│       └── PublicServerResource.php
+│       ├── PublicServerResource.php
+│       └── ScheduledTaskResource.php (Planned)
 ├── Providers/
 │   ├── MarketServiceProvider.php
 │   ├── TaskServiceProvider.php

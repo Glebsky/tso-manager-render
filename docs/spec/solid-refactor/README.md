@@ -4,15 +4,15 @@ This directory contains the Spec-Driven Development (SDD) documentation for the 
 
 ## Specification Documents
 
-- [Requirements](file:///C:/OSPanel/domains/tso_client/admin/docs/spec/solid-refactor/requirements.md) — Core architectural principles, SOLID rules, PHP 8.1 / Laravel 10 constraints, and API contracts.
-- [Architecture Design](file:///C:/OSPanel/domains/tso_client/admin/docs/spec/solid-refactor/design.md) — Layered architecture diagrams, Strategy/Registry patterns, Form Requests, JsonResources, and directory layout.
+- [Requirements](file:///C:/OSPanel/domains/tso_client/admin/docs/spec/solid-refactor/requirements.md) — Core architectural principles, SOLID rules, RESTful API design principles, mandatory Constructor DI, JsonResources standard, PHP 8.1 / Laravel 10 constraints, and API contracts.
+- [Architecture Design](file:///C:/OSPanel/domains/tso_client/admin/docs/spec/solid-refactor/design.md) — Layered architecture diagrams, Strategy/Registry patterns, REST principles, Form Requests, JsonResources, and directory layout.
 - [Implementation Plan & Roadmap](file:///C:/OSPanel/domains/tso_client/admin/docs/spec/solid-refactor/implementation-plan.md) — Detailed audit of completed stages and remaining backlog for full refactoring.
 - [Verification Report](file:///C:/OSPanel/domains/tso_client/admin/docs/spec/solid-refactor/verification.md) — Quality gates, test execution results, static analysis, and build verification.
 
 ## Summary of Delivered Stages
 
 1. **Stage 1 & 2 (Market Domain Decomposition)**:
-   - Split 1360-line `MarketAnalyticsController` into 9 focused controllers under `App\Http\Controllers\Market\*`.
+   - Split 1360-line `MarketAnalyticsController` into 9 focused REST controllers under `App\Http\Controllers\Market\*`.
    - Extracted market services (`MarketServerService`, `MarketSettingsService`, `MarketAnalyticsService`, `MarketBulkService`, `ServerPresetProvider`, `PopularItemService`) behind `ResourceNameResolver` and `ArbitrageFinder` contracts.
    - Bound abstractions in `App\Providers\MarketServiceProvider` and registered in `config/app.php`.
 
@@ -30,13 +30,15 @@ This directory contains the Spec-Driven Development (SDD) documentation for the 
 
 ## Remaining Backlog (Prioritized Roadmap)
 
-1. **Stage 5 — `MarketSyncService` Decomposition**:
+1. **Stage 5 — REST Alignment & JsonResources**:
+   - Audit API routes for REST Noun/Verb adherence. Add `AccountResource` and `ScheduledTaskResource` for unified JSON responses across endpoints.
+2. **Stage 6 — `MarketSyncService` Decomposition**:
    - Split network fetching (`MarketOfferFetcher`) from batch persistence (`MarketOfferPersister`).
-2. **Stage 6 — `ZoneParserService` Refactoring**:
+3. **Stage 7 — `ZoneParserService` Refactoring**:
    - Extract pure extractors (`BuildingGridParser`, `FriendListParser`) from raw AMF parsing.
-3. **Stage 7 — Scheduled Task Form Requests**:
+4. **Stage 8 — Scheduled Task Form Requests**:
    - Fully implement `StoreScheduledTaskRequest` and `UpdateScheduledTaskRequest` with strict rules for sequence steps, buff payloads, and specialist searches.
-4. **Stage 8 — Console Command & Scheduler Engine**:
+5. **Stage 9 — Console Command & Scheduler Engine**:
    - Move scheduler reservation and queue dispatch logic out of `RunSchedulerCommand` into `TaskSchedulerEngine`.
-5. **Stage 9 — Account Sync Pipeline Refactoring**:
-   - Decompose `AccountSyncService` into pure auth, protocol, parsing, and persistence pipeline steps.
+6. **Stage 10 — Account Sync Pipeline Refactoring**:
+   - Decompose `AccountSyncService` into pure auth, protocol, parsing, and persistence pipeline steps using Constructor DI.
