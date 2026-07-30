@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Account\ExecuteAccountActionRequest;
 use App\Http\Requests\Account\StoreAccountRequest;
 use App\Http\Requests\Account\UpdateAccountSessionRequest;
+use App\Http\Resources\AccountResource;
 use App\Models\Account;
 use App\Services\AccountService;
 use App\Services\AccountSyncService;
@@ -14,17 +15,18 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 
 /**
- * Controller for account management and interactions.
+ * RESTful controller for managing player game accounts.
  */
 final class AccountController extends Controller
 {
     public function __construct(
         private readonly AccountService $accountService,
+        private readonly AccountSyncService $syncService,
     ) {}
 
     public function index(): JsonResponse
     {
-        return response()->json(Account::latest()->get());
+        return response()->json(AccountResource::collection(Account::latest()->get()));
     }
 
     public function store(StoreAccountRequest $request): JsonResponse
@@ -34,7 +36,7 @@ final class AccountController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Account added.',
-            'account' => $account,
+            'account' => new AccountResource($account),
         ], 201);
     }
 
@@ -42,7 +44,7 @@ final class AccountController extends Controller
     {
         $account->makeVisible('zone_data');
 
-        return response()->json($account);
+        return response()->json(new AccountResource($account));
     }
 
     public function destroy(Account $account): JsonResponse
@@ -55,17 +57,17 @@ final class AccountController extends Controller
         ]);
     }
 
-    public function sync(Account $account, AccountSyncService $syncService): JsonResponse
+    public function sync(Account $account): JsonResponse
     {
         try {
-            $zoneData = $syncService->sync($account);
+            $zoneData = $this->syncService->sync($account);
             $freshAccount = $account->fresh();
             $freshAccount?->makeVisible('zone_data');
 
             return response()->json([
                 'success' => true,
                 'message' => 'Zone synced successfully.',
-                'account' => $freshAccount,
+                'account' => $freshAccount !== null ? new AccountResource($freshAccount) : null,
                 'zone_data' => $zoneData,
             ]);
         } catch (Exception $e) {
@@ -75,7 +77,7 @@ final class AccountController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Sync failed: '.$e->getMessage(),
-                'account' => $freshAccount,
+                'account' => $freshAccount !== null ? new AccountResource($freshAccount) : null,
             ], 500);
         }
     }
@@ -98,7 +100,7 @@ final class AccountController extends Controller
         return response()->json([
             'success' => true,
             'message' => __('logs.account.session_updated'),
-            'account' => $account,
+            'account' => new AccountResource($account),
         ]);
     }
 

@@ -6,28 +6,27 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Tasks\StoreScheduledTaskRequest;
 use App\Http\Requests\Tasks\UpdateScheduledTaskRequest;
+use App\Http\Resources\AccountResource;
+use App\Http\Resources\ScheduledTaskResource;
 use App\Models\ScheduledTask;
 use App\Services\Tasks\ScheduledTaskService;
 use Illuminate\Http\JsonResponse;
 
 /**
- * HTTP entry point for the task planner.
- *
- * Validation lives in the Tasks form requests, behaviour lives in
- * ScheduledTaskService. This class only translates between the two.
+ * RESTful HTTP entry point for the task planner.
  */
 class ScheduledTaskController extends Controller
 {
     public function __construct(private readonly ScheduledTaskService $tasks) {}
 
     /**
-     * Show the task planner view.
+     * Show the task planner view payload.
      */
     public function index(): JsonResponse
     {
         return response()->json([
-            'tasks' => $this->tasks->tasks(),
-            'accounts' => $this->tasks->accounts(),
+            'tasks' => ScheduledTaskResource::collection($this->tasks->tasks()),
+            'accounts' => AccountResource::collection($this->tasks->accounts()),
             'server_time' => now()->toIso8601String(),
         ]);
     }
@@ -42,7 +41,7 @@ class ScheduledTaskController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Task scheduled.',
-            'task' => $task,
+            'task' => new ScheduledTaskResource($task),
             'server_time' => now()->toIso8601String(),
         ], 201);
     }
@@ -57,7 +56,7 @@ class ScheduledTaskController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Task updated.',
-            'task' => $updated,
+            'task' => new ScheduledTaskResource($updated),
             'server_time' => now()->toIso8601String(),
         ]);
     }
@@ -72,7 +71,7 @@ class ScheduledTaskController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Task '.($task->is_active ? 'activated' : 'paused').'.',
-            'task' => $task,
+            'task' => new ScheduledTaskResource($task),
         ]);
     }
 
@@ -100,7 +99,7 @@ class ScheduledTaskController extends Controller
         return response()->json([
             'success' => true,
             'queued' => $isQueuedOrRunning,
-            'task' => $task,
+            'task' => new ScheduledTaskResource($task),
             'message' => $isQueuedOrRunning
                 ? 'Task queued for background execution.'
                 : ($task->last_result ?? 'Task execution completed.'),
@@ -109,30 +108,14 @@ class ScheduledTaskController extends Controller
 
     /**
      * Lightweight status endpoint for polling a single task execution.
-     *
-     * Returns only the fields the frontend needs to track a manual run,
-     * instead of the full planner payload (all tasks + all accounts).
      */
     public function status(ScheduledTask $task): JsonResponse
     {
         $task = $this->tasks->withAccount($task);
-        $isQueuedOrRunning = $this->tasks->isBusy($task);
 
         return response()->json([
             'success' => true,
-            'task' => [
-                'id' => $task->id,
-                'status' => $task->status,
-                'is_active' => $task->is_active,
-                'account_id' => $task->account_id,
-                'account' => $task->account,
-                'completed_steps' => $task->completed_steps,
-                'last_result' => $isQueuedOrRunning ? null : $task->last_result,
-                'last_run_at' => $task->last_run_at?->toIso8601String(),
-                // payload is included because the UI reads payload.step_results
-                // to show per-step progress and error details.
-                'payload' => $task->payload,
-            ],
+            'task' => new ScheduledTaskResource($task),
             'server_time' => now()->toIso8601String(),
         ]);
     }

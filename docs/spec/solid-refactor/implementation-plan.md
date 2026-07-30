@@ -7,7 +7,7 @@
 | **Stage 1 & 2** | Market Controllers & Domain Services | **COMPLETED** | Split 1360-line `MarketAnalyticsController` into 9 focused REST controllers (`App\Http\Controllers\Market\*`). Created `MarketServerService`, `MarketSettingsService`, `MarketAnalyticsService`, `MarketBulkService`, `ServerPresetProvider`, `LoopArbitrageFinder`. Bound in `MarketServiceProvider`. |
 | **Stage 3** | Accounts & Task Planner Strategies | **COMPLETED** | Fixed `ScheduledTaskRequest` prefix bug. Refactored `AccountController` (351 -> 91 lines) with Form Requests (`StoreAccountRequest`, `ExecuteAccountActionRequest`, `UpdateAccountSessionRequest`) and `AccountService`. Extracted `TaskHandlerRegistry` + `TaskActionHandlerInterface` strategies (`StopProductionHandler`, `StartProductionHandler`, `ApplyBuffHandler`, `SendSpecialistHandler`). Extracted `Amf3Encoder`. |
 | **Stage 4** | Popular Items & Cache Strategy Config | **COMPLETED** | Added `PopularController`, `MarketPopularRequest`, `PopularItemResource`. Added configurable `cache_strategy` (`'bulk'` \| `'individual'`) in `config/market.php` and `MarketServerService`. |
-| **Stage 5** | REST Alignment & JsonResources | **PENDING** | Audit API routes for REST Noun/Verb adherence. Create `AccountResource` and `ScheduledTaskResource` to replace raw array mappings in `AccountController` and `ScheduledTaskController`. |
+| **Stage 5** | REST Alignment & JsonResources | **COMPLETED** | Created `AccountResource`, `ScheduledTaskResource`, `BotLogResource`. Refactored `AccountController`, `ScheduledTaskController`, `LogController`, `DashboardController`, and `SettingsController` (`UpdateSettingsRequest`). Enforced Constructor DI across all non-market controllers. |
 | **Stage 6** | Market Synchronization (`MarketSyncService`) | **PENDING** | Decompose 310-line `MarketSyncService` into `MarketOfferFetcher`, `MarketOfferPersister`, and `MarketSyncOrchestrator`. Inject dependencies via Constructor DI instead of static calls. |
 | **Stage 7** | Game Zone Parser (`ZoneParserService`) | **PENDING** | Decompose 211-line `ZoneParserService` into `BuildingGridParser` and `FriendListParser`. |
 | **Stage 8** | Scheduled Task Validation & Form Requests | **PENDING** | Expand stubbed `StoreScheduledTaskRequest` and `UpdateScheduledTaskRequest` to cover all task payload types (`sequence`, `buff_self`, `buff_friend`, `send_specialist`). |
@@ -19,34 +19,28 @@
 ## 2. Detailed Breakdown of Completed Milestones
 
 ### 2.1 Stage 1 & 2: Market Architecture (Delivered)
-- **Eliminated Monolith**: `MarketAnalyticsController.php` (1360 lines) was completely decomposed into single-action micro-controllers adhering to REST conventions:
-  - `ServerController`
-  - `PublicServerController`
-  - `CatalogController`
-  - `AnalyticsController`
-  - `ArbitrageController`
-  - `BulkController`
-  - `SyncLogController`
-  - `VersionController`
-  - `SettingsController`
+- **Eliminated Monolith**: `MarketAnalyticsController.php` (1360 lines) was completely decomposed into single-action micro-controllers adhering to REST conventions.
 - **Interfaces & Service Provider**: Bound `ResourceNameResolver` and `ArbitrageFinder` inside `MarketServiceProvider`.
 
 ### 2.2 Stage 3: Account & Task Execution Strategy (Delivered)
-- **Slim Controllers**: `AccountController` method size <= 10 lines, validation extracted to `StoreAccountRequest`, `ExecuteAccountActionRequest`, `UpdateAccountSessionRequest`.
-- **Strategy & Registry**: `TaskExecutionService` delegates single action execution to container-bound `TaskHandlerRegistry` via `TaskActionHandlerInterface` (`StopProductionHandler`, `StartProductionHandler`, `ApplyBuffHandler`, `SendSpecialistHandler`).
-- **Binary Protocol**: Extracted AMF3 serialization into `Amf3Encoder`.
+- **Slim Controllers**: `AccountController` method size <= 10 lines, validation extracted to Form Requests.
+- **Strategy & Registry**: `TaskExecutionService` delegates single action execution to container-bound `TaskHandlerRegistry`.
 
 ### 2.3 Stage 4: Popular Items & Config-driven Cache Strategy (Delivered)
-- **Popular Endpoints**: Added `PopularController`, `MarketPopularRequest`, and `PopularItemResource` for `/api/market/popular` and `/api/public/market/popular`.
-- **App Config**: Added `'cache_strategy' => env('MARKET_CACHE_STRATEGY', 'bulk')` to `config/market.php`, passed via `MarketServerService` settings payload.
+- **Popular Endpoints**: Added `PopularController`, `MarketPopularRequest`, and `PopularItemResource`.
+
+### 2.4 Stage 5: REST Alignment & JsonResources Layer (Delivered)
+- **JsonResources Integration**: Created `AccountResource`, `ScheduledTaskResource`, `BotLogResource`.
+- **System-Wide Controller Refactoring**:
+  - `AccountController`: Refactored to use `AccountResource` and Constructor DI for `AccountSyncService`.
+  - `ScheduledTaskController`: Refactored to use `ScheduledTaskResource` and `AccountResource`.
+  - `LogController`: Refactored to use `BotLogResource` and `AccountResource`.
+  - `DashboardController`: Refactored to use `AccountResource` and `BotLogResource`.
+  - `SettingsController`: Extracted `UpdateSettingsRequest` and injected `SystemLogCleanupService` via Constructor DI.
 
 ---
 
 ## 3. Detailed Backlog & Roadmap for Remaining Refactoring
-
-### Stage 5: REST Nouns/Verbs Audit & JsonResources Serialization
-- **Target**: `AccountController` & `ScheduledTaskController`.
-- **Goal**: Audit routes for REST Noun/Verb adherence (`GET`, `POST`, `PUT`, `DELETE`). Create `App\Http\Resources\AccountResource` and `App\Http\Resources\ScheduledTaskResource` to standardize API responses and eliminate raw associative array returns.
 
 ### Stage 6: Market Synchronization Decomposition (`MarketSyncService`)
 - **Current State**: `MarketSyncService.php` (310 lines) performs HTTP AMF requests, chunking, database transactions, history aggregation, and cache invalidation.
@@ -75,4 +69,4 @@
 ### Stage 10: Account Sync Pipeline Refactoring (`AccountSyncService`)
 - **Current State**: `AccountSyncService.php` (172 lines) mixes authentication, zone fetching, parsing, and model updates.
 - **Refactoring Strategy**:
-  - Refactor into a clean pipeline: Auth (`TsoAuthService`) -> Fetch Zone (`TsoAmfService`) -> Parse Zone (`ZoneParserService`) -> Update Account (`AccountService`).
+  - Refactor into a clean pipeline: Auth (`TsoAuthService`) -> Fetch Zone (`TsoAmfService`) -> Parse Zone (`ZoneParserService`) -> Account Updates (`AccountService`).

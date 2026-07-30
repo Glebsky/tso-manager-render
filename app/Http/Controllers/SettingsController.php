@@ -1,13 +1,64 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UpdateSettingsRequest;
 use App\Models\ScheduledTask;
 use App\Models\Setting;
-use Illuminate\Http\Request;
+use App\Services\SystemLogCleanupService;
+use Illuminate\Http\JsonResponse;
 
+/**
+ * Controller for application-level configuration settings.
+ */
 class SettingsController extends Controller
 {
+    public function __construct(
+        private readonly SystemLogCleanupService $logCleanupService,
+    ) {}
+
+    public function index(): JsonResponse
+    {
+        $settings = $this->loadSettings();
+        $settings['server_time'] = now()->toIso8601String();
+
+        return response()->json($settings);
+    }
+
+    public function update(UpdateSettingsRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+        $this->saveSettings($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Settings updated.',
+            'settings' => $validated,
+        ]);
+    }
+
+    public function clearLogs(): JsonResponse
+    {
+        $this->logCleanupService->clearAllLogs();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'All logs cleared.',
+        ]);
+    }
+
+    public function stopAllTasks(): JsonResponse
+    {
+        ScheduledTask::query()->update(['is_active' => false]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'All scheduled tasks paused.',
+        ]);
+    }
+
     private function loadSettings(): array
     {
         return [
@@ -20,49 +71,5 @@ class SettingsController extends Controller
     {
         Setting::set('sync_interval', $settings['sync_interval']);
         Setting::set('log_retention_days', $settings['log_retention_days']);
-    }
-
-    public function index()
-    {
-        $settings = $this->loadSettings();
-        $settings['server_time'] = now()->toIso8601String();
-
-        return response()->json($settings);
-    }
-
-    public function update(Request $request)
-    {
-        $validated = $request->validate([
-            'sync_interval' => 'required|integer|in:0,5,15,30,60',
-            'log_retention_days' => 'required|integer|in:0,7,14,30,90',
-        ]);
-
-        $this->saveSettings($validated);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Settings updated.',
-            'settings' => $validated,
-        ]);
-    }
-
-    public function clearLogs(\App\Services\SystemLogCleanupService $logCleanupService)
-    {
-        $logCleanupService->clearAllLogs();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'All logs cleared.',
-        ]);
-    }
-
-    public function stopAllTasks()
-    {
-        ScheduledTask::query()->update(['is_active' => false]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'All scheduled tasks paused.',
-        ]);
     }
 }

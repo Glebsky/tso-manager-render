@@ -1,14 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
+use App\Http\Resources\AccountResource;
+use App\Http\Resources\BotLogResource;
 use App\Models\Account;
 use App\Models\BotLog;
 use App\Models\ScheduledTask;
+use Illuminate\Http\JsonResponse;
 
+/**
+ * RESTful entry point for system dashboard statistics.
+ */
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(): JsonResponse
     {
         $accounts = Account::withCount('scheduledTasks')->get();
         $logs = BotLog::with('account:id,username,nickname')
@@ -24,8 +32,8 @@ class DashboardController extends Controller
         ];
 
         return response()->json([
-            'accounts' => $accounts,
-            'logs' => $logs,
+            'accounts' => AccountResource::collection($accounts),
+            'logs' => BotLogResource::collection($logs),
             'stats' => $stats,
         ]);
     }
