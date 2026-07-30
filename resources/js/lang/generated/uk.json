@@ -129,7 +129,13 @@
             "friend_zone_failed": "Не вдалося завантажити зону друга (код помилки сервера :err: :errMsg)",
             "friend_building_not_found": "Крок не виконано: будівлю Grid #:grid не знайдено в зоні :friendName",
             "server_error": "Код помилки сервера :errorCode: :errorMsg",
-            "unknown_action_type": "Невідомий тип дії: :taskType"
+            "unknown_action_type": "Невідомий тип дії: :taskType",
+            "insufficient_buffs": "Недостатньо бафів у зоряному меню (доступно: :available, потрібно: :required).",
+            "buff_not_found": "Вказаний баф не знайдено в інвентарі зоряного меню.",
+            "invalid_friend_id": "Некоректний ID друга.",
+            "friend_not_in_list": "Гравець відсутній у вашому списку друзів.",
+            "friend_building_not_found_grid": "Будівлю з сіткою #:grid не знайдено в зоні друга.",
+            "friend_zone_not_cached": "Зону друга не завантажено або закінчився термін кешу. Будь ласка, оновіть її в інтерфейсі."
         },
         "step": {
             "skipped": "Крок :step [:type]: пропущено (вже виконано)",
@@ -409,6 +415,7 @@
         "market.buy_resource": "2. Ресурс, що купується",
         "market.buying_resource": "Ресурс, що купується",
         "market.by": "Від:",
+        "market.cache_strategy": "Стратегія завантаження:",
         "market.cancel": "Скасувати",
         "market.charts_failed": "Не вдалося завантажити графіки аналітики.",
         "market.choose_account": "-- Виберіть акаунт --",
@@ -537,6 +544,8 @@
         "market.stats_failed": "Не вдалося завантажити статистику ринку.",
         "market.status": "Статус",
         "market.step_num": "Крок {step}",
+        "market.strategy_bulk": "Пакетний (Bulk)",
+        "market.strategy_individual": "Роздільний (Individual)",
         "market.subtitle": "Аналіз торгових цін, історії попиту та популярних товарів на ігровому ринку",
         "market.sync_account": "Акаунт синхронізації",
         "market.sync_complete": "Синхронізацію завершено! {message}",

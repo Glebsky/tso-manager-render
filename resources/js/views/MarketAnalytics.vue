@@ -874,7 +874,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { t } from '../lang';
 import axios from 'axios';
-import { cachedGet, clearApiCache, cachedGetBulk, readBulkCache } from '../services/apiCacheService';
+import { cachedGet, clearApiCache, cachedGetBulk, readBulkCache, getMarketCacheStrategy, setMarketCacheStrategy } from '../services/apiCacheService';
 import { showToast } from '../toast';
 import { getGameImageUrl, handleGameImageError } from '../services/gameImageService';
 import { resourceName, marketItemName } from '../lang/gameNames';
@@ -946,6 +946,7 @@ export default {
         };
 
         const activeTab = ref('analytics');
+        const cacheStrategy = ref(getMarketCacheStrategy());
         const bulkCacheTtlMs = ref(300000);
         const loading = ref(false);
         const loadingServers = ref(true);
@@ -958,6 +959,15 @@ export default {
         const showPopularItems = ref(true);
         const showArbitrageSchemes = ref(true);
         const showActiveListings = ref(true);
+
+        const onCacheStrategyChange = (strategy) => {
+            cacheStrategy.value = setMarketCacheStrategy(strategy);
+            clearApiCache();
+            loadAnalyticsData({ bypass: true });
+            if (selectedItem.value && selectedTarget.value) {
+                fetchAnalytics({ bypass: true });
+            }
+        };
 
         const togglePopularItems = () => showPopularItems.value = !showPopularItems.value;
         const toggleArbitrageSchemes = () => showArbitrageSchemes.value = !showArbitrageSchemes.value;
@@ -1294,11 +1304,23 @@ export default {
                     }
                 };
 
-                const bulkData = await cachedGetBulk('/api/market/bulk', selectedServerId.value, {
-                    onRevalidate: applyBulkData,
-                    ...options
-                });
-                applyBulkData(bulkData);
+                if (cacheStrategy.value === 'bulk') {
+                    const bulkData = await cachedGetBulk('/api/market/bulk', selectedServerId.value, {
+                        onRevalidate: applyBulkData,
+                        ...options
+                    });
+                    applyBulkData(bulkData);
+                } else {
+                    // Individual mode: fetch individual granular endpoints separately
+                    const [goodsRes, popularRes, arbitrageRes] = await Promise.all([
+                        cachedGet('/api/market/goods', { params: { server_id: selectedServerId.value }, ...options }),
+                        cachedGet('/api/market/popular', { params: { server_id: selectedServerId.value, period: '1d' }, ...options }),
+                        cachedGet('/api/market/arbitrage', { params: { server_id: selectedServerId.value }, ...options }),
+                    ]);
+                    goods.value = goodsRes || [];
+                    popular.value = popularRes || [];
+                    arbitrageLoops.value = arbitrageRes || [];
+                }
 
                 startCountdown();
                 await loadSyncLogs(1);
@@ -1690,6 +1712,8 @@ export default {
             logsPagination,
             loadSyncLogs,
             selectionMode,
+            cacheStrategy,
+            onCacheStrategyChange,
             visualTab,
             selectedPeriod,
             arbitrageLoops,

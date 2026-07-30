@@ -607,7 +607,7 @@ import { t } from '../lang';
 import { resourceName, marketItemName } from '../lang/gameNames';
 import { TRADABLE_RESOURCES } from '../lang/resourcesCatalog';
 import axios from 'axios';
-import { cachedGet, cachedGetBulk, readBulkCache } from '../services/apiCacheService';
+import { cachedGet, cachedGetBulk, readBulkCache, clearApiCache, getMarketCacheStrategy, setMarketCacheStrategy } from '../services/apiCacheService';
 import { getGameImageUrl, handleGameImageError } from '../services/gameImageService';
 
 import Spinner from '../components/Spinner.vue';
@@ -676,6 +676,7 @@ export default {
             }
         };
 
+        const cacheStrategy = ref(getMarketCacheStrategy());
         const bulkCacheTtlMs = ref(300000);
         const loading = ref(false);
         const loadingPairs = ref(false);
@@ -683,6 +684,15 @@ export default {
         const showPopularItems = ref(true);
         const showArbitrageSchemes = ref(true);
         const showActiveListings = ref(true);
+
+        const onCacheStrategyChange = (strategy) => {
+            cacheStrategy.value = setMarketCacheStrategy(strategy);
+            clearApiCache();
+            loadInitialData({ bypass: true });
+            if (selectedItem.value && selectedTarget.value) {
+                fetchAnalytics({ bypass: true });
+            }
+        };
 
         const togglePopularItems = () => showPopularItems.value = !showPopularItems.value;
         const toggleArbitrageSchemes = () => showArbitrageSchemes.value = !showArbitrageSchemes.value;
@@ -952,11 +962,23 @@ export default {
                     }
                 };
 
-                const bulkData = await cachedGetBulk('/api/public/market/bulk', selectedServerId.value, {
-                    onRevalidate: applyBulkData,
-                    ...options
-                });
-                applyBulkData(bulkData);
+                if (cacheStrategy.value === 'bulk') {
+                    const bulkData = await cachedGetBulk('/api/public/market/bulk', selectedServerId.value, {
+                        onRevalidate: applyBulkData,
+                        ...options
+                    });
+                    applyBulkData(bulkData);
+                } else {
+                    // Individual mode: fetch public granular endpoints separately
+                    const [goodsRes, popularRes, arbitrageRes] = await Promise.all([
+                        cachedGet('/api/public/market/goods', { params: { server_id: selectedServerId.value }, ...options }),
+                        cachedGet('/api/public/market/popular', { params: { server_id: selectedServerId.value, period: '1d' }, ...options }),
+                        cachedGet('/api/public/market/arbitrage', { params: { server_id: selectedServerId.value }, ...options }),
+                    ]);
+                    goods.value = goodsRes || [];
+                    popular.value = popularRes || [];
+                    arbitrageLoops.value = arbitrageRes || [];
+                }
 
                 startCountdown();
             } catch (e) {
@@ -1224,6 +1246,8 @@ export default {
             fetchAnalytics,
             formatVolume,
             selectionMode,
+            cacheStrategy,
+            onCacheStrategyChange,
             visualTab,
             selectedPeriod,
             mirroredStats,

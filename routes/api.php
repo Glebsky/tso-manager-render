@@ -1,11 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LogController;
-use App\Http\Controllers\MarketAnalyticsController;
+use App\Http\Controllers\Market\AnalyticsController;
+use App\Http\Controllers\Market\ArbitrageController;
+use App\Http\Controllers\Market\BulkController;
+use App\Http\Controllers\Market\CatalogController;
+use App\Http\Controllers\Market\PopularController;
+use App\Http\Controllers\Market\PublicServerController;
+use App\Http\Controllers\Market\ServerController;
+use App\Http\Controllers\Market\SettingsController as MarketSettingsController;
+use App\Http\Controllers\Market\SyncLogController;
+use App\Http\Controllers\Market\VersionController;
 use App\Http\Controllers\ScheduledTaskController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Middleware\HttpCacheHeaders;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -56,30 +68,34 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/settings/logs', [SettingsController::class, 'clearLogs']);
     Route::post('/settings/tasks/stop', [SettingsController::class, 'stopAllTasks']);
 
-    // Market analytics
-    Route::get('/market/servers', [MarketAnalyticsController::class, 'getServers']);
-    Route::post('/market/servers', [MarketAnalyticsController::class, 'storeServer']);
-    Route::put('/market/servers/{server}', [MarketAnalyticsController::class, 'updateServer']);
-    Route::delete('/market/servers/{server}', [MarketAnalyticsController::class, 'deleteServer']);
-    Route::post('/market/servers/{server}/verify', [MarketAnalyticsController::class, 'verifyServerAccount']);
-    Route::post('/market/servers/{server}/sync', [MarketAnalyticsController::class, 'syncServerNow']);
+    // Market server connections
+    Route::get('/market/servers', [ServerController::class, 'index']);
+    Route::post('/market/servers', [ServerController::class, 'store']);
+    Route::put('/market/servers/{server}', [ServerController::class, 'update']);
+    Route::delete('/market/servers/{server}', [ServerController::class, 'destroy']);
+    Route::post('/market/servers/{server}/verify', [ServerController::class, 'verify']);
+    Route::post('/market/servers/{server}/sync', [ServerController::class, 'sync']);
 
-    Route::get('/market/settings', [MarketAnalyticsController::class, 'getSettings']);
-    Route::put('/market/settings', [MarketAnalyticsController::class, 'updateSettings']);
-    Route::post('/market/sync', [MarketAnalyticsController::class, 'syncNow']);
-    Route::get('/market/version', [MarketAnalyticsController::class, 'getVersion']);
+    // Market settings
+    Route::get('/market/settings', [MarketSettingsController::class, 'index']);
+    Route::put('/market/settings', [MarketSettingsController::class, 'update']);
+    Route::post('/market/sync', [MarketSettingsController::class, 'sync']);
+    Route::get('/market/version', VersionController::class);
+
     // Cached market data endpoints share the same HTTP cache contract as the
     // public API: ETag + X-Data-Version drive client-side (localStorage SWR)
     // and browser cache invalidation. Live endpoints (servers, settings,
     // logs) intentionally stay uncached.
-    Route::middleware(\App\Http\Middleware\HttpCacheHeaders::class)->group(function () {
-        Route::get('/market/goods', [MarketAnalyticsController::class, 'getGoods']);
-        Route::get('/market/targets', [MarketAnalyticsController::class, 'getTargets']);
-        Route::get('/market/analytics', [MarketAnalyticsController::class, 'getAnalytics']);
-        Route::get('/market/arbitrage', [MarketAnalyticsController::class, 'getArbitrage']);
-        Route::get('/market/bulk', [MarketAnalyticsController::class, 'getBulk']);
+    Route::middleware(HttpCacheHeaders::class)->group(function () {
+        Route::get('/market/goods', [CatalogController::class, 'goods']);
+        Route::get('/market/targets', [CatalogController::class, 'targets']);
+        Route::get('/market/popular', PopularController::class);
+        Route::get('/market/analytics', AnalyticsController::class);
+        Route::get('/market/arbitrage', ArbitrageController::class);
+        Route::get('/market/bulk', BulkController::class);
     });
-    Route::get('/market/logs', [MarketAnalyticsController::class, 'getLogs']);
+
+    Route::get('/market/logs', SyncLogController::class);
 });
 
 /*
@@ -88,14 +104,15 @@ Route::middleware('auth:sanctum')->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::prefix('public/market')->group(function () {
-    Route::get('/version', [MarketAnalyticsController::class, 'getVersion']);
+    Route::get('/version', VersionController::class);
 
-    Route::middleware(\App\Http\Middleware\HttpCacheHeaders::class)->group(function () {
-        Route::get('/servers', [MarketAnalyticsController::class, 'getPublicServers']);
-        Route::get('/goods', [MarketAnalyticsController::class, 'getGoods']);
-        Route::get('/targets', [MarketAnalyticsController::class, 'getTargets']);
-        Route::get('/analytics', [MarketAnalyticsController::class, 'getAnalytics']);
-        Route::get('/arbitrage', [MarketAnalyticsController::class, 'getArbitrage']);
-        Route::get('/bulk', [MarketAnalyticsController::class, 'getBulk']);
+    Route::middleware(HttpCacheHeaders::class)->group(function () {
+        Route::get('/servers', PublicServerController::class);
+        Route::get('/goods', [CatalogController::class, 'goods']);
+        Route::get('/targets', [CatalogController::class, 'targets']);
+        Route::get('/popular', PopularController::class);
+        Route::get('/analytics', AnalyticsController::class);
+        Route::get('/arbitrage', ArbitrageController::class);
+        Route::get('/bulk', BulkController::class);
     });
 });

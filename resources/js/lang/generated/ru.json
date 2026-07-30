@@ -5735,7 +5735,13 @@
             "friend_zone_failed": "Не удалось загрузить зону друга (код ошибки сервера :err: :errMsg)",
             "friend_building_not_found": "Шаг не выполнен: здание Grid #:grid не найдено в зоне :friendName",
             "server_error": "Код ошибки сервера :errorCode: :errorMsg",
-            "unknown_action_type": "Неизвестный тип действия: :taskType"
+            "unknown_action_type": "Неизвестный тип действия: :taskType",
+            "insufficient_buffs": "Недостаточно баффов в звездном меню (доступно: :available, требуется: :required).",
+            "buff_not_found": "Указанный бафф не найден в инвентаре звездного меню.",
+            "invalid_friend_id": "Неверный ID друга.",
+            "friend_not_in_list": "Игрок отсутствует в вашем списке друзей.",
+            "friend_building_not_found_grid": "Здание с сеткой #:grid не найдено в зоне друга.",
+            "friend_zone_not_cached": "Зона друга не загружена или истек срок кеша. Пожалуйста, обновите ее в интерфейсе."
         },
         "step": {
             "skipped": "Шаг :step [:type]: пропущен (уже выполнен)",
@@ -6015,6 +6021,7 @@
         "market.buy_resource": "2. Покупаемый ресурс",
         "market.buying_resource": "Покупаемый ресурс",
         "market.by": "От:",
+        "market.cache_strategy": "Стратегия загрузки:",
         "market.cancel": "Отмена",
         "market.charts_failed": "Не удалось загрузить графики аналитики.",
         "market.choose_account": "-- Выберите аккаунт --",
@@ -6143,6 +6150,8 @@
         "market.stats_failed": "Не удалось загрузить статистику рынка.",
         "market.status": "Статус",
         "market.step_num": "Шаг {step}",
+        "market.strategy_bulk": "Пакетный (Bulk)",
+        "market.strategy_individual": "Раздельный (Individual)",
         "market.subtitle": "Анализ торговых цен, истории спроса и популярных товаров на игровом рынке",
         "market.sync_account": "Аккаунт синхронизации",
         "market.sync_complete": "Синхронизация завершена! {message}",

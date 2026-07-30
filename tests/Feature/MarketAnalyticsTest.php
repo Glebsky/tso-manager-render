@@ -295,6 +295,7 @@ class MarketAnalyticsTest extends TestCase
 
         $this->getJson('/api/public/market/goods')->assertStatus(200);
         $this->getJson('/api/public/market/targets?item_id=Bread')->assertStatus(200);
+        $this->getJson('/api/public/market/popular?period=1d')->assertStatus(200);
         $this->getJson('/api/public/market/analytics')->assertStatus(200);
         $this->getJson('/api/public/market/arbitrage')->assertStatus(200);
         $this->getJson('/api/public/market/bulk')->assertStatus(200);
