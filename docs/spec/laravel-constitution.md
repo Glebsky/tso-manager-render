@@ -1,6 +1,3 @@
-<laravel-boost-guidelines>
-=== foundation rules ===
-
 # Laravel Boost Guidelines
 
 The Laravel Boost guidelines are specifically curated by Laravel maintainers for this application. These guidelines should be followed closely to enhance the user's satisfaction building Laravel applications.
@@ -91,12 +88,14 @@ This application is a Laravel application and its main Laravel ecosystems packag
 - Always use explicit return type declarations for methods and functions.
 - Use appropriate PHP type hints for method parameters.
 
+```html
 <code-snippet name="Explicit Return Types and Method Params" lang="php">
 protected function isAccessible(User $user, ?string $path = null): bool
 {
     ...
 }
 </code-snippet>
+```
 
 ## Comments
 - Prefer PHPDoc blocks over inline comments. Never use comments within the code itself unless there is something very complex going on.
@@ -208,6 +207,7 @@ protected function isAccessible(User $user, ?string $path = null): bool
 ### Spacing
 - When listing items, use gap utilities for spacing; don't use margins.
 
+```html
 <code-snippet name="Valid Flex Gap Spacing Example" lang="html">
     <div class="flex gap-8">
         <div>Superior</div>
@@ -215,6 +215,7 @@ protected function isAccessible(User $user, ?string $path = null): bool
         <div>Erie</div>
     </div>
 </code-snippet>
+```
 
 ### Dark Mode
 - If existing pages and components support dark mode, new pages and components must support dark mode in a similar way, typically using `dark:`.
