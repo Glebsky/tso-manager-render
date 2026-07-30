@@ -1,55 +1,35 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Account\ExecuteAccountActionRequest;
+use App\Http\Requests\Account\StoreAccountRequest;
+use App\Http\Requests\Account\UpdateAccountSessionRequest;
 use App\Models\Account;
-use App\Models\BotLog;
+use App\Services\AccountService;
 use App\Services\AccountSyncService;
-use App\Services\TsoAmfService;
-use App\Services\TsoAuthService;
-use App\Services\ZoneParserService;
 use Exception;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Http\JsonResponse;
 
-class AccountController extends Controller
+/**
+ * Controller for account management and interactions.
+ */
+final class AccountController extends Controller
 {
-    private TsoAuthService $authService;
+    public function __construct(
+        private readonly AccountService $accountService,
+    ) {}
 
-    private TsoAmfService $amfService;
-
-    private ZoneParserService $zoneParser;
-
-    public function __construct(TsoAuthService $authService, TsoAmfService $amfService, ZoneParserService $zoneParser)
+    public function index(): JsonResponse
     {
-        $this->authService = $authService;
-        $this->amfService = $amfService;
-        $this->zoneParser = $zoneParser;
+        return response()->json(Account::latest()->get());
     }
 
-    /**
-     * List all accounts.
-     */
-    public function index()
+    public function store(StoreAccountRequest $request): JsonResponse
     {
-        $accounts = Account::latest()->get();
-
-        return response()->json($accounts);
-    }
-
-    /**
-     * Create a new account.
-     */
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'username' => 'required|string|max:255',
-            'password' => 'required|string',
-            'region' => 'required|string|max:10',
-        ]);
-
-        $account = Account::create($validated);
+        $account = Account::create($request->validated());
 
         return response()->json([
             'success' => true,
@@ -58,28 +38,16 @@ class AccountController extends Controller
         ], 201);
     }
 
-    /**
-     * Show account details.
-     */
-    public function show(Account $account)
+    public function show(Account $account): JsonResponse
     {
         $account->makeVisible('zone_data');
 
         return response()->json($account);
     }
 
-    /**
-     * Delete an account.
-     */
-    public function destroy(Account $account)
+    public function destroy(Account $account): JsonResponse
     {
-        // Clean up cookie file
-        $cookieFile = $this->authService->getCookieFile($account);
-        if (file_exists($cookieFile)) {
-            @unlink($cookieFile);
-        }
-
-        $account->delete();
+        $this->accountService->deleteAccount($account);
 
         return response()->json([
             'success' => true,
@@ -87,16 +55,12 @@ class AccountController extends Controller
         ]);
     }
 
-    /**
-     * Sync: login if needed, fetch zone data, parse and cache.
-     * Only saves zone_data if buildings were found (prevents overwriting valid data).
-     */
-    public function sync(Account $account, AccountSyncService $syncService)
+    public function sync(Account $account, AccountSyncService $syncService): JsonResponse
     {
         try {
             $zoneData = $syncService->sync($account);
             $freshAccount = $account->fresh();
-            $freshAccount->makeVisible('zone_data');
+            $freshAccount?->makeVisible('zone_data');
 
             return response()->json([
                 'success' => true,
@@ -106,9 +70,7 @@ class AccountController extends Controller
             ]);
         } catch (Exception $e) {
             $freshAccount = $account->fresh();
-            if ($freshAccount) {
-                $freshAccount->makeVisible('zone_data');
-            }
+            $freshAccount?->makeVisible('zone_data');
 
             return response()->json([
                 'success' => false,
@@ -118,123 +80,20 @@ class AccountController extends Controller
         }
     }
 
-    /**
-     * Execute an action on an account (stop_production, start_production, apply_buff, send_specialist).
-     */
-    public function action(Request $request, Account $account)
+    public function action(ExecuteAccountActionRequest $request, Account $account): JsonResponse
     {
-        $request->validate([
-            'action_type' => 'required|string|in:stop_production,start_production,apply_buff,send_specialist',
-        ]);
+        $actionType = (string) $request->input('action_type');
+        $result = $this->accountService->executeAction($account, $actionType, $request->validated());
 
-        try {
-            // Ensure authenticated
-            if (! $this->authService->isAuthenticated($account)) {
-                $this->authService->login($account);
-                $account->refresh();
-            }
-
-            $actionType = $request->input('action_type');
-            $result = '';
-
-            switch ($actionType) {
-                case 'stop_production':
-                    $request->validate(['grid' => 'required|integer']);
-                    $result = $this->amfService->stopProduction($account, (int) $request->input('grid'));
-                    break;
-
-                case 'start_production':
-                    $request->validate(['grid' => 'required|integer']);
-                    $result = $this->amfService->startProduction($account, (int) $request->input('grid'));
-                    break;
-
-                case 'apply_buff':
-                    $request->validate([
-                        'grid' => 'required|integer',
-                        'unique_id1' => 'required|integer',
-                        'unique_id2' => 'required|integer',
-                    ]);
-                    $result = $this->amfService->applyBuff(
-                        $account,
-                        (int) $request->input('grid'),
-                        (int) $request->input('unique_id1'),
-                        (int) $request->input('unique_id2')
-                    );
-                    $parsed = $this->zoneParser->parse($result);
-                    $errorCode = $parsed['errorCode'] ?? 0;
-                    if ($errorCode !== 0) {
-                        $errorMsg = \App\Services\GameErrorResolver::getMessage((int) $errorCode);
-                        throw new \App\Exceptions\GameServerErrorException((int) $errorCode, $errorMsg);
-                    }
-                    break;
-
-                case 'send_specialist':
-                    $request->validate([
-                        'task_type' => 'required|integer',
-                        'sub_task_id' => 'required|integer',
-                        'unique_id1' => 'required|integer',
-                        'unique_id2' => 'required|integer',
-                    ]);
-                    $result = $this->amfService->sendSpecialist(
-                        $account,
-                        (int) $request->input('task_type'),
-                        (int) $request->input('sub_task_id'),
-                        (int) $request->input('unique_id1'),
-                        (int) $request->input('unique_id2')
-                    );
-                    break;
-            }
-
-            BotLog::create([
-                'account_id' => $account->id,
-                'level' => 'success',
-                'message' => '[Account] '.__('logs.account.action_success', ['type' => $actionType]),
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'message' => __('logs.account.action_success', ['type' => $actionType]),
-            ]);
-        } catch (Exception $e) {
-            BotLog::create([
-                'account_id' => $account->id,
-                'level' => 'error',
-                'message' => '[Account] '.__('logs.account.action_failed', ['type' => $request->input('action_type'), 'error' => $e->getMessage()]),
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => __('logs.account.action_failed', ['type' => $request->input('action_type'), 'error' => $e->getMessage()]),
-            ], 500);
-        }
+        return response()->json(
+            ['success' => $result['success'], 'message' => $result['message']],
+            $result['success'] ? 200 : 500
+        );
     }
 
-    /**
-     * Manually update the account's session tokens.
-     */
-    public function updateSession(Request $request, Account $account)
+    public function updateSession(UpdateAccountSessionRequest $request, Account $account): JsonResponse
     {
-        $validated = $request->validate([
-            'dso_auth_token' => 'required|string',
-            'dso_auth_user' => 'required|string',
-            'bb_url' => 'required|url',
-        ]);
-
-        $account->update([
-            'dso_auth_token' => $validated['dso_auth_token'],
-            'dso_auth_user' => $validated['dso_auth_user'],
-            'bb_url' => $validated['bb_url'],
-            'status' => 'online',
-        ]);
-
-        // Clear cached client connection so the new tokens are used immediately
-        $this->amfService->resetClient();
-
-        BotLog::create([
-            'account_id' => $account->id,
-            'level' => 'success',
-            'message' => '[Account] '.__('logs.account.session_updated'),
-        ]);
+        $account = $this->accountService->updateSession($account, $request->validated());
 
         return response()->json([
             'success' => true,
@@ -243,108 +102,10 @@ class AccountController extends Controller
         ]);
     }
 
-    /**
-     * Get target friend's zone data.
-     */
-    public function friendZone(Account $account, $friendId)
+    public function friendZone(Account $account, mixed $friendId): JsonResponse
     {
-        $friendId = (int) $friendId;
-        if ($friendId <= 0) {
-            return response()->json([
-                'success' => false,
-                'message' => __('ui.account.friend_zone.invalid_id'),
-            ], 400);
-        }
+        $res = $this->accountService->getFriendZone($account, (int) $friendId);
 
-        $zoneData = $account->zone_data ? json_decode($account->zone_data, true) : [];
-        $friends = $zoneData['friends'] ?? [];
-        $friend = null;
-        foreach ($friends as $f) {
-            if (isset($f['id']) && (int) $f['id'] === $friendId) {
-                $friend = $f;
-                break;
-            }
-        }
-
-        if (! $friend) {
-            return response()->json([
-                'success' => false,
-                'message' => __('ui.account.friend_zone.not_in_friends_list'),
-            ], 403);
-        }
-
-        $cacheKey = "friend-zone:{$account->id}:{$friendId}";
-        $staleCacheKey = "friend-zone-stale:{$account->id}:{$friendId}";
-        $cachedZone = Cache::get($cacheKey);
-
-        if ($cachedZone) {
-            $friendZoneData = json_decode($cachedZone, true);
-        } else {
-            try {
-                if (! $this->authService->isAuthenticated($account)) {
-                    $this->authService->login($account);
-                    $account->refresh();
-                }
-
-                Log::info("[FriendZone] Loading zone of friend #{$friendId} for account #{$account->id}");
-                $rawAmf = $this->amfService->getZone($account, $friendId);
-                $friendZoneData = $this->zoneParser->parse($rawAmf);
-
-                $errorCode = $friendZoneData['errorCode'] ?? 0;
-                if ($errorCode !== 0) {
-                    $staleCache = Cache::get($staleCacheKey);
-                    if ($staleCache) {
-                        Log::warning("[FriendZone] Game server returned error {$errorCode} while loading zone of friend #{$friendId} for account #{$account->id}; falling back to stale cache");
-                        $friendZoneData = json_decode($staleCache, true);
-                    } else {
-                        return response()->json([
-                            'success' => false,
-                            'message' => __('ui.account.friend_zone.server_error', [
-                                'code' => $errorCode,
-                                'error' => \App\Services\GameErrorResolver::getMessage((int) $errorCode),
-                            ]),
-                        ], 500);
-                    }
-                } else {
-                    $jsonEncoded = json_encode($friendZoneData);
-                    Cache::put($cacheKey, $jsonEncoded, 3600);
-                    Cache::put($staleCacheKey, $jsonEncoded, 86400);
-                }
-            } catch (Exception $e) {
-                Log::error("[FriendZone] Failed to load zone of friend #{$friendId} for account #{$account->id}: ".$e->getMessage());
-
-                $staleCache = Cache::get($staleCacheKey);
-                if ($staleCache) {
-                    Log::warning("[FriendZone] Exception while loading zone of friend #{$friendId} for account #{$account->id}; falling back to stale cache");
-                    $friendZoneData = json_decode($staleCache, true);
-                } else {
-                    return response()->json([
-                        'success' => false,
-                        'message' => __('ui.account.friend_zone.load_failed', ['message' => $e->getMessage()]),
-                    ], 500);
-                }
-            }
-        }
-
-        $buildings = [];
-        foreach ($friendZoneData['buildings'] ?? [] as $b) {
-            $buildings[] = [
-                'buildingName_string' => $b['buildingName_string'] ?? $b['buildingName'] ?? 'Building',
-                'buildingName' => $b['buildingName'] ?? $b['buildingName_string'] ?? 'Building',
-                'buildingGrid' => $b['buildingGrid'] ?? $b['grid'] ?? 0,
-                'upgradeLevel' => $b['upgradeLevel'] ?? $b['level'] ?? 1,
-                'isProductionActive' => $b['isProductionActive'] ?? false,
-                'buildingMode' => $b['buildingMode'] ?? 0,
-            ];
-        }
-
-        return response()->json([
-            'success' => true,
-            'friend' => [
-                'id' => $friendId,
-                'username' => $friend['username'] ?? $friend['nickname'] ?? 'Unknown',
-            ],
-            'buildings' => $buildings,
-        ]);
+        return response()->json($res['payload'], $res['status']);
     }
 }
