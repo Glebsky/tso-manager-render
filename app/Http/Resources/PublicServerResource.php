@@ -36,8 +36,8 @@ class PublicServerResource extends JsonResource
         }
 
         $name = preg_replace('/\s+Settlers\s+Market$/i', '', (string) $this->display_name);
-        $name = preg_replace('/\s+Market\s*\([^)]*\)$/i', '', (string) $name);
-        $name = trim($name);
+        $name = preg_replace('/\s+Market(\s*\([^)]*\))?$/i', '', (string) $name);
+        $name = trim((string) $name);
 
         return $name !== '' ? $name : strtoupper((string) $this->server_id);
     }
