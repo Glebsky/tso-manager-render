@@ -28,17 +28,21 @@ This directory contains the Spec-Driven Development (SDD) documentation for the 
    - Added `PopularController.php`, `MarketPopularRequest.php`, and `PopularItemResource.php`.
    - Added configurable `cache_strategy` (`'bulk'` \| `'individual'`) in `config/market.php` and `MarketServerService`.
 
+4. **Stage 5 (REST Alignment & JsonResources)**:
+   - Created `AccountResource`, `ScheduledTaskResource`, `BotLogResource`.
+   - Refactored `AccountController`, `ScheduledTaskController`, `LogController`, `DashboardController`, `SettingsController`.
+
+5. **Stage 6 (Market Synchronization Decomposition)**:
+   - Decomposed 372-line `MarketSyncService` into `MarketOfferFetcher`, `MarketOfferParser`, `MarketOfferPersister`, `MarketSyncLogger`, and a high-level `MarketSyncService` orchestrator using Constructor DI.
+
+6. **Stage 7 (Game Zone Parser Refactoring)**:
+   - Decomposed `ZoneParserService` into `ZoneAmfExecutor`, `ZoneResourceCategorizer`, and a high-level `ZoneParserService` orchestrator with strict types and Constructor Property Promotion DI.
+
 ## Remaining Backlog (Prioritized Roadmap)
 
-1. **Stage 5 — REST Alignment & JsonResources**:
-   - Audit API routes for REST Noun/Verb adherence. Add `AccountResource` and `ScheduledTaskResource` for unified JSON responses across endpoints.
-2. **Stage 6 — `MarketSyncService` Decomposition**:
-   - Split network fetching (`MarketOfferFetcher`) from batch persistence (`MarketOfferPersister`).
-3. **Stage 7 — `ZoneParserService` Refactoring**:
-   - Extract pure extractors (`BuildingGridParser`, `FriendListParser`) from raw AMF parsing.
-4. **Stage 8 — Scheduled Task Form Requests**:
+1. **Stage 8 — Scheduled Task Form Requests**:
    - Fully implement `StoreScheduledTaskRequest` and `UpdateScheduledTaskRequest` with strict rules for sequence steps, buff payloads, and specialist searches.
-5. **Stage 9 — Console Command & Scheduler Engine**:
+2. **Stage 9 — Console Command & Scheduler Engine**:
    - Move scheduler reservation and queue dispatch logic out of `RunSchedulerCommand` into `TaskSchedulerEngine`.
-6. **Stage 10 — Account Sync Pipeline Refactoring**:
+3. **Stage 10 — Account Sync Pipeline Refactoring**:
    - Decompose `AccountSyncService` into pure auth, protocol, parsing, and persistence pipeline steps using Constructor DI.

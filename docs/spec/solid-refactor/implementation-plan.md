@@ -8,8 +8,8 @@
 | **Stage 3** | Accounts & Task Planner Strategies | **COMPLETED** | Fixed `ScheduledTaskRequest` prefix bug. Refactored `AccountController` (351 -> 91 lines) with Form Requests (`StoreAccountRequest`, `ExecuteAccountActionRequest`, `UpdateAccountSessionRequest`) and `AccountService`. Extracted `TaskHandlerRegistry` + `TaskActionHandlerInterface` strategies (`StopProductionHandler`, `StartProductionHandler`, `ApplyBuffHandler`, `SendSpecialistHandler`). Extracted `Amf3Encoder`. |
 | **Stage 4** | Popular Items & Cache Strategy Config | **COMPLETED** | Added `PopularController`, `MarketPopularRequest`, `PopularItemResource`. Added configurable `cache_strategy` (`'bulk'` \| `'individual'`) in `config/market.php` and `MarketServerService`. |
 | **Stage 5** | REST Alignment & JsonResources | **COMPLETED** | Created `AccountResource`, `ScheduledTaskResource`, `BotLogResource`. Refactored `AccountController`, `ScheduledTaskController`, `LogController`, `DashboardController`, and `SettingsController` (`UpdateSettingsRequest`). Enforced Constructor DI across all non-market controllers. |
-| **Stage 6** | Market Synchronization (`MarketSyncService`) | **PENDING** | Decompose 310-line `MarketSyncService` into `MarketOfferFetcher`, `MarketOfferPersister`, and `MarketSyncOrchestrator`. Inject dependencies via Constructor DI instead of static calls. |
-| **Stage 7** | Game Zone Parser (`ZoneParserService`) | **PENDING** | Decompose 211-line `ZoneParserService` into `BuildingGridParser` and `FriendListParser`. |
+| **Stage 6** | Market Synchronization Decomposition (`MarketSyncService`) | **COMPLETED** | Decomposed monolithic 372-line `MarketSyncService` into `MarketOfferFetcher`, `MarketOfferParser`, `MarketOfferPersister`, `MarketSyncLogger`, and a high-level `MarketSyncService` orchestrator using Constructor DI. |
+| **Stage 7** | Game Zone Parser (`ZoneParserService`) | **COMPLETED** | Decomposed `ZoneParserService` into `ZoneAmfExecutor`, `ZoneResourceCategorizer`, and lightweight `ZoneParserService` orchestrator using Constructor DI. |
 | **Stage 8** | Scheduled Task Validation & Form Requests | **PENDING** | Expand stubbed `StoreScheduledTaskRequest` and `UpdateScheduledTaskRequest` to cover all task payload types (`sequence`, `buff_self`, `buff_friend`, `send_specialist`). |
 | **Stage 9** | Scheduler Engine & Console Commands | **PENDING** | Slim `RunSchedulerCommand` (239 lines) and `ExecuteScheduledTasks` (124 lines) by extracting `TaskSchedulerEngine`. |
 | **Stage 10** | Account Sync & Session Pipeline | **PENDING** | Decompose `AccountSyncService` (172 lines) into pure auth, protocol, parsing, and persistence pipeline steps using Constructor DI. |
@@ -38,22 +38,23 @@
   - `DashboardController`: Refactored to use `AccountResource` and `BotLogResource`.
   - `SettingsController`: Extracted `UpdateSettingsRequest` and injected `SystemLogCleanupService` via Constructor DI.
 
+### 2.5 Stage 6: Market Synchronization Decomposition (Delivered)
+- **Extracted Sub-Services (`App\Services\Market\Sync\*`)**:
+  - `MarketOfferFetcher`: Network fetching of market offers via `TsoAmfService` and Python parser execution.
+  - `MarketOfferParser`: Domain parsing of raw offer strings into structured offer and history arrays.
+  - `MarketOfferPersister`: Batch database transaction, active offer replacement, and history deduplication.
+  - `MarketSyncLogger`: System log writing and `MarketSyncLog` / `BotLog` database recording.
+- **Orchestrator**: `MarketSyncService` reduced from 372 lines to a clean 80-line orchestrator delegating all work via Constructor DI.
+
+### 2.6 Stage 7: Game Zone Parser Refactoring (Delivered)
+- **Extracted Sub-Services (`App\Services\Zone\*`)**:
+  - `ZoneAmfExecutor`: Handles Python binary execution (`parse_zone.py`) and temporary file I/O safely.
+  - `ZoneResourceCategorizer`: Pure domain categorizer mapping game resource names to warehouse tab categories (`WarehouseTab1` - `WarehouseTab8`).
+- **Orchestrator**: `ZoneParserService` converted into a lightweight orchestrator with strict types and Constructor Property Promotion DI.
+
 ---
 
 ## 3. Detailed Backlog & Roadmap for Remaining Refactoring
-
-### Stage 6: Market Synchronization Decomposition (`MarketSyncService`)
-- **Current State**: `MarketSyncService.php` (310 lines) performs HTTP AMF requests, chunking, database transactions, history aggregation, and cache invalidation.
-- **Refactoring Strategy**:
-  - `App\Services\Market\Sync\MarketOfferFetcher`: Network fetching of market offers via `TsoAmfService`.
-  - `App\Services\Market\Sync\MarketOfferPersister`: Batch database UPSERT, active offer replacement, and history generation within DB transactions.
-  - `App\Services\Market\Sync\MarketSyncOrchestrator`: Orchestrating fetcher and persister steps cleanly via Constructor Injection.
-
-### Stage 7: Game Zone Parser Refactoring (`ZoneParserService`)
-- **Current State**: `ZoneParserService.php` (211 lines) traverses raw AMF array trees to extract buildings, specialist quests, and friend lists.
-- **Refactoring Strategy**:
-  - `App\Services\Zone\BuildingGridParser`: Extracts building grid positions, building types, levels, and active buff states.
-  - `App\Services\Zone\FriendListParser`: Extracts friend player IDs, nicknames, and building positions.
 
 ### Stage 8: Scheduled Task Form Requests & Validation
 - **Current State**: `StoreScheduledTaskRequest` and `UpdateScheduledTaskRequest` are stubs (7 lines). Validation is scattered in `ScheduledTaskRequest`.
