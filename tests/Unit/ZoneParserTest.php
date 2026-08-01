@@ -47,4 +47,10 @@ class ZoneParserTest extends TestCase
         $this->assertEquals('WarehouseTab1', $result['resources'][0]['category']);
         $this->assertEquals('WarehouseTab2', $result['resources'][1]['category']);
     }
+
+    public function test_container_resolves_zone_parser_service(): void
+    {
+        $service = $this->app->make(ZoneParserService::class);
+        $this->assertInstanceOf(ZoneParserService::class, $service);
+    }
 }
