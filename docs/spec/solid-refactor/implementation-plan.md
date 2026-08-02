@@ -10,7 +10,7 @@
 | **Stage 5** | REST Alignment & JsonResources | **COMPLETED** | Created `AccountResource`, `ScheduledTaskResource`, `BotLogResource`. Refactored `AccountController`, `ScheduledTaskController`, `LogController`, `DashboardController`, and `SettingsController` (`UpdateSettingsRequest`). Enforced Constructor DI across all non-market controllers. |
 | **Stage 6** | Market Synchronization Decomposition (`MarketSyncService`) | **COMPLETED** | Decomposed monolithic 372-line `MarketSyncService` into `MarketOfferFetcher`, `MarketOfferParser`, `MarketOfferPersister`, `MarketSyncLogger`, and a high-level `MarketSyncService` orchestrator using Constructor DI. |
 | **Stage 7** | Game Zone Parser (`ZoneParserService`) | **COMPLETED** | Decomposed `ZoneParserService` into `ZoneAmfExecutor`, `ZoneResourceCategorizer`, and lightweight `ZoneParserService` orchestrator using Constructor DI. |
-| **Stage 8** | Scheduled Task Validation & Form Requests | **PENDING** | Expand stubbed `StoreScheduledTaskRequest` and `UpdateScheduledTaskRequest` to cover all task payload types (`sequence`, `buff_self`, `buff_friend`, `send_specialist`). |
+| **Stage 8** | Scheduled Task Validation & Form Requests | **COMPLETED** | Extended `ScheduledTaskRequest`, `StoreScheduledTaskRequest`, and `UpdateScheduledTaskRequest` to cover all task payload types (`sequence`, `stop_production`, `start_production`, `send_geologist`, `send_explorer`, `send_specialist`, `apply_buff`). Added `ScheduledTaskRequestTest` unit test suite. |
 | **Stage 9** | Scheduler Engine & Console Commands | **PENDING** | Slim `RunSchedulerCommand` (239 lines) and `ExecuteScheduledTasks` (124 lines) by extracting `TaskSchedulerEngine`. |
 | **Stage 10** | Account Sync & Session Pipeline | **PENDING** | Decompose `AccountSyncService` (172 lines) into pure auth, protocol, parsing, and persistence pipeline steps using Constructor DI. |
 
@@ -52,14 +52,16 @@
   - `ZoneResourceCategorizer`: Pure domain categorizer mapping game resource names to warehouse tab categories (`WarehouseTab1` - `WarehouseTab8`).
 - **Orchestrator**: `ZoneParserService` converted into a lightweight orchestrator with strict types and Constructor Property Promotion DI.
 
+### 2.7 Stage 8: Scheduled Task Form Requests & Validation (Delivered)
+- **Comprehensive Payload Validation**:
+  - Extended `ScheduledTaskRequest` with `buildingRules()` (`payload.grid`), `specialistRules()` (`payload.task_type`, `payload.sub_task_id`, `payload.unique_id1`, `payload.unique_id2`, `payload.specialist_type`, `payload.search_type`), `sequenceRules()` (step payload validation), and `buffRules()` (`BuffPayloadValidator`).
+  - Implemented `StoreScheduledTaskRequest` for strict task creation.
+  - Implemented `UpdateScheduledTaskRequest` with flexible `sometimes` rules for partial updates.
+- **Unit Test Suite**: Added [ScheduledTaskRequestTest.php](file:///C:/OSPanel/domains/tso_client/admin/tests/Unit/ScheduledTaskRequestTest.php).
+
 ---
 
 ## 3. Detailed Backlog & Roadmap for Remaining Refactoring
-
-### Stage 8: Scheduled Task Form Requests & Validation
-- **Current State**: `StoreScheduledTaskRequest` and `UpdateScheduledTaskRequest` are stubs (7 lines). Validation is scattered in `ScheduledTaskRequest`.
-- **Refactoring Strategy**:
-  - Fully implement `StoreScheduledTaskRequest` and `UpdateScheduledTaskRequest` with strict validation rules for sequence steps, buff payloads (`unique_id1`, `unique_id2`, `grid`), and specialist search types.
 
 ### Stage 9: Scheduler Engine & Console Command Slimming
 - **Current State**: `RunSchedulerCommand.php` (239 lines) and `ExecuteScheduledTasks.php` (124 lines) contain inline lock management, task queries, and dispatch loops.

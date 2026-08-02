@@ -5,6 +5,15 @@ declare(strict_types=1);
 namespace App\Http\Requests\Tasks;
 
 /**
- * Creating a scheduled task. Reuses the shared task contract as-is.
+ * Form Request for creating a new scheduled task.
  */
-final class StoreScheduledTaskRequest extends ScheduledTaskRequest {}
+final class StoreScheduledTaskRequest extends ScheduledTaskRequest
+{
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool
+    {
+        return true;
+    }
+}

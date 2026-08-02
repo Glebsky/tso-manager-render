@@ -38,11 +38,14 @@ This directory contains the Spec-Driven Development (SDD) documentation for the 
 6. **Stage 7 (Game Zone Parser Refactoring)**:
    - Decomposed `ZoneParserService` into `ZoneAmfExecutor`, `ZoneResourceCategorizer`, and a high-level `ZoneParserService` orchestrator with strict types and Constructor Property Promotion DI.
 
+7. **Stage 8 (Scheduled Task Form Requests & Validation)**:
+   - Extended `ScheduledTaskRequest` with strict validation rules for building production, specialist tasks, sequences, and buff payloads.
+   - Implemented `StoreScheduledTaskRequest` and `UpdateScheduledTaskRequest` Form Requests.
+   - Added `ScheduledTaskRequestTest` unit test suite.
+
 ## Remaining Backlog (Prioritized Roadmap)
 
-1. **Stage 8 — Scheduled Task Form Requests**:
-   - Fully implement `StoreScheduledTaskRequest` and `UpdateScheduledTaskRequest` with strict rules for sequence steps, buff payloads, and specialist searches.
-2. **Stage 9 — Console Command & Scheduler Engine**:
+1. **Stage 9 — Console Command & Scheduler Engine**:
    - Move scheduler reservation and queue dispatch logic out of `RunSchedulerCommand` into `TaskSchedulerEngine`.
-3. **Stage 10 — Account Sync Pipeline Refactoring**:
+2. **Stage 10 — Account Sync Pipeline Refactoring**:
    - Decompose `AccountSyncService` into pure auth, protocol, parsing, and persistence pipeline steps using Constructor DI.

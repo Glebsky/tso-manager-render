@@ -10,18 +10,13 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * Everything that makes a scheduled task payload valid.
- *
- * The exact same ~50 lines of rules plus the sequence, buff and interval
- * checks were duplicated verbatim in ScheduledTaskController::store() and
- * ::update(). They now live in one place; the store/update requests only
- * declare that they reuse them.
+ * Shared validation rules and custom validators for Scheduled Task payloads.
  */
 abstract class ScheduledTaskRequest extends FormRequest
 {
-    private const TASK_TYPES = 'stop_production,start_production,apply_buff,send_geologist,send_explorer,sequence';
+    private const TASK_TYPES = 'stop_production,start_production,apply_buff,send_geologist,send_explorer,send_specialist,sequence';
 
-    private const STEP_TASK_TYPES = 'stop_production,start_production,apply_buff,send_geologist,send_explorer';
+    private const STEP_TASK_TYPES = 'stop_production,start_production,apply_buff,send_geologist,send_explorer,send_specialist';
 
     public function authorize(): bool
     {
@@ -36,6 +31,8 @@ abstract class ScheduledTaskRequest extends FormRequest
         return array_merge(
             $this->baseRules(),
             $this->isSequence() ? $this->sequenceRules() : [],
+            $this->isBuildingTask() ? $this->buildingRules() : [],
+            $this->isSpecialistTask() ? $this->specialistRules() : [],
             $this->buffRules(),
         );
     }
@@ -85,11 +82,49 @@ abstract class ScheduledTaskRequest extends FormRequest
      */
     private function sequenceRules(): array
     {
-        return [
+        $rules = [
             'payload.actions' => 'required|array|min:1',
             'payload.actions.*.task_type' => 'required|string|in:'.self::STEP_TASK_TYPES,
             'payload.actions.*.payload' => 'required|array',
             'payload.actions.*.delay_seconds' => 'required|integer|min:0',
+        ];
+
+        foreach ((array) $this->input('payload.actions', []) as $index => $action) {
+            $taskType = $action['task_type'] ?? '';
+            if (in_array($taskType, ['stop_production', 'start_production'], true)) {
+                $rules["payload.actions.{$index}.payload.grid"] = 'required|integer|min:1';
+            }
+        }
+
+        return $rules;
+    }
+
+    /**
+     * Rules for building grid tasks (stop_production, start_production).
+     *
+     * @return array<string, mixed>
+     */
+    private function buildingRules(): array
+    {
+        return [
+            'payload.grid' => 'required|integer|min:1',
+        ];
+    }
+
+    /**
+     * Rules for specialist tasks (send_geologist, send_explorer, send_specialist).
+     *
+     * @return array<string, mixed>
+     */
+    private function specialistRules(): array
+    {
+        return [
+            'payload.task_type' => 'nullable|integer',
+            'payload.sub_task_id' => 'nullable|integer',
+            'payload.unique_id1' => 'nullable|integer',
+            'payload.unique_id2' => 'nullable|integer',
+            'payload.specialist_type' => 'nullable|string|max:255',
+            'payload.search_type' => 'nullable|string|max:255',
         ];
     }
 
@@ -148,6 +183,16 @@ abstract class ScheduledTaskRequest extends FormRequest
         return $this->input('task_type') === 'sequence';
     }
 
+    private function isBuildingTask(): bool
+    {
+        return in_array($this->input('task_type'), ['stop_production', 'start_production'], true);
+    }
+
+    private function isSpecialistTask(): bool
+    {
+        return in_array($this->input('task_type'), ['send_geologist', 'send_explorer', 'send_specialist'], true);
+    }
+
     private function validateInterval(Validator $validator): void
     {
         if ($this->input('schedule_type') !== 'interval') {
@@ -170,7 +215,16 @@ abstract class ScheduledTaskRequest extends FormRequest
             return;
         }
 
-        $account = Account::findOrFail($this->input('account_id'));
+        $accountId = $this->input('account_id');
+        if (! $accountId) {
+            return;
+        }
+
+        $account = Account::find($accountId);
+        if (! $account) {
+            return;
+        }
+
         $buffValidator = app(BuffPayloadValidator::class);
 
         foreach ($prefixes as $prefix => $inputKey) {
