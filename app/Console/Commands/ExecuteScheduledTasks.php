@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Jobs\ExecuteScheduledTaskJob;
 use App\Models\ScheduledTask;
-use App\Services\TaskExecutionService;
+use App\Services\Tasks\TaskSchedulerEngine;
 use Carbon\Carbon;
-use Exception;
 use Illuminate\Console\Command;
-use Illuminate\Support\Str;
 
 class ExecuteScheduledTasks extends Command
 {
@@ -18,14 +15,11 @@ class ExecuteScheduledTasks extends Command
                             {--task= : Run a specific task ID directly} 
                             {--async : Dispatch tasks to queue instead of running synchronously}';
 
-    protected $description = 'Execute scheduled TSO tasks (legacy wrapper).';
+    protected $description = 'Execute scheduled TSO tasks (legacy CLI wrapper).';
 
-    private TaskExecutionService $executionService;
-
-    public function __construct(TaskExecutionService $executionService)
+    public function __construct(private readonly TaskSchedulerEngine $engine)
     {
         parent::__construct();
-        $this->executionService = $executionService;
     }
 
     public function handle(): int
@@ -33,6 +27,7 @@ class ExecuteScheduledTasks extends Command
         $now = Carbon::now();
         $singleTaskId = $this->option('task');
         $isAsync = (bool) $this->option('async');
+        $mode = $isAsync ? 'queue' : 'sync';
 
         if ($singleTaskId) {
             $task = ScheduledTask::with('account')->find($singleTaskId);
@@ -42,116 +37,20 @@ class ExecuteScheduledTasks extends Command
                 return self::FAILURE;
             }
 
-            return $this->runTask($task, $isAsync);
-        }
+            $account = $task->account;
+            $this->info("Running task #{$task->id} [{$task->task_type}] for account [{$account->username}]");
+            $success = $this->engine->reserveAndDispatchTask($task, $mode);
 
-        $activeTasks = ScheduledTask::where('is_active', true)
-            ->whereIn('status', ['pending', 'completed', 'failed'])
-            ->with('account')
-            ->get();
-
-        $tasksToRun = [];
-
-        foreach ($activeTasks as $task) {
-            $shouldRun = false;
-
-            if ($task->schedule_type === 'daily' || is_null($task->schedule_type)) {
-                if ($task->run_at_time) {
-                    $currentTime = $now->format('H:i');
-                    $prevMinute = $now->copy()->subMinute()->format('H:i');
-                    $runTime = Carbon::parse($task->run_at_time)->format('H:i');
-
-                    if ($runTime === $currentTime || $runTime === $prevMinute) {
-                        if (is_null($task->last_run_at) || $task->last_run_at->lt($now->copy()->subMinutes(2))) {
-                            $shouldRun = true;
-                        }
-                    }
-                }
-            } elseif ($task->schedule_type === 'once') {
-                if ($task->run_at_datetime && is_null($task->last_run_at)) {
-                    if ($now->greaterThanOrEqualTo($task->run_at_datetime)) {
-                        $shouldRun = true;
-                    }
-                }
-            } elseif ($task->schedule_type === 'interval') {
-                $hours = (int) $task->interval_hours;
-                $minutes = (int) $task->interval_minutes;
-                $intervalTotalMinutes = ($hours * 60) + $minutes;
-
-                if ($intervalTotalMinutes > 0) {
-                    $baseline = $task->last_run_at ?? $task->created_at;
-                    if ($baseline) {
-                        $diffInMinutes = $now->diffInMinutes($baseline);
-                        if ($diffInMinutes >= $intervalTotalMinutes) {
-                            $shouldRun = true;
-                        }
-                    }
-                }
+            if (! $success) {
+                $this->info("  → Task #{$task->id} is already reserved/running.");
             }
-
-            if ($shouldRun) {
-                $tasksToRun[] = $task;
-            }
-        }
-
-        if (empty($tasksToRun)) {
-            $this->info("No tasks to run at {$now->toDateTimeString()}.");
 
             return self::SUCCESS;
         }
 
-        foreach ($tasksToRun as $task) {
-            $this->runTask($task, $isAsync);
-        }
-
-        $this->info('Processed '.count($tasksToRun).' task(s).');
+        $count = $this->engine->processDueTasks($now, $mode);
+        $this->info("Processed {$count} task(s) at {$now->toDateTimeString()}.");
 
         return self::SUCCESS;
-    }
-
-    private function runTask(ScheduledTask $task, bool $isAsync): int
-    {
-        $account = $task->account;
-        $this->info("Running task #{$task->id} [{$task->task_type}] for account [{$account->username}]");
-
-        $token = (string) Str::uuid();
-        $payload = $task->payload ?? [];
-        unset($payload['step_results']);
-
-        $reserved = ScheduledTask::where('id', $task->id)
-            ->where('is_active', true)
-            ->whereIn('status', ['pending', 'completed', 'failed'])
-            ->update([
-                'status' => 'queued',
-                'queued_at' => now(),
-                'execution_token' => $token,
-                'completed_steps' => 0,
-                'payload' => $payload,
-            ]);
-
-        if ($reserved === 0) {
-            $this->info("  → Task #{$task->id} is already reserved/running.");
-
-            return self::SUCCESS;
-        }
-
-        if ($isAsync) {
-            ExecuteScheduledTaskJob::dispatch($task->id, $token);
-            $this->info('  → Dispatched to queue.');
-
-            return self::SUCCESS;
-        }
-
-        try {
-            $task->refresh();
-            $result = $this->executionService->execute($task, $token);
-            $this->info("  → Success: {$result}");
-
-            return self::SUCCESS;
-        } catch (Exception $e) {
-            $this->error("  → Failed: {$e->getMessage()}");
-
-            return self::FAILURE;
-        }
     }
 }

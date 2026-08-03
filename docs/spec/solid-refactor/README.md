@@ -43,9 +43,12 @@ This directory contains the Spec-Driven Development (SDD) documentation for the 
    - Implemented `StoreScheduledTaskRequest` and `UpdateScheduledTaskRequest` Form Requests.
    - Added `ScheduledTaskRequestTest` unit test suite.
 
+8. **Stage 9 (Scheduler Engine & Console Commands)**:
+   - Extracted `TaskSchedulerEngine` domain service (`App\Services\Tasks\TaskSchedulerEngine`).
+   - Slimmed down `RunSchedulerCommand` (293 -> 60 lines) and `ExecuteScheduledTasks` (158 -> 48 lines) into ultra-clean CLI wrappers.
+   - Added `TaskSchedulerEngineTest` unit test suite.
+
 ## Remaining Backlog (Prioritized Roadmap)
 
-1. **Stage 9 — Console Command & Scheduler Engine**:
-   - Move scheduler reservation and queue dispatch logic out of `RunSchedulerCommand` into `TaskSchedulerEngine`.
-2. **Stage 10 — Account Sync Pipeline Refactoring**:
+1. **Stage 10 — Account Sync Pipeline Refactoring**:
    - Decompose `AccountSyncService` into pure auth, protocol, parsing, and persistence pipeline steps using Constructor DI.

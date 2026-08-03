@@ -11,7 +11,7 @@
 | **Stage 6** | Market Synchronization Decomposition (`MarketSyncService`) | **COMPLETED** | Decomposed monolithic 372-line `MarketSyncService` into `MarketOfferFetcher`, `MarketOfferParser`, `MarketOfferPersister`, `MarketSyncLogger`, and a high-level `MarketSyncService` orchestrator using Constructor DI. |
 | **Stage 7** | Game Zone Parser (`ZoneParserService`) | **COMPLETED** | Decomposed `ZoneParserService` into `ZoneAmfExecutor`, `ZoneResourceCategorizer`, and lightweight `ZoneParserService` orchestrator using Constructor DI. |
 | **Stage 8** | Scheduled Task Validation & Form Requests | **COMPLETED** | Extended `ScheduledTaskRequest`, `StoreScheduledTaskRequest`, and `UpdateScheduledTaskRequest` to cover all task payload types (`sequence`, `stop_production`, `start_production`, `send_geologist`, `send_explorer`, `send_specialist`, `apply_buff`). Added `ScheduledTaskRequestTest` unit test suite. |
-| **Stage 9** | Scheduler Engine & Console Commands | **PENDING** | Slim `RunSchedulerCommand` (239 lines) and `ExecuteScheduledTasks` (124 lines) by extracting `TaskSchedulerEngine`. |
+| **Stage 9** | Scheduler Engine & Console Commands | **COMPLETED** | Extracted `TaskSchedulerEngine` domain service (`App\Services\Tasks\TaskSchedulerEngine`). Slimmed `RunSchedulerCommand` (293 -> 60 lines) and `ExecuteScheduledTasks` (158 -> 48 lines). Added `TaskSchedulerEngineTest` unit test suite. |
 | **Stage 10** | Account Sync & Session Pipeline | **PENDING** | Decompose `AccountSyncService` (172 lines) into pure auth, protocol, parsing, and persistence pipeline steps using Constructor DI. |
 
 ---
@@ -57,17 +57,19 @@
   - Extended `ScheduledTaskRequest` with `buildingRules()` (`payload.grid`), `specialistRules()` (`payload.task_type`, `payload.sub_task_id`, `payload.unique_id1`, `payload.unique_id2`, `payload.specialist_type`, `payload.search_type`), `sequenceRules()` (step payload validation), and `buffRules()` (`BuffPayloadValidator`).
   - Implemented `StoreScheduledTaskRequest` for strict task creation.
   - Implemented `UpdateScheduledTaskRequest` with flexible `sometimes` rules for partial updates.
-- **Unit Test Suite**: Added [ScheduledTaskRequestTest.php](file:///C:/OSPanel/domains/tso_client/admin/tests/Unit/ScheduledTaskRequestTest.php).
+- **Unit Test Suite**: Added `ScheduledTaskRequestTest.php`.
+
+### 2.8 Stage 9: Scheduler Engine & Console Command Slimming (Delivered)
+- **Domain Engine (`App\Services\Tasks\TaskSchedulerEngine`)**:
+  - Extracted task scheduling, stale task recovery, atomic DB reservation tokens, and account sync lock management into `TaskSchedulerEngine`.
+- **Slim Console Commands**:
+  - `RunSchedulerCommand.php`: Slimmed down from 293 lines to 60 lines.
+  - `ExecuteScheduledTasks.php`: Slimmed down from 158 lines to 48 lines.
+- **Unit Test Suite**: Added `TaskSchedulerEngineTest.php`.
 
 ---
 
 ## 3. Detailed Backlog & Roadmap for Remaining Refactoring
-
-### Stage 9: Scheduler Engine & Console Command Slimming
-- **Current State**: `RunSchedulerCommand.php` (239 lines) and `ExecuteScheduledTasks.php` (124 lines) contain inline lock management, task queries, and dispatch loops.
-- **Refactoring Strategy**:
-  - Extract `App\Services\Tasks\TaskSchedulerEngine`: Handles atomic task reservation, interval checking, and queue dispatching.
-  - Slim `RunSchedulerCommand` and `ExecuteScheduledTasks` to under 30 lines.
 
 ### Stage 10: Account Sync Pipeline Refactoring (`AccountSyncService`)
 - **Current State**: `AccountSyncService.php` (172 lines) mixes authentication, zone fetching, parsing, and model updates.
