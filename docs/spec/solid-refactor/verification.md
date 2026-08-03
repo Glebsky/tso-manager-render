@@ -12,10 +12,10 @@
 
 | Gate | Tool / Command | Target Threshold | Status |
 | :--- | :--- | :--- | :--- |
-| **1. Feature & Unit Tests** | `php artisan test` | 95 / 95 Passed (0 failures) | **PASS** (95 passed, 391 assertions) |
-| **2. Code Style & Formatting** | `./vendor/bin/pint --test` | 0 style violations | **PASS** (221 files clean) |
+| **1. Feature & Unit Tests** | `php artisan test` | 98 / 98 Passed (0 failures) | **PASS** (98 passed, 401 assertions) |
+| **2. Code Style & Formatting** | `./vendor/bin/pint --test` | 0 style violations | **PASS** (225 files clean) |
 | **3. Static Analysis** | `./vendor/bin/phpstan analyse` | 0 errors | **PASS** (0 errors) |
-| **4. Production Asset Build** | `npm run build` | Clean Vite bundle compile | **PASS** (Built in 5.63s) |
+| **4. Production Asset Build** | `npm run build` | Clean Vite bundle compile | **PASS** (Built in 5.77s) |
 
 ---
 
@@ -28,3 +28,4 @@
 - **Stage 7**: Game Zone Parser Refactoring completed. Extracted `ZoneAmfExecutor` and `ZoneResourceCategorizer` under `App\Services\Zone\*`. Refactored `ZoneParserService` to a lightweight orchestrator with strict types and Constructor Property Promotion DI. Added `ZoneParserTest` unit tests.
 - **Stage 8**: Scheduled Task Validation & Form Requests completed. Extended `ScheduledTaskRequest` with strict validation for `buildingRules()`, `specialistRules()`, `sequenceRules()`, and `buffRules()`. Implemented `StoreScheduledTaskRequest` and `UpdateScheduledTaskRequest`. Added `ScheduledTaskRequestTest` unit test suite.
 - **Stage 9**: Scheduler Engine & Console Commands completed. Extracted `TaskSchedulerEngine` domain service under `App\Services\Tasks\*`. Slimmed `RunSchedulerCommand` (293 -> 60 lines) and `ExecuteScheduledTasks` (158 -> 48 lines) to ultra-clean CLI wrappers. Added `TaskSchedulerEngineTest` unit test suite.
+- **Stage 10**: Account Sync & Session Pipeline completed. Decomposed `AccountSyncService` into `AccountSyncFetcher`, `AccountSyncPersister`, and `AccountSyncLogger` under `App\Services\Account\Sync\*`. Refactored `AccountSyncService` to a 43-line pipeline orchestrator using Constructor Property Promotion DI. Added `AccountSyncPipelineTest` unit test suite.

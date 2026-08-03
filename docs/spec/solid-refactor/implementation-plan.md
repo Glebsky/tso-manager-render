@@ -12,7 +12,7 @@
 | **Stage 7** | Game Zone Parser (`ZoneParserService`) | **COMPLETED** | Decomposed `ZoneParserService` into `ZoneAmfExecutor`, `ZoneResourceCategorizer`, and lightweight `ZoneParserService` orchestrator using Constructor DI. |
 | **Stage 8** | Scheduled Task Validation & Form Requests | **COMPLETED** | Extended `ScheduledTaskRequest`, `StoreScheduledTaskRequest`, and `UpdateScheduledTaskRequest` to cover all task payload types (`sequence`, `stop_production`, `start_production`, `send_geologist`, `send_explorer`, `send_specialist`, `apply_buff`). Added `ScheduledTaskRequestTest` unit test suite. |
 | **Stage 9** | Scheduler Engine & Console Commands | **COMPLETED** | Extracted `TaskSchedulerEngine` domain service (`App\Services\Tasks\TaskSchedulerEngine`). Slimmed `RunSchedulerCommand` (293 -> 60 lines) and `ExecuteScheduledTasks` (158 -> 48 lines). Added `TaskSchedulerEngineTest` unit test suite. |
-| **Stage 10** | Account Sync & Session Pipeline | **PENDING** | Decompose `AccountSyncService` (172 lines) into pure auth, protocol, parsing, and persistence pipeline steps using Constructor DI. |
+| **Stage 10** | Account Sync & Session Pipeline | **COMPLETED** | Decomposed 209-line `AccountSyncService` into `AccountSyncFetcher`, `AccountSyncPersister`, `AccountSyncLogger`, and a lightweight `AccountSyncService` pipeline orchestrator using Constructor DI. Added `AccountSyncPipelineTest` unit test suite. |
 
 ---
 
@@ -67,11 +67,10 @@
   - `ExecuteScheduledTasks.php`: Slimmed down from 158 lines to 48 lines.
 - **Unit Test Suite**: Added `TaskSchedulerEngineTest.php`.
 
----
-
-## 3. Detailed Backlog & Roadmap for Remaining Refactoring
-
-### Stage 10: Account Sync Pipeline Refactoring (`AccountSyncService`)
-- **Current State**: `AccountSyncService.php` (172 lines) mixes authentication, zone fetching, parsing, and model updates.
-- **Refactoring Strategy**:
-  - Refactor into a clean pipeline: Auth (`TsoAuthService`) -> Fetch Zone (`TsoAmfService`) -> Parse Zone (`ZoneParserService`) -> Account Updates (`AccountService`).
+### 2.9 Stage 10: Account Sync & Session Pipeline (Delivered)
+- **Pipeline Sub-Services (`App\Services\Account\Sync\*`)**:
+  - `AccountSyncFetcher`: Handles network authentication (`TsoAuthService`), zone AMF fetching (`TsoAmfService`), AMF parsing (`ZoneParserService`), session reset on error code 1005, retry loop on code 1012, and friend list loading.
+  - `AccountSyncPersister`: Manages updating `Account` model status (`syncing`, `online`, `error`) and saving `zone_data` / `last_sync_at`.
+  - `AccountSyncLogger`: Handles writing `BotLog` success/error database records and system logs.
+- **Orchestrator**: `AccountSyncService.php` slimmed from 209 lines down to a clean 43-line pipeline orchestrator using Constructor Property Promotion DI.
+- **Unit Test Suite**: Added `AccountSyncPipelineTest.php`.
