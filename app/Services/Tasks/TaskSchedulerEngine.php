@@ -135,6 +135,15 @@ class TaskSchedulerEngine
             }
         } else {
             DB::afterCommit(function () use ($task, $token) {
+                Log::info(sprintf(
+                    '[Scheduler] Task #%d [%s] reserved and dispatched (schedule=%s, token=%s, queued_at=%s)',
+                    $task->id,
+                    (string) $task->task_type,
+                    (string) $task->schedule_type,
+                    $token,
+                    now()->toDateTimeString()
+                ));
+
                 ExecuteScheduledTaskJob::dispatch($task->id, $token);
             });
         }

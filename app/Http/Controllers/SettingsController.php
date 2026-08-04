@@ -9,6 +9,7 @@ use App\Models\ScheduledTask;
 use App\Models\Setting;
 use App\Services\SystemLogCleanupService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Controller for application-level configuration settings.
@@ -51,6 +52,14 @@ class SettingsController extends Controller
 
     public function stopAllTasks(): JsonResponse
     {
+        $affected = ScheduledTask::query()->where('is_active', true)->pluck('id')->all();
+
+        Log::warning(sprintf(
+            '[Task] Mass pause via /settings/tasks/stop: %d task(s) deactivated [%s]',
+            count($affected),
+            implode(', ', array_map(static fn ($id) => '#'.$id, $affected))
+        ));
+
         ScheduledTask::query()->update(['is_active' => false]);
 
         return response()->json([

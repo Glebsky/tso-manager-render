@@ -8,6 +8,7 @@ use App\Jobs\ExecuteScheduledTaskJob;
 use App\Models\Account;
 use App\Models\ScheduledTask;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 /**
@@ -65,6 +66,15 @@ final class ScheduledTaskService
 
     public function toggle(ScheduledTask $task): ScheduledTask
     {
+        Log::info(sprintf(
+            '[Task] Task #%d is_active %s -> %s via API toggle (status=%s, token=%s)',
+            $task->id,
+            $task->is_active ? 'true' : 'false',
+            $task->is_active ? 'false' : 'true',
+            (string) $task->status,
+            $task->execution_token ?? 'null'
+        ));
+
         $task->update(['is_active' => ! $task->is_active]);
 
         $this->logger->toggled($task);
@@ -85,6 +95,10 @@ final class ScheduledTaskService
 
     /**
      * Queue a manual run and return the task as the UI should see it.
+     *
+     * Ручной запуск выполняется даже для выключенной (is_active = false) задачи:
+     * кнопка «Run now» — явное действие оператора и важнее флага расписания.
+     * Сам флаг не меняется: после ручного запуска задача остаётся на паузе.
      */
     public function execute(ScheduledTask $task): ScheduledTask
     {
@@ -102,7 +116,16 @@ final class ScheduledTaskService
             'payload' => $payload,
         ]);
 
-        ExecuteScheduledTaskJob::dispatch($task->id, $token);
+        Log::info(sprintf(
+            '[Task] Manual "Run now" for task #%d [%s] (is_active=%s, schedule=%s, token=%s) — dispatched with force=true',
+            $task->id,
+            (string) $task->task_type,
+            $task->is_active ? 'true' : 'false',
+            (string) $task->schedule_type,
+            $token
+        ));
+
+        ExecuteScheduledTaskJob::dispatch($task->id, $token, true);
 
         $task->refresh();
         $task->load(self::ACCOUNT_COLUMNS);

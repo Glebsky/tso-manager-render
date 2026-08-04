@@ -30,12 +30,18 @@ class TaskExecutionService
      *
      * @throws Exception
      */
-    public function execute(ScheduledTask $task, ?string $expectedToken = null): string
+    public function execute(ScheduledTask $task, ?string $expectedToken = null, bool $force = false): string
     {
         $task->refresh();
 
-        if (! $task->is_active) {
+        if (! $task->is_active && ! $force) {
+            $this->logInactive($task, 'execute', $expectedToken);
+
             throw new TaskInactiveException($task->id);
+        }
+
+        if (! $task->is_active) {
+            Log::info("[Task] Task #{$task->id} is paused; executing anyway because force=true (manual run)");
         }
 
         if ($expectedToken !== null && $task->execution_token !== null && $task->execution_token !== $expectedToken) {
@@ -307,11 +313,13 @@ class TaskExecutionService
      *
      * @throws Exception
      */
-    public function executeSequenceStep(ScheduledTask $task, ?string $expectedToken = null): array
+    public function executeSequenceStep(ScheduledTask $task, ?string $expectedToken = null, bool $force = false): array
     {
         $task->refresh();
 
-        if (! $task->is_active) {
+        if (! $task->is_active && ! $force) {
+            $this->logInactive($task, 'executeSequenceStep', $expectedToken);
+
             throw new TaskInactiveException($task->id);
         }
 
@@ -322,6 +330,7 @@ class TaskExecutionService
         if ($task->task_type !== 'sequence') {
             throw new Exception("Task #{$task->id} is not a sequence task.");
         }
+
 
         $account = $task->account;
         if (! $account) {
@@ -441,6 +450,7 @@ class TaskExecutionService
 
         if ($task->schedule_type === 'once') {
             $updateData['is_active'] = false;
+            Log::info("[Task] Task #{$task->id} deactivated by finalizeSequence(): schedule_type='once'");
         }
 
         $task->update($updateData);
@@ -457,6 +467,29 @@ class TaskExecutionService
             'finished' => true,
             'nextDelay' => 0,
         ];
+    }
+
+    /**
+     * Diagnostics for the "inactive or paused" case: without this snapshot the
+     * log only says the task was inactive, never in which state it got there.
+     */
+    private function logInactive(ScheduledTask $task, string $entryPoint, ?string $expectedToken): void
+    {
+        Log::warning(sprintf(
+            '[Task] Task #%d rejected in %s() because is_active=false. state: type=%s status=%s schedule=%s token=%s expected_token=%s completed_steps=%s queued_at=%s last_run_at=%s updated_at=%s last_result=%s',
+            $task->id,
+            $entryPoint,
+            (string) $task->task_type,
+            (string) $task->status,
+            (string) $task->schedule_type,
+            $task->execution_token ?? 'null',
+            $expectedToken ?? 'null',
+            (string) $task->completed_steps,
+            $task->queued_at?->toDateTimeString() ?? 'null',
+            $task->last_run_at?->toDateTimeString() ?? 'null',
+            $task->updated_at?->toDateTimeString() ?? 'null',
+            (string) ($task->last_result ?? 'null')
+        ));
     }
 
     /**

@@ -42,12 +42,20 @@ class ExecuteScheduledTaskJob implements ShouldQueue
     public string $executionToken;
 
     /**
+     * Manual "Run now" runs ignore the is_active flag: a paused task must still
+     * execute when the operator presses the button explicitly. The scheduler
+     * never sets this flag.
+     */
+    public bool $force;
+
+    /**
      * Create a new job instance.
      */
-    public function __construct(int $taskId, string $executionToken)
+    public function __construct(int $taskId, string $executionToken, bool $force = false)
     {
         $this->taskId = $taskId;
         $this->executionToken = $executionToken;
+        $this->force = $force;
         $this->onQueue('tso-tasks');
     }
 
@@ -76,18 +84,37 @@ class ExecuteScheduledTaskJob implements ShouldQueue
             return;
         }
 
-        if (! $task->is_active && $task->execution_token === null) {
-            Log::info("[TaskJob] Task #{$this->taskId} is no longer active; resetting status to 'pending'");
-            $task->update(['status' => 'pending']);
+        if (! $task->is_active && ! $this->force) {
+            Log::warning(sprintf(
+                "[TaskJob] Task #%d is not active at execution time; skipping. %s",
+                $this->taskId,
+                $this->describeTask($task)
+            ));
+
+            $task->update([
+                'status' => 'pending',
+                'execution_token' => null,
+                'last_result' => 'SKIPPED: task was paused before execution.',
+            ]);
 
             return;
         }
 
-        Log::info("[TaskJob] Executing task #{$this->taskId} (attempt {$this->attempts()})");
+        Log::info(sprintf(
+            '[TaskJob] Executing task #%d (attempt %d, %s). %s',
+            $this->taskId,
+            $this->attempts(),
+            $this->force ? 'manual run, forced' : 'scheduled',
+            $this->describeTask($task)
+        ));
+
+        if (! $task->is_active) {
+            Log::info("[TaskJob] Task #{$this->taskId} is paused, but runs anyway because this is a manual \"Run now\" execution");
+        }
 
         // Non-sequence tasks are a single action: run them as before.
         if ($task->task_type !== 'sequence') {
-            $executionService->execute($task, $this->executionToken);
+            $executionService->execute($task, $this->executionToken, $this->force);
 
             return;
         }
@@ -99,7 +126,7 @@ class ExecuteScheduledTaskJob implements ShouldQueue
         $budgetEndsAt = microtime(true) + self::TIME_BUDGET_SECONDS;
 
         while (true) {
-            $state = $executionService->executeSequenceStep($task, $this->executionToken);
+            $state = $executionService->executeSequenceStep($task, $this->executionToken, $this->force);
 
             if ($state['finished']) {
                 return;
@@ -119,13 +146,32 @@ class ExecuteScheduledTaskJob implements ShouldQueue
             // recoverStaleTasks() does not reset a healthy paused run.
             $task->update(['queued_at' => now()->addSeconds($delay)]);
 
-            self::dispatch($this->taskId, $this->executionToken)
+            self::dispatch($this->taskId, $this->executionToken, $this->force)
                 ->delay(now()->addSeconds(max($delay, 1)));
 
             Log::info("[TaskJob] Task #{$this->taskId} handed off to a delayed job (next step in {$delay}s, completed steps: {$task->completed_steps})");
 
             return;
         }
+    }
+
+    /**
+     * Diagnostic snapshot of the task state, used in every [TaskJob] log line.
+     */
+    private function describeTask(ScheduledTask $task): string
+    {
+        return sprintf(
+            'state: is_active=%s status=%s schedule=%s token=%s job_token=%s completed_steps=%s queued_at=%s last_run_at=%s updated_at=%s',
+            $task->is_active ? 'true' : 'false',
+            (string) $task->status,
+            (string) $task->schedule_type,
+            $task->execution_token ?? 'null',
+            $this->executionToken,
+            (string) $task->completed_steps,
+            $task->queued_at?->toDateTimeString() ?? 'null',
+            $task->last_run_at?->toDateTimeString() ?? 'null',
+            $task->updated_at?->toDateTimeString() ?? 'null'
+        );
     }
 
     /**
