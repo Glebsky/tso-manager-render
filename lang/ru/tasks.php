@@ -12,6 +12,7 @@ return [
         'friend_building_not_found' => 'Шаг не выполнен: здание Grid #:grid не найдено в зоне :friendName',
         'server_error' => 'Код ошибки сервера :errorCode: :errorMsg',
         'unknown_action_type' => 'Неизвестный тип действия: :taskType',
+        'pickups_unavailable' => 'Ответ зоны не содержит список коллекций. Обновите storage/app/parse_zone.py, чтобы он возвращал ключ pickups.',
         'insufficient_buffs' => 'Недостаточно баффов в звездном меню (доступно: :available, требуется: :required).',
         'buff_not_found' => 'Указанный бафф не найден в инвентаре звездного меню.',
         'invalid_friend_id' => 'Неверный ID друга.',
@@ -25,5 +26,10 @@ return [
         'error' => 'Шаг :step [:type]: ОШИБКА - :error',
         'ok_short' => 'Шаг :step: OK',
         'error_short' => 'Шаг :step: ОШИБКА - :error',
+    ],
+    'pickups' => [
+        'summary' => 'Коллекции: собрано :collected/:total',
+        'skipped' => 'пропущено :skipped (:details)',
+        'none_available' => 'Коллекции: собирать нечего',
     ],
 ];

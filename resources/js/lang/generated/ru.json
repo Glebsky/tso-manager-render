@@ -6462,6 +6462,8 @@
         "tasks.until_launch": "До запуска",
         "tasks.warning": "Предупреждение",
         "tasks.where_apply": "Где применить бафф?",
-        "tasks.zone_load_failed": "Не удалось загрузить зону друга"
+        "tasks.zone_load_failed": "Не удалось загрузить зону друга",
+        "tasks.action.collect_pickups": "Собрать коллекции",
+        "tasks.type_label.collect_pickups": "Сбор коллекций"
     }
 }

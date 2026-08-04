@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Services\Tasks\Handlers\ApplyBuffHandler;
+use App\Services\Tasks\Handlers\CollectPickupsHandler;
 use App\Services\Tasks\Handlers\SendSpecialistHandler;
 use App\Services\Tasks\Handlers\StartProductionHandler;
 use App\Services\Tasks\Handlers\StopProductionHandler;
@@ -21,6 +22,7 @@ final class TaskServiceProvider extends ServiceProvider
                 StartProductionHandler::class,
                 ApplyBuffHandler::class,
                 SendSpecialistHandler::class,
+                CollectPickupsHandler::class,
             ]);
         });
     }

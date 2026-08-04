@@ -14,9 +14,9 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 abstract class ScheduledTaskRequest extends FormRequest
 {
-    private const TASK_TYPES = 'stop_production,start_production,apply_buff,send_geologist,send_explorer,send_specialist,sequence';
+    private const TASK_TYPES = 'stop_production,start_production,apply_buff,send_geologist,send_explorer,send_specialist,collect_pickups,sequence';
 
-    private const STEP_TASK_TYPES = 'stop_production,start_production,apply_buff,send_geologist,send_explorer,send_specialist';
+    private const STEP_TASK_TYPES = 'stop_production,start_production,apply_buff,send_geologist,send_explorer,send_specialist,collect_pickups';
 
     public function authorize(): bool
     {
@@ -34,6 +34,7 @@ abstract class ScheduledTaskRequest extends FormRequest
             $this->isBuildingTask() ? $this->buildingRules() : [],
             $this->isSpecialistTask() ? $this->specialistRules() : [],
             $this->buffRules(),
+            $this->pickupRules(),
         );
     }
 
@@ -126,6 +127,54 @@ abstract class ScheduledTaskRequest extends FormRequest
             'payload.specialist_type' => 'nullable|string|max:255',
             'payload.search_type' => 'nullable|string|max:255',
         ];
+    }
+
+    /**
+     * Shape rules for every collect_pickups payload, direct or inside a sequence.
+     *
+     * @return array<string, mixed>
+     */
+    private function pickupRules(): array
+    {
+        $rules = [];
+
+        foreach ($this->pickupPrefixes() as $prefix) {
+            $rules += [
+                $prefix.'pickup_type' => 'nullable|in:all,normal,event',
+                $prefix.'resources' => 'nullable|array',
+                $prefix.'resources.*' => 'string|max:255',
+                $prefix.'limit' => 'nullable|integer|min:1',
+                $prefix.'delay_ms' => 'nullable|integer|min:0|max:5000',
+            ];
+        }
+
+        return $rules;
+    }
+
+    /**
+     * Payload prefixes that must be validated as a collect_pickups payload.
+     *
+     * @return array<int, string>
+     */
+    private function pickupPrefixes(): array
+    {
+        if ($this->input('task_type') === 'collect_pickups') {
+            return ['payload.'];
+        }
+
+        if (! $this->isSequence()) {
+            return [];
+        }
+
+        $prefixes = [];
+
+        foreach ((array) $this->input('payload.actions', []) as $index => $action) {
+            if (($action['task_type'] ?? '') === 'collect_pickups') {
+                $prefixes[] = "payload.actions.{$index}.payload.";
+            }
+        }
+
+        return $prefixes;
     }
 
     /**

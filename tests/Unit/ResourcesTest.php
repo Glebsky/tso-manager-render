@@ -62,9 +62,10 @@ class ResourcesTest extends TestCase
         $task->forceFill([
             'id' => 10,
             'account_id' => 1,
-            'title' => 'Test Task',
-            'action_type' => 'buff_self',
-            'cron_expression' => '0 * * * *',
+            'name' => 'Test Task',
+            'task_type' => 'buff_self',
+            'schedule_type' => 'daily',
+            'run_at_time' => '12:00',
             'payload' => ['grid' => 123],
             'is_active' => true,
             'status' => 'idle',
@@ -75,7 +76,9 @@ class ResourcesTest extends TestCase
 
         $this->assertEquals(10, $resource['id']);
         $this->assertEquals(1, $resource['account_id']);
-        $this->assertEquals('buff_self', $resource['action_type']);
+        $this->assertEquals('Test Task', $resource['name']);
+        $this->assertEquals('buff_self', $resource['task_type']);
+        $this->assertEquals('daily', $resource['schedule_type']);
         $this->assertTrue($resource['is_active']);
     }
 

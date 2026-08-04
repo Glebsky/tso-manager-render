@@ -12,6 +12,7 @@ return [
         'friend_building_not_found' => 'Step failed: building Grid #:grid not found in zone :friendName',
         'server_error' => 'Server error code :errorCode: :errorMsg',
         'unknown_action_type' => 'Unknown action type: :taskType',
+        'pickups_unavailable' => 'Zone response contains no collectibles list. Patch storage/app/parse_zone.py so it returns the pickups key.',
         'insufficient_buffs' => 'Insufficient buffs in star menu (available: :available, required: :required).',
         'buff_not_found' => 'Specified buff not found in star menu inventory.',
         'invalid_friend_id' => 'Invalid friend ID.',
@@ -25,5 +26,10 @@ return [
         'error' => 'Step :step [:type]: ERROR - :error',
         'ok_short' => 'Step :step: OK',
         'error_short' => 'Step :step: ERROR - :error',
+    ],
+    'pickups' => [
+        'summary' => 'Collectibles: :collected/:total collected',
+        'skipped' => ':skipped skipped (:details)',
+        'none_available' => 'Collectibles: nothing to collect',
     ],
 ];

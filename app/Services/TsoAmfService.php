@@ -268,6 +268,8 @@ class TsoAmfService
 
     public const CMD_GET_ZONE = 1001;
 
+    public const CMD_EXECUTE_PICKUP = 13002;
+
     /** @var array<string, TsoAmfClient> */
     private array $clients = [];
 
@@ -443,6 +445,21 @@ class TsoAmfService
             'com.bluebyte.game.servlet.EventHandler',
             $targetZoneId
         );
+    }
+
+    /**
+     * Collect a single island collectible (pickup).
+     *
+     * Mirrors PickupService.executePickup() in the game client: the payload is a
+     * bare dUniqueID, NOT a dServerAction wrapper like buffs/production use.
+     */
+    public function executePickup(Account $account, int $uniqueId1, int $uniqueId2): string
+    {
+        $pickupUid = new defaultGame_Communication_VO_dUniqueID;
+        $pickupUid->uniqueID1 = $uniqueId1;
+        $pickupUid->uniqueID2 = $uniqueId2;
+
+        return $this->sendServerCall($account, self::CMD_EXECUTE_PICKUP, $pickupUid);
     }
 
     public function sendSpecialist(Account $account, int $taskType, int $subTaskId, int $uniqueId1, int $uniqueId2): string

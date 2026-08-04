@@ -12,6 +12,7 @@ return [
         'friend_building_not_found' => 'Крок не виконано: будівлю Grid #:grid не знайдено в зоні :friendName',
         'server_error' => 'Код помилки сервера :errorCode: :errorMsg',
         'unknown_action_type' => 'Невідомий тип дії: :taskType',
+        'pickups_unavailable' => 'Відповідь зони не містить списку колекцій. Оновіть storage/app/parse_zone.py, щоб він повертав ключ pickups.',
         'insufficient_buffs' => 'Недостатньо бафів у зоряному меню (доступно: :available, потрібно: :required).',
         'buff_not_found' => 'Вказаний баф не знайдено в інвентарі зоряного меню.',
         'invalid_friend_id' => 'Некоректний ID друга.',
@@ -25,5 +26,10 @@ return [
         'error' => 'Крок :step [:type]: ПОМИЛКА - :error',
         'ok_short' => 'Крок :step: OK',
         'error_short' => 'Крок :step: ПОМИЛКА - :error',
+    ],
+    'pickups' => [
+        'summary' => 'Колекції: зібрано :collected/:total',
+        'skipped' => 'пропущено :skipped (:details)',
+        'none_available' => 'Колекції: немає чого збирати',
     ],
 ];

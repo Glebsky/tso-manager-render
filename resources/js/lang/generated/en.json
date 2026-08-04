@@ -6723,6 +6723,8 @@
         "tasks.until_launch": "Until launch",
         "tasks.warning": "Warning",
         "tasks.where_apply": "Where to apply",
-        "tasks.zone_load_failed": "Failed to load friend's zone"
+        "tasks.zone_load_failed": "Failed to load friend's zone",
+        "tasks.action.collect_pickups": "Collect collectibles",
+        "tasks.type_label.collect_pickups": "Collecting collectibles"
     }
 }

@@ -161,11 +161,11 @@ export default {
                     }
                 });
 
-                logs.value = res.data.logs.data || [];
+                logs.value = res.data.data || [];
                 accounts.value = res.data.accounts || [];
                 pagination.value = {
-                    current_page: res.data.logs.current_page || 1,
-                    last_page: res.data.logs.last_page || 1
+                    current_page: res.data.meta?.current_page || 1,
+                    last_page: res.data.meta?.last_page || 1
                 };
             } catch (e) {
                 if (!background) showToast(t('logs.load_failed'), 'error');
