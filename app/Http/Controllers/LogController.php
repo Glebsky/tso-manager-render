@@ -8,8 +8,8 @@ use App\Http\Resources\AccountResource;
 use App\Http\Resources\BotLogResource;
 use App\Models\Account;
 use App\Models\BotLog;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 /**
  * Controller for retrieving system and account bot logs.
@@ -19,7 +19,7 @@ class LogController extends Controller
     /**
      * Show logs, filterable by account and log level.
      */
-    public function index(Request $request): JsonResponse
+    public function index(Request $request): AnonymousResourceCollection
     {
         $query = BotLog::with('account:id,username,nickname')->latest('created_at');
 
@@ -34,8 +34,7 @@ class LogController extends Controller
         $logs = $query->paginate(100);
         $accounts = Account::select('id', 'username', 'nickname')->orderBy('username')->get();
 
-        return response()->json([
-            'logs' => BotLogResource::collection($logs),
+        return BotLogResource::collection($logs)->additional([
             'accounts' => AccountResource::collection($accounts),
         ]);
     }
