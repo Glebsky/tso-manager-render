@@ -16,6 +16,7 @@ Output: JSON to stdout with keys: buildings, specialists, buffs, resources,
 
 import sys
 import json
+import re
 
 try:
     import pyamf
@@ -53,6 +54,73 @@ def _as_items(container):
     if isinstance(container, (list, tuple)):
         return container
     return []
+
+
+# Island collectibles are ordinary buildings whose name is registered in
+# collections.xml (CollectionsManager.buildingToResources). The client decides
+# with getBuildingIsNormalCollectible() / getBuildingIsEventCollectible() and
+# then stores them in pickups[type][grid] - see cZone.AddBuildingToList().
+# dZoneVO.pickups itself is not filled by the server, so it cannot be used.
+COLLECTIBLE_BUILDING_PATTERNS = (
+    # CollectibleHerbsBuilding, CollectibleWineBarrelBuilding, ...
+    (re.compile(r'^Collectible.+Building$', re.I), 0),
+    # Event collectibles: Starfall motes and friends.
+    (re.compile(r'^StarfallStarDust.*$', re.I), 1),
+)
+
+
+def collectible_type(building_name):
+    """Return COLLECTIBLE_BUILDING_NORMAL (0) / _EVENT (1), or None."""
+    if not building_name:
+        return None
+
+    for pattern, ptype in COLLECTIBLE_BUILDING_PATTERNS:
+        if pattern.match(str(building_name)):
+            return ptype
+
+    return None
+
+
+def pickups_from_buildings(buildings):
+    """Derive the collectible list from the extracted buildings.
+
+    Mirrors cZone.AddBuildingToList(): a building whose name is a registered
+    collectible becomes a pickup, addressed by its own dUniqueID.
+    """
+    pickups = []
+
+    for b in buildings:
+        name = b.get('buildingName_string') or b.get('buildingName') or ''
+        ptype = collectible_type(name)
+        if ptype is None:
+            continue
+
+        try:
+            grid = int(b.get('buildingGrid') or b.get('grid') or 0)
+        except (TypeError, ValueError):
+            continue
+
+        # The grid identifies the building for COMMAND.DESTRUCT_BUILDING (65),
+        # which is what a click on a collectible actually sends.
+        if grid <= 0:
+            continue
+
+        try:
+            uid1 = int(b.get('uniqueId1') or 0)
+            uid2 = int(b.get('uniqueId2') or 0)
+        except (TypeError, ValueError):
+            uid1, uid2 = 0, 0
+
+        pickups.append({
+            'unique_id1': uid1,
+            'unique_id2': uid2,
+            'type': ptype,
+            'resource': str(name),
+            'building_name': str(name),
+            'grid': grid,
+        })
+
+    return pickups
 
 
 def extract_pickups(zone_obj):
@@ -158,6 +226,23 @@ def recursive_extract(obj, buildings, specialists, buffs, resources, friends, pl
 
                 if val is not None:
                     building[attr] = val
+
+            # dBuildingVO.uniqueId:dUniqueID - required to click collectibles
+            # with COMMAND.EXECUTE_PICKUP (13002).
+            b_uid = _attr(obj, 'uniqueId', 'uniqueID', 'uid')
+            b_uid1 = _attr(b_uid, 'uniqueID1', 'uniqueId1', default=None) if b_uid is not None else None
+            b_uid2 = _attr(b_uid, 'uniqueID2', 'uniqueId2', default=None) if b_uid is not None else None
+
+            if b_uid1 is None:
+                b_uid1 = _attr(obj, 'uniqueID1', 'uniqueId1', default=None)
+            if b_uid2 is None:
+                b_uid2 = _attr(obj, 'uniqueID2', 'uniqueId2', default=None)
+
+            if b_uid1 is not None:
+                building['uniqueId1'] = b_uid1
+            if b_uid2 is not None:
+                building['uniqueId2'] = b_uid2
+
             if building:
                 buildings.append(building)
 
@@ -652,6 +737,20 @@ def main():
             idx = min(level_val, len(caps) - 1)
             calc_limit += caps[idx]
 
+    # Collectibles come from the buildings list (see pickups_from_buildings);
+    # anything the server happened to put into dZoneVO.pickups is merged in.
+    merged_pickups = list(zone_info.get('pickups') or [])
+    _seen_pickups = {
+        entry.get('grid')
+        for entry in merged_pickups
+        if isinstance(entry, dict)
+    }
+
+    for entry in pickups_from_buildings(buildings):
+        if entry['grid'] not in _seen_pickups:
+            _seen_pickups.add(entry['grid'])
+            merged_pickups.append(entry)
+
     owner_player = players[0] if len(players) > 0 else {}
     visitors = []
     if len(players) > 1:
@@ -686,7 +785,7 @@ def main():
         'userID': owner_player.get('userID') or zone_info.get('zoneOwnerPlayerID'),
         'zoneOwnerPlayerID': zone_info.get('zoneOwnerPlayerID'),
         'gameWorldName': zone_info.get('gameWorldName'),
-        'pickups': make_serializable(zone_info.get('pickups') or []),
+        'pickups': make_serializable(merged_pickups),
         'errorCode': error_code,
         'visitors': make_serializable(visitors)
     }

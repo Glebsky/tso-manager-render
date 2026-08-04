@@ -270,6 +270,9 @@ class TsoAmfService
 
     public const CMD_EXECUTE_PICKUP = 13002;
 
+    /** COMMAND.DESTRUCT_BUILDING — the command a click on a collectible really sends. */
+    public const CMD_DESTRUCT_BUILDING = 65;
+
     /** @var array<string, TsoAmfClient> */
     private array $clients = [];
 
@@ -460,6 +463,27 @@ class TsoAmfService
         $pickupUid->uniqueID2 = $uniqueId2;
 
         return $this->sendServerCall($account, self::CMD_EXECUTE_PICKUP, $pickupUid);
+    }
+
+    /**
+     * Collect one island collectible by clicking its building.
+     *
+     * Mirrors the client click path:
+     *   cGameInterface.SelectBuilding(building)
+     *     -> cCollectibleBuilding.handleSelectBuilding()
+     *     -> DestroyOnClickBuilding.handleSelectBuilding()
+     *     -> cZone.SendDestructBuildingCommand(building, "cCollectibleBuilding")
+     *        -> dServerAction { grid = building.GetGrid(), data = "cCollectibleBuilding" }
+     *           sent as COMMAND.DESTRUCT_BUILDING (65).
+     *
+     * Collectibles are "destroy on click" buildings: the destruct command is what
+     * hands the resources over, so no dUniqueID and no EXECUTE_PICKUP is involved.
+     */
+    public function collectCollectible(Account $account, int $grid, string $buildingClass = 'cCollectibleBuilding'): string
+    {
+        $action = $this->buildServerAction(0, $grid, 0, $buildingClass);
+
+        return $this->sendServerCall($account, self::CMD_DESTRUCT_BUILDING, $action);
     }
 
     public function sendSpecialist(Account $account, int $taskType, int $subTaskId, int $uniqueId1, int $uniqueId2): string

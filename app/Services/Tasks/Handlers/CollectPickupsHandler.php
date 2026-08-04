@@ -17,11 +17,14 @@ use Throwable;
 /**
  * Clicks every available collectible (pickup) on the account's own island.
  *
- * A "click" on a collection is nothing but COMMAND.EXECUTE_PICKUP (13002)
- * with a bare dUniqueID payload — see PickupService.executePickup() in the
- * game client. The list of currently spawned collectibles lives in
- * dZoneVO.pickups, so the zone is always re-read right before collecting
- * (cached zone_data would contain stale/consumed uids).
+ * Collectibles are ordinary buildings whose name is registered in
+ * collections.xml (CollectionsManager.getBuildingIsCollectible()). A click is
+ * cGameInterface.SelectBuilding() -> cCollectibleBuilding.handleSelectBuilding()
+ * -> cZone.SendDestructBuildingCommand(building, "cCollectibleBuilding"), i.e.
+ * COMMAND.DESTRUCT_BUILDING (65) addressed by the building grid.
+ *
+ * The zone is always re-read right before collecting, because cached zone_data
+ * would list collectibles that have already been consumed or despawned.
  */
 final class CollectPickupsHandler implements TaskActionHandlerInterface
 {
@@ -64,9 +67,26 @@ final class CollectPickupsHandler implements TaskActionHandlerInterface
             throw new PickupsUnavailableException;
         }
 
-        $pickups = $this->filter($this->normalize($zone['pickups']), $payload);
+        $normalized = $this->normalize($zone['pickups']);
+        $pickups = $this->filter($normalized, $payload);
+
+        Log::info(sprintf(
+            '[CollectPickups] Account #%d: zone reports %d collectible building(s), %d left after filters (pickup_type=%s, resources=%s, limit=%s)',
+            $account->id,
+            count($normalized),
+            count($pickups),
+            (string) ($payload['pickup_type'] ?? 'all'),
+            is_array($payload['resources'] ?? null) && $payload['resources'] !== []
+                ? implode('|', array_map('strval', $payload['resources']))
+                : 'any',
+            (int) ($payload['limit'] ?? 0) > 0 ? (string) (int) $payload['limit'] : 'none'
+        ));
 
         if ($pickups === []) {
+            if ($normalized !== []) {
+                Log::warning("[CollectPickups] Account #{$account->id}: every collectible was filtered out by the task payload");
+            }
+
             return __('tasks.pickups.none_available');
         }
 
@@ -80,26 +100,43 @@ final class CollectPickupsHandler implements TaskActionHandlerInterface
 
         foreach ($pickups as $index => $pickup) {
             try {
-                $raw = $this->amfService->executePickup($account, $pickup['unique_id1'], $pickup['unique_id2']);
+                if ($pickup['grid'] <= 0) {
+                    $skipped++;
+                    $skipReasons['no grid'] = ($skipReasons['no grid'] ?? 0) + 1;
+                    Log::warning("[CollectPickups] Account #{$account->id}: collectible {$pickup['resource']} has no grid, skipped");
+
+                    continue;
+                }
+
+                $raw = $this->amfService->collectCollectible($account, $pickup['grid']);
                 $code = $this->extractErrorCode($raw);
 
                 if ($code === 0) {
                     $collected++;
+                    Log::info(sprintf(
+                        '[CollectPickups] Account #%d: collected %s (grid %d, type %d, uid %d_%d)',
+                        $account->id,
+                        $pickup['resource'] !== '' ? $pickup['resource'] : 'collectible',
+                        $pickup['grid'],
+                        $pickup['type'],
+                        $pickup['unique_id1'],
+                        $pickup['unique_id2']
+                    ));
                 } elseif (in_array($code, self::SESSION_ERROR_CODES, true)) {
                     throw new GameServerErrorException($code, GameErrorResolver::getMessage($code));
                 } else {
-                    // Stale uid ("unable to find resource pickup to execute") or a full
-                    // collectible storage — a skip, never a failure of the whole task.
+                    // Already despawned/collected building or a full collectible
+                    // storage — a skip, never a failure of the whole task.
                     $skipped++;
                     $skipReasons['code '.$code] = ($skipReasons['code '.$code] ?? 0) + 1;
-                    Log::warning("[CollectPickups] Account #{$account->id}: pickup {$pickup['unique_id1']}_{$pickup['unique_id2']} skipped with game error {$code}");
+                    Log::warning("[CollectPickups] Account #{$account->id}: collectible {$pickup['resource']} at grid {$pickup['grid']} skipped with game error {$code}");
                 }
             } catch (GameServerErrorException $e) {
                 throw $e;
             } catch (Throwable $e) {
                 $skipped++;
                 $skipReasons['error'] = ($skipReasons['error'] ?? 0) + 1;
-                Log::warning("[CollectPickups] Account #{$account->id}: pickup {$pickup['unique_id1']}_{$pickup['unique_id2']} failed: ".$e->getMessage());
+                Log::warning("[CollectPickups] Account #{$account->id}: collectible {$pickup['resource']} at grid {$pickup['grid']} failed: ".$e->getMessage());
             }
 
             if ($delayMs > 0 && $index < $total - 1) {
@@ -108,6 +145,8 @@ final class CollectPickupsHandler implements TaskActionHandlerInterface
         }
 
         $summary = __('tasks.pickups.summary', ['collected' => $collected, 'total' => $total]);
+
+        Log::info("[CollectPickups] Account #{$account->id}: finished, collected {$collected} of {$total}, skipped {$skipped}");
 
         if ($skipped > 0) {
             $details = [];
@@ -139,8 +178,11 @@ final class CollectPickupsHandler implements TaskActionHandlerInterface
 
             $uid1 = (int) ($raw['unique_id1'] ?? $raw['uniqueID1'] ?? $raw['uniqueId1'] ?? $uid['uniqueID1'] ?? $uid['uniqueId1'] ?? 0);
             $uid2 = (int) ($raw['unique_id2'] ?? $raw['uniqueID2'] ?? $raw['uniqueId2'] ?? $uid['uniqueID2'] ?? $uid['uniqueId2'] ?? 0);
+            $grid = (int) ($raw['grid'] ?? $raw['buildingGrid'] ?? 0);
 
-            if ($uid1 === 0 && $uid2 === 0) {
+            // The grid is what identifies a collectible for DESTRUCT_BUILDING;
+            // uids are kept for logging only.
+            if ($grid <= 0) {
                 continue;
             }
 
@@ -148,8 +190,8 @@ final class CollectPickupsHandler implements TaskActionHandlerInterface
                 'unique_id1' => $uid1,
                 'unique_id2' => $uid2,
                 'type' => (int) ($raw['type'] ?? $raw['providerType'] ?? self::TYPE_NORMAL),
-                'resource' => (string) ($raw['resource'] ?? $raw['resourceName_string'] ?? $raw['item_string'] ?? ''),
-                'grid' => (int) ($raw['grid'] ?? 0),
+                'resource' => (string) ($raw['resource'] ?? $raw['building_name'] ?? $raw['buildingName_string'] ?? $raw['resourceName_string'] ?? $raw['item_string'] ?? ''),
+                'grid' => $grid,
             ];
         }
 
