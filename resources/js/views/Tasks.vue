@@ -214,6 +214,7 @@
                                         <button type="button" @click="stepActionType = 'apply_buff'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">⚡ {{ t('tasks.action.apply_buff') }}</button>
                                         <button type="button" @click="stepActionType = 'send_geologist'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">⛏️ {{ t('tasks.action.send_geologist') }}</button>
                                         <button type="button" @click="stepActionType = 'send_explorer'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">🧭 {{ t('tasks.action.send_explorer') }}</button>
+                                        <button type="button" @click="stepActionType = 'collect_pickups'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">🧺 {{ t('tasks.action.collect_pickups') }}</button>
                                     </div>
                                 </div>
                             </div>
@@ -1028,7 +1029,8 @@ export default {
                 start_production: '▶️ ' + t('tasks.action.start_production'),
                 apply_buff: '⚡ ' + t('tasks.action.apply_buff'),
                 send_geologist: '⛏️ ' + t('tasks.action.send_geologist'),
-                send_explorer: '🧭 ' + t('tasks.action.send_explorer')
+                send_explorer: '🧭 ' + t('tasks.action.send_explorer'),
+                collect_pickups: '🧺 ' + t('tasks.action.collect_pickups')
             };
             return labels[stepActionType.value] || t('tasks.select_action');
         });
@@ -1279,7 +1281,8 @@ export default {
             start_production: '▶️',
             apply_buff: '⚡',
             send_geologist: '⛏️',
-            send_explorer: '🧭'
+            send_explorer: '🧭',
+            collect_pickups: '🧺'
         };
 
         const typeLabels = {
@@ -1287,7 +1290,8 @@ export default {
             start_production: t('tasks.type_label.start_production'),
             apply_buff: t('tasks.type_label.apply_buff'),
             send_geologist: t('tasks.type_label.send_geologist'),
-            send_explorer: t('tasks.type_label.send_explorer')
+            send_explorer: t('tasks.type_label.send_explorer'),
+            collect_pickups: t('tasks.type_label.collect_pickups')
         };
 
         const SPECIALIST_TYPES = {
@@ -1377,6 +1381,9 @@ export default {
                     task_type: type === 'send_geologist' ? 0 : 1,
                     sub_task_id: 0
                 };
+            } else if (type === 'collect_pickups') {
+                // Не привязано к зданию: только фильтр и пауза между кликами
+                payload.value = { pickup_type: 'all', delay_ms: 250 };
             }
         };
 
@@ -1481,6 +1488,19 @@ export default {
                 selectedSpecialists.value = [];
                 showToast(`${t('tasks.toast.action_added')} (${addedCount})`);
                 return;
+            }
+
+            if (stepActionType.value === 'collect_pickups') {
+                sequenceActions.value.push({
+                    task_type: 'collect_pickups',
+                    payload: {
+                        pickup_type: payload.value.pickup_type || 'all',
+                        delay_ms: Number(payload.value.delay_ms ?? 250)
+                    },
+                    delay_seconds: Number(stepDelay.value || 0),
+                    meta: {}
+                });
+                showToast(t('tasks.toast.action_added'));
             }
         };
 

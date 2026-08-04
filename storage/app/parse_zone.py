@@ -25,6 +25,91 @@ except ImportError:
     sys.exit(1)
 
 
+def _attr(obj, *names, default=None):
+    """Read the first existing attribute / dict key out of `names`."""
+    for name in names:
+        if hasattr(obj, name):
+            val = getattr(obj, name)
+            if val is not None:
+                return val
+        elif isinstance(obj, dict) and name in obj:
+            val = obj[name]
+            if val is not None:
+                return val
+    return default
+
+
+def _as_items(container):
+    """Unwrap a Flex ArrayCollection / list into a plain iterable."""
+    if container is None:
+        return []
+    if hasattr(container, 'source'):
+        try:
+            source = container.source
+            if source is not None:
+                container = source
+        except Exception:
+            return []
+    if isinstance(container, (list, tuple)):
+        return container
+    return []
+
+
+def extract_pickups(zone_obj):
+    """Extract dZoneVO.pickups (island collectibles) as flat dicts.
+
+    Each entry carries the dUniqueID needed by COMMAND.EXECUTE_PICKUP (13002),
+    plus the collectible type (COLLECTIBLE_BUILDING_NORMAL = 0 /
+    COLLECTIBLE_BUILDING_EVENT = 1), resource name and grid.
+    """
+    pickups = []
+
+    for p in _as_items(_attr(zone_obj, 'pickups')):
+        if p is None:
+            continue
+
+        uid = _attr(p, 'uniqueID', 'uniqueId', 'uid')
+
+        uid1 = _attr(uid, 'uniqueID1', 'uniqueId1', default=None) if uid is not None else None
+        uid2 = _attr(uid, 'uniqueID2', 'uniqueId2', default=None) if uid is not None else None
+
+        if uid1 is None:
+            uid1 = _attr(p, 'uniqueID1', 'uniqueId1', default=0)
+        if uid2 is None:
+            uid2 = _attr(p, 'uniqueID2', 'uniqueId2', default=0)
+
+        try:
+            uid1 = int(uid1 or 0)
+            uid2 = int(uid2 or 0)
+        except (TypeError, ValueError):
+            continue
+
+        if uid1 == 0 and uid2 == 0:
+            continue
+
+        try:
+            ptype = int(_attr(p, 'type', 'providerType', 'collectibleType', default=0) or 0)
+        except (TypeError, ValueError):
+            ptype = 0
+
+        try:
+            grid = int(_attr(p, 'grid', 'buildingGrid', default=0) or 0)
+        except (TypeError, ValueError):
+            grid = 0
+
+        pickups.append({
+            'unique_id1': uid1,
+            'unique_id2': uid2,
+            'type': ptype,
+            'resource': str(_attr(
+                p, 'resourceName_string', 'item_string', 'resourceName',
+                'buildingName_string', 'name_string', 'name', default='') or ''),
+            'grid': grid,
+        })
+
+    return pickups
+
+
 def recursive_extract(obj, buildings, specialists, buffs, resources, friends, players, zone_info, visited=None):
     """Recursively walk the decoded AMF object tree and extract VOs."""
     if visited is None:
@@ -330,6 +415,17 @@ def recursive_extract(obj, buildings, specialists, buffs, resources, friends, pl
                 if val is not None:
                     zone_info[attr] = val
 
+            # Extract island collectibles (pickups) from zone
+            zone_pickups = extract_pickups(obj)
+            if zone_pickups or 'pickups' not in zone_info:
+                existing = zone_info.setdefault('pickups', [])
+                seen = {(e['unique_id1'], e['unique_id2']) for e in existing}
+                for entry in zone_pickups:
+                    key = (entry['unique_id1'], entry['unique_id2'])
+                    if key not in seen:
+                        seen.add(key)
+                        existing.append(entry)
+
             # Extract friends list from zone
             for attr in ['friends', 'friendList', 'friendVOs']:
                 friends_list = None
@@ -590,6 +686,7 @@ def main():
         'userID': owner_player.get('userID') or zone_info.get('zoneOwnerPlayerID'),
         'zoneOwnerPlayerID': zone_info.get('zoneOwnerPlayerID'),
         'gameWorldName': zone_info.get('gameWorldName'),
+        'pickups': make_serializable(zone_info.get('pickups') or []),
         'errorCode': error_code,
         'visitors': make_serializable(visitors)
     }

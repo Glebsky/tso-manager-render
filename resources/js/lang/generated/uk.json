@@ -856,6 +856,8 @@
         "tasks.until_launch": "До запуску",
         "tasks.warning": "Попередження",
         "tasks.where_apply": "Де застосувати баф?",
-        "tasks.zone_load_failed": "Не вдалося завантажити зону друга"
+        "tasks.zone_load_failed": "Не вдалося завантажити зону друга",
+        "tasks.action.collect_pickups": "Зібрати колекції",
+        "tasks.type_label.collect_pickups": "Збір колекцій"
     }
 }
