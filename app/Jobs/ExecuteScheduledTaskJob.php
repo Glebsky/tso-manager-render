@@ -86,7 +86,7 @@ class ExecuteScheduledTaskJob implements ShouldQueue
 
         if (! $task->is_active && ! $this->force) {
             Log::warning(sprintf(
-                "[TaskJob] Task #%d is not active at execution time; skipping. %s",
+                '[TaskJob] Task #%d is not active at execution time; skipping. %s',
                 $this->taskId,
                 $this->describeTask($task)
             ));

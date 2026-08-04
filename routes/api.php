@@ -43,6 +43,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/accounts', [AccountController::class, 'index']);
     Route::post('/accounts', [AccountController::class, 'store']);
     Route::get('/accounts/{account}', [AccountController::class, 'show']);
+    Route::get('/accounts/{account}/zone', [AccountController::class, 'zone']);
     Route::delete('/accounts/{account}', [AccountController::class, 'destroy']);
     Route::post('/accounts/{account}/sync', [AccountController::class, 'sync']);
     Route::post('/accounts/{account}/action', [AccountController::class, 'action']);

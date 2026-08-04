@@ -37,9 +37,14 @@ final class MarketOfferQueryService
      */
     public function activeOffers(string $serverId): Collection
     {
+        $since = $this->activeSince();
+
         return MarketOffer::query()
             ->where('server_id', $serverId)
-            ->where('created_at', '>=', $this->activeSince())
+            ->where(static function ($query) use ($since): void {
+                $query->where('created_at', '>=', $since)
+                    ->orWhere('collected_at', '>=', $since);
+            })
             ->orderByDesc('created_at')
             ->get();
     }
@@ -49,11 +54,16 @@ final class MarketOfferQueryService
      */
     public function activeOffersForPair(string $serverId, string $itemId, string $targetItemId): Collection
     {
+        $since = $this->activeSince();
+
         return MarketOffer::query()
             ->where('server_id', $serverId)
             ->where('item_id', $itemId)
             ->where('target_item_id', $targetItemId)
-            ->where('created_at', '>=', $this->activeSince())
+            ->where(static function ($query) use ($since): void {
+                $query->where('created_at', '>=', $since)
+                    ->orWhere('collected_at', '>=', $since);
+            })
             ->get();
     }
 
@@ -77,9 +87,14 @@ final class MarketOfferQueryService
      */
     public function activeInfoByPair(string $serverId): SupportCollection
     {
+        $since = $this->activeSince();
+
         return MarketOffer::query()
             ->where('server_id', $serverId)
-            ->where('created_at', '>=', $this->activeSince())
+            ->where(static function ($query) use ($since): void {
+                $query->where('created_at', '>=', $since)
+                    ->orWhere('collected_at', '>=', $since);
+            })
             ->selectRaw('item_id, target_item_id, sum(volume) as volume, count(*) as offers_count, count(distinct player_id) as sellers_count')
             ->groupBy('item_id', 'target_item_id')
             ->get()

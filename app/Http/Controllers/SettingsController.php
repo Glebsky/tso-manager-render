@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateSettingsRequest;
+use App\Http\Resources\SettingResource;
 use App\Models\ScheduledTask;
 use App\Models\Setting;
 use App\Services\SystemLogCleanupService;
@@ -20,23 +21,25 @@ class SettingsController extends Controller
         private readonly SystemLogCleanupService $logCleanupService,
     ) {}
 
-    public function index(): JsonResponse
+    public function index(): SettingResource
     {
-        $settings = $this->loadSettings();
-        $settings['server_time'] = now()->toIso8601String();
-
-        return response()->json($settings);
+        return new SettingResource([
+            'sync_interval' => (int) Setting::get('sync_interval', 30),
+            'log_retention_days' => (int) Setting::get('log_retention_days', 30),
+        ]);
     }
 
     public function update(UpdateSettingsRequest $request): JsonResponse
     {
         $validated = $request->validated();
-        $this->saveSettings($validated);
+
+        Setting::set('sync_interval', $validated['sync_interval']);
+        Setting::set('log_retention_days', $validated['log_retention_days']);
 
         return response()->json([
             'success' => true,
             'message' => 'Settings updated.',
-            'settings' => $validated,
+            'settings' => new SettingResource($validated),
         ]);
     }
 
@@ -66,19 +69,5 @@ class SettingsController extends Controller
             'success' => true,
             'message' => 'All scheduled tasks paused.',
         ]);
-    }
-
-    private function loadSettings(): array
-    {
-        return [
-            'sync_interval' => (int) Setting::get('sync_interval', 30),
-            'log_retention_days' => (int) Setting::get('log_retention_days', 30),
-        ];
-    }
-
-    private function saveSettings(array $settings): void
-    {
-        Setting::set('sync_interval', $settings['sync_interval']);
-        Setting::set('log_retention_days', $settings['log_retention_days']);
     }
 }

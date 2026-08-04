@@ -73,8 +73,8 @@ class ScheduledTaskCollectPickupsTest extends TestCase
             ['unique_id1' => 2, 'unique_id2' => 22, 'type' => 1, 'resource' => 'Coin', 'grid' => 200],
         ]);
 
-        $this->amfMock->shouldReceive('executePickup')->once()->with($account, 1, 11)->andReturn('OK_1');
-        $this->amfMock->shouldReceive('executePickup')->once()->with($account, 2, 22)->andReturn('OK_2');
+        $this->amfMock->shouldReceive('collectCollectible')->once()->with($account, 100)->andReturn('OK_1');
+        $this->amfMock->shouldReceive('collectCollectible')->once()->with($account, 200)->andReturn('OK_2');
         $this->parserMock->shouldReceive('parse')->with('OK_1')->andReturn(['errorCode' => 0]);
         $this->parserMock->shouldReceive('parse')->with('OK_2')->andReturn(['errorCode' => 0]);
 
@@ -92,8 +92,8 @@ class ScheduledTaskCollectPickupsTest extends TestCase
             ['unique_id1' => 2, 'unique_id2' => 22, 'type' => 1, 'resource' => 'Coin', 'grid' => 200],
         ]);
 
-        $this->amfMock->shouldReceive('executePickup')->once()->with($account, 2, 22)->andReturn('OK_2');
-        $this->amfMock->shouldNotReceive('executePickup')->with($account, 1, 11);
+        $this->amfMock->shouldReceive('collectCollectible')->once()->with($account, 200)->andReturn('OK_2');
+        $this->amfMock->shouldNotReceive('collectCollectible')->with($account, 100);
         $this->parserMock->shouldReceive('parse')->with('OK_2')->andReturn(['errorCode' => 0]);
 
         $result = $this->handler()->handle($account, ['pickup_type' => 'event', 'delay_ms' => 0]);
@@ -110,8 +110,8 @@ class ScheduledTaskCollectPickupsTest extends TestCase
             ['uniqueID1' => 2, 'uniqueID2' => 22, 'type' => 0, 'resource' => 'Stone', 'grid' => 200],
         ]);
 
-        $this->amfMock->shouldReceive('executePickup')->once()->with($account, 1, 11)->andReturn('OK_1');
-        $this->amfMock->shouldReceive('executePickup')->once()->with($account, 2, 22)->andReturn('STALE');
+        $this->amfMock->shouldReceive('collectCollectible')->once()->with($account, 100)->andReturn('OK_1');
+        $this->amfMock->shouldReceive('collectCollectible')->once()->with($account, 200)->andReturn('STALE');
         $this->parserMock->shouldReceive('parse')->with('OK_1')->andReturn(['errorCode' => 0]);
         $this->parserMock->shouldReceive('parse')->with('STALE')->andReturn(['errorCode' => 2001]);
 

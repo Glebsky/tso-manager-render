@@ -1312,14 +1312,26 @@ export default {
                     applyBulkData(bulkData);
                 } else {
                     // Individual mode: fetch individual granular endpoints separately
-                    const [goodsRes, popularRes, arbitrageRes] = await Promise.all([
+                    const [goodsRes, popularRes, arbitrageRes, analyticsRes] = await Promise.all([
                         cachedGet('/api/market/goods', { params: { server_id: selectedServerId.value }, ...options }),
                         cachedGet('/api/market/popular', { params: { server_id: selectedServerId.value, period: '1d' }, ...options }),
                         cachedGet('/api/market/arbitrage', { params: { server_id: selectedServerId.value }, ...options }),
+                        cachedGet('/api/market/analytics', { params: { server_id: selectedServerId.value }, ...options }),
                     ]);
                     goods.value = goodsRes || [];
                     popular.value = popularRes || [];
                     arbitrageLoops.value = arbitrageRes || [];
+                    if (analyticsRes) {
+                        activeOffers.value = (analyticsRes.active_offers || []).map(offer => {
+                            if (offer && offer.expires_at) {
+                                const expiresAt = new Date(offer.expires_at).getTime();
+                                const timeLeft = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
+                                return { ...offer, time_left: timeLeft };
+                            }
+                            return offer;
+                        });
+                        totalActiveCount.value = analyticsRes.total_active_count || 0;
+                    }
                 }
 
                 startCountdown();

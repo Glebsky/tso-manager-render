@@ -36,9 +36,13 @@ final class LoopArbitrageFinder implements ArbitrageFinder
      */
     public function find(string $serverId): array
     {
+        $since = $this->offers->activeSince();
         $offers = MarketOffer::query()
             ->where('server_id', $serverId)
-            ->where('created_at', '>=', $this->offers->activeSince())
+            ->where(static function ($query) use ($since): void {
+                $query->where('created_at', '>=', $since)
+                    ->orWhere('collected_at', '>=', $since);
+            })
             ->get();
         $byPair = [];
 

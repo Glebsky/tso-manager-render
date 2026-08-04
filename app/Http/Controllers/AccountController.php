@@ -42,9 +42,20 @@ final class AccountController extends Controller
 
     public function show(Account $account): JsonResponse
     {
-        $account->makeVisible('zone_data');
+        return response()->json((new AccountResource($account))->withZoneData());
+    }
 
-        return response()->json(new AccountResource($account));
+    public function zone(Account $account): JsonResponse
+    {
+        $raw = $account->zone_data;
+        $zoneData = $raw
+            ? (is_array($raw) ? $raw : json_decode($raw, true))
+            : ['buildings' => [], 'specialists' => [], 'buffs' => []];
+
+        return response()->json([
+            'account_id' => $account->id,
+            'zone_data' => $zoneData,
+        ]);
     }
 
     public function destroy(Account $account): JsonResponse
@@ -62,22 +73,20 @@ final class AccountController extends Controller
         try {
             $zoneData = $this->syncService->sync($account);
             $freshAccount = $account->fresh();
-            $freshAccount?->makeVisible('zone_data');
 
             return response()->json([
                 'success' => true,
                 'message' => 'Zone synced successfully.',
-                'account' => $freshAccount !== null ? new AccountResource($freshAccount) : null,
+                'account' => $freshAccount !== null ? (new AccountResource($freshAccount))->withZoneData() : null,
                 'zone_data' => $zoneData,
             ]);
         } catch (Exception $e) {
             $freshAccount = $account->fresh();
-            $freshAccount?->makeVisible('zone_data');
 
             return response()->json([
                 'success' => false,
                 'message' => 'Sync failed: '.$e->getMessage(),
-                'account' => $freshAccount !== null ? new AccountResource($freshAccount) : null,
+                'account' => $freshAccount !== null ? (new AccountResource($freshAccount))->withZoneData() : null,
             ], 500);
         }
     }

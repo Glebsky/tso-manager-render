@@ -13,6 +13,15 @@ use Illuminate\Http\Resources\Json\JsonResource;
  */
 class AccountResource extends JsonResource
 {
+    private bool $includeZoneData = false;
+
+    public function withZoneData(bool $include = true): static
+    {
+        $this->includeZoneData = $include;
+
+        return $this;
+    }
+
     /**
      * Transform the resource into an array.
      *
@@ -20,8 +29,6 @@ class AccountResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $isZoneDataVisible = ! in_array('zone_data', $this->resource->getHidden(), true);
-
         return [
             'id' => $this->id,
             'username' => $this->username,
@@ -29,7 +36,6 @@ class AccountResource extends JsonResource
             'status' => $this->status,
             'region' => $this->region,
             'dso_auth_user' => $this->dso_auth_user,
-            'dso_auth_token' => $this->dso_auth_token,
             'bb_url' => $this->bb_url,
             'server_name' => $this->server_name,
             'is_market_connected' => $this->is_market_connected,
@@ -40,7 +46,7 @@ class AccountResource extends JsonResource
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
             'scheduled_tasks_count' => $this->whenCounted('scheduledTasks'),
-            'zone_data' => $this->when($isZoneDataVisible, fn () => $this->zone_data),
+            'zone_data' => $this->when($this->includeZoneData, fn () => $this->zone_data),
         ];
     }
 }

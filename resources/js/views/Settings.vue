@@ -148,9 +148,10 @@ export default {
         const loadSettings = async () => {
             try {
                 const res = await axios.get('/api/settings');
-                form.value = res.data || {
-                    sync_interval: 30,
-                    log_retention_days: 30
+                const data = res.data?.data || res.data || {};
+                form.value = {
+                    sync_interval: Number(data.sync_interval ?? 30),
+                    log_retention_days: Number(data.log_retention_days ?? 30)
                 };
             } catch (e) {
                 showToast(t('settings.load_failed'), 'error');
@@ -162,8 +163,19 @@ export default {
         const saveSettings = async () => {
             saving.value = true;
             try {
-                const res = await axios.put('/api/settings', form.value);
+                const payload = {
+                    sync_interval: Number(form.value.sync_interval),
+                    log_retention_days: Number(form.value.log_retention_days)
+                };
+                const res = await axios.put('/api/settings', payload);
                 if (res.data.success) {
+                    const data = res.data.settings?.data || res.data.settings || {};
+                    if (data.sync_interval !== undefined) {
+                        form.value.sync_interval = Number(data.sync_interval);
+                    }
+                    if (data.log_retention_days !== undefined) {
+                        form.value.log_retention_days = Number(data.log_retention_days);
+                    }
                     showToast(t('settings.saved'));
                 }
             } catch (e) {

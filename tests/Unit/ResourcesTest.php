@@ -51,8 +51,7 @@ class ResourcesTest extends TestCase
         $this->assertEquals(1, $resource['building_count']);
         $this->assertInstanceOf(MissingValue::class, $resource['zone_data']);
 
-        $account->makeVisible('zone_data');
-        $visibleResource = (new AccountResource($account))->toArray($request);
+        $visibleResource = (new AccountResource($account))->withZoneData()->toArray($request);
         $this->assertIsArray($visibleResource['zone_data']);
     }
 

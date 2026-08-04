@@ -260,7 +260,7 @@ class MarketAnalyticsTest extends TestCase
             'volume' => 2000,
             'lots_remaining' => 5,
             'created_at' => now()->subHours(7),
-            'collected_at' => now(),
+            'collected_at' => now()->subHours(7),
         ]);
 
         $response = $this->getJson('/api/market/analytics');

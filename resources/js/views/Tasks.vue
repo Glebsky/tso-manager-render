@@ -130,7 +130,7 @@
                     </div>
 
                     <div v-if="sequenceActions.length > 0" class="space-y-2 mb-4 max-h-72 sm:max-h-60 overflow-y-auto pr-1 sm:pr-2">
-                        <div v-for="(act, idx) in sequenceActions" :key="idx" class="glass-card p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 border border-white/5 hover:border-white/10 transition-all duration-200">
+                        <div v-for="(act, idx) in sequenceActions" :key="idx" class="glass-card p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 border border-white/5 hover:border-white/20 hover:bg-white/[0.04] transition-all duration-200">
                             <div class="flex items-start gap-3 min-w-0 w-full">
                                 <span class="w-5 h-5 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-[10px] font-bold font-mono flex-shrink-0">{{ idx + 1 }}</span>
                                 <span class="text-lg flex-shrink-0">{{ typeIcons[act.task_type] }}</span>
@@ -659,13 +659,13 @@
 
                                 <div class="grid grid-cols-1 gap-2">
                                     <div v-for="(act, aIdx) in getTaskActionsList(task)" :key="aIdx"
-                                         class="glass-card p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border transition-all"
+                                         class="glass-card p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border transition-all duration-200"
                                          :class="[
                                              getActionStepStatus(task, aIdx) === 'failed'
-                                                 ? 'border-red-500/40 bg-red-500/10 shadow-lg shadow-red-500/5'
+                                                 ? 'border-red-500/40 bg-red-500/10 shadow-lg shadow-red-500/5 hover:border-red-500/60 hover:bg-red-500/20'
                                                  : getActionStepStatus(task, aIdx) === 'completed'
-                                                     ? 'border-emerald-500/20 bg-emerald-500/[0.02]'
-                                                     : 'border-white/5 bg-white/[0.01]'
+                                                     ? 'border-emerald-500/20 bg-emerald-500/[0.02] hover:border-emerald-500/40 hover:bg-emerald-500/10'
+                                                     : 'border-white/5 bg-white/[0.01] hover:border-white/20 hover:bg-white/[0.05]'
                                          ]">
                                         <div class="flex items-start sm:items-center gap-3">
                                             <span class="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold font-mono flex-shrink-0 mt-0.5 sm:mt-0"
@@ -1337,7 +1337,27 @@ export default {
             }
         };
 
-        const onAccountChange = () => {
+        const accountZonesCache = ref({});
+
+        const fetchAccountZone = async (accountId) => {
+            if (!accountId) return { buildings: [], specialists: [], buffs: [] };
+            const numId = Number(accountId);
+            if (accountZonesCache.value[numId]) {
+                return accountZonesCache.value[numId];
+            }
+            try {
+                const res = await axios.get(`/api/accounts/${numId}/zone`);
+                const zd = res.data.zone_data;
+                const parsed = typeof zd === 'string' ? JSON.parse(zd) : (zd || { buildings: [], specialists: [], buffs: [] });
+                accountZonesCache.value[numId] = parsed;
+                return parsed;
+            } catch (e) {
+                console.error('Failed to fetch account zone data:', e);
+                return { buildings: [], specialists: [], buffs: [] };
+            }
+        };
+
+        const onAccountChange = async () => {
             selectedBuildings.value = [];
             selectedSpecialists.value = [];
             selectedBuff.value = null;
@@ -1348,16 +1368,8 @@ export default {
             friendBuildings.value = [];
             friendZoneError.value = false;
 
-            const acc = accounts.value.find(a => Number(a.id) === Number(selectedAccountId.value));
-            if (acc && acc.zone_data) {
-                try {
-                    zone.value = typeof acc.zone_data === 'string'
-                        ? JSON.parse(acc.zone_data)
-                        : acc.zone_data;
-                } catch (e) {
-                    console.error('Failed to parse zone data:', e);
-                    zone.value = { buildings: [], specialists: [], buffs: [] };
-                }
+            if (selectedAccountId.value) {
+                zone.value = await fetchAccountZone(selectedAccountId.value);
             } else {
                 zone.value = { buildings: [], specialists: [], buffs: [] };
             }
@@ -1994,11 +2006,11 @@ export default {
             zone.value = { buildings: [], specialists: [], buffs: [] };
         };
 
-        const editTask = (task) => {
+        const editTask = async (task) => {
             editingTaskId.value = task.id;
             taskName.value = task.name || '';
             selectedAccountId.value = task.account_id;
-            onAccountChange();
+            await onAccountChange();
 
             scheduleType.value = task.schedule_type || 'daily';
             runAtTime.value = task.run_at_time ? utcTimeToLocal(task.run_at_time.substring(0, 5)) : '';
@@ -2007,13 +2019,7 @@ export default {
             intervalMinutes.value = task.interval_minutes || 0;
 
             if (task.task_type === 'sequence' && task.payload && task.payload.actions) {
-                const acc = accounts.value.find(a => a.id === task.account_id);
-                let zoneData = { buildings: [], specialists: [], buffs: [] };
-                if (acc && acc.zone_data) {
-                    try {
-                        zoneData = typeof acc.zone_data === 'string' ? JSON.parse(acc.zone_data) : acc.zone_data;
-                    } catch (e) {}
-                }
+                const zoneData = await fetchAccountZone(task.account_id);
 
                 sequenceActions.value = task.payload.actions.map(act => {
                     const meta = { building: null, buff: null, specialist: null };
@@ -2496,13 +2502,11 @@ export default {
             const grid = action.payload?.grid;
             if (!grid) return t('tasks.building_not_set');
 
-            const acc = accounts.value.find(a => Number(a.id) === Number(taskObj?.account_id));
-            if (acc && acc.zone_data) {
-                try {
-                    const zd = typeof acc.zone_data === 'string' ? JSON.parse(acc.zone_data) : acc.zone_data;
-                    const b = zd.buildings?.find(b => Number(b.buildingGrid) === Number(grid));
-                    if (b) return getBuildingName(b);
-                } catch (e) {}
+            const accId = Number(taskObj?.account_id);
+            const zd = accountZonesCache.value[accId];
+            if (zd && zd.buildings) {
+                const b = zd.buildings.find(b => Number(b.buildingGrid) === Number(grid));
+                if (b) return getBuildingName(b);
             }
             return t('tasks.grid_number', { id: grid });
         };
@@ -2514,14 +2518,12 @@ export default {
             const u1 = action.payload?.unique_id1;
             if (!u1) return t('tasks.buff_from_menu');
 
-            const acc = accounts.value.find(a => Number(a.id) === Number(taskObj?.account_id));
-            if (acc && acc.zone_data) {
-                try {
-                    const zd = typeof acc.zone_data === 'string' ? JSON.parse(acc.zone_data) : acc.zone_data;
-                    const buffs = zd.availableBuffs || zd.buffs || [];
-                    const bf = buffs.find(b => (b.uniqueId1 || b.uniqueID1) == u1);
-                    if (bf) return getStarBuffName(bf);
-                } catch (e) {}
+            const accId = Number(taskObj?.account_id);
+            const zd = accountZonesCache.value[accId];
+            if (zd) {
+                const buffs = zd.availableBuffs || zd.buffs || [];
+                const bf = buffs.find(b => (b.uniqueId1 || b.uniqueID1) == u1);
+                if (bf) return getStarBuffName(bf);
             }
             return t('tasks.buff_number', { id: u1 });
         };

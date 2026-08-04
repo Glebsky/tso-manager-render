@@ -34,10 +34,7 @@ final class ScheduledTaskService
 
     public function accounts(): Collection
     {
-        $accounts = Account::orderBy('username')->get();
-        $accounts->makeVisible('zone_data');
-
-        return $accounts;
+        return Account::orderBy('username')->get();
     }
 
     /**

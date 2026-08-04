@@ -23,10 +23,8 @@ class ScheduledTaskResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'title' => $this->name,
             'account_id' => $this->account_id,
             'task_type' => $this->task_type,
-            'action_type' => $this->task_type,
             'schedule_type' => $this->schedule_type,
             'run_at_time' => $this->run_at_time,
             'run_at_datetime' => $this->run_at_datetime?->toIso8601String(),
@@ -36,7 +34,6 @@ class ScheduledTaskResource extends JsonResource
             'is_active' => (bool) $this->is_active,
             'status' => $this->status,
             'queued_at' => $this->queued_at?->toIso8601String(),
-            'execution_token' => $this->execution_token,
             'completed_steps' => $this->completed_steps,
             'last_run_at' => $this->last_run_at?->toIso8601String(),
             'last_result' => $this->last_result,

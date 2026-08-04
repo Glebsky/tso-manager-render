@@ -331,7 +331,6 @@ class TaskExecutionService
             throw new Exception("Task #{$task->id} is not a sequence task.");
         }
 
-
         $account = $task->account;
         if (! $account) {
             throw new TaskAccountNotFoundException($task->id);
