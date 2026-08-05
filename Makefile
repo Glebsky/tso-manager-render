@@ -4,7 +4,8 @@ help: ## Show available commands
 	@grep -E "^[a-zA-Z_-]+:.*?## .*$$" $(MAKEFILE_LIST) | awk "BEGIN {FS = \":.*?## \"}; {printf \"\033[36m%-20s\033[0m %s\n\", \$$1, \$$2}"
 
 install: ## First-time setup: copy env, build, start, generate key, migrate
-	@if not exist .env copy .env.docker .env
+	@[ -f .env ] || cp .env.docker .env
+
 	docker compose build
 	docker compose up -d
 	docker compose exec app php artisan key:generate

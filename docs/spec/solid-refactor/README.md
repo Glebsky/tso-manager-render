@@ -4,10 +4,11 @@ This directory contains the Spec-Driven Development (SDD) documentation for the 
 
 ## Specification Documents
 
-- [Requirements](file:///C:/OSPanel/domains/tso_client/admin/docs/spec/solid-refactor/requirements.md) — Core architectural principles, SOLID rules, RESTful API design principles, mandatory Constructor DI, JsonResources standard, PHP 8.1 / Laravel 10 constraints, and API contracts.
-- [Architecture Design](file:///C:/OSPanel/domains/tso_client/admin/docs/spec/solid-refactor/design.md) — Layered architecture diagrams, Strategy/Registry patterns, REST principles, Form Requests, JsonResources, and directory layout.
-- [Implementation Plan & Roadmap](file:///C:/OSPanel/domains/tso_client/admin/docs/spec/solid-refactor/implementation-plan.md) — Detailed audit of completed stages and remaining backlog for full refactoring.
-- [Verification Report](file:///C:/OSPanel/domains/tso_client/admin/docs/spec/solid-refactor/verification.md) — Quality gates, test execution results, static analysis, and build verification.
+- [Requirements](requirements.md) — Core architectural principles, SOLID rules, RESTful API design principles, mandatory Constructor DI, JsonResources standard, PHP 8.1 / Laravel 10 constraints, and API contracts.
+- [Architecture Design](design.md) — Layered architecture diagrams, Strategy/Registry patterns, REST principles, Form Requests, JsonResources, and directory layout.
+- [Implementation Plan & Roadmap](implementation-plan.md) — Detailed audit of completed stages and remaining backlog for full refactoring.
+- [Verification Report](verification.md) — Quality gates, test execution results, static analysis, and build verification.
+
 
 ## Summary of Delivered Stages
 
