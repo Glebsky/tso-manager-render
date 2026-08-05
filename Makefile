@@ -33,7 +33,8 @@ shell: ## Open shell in the app container
 test: ## Run Laravel test suite
 	docker compose exec app php artisan test
 
-lint: ## Check code formatting with Pint
+lint: ## Check code formatting with Pint and ensure no TLS certs/keys are committed
+	@! git ls-files | grep -qE '\.(pem|key|crt)$$' || (echo "ERROR: Committed TLS key/cert files detected in git!" && exit 1)
 	docker compose exec app ./vendor/bin/pint --test
 
 analyse: ## Run PHPStan static analysis

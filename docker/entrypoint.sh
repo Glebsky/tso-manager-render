@@ -22,7 +22,27 @@ if [ -d "/tmp/build_assets" ] && [ "$1" = "php-fpm" ]; then
     cp -r /tmp/build_assets/* /var/www/html/public/build/ 2>/dev/null || true
 fi
 
+# Ensure TLS certificate directory and certs exist
+CERTS_DIR="/var/www/html/docker/nginx/certs"
+if [ "$APP_ENV" = "production" ]; then
+    if [ ! -f "$CERTS_DIR/fullchain.pem" ] || [ ! -f "$CERTS_DIR/privkey.pem" ]; then
+        echo "ERROR: Production TLS certificates ($CERTS_DIR/fullchain.pem and $CERTS_DIR/privkey.pem) are missing!" >&2
+        echo "Please mount or supply valid TLS certificates before starting in production mode." >&2
+        exit 1
+    fi
+else
+    mkdir -p "$CERTS_DIR"
+    if [ ! -f "$CERTS_DIR/fullchain.pem" ] || [ ! -f "$CERTS_DIR/privkey.pem" ]; then
+        echo "Generating self-signed TLS certs for development..."
+        openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+            -keyout "$CERTS_DIR/privkey.pem" \
+            -out "$CERTS_DIR/fullchain.pem" \
+            -subj "/CN=localhost" 2>/dev/null || true
+    fi
+fi
+
 # Clear runtime config caches first
+
 php artisan config:clear || true
 php artisan cache:clear || true
 

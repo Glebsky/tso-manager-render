@@ -23,4 +23,8 @@ yarn-error.log
 
 # Docker
 /docker/php/error.log
-/docker/nginx/certs/
+/docker/nginx/certs/*.pem
+/docker/nginx/certs/*.key
+/docker/nginx/certs/*.crt
+docker/nginx/certs/
+

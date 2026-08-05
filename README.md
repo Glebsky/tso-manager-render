@@ -168,8 +168,11 @@ make prod-up
 This uses `docker-compose.prod.yml` override which:
 - Builds optimized production images (no dev dependencies)
 - Bakes assets into the image (no Vite dev server)
+- Mounts TLS certificates at runtime from `./docker/nginx/certs` (`fullchain.pem` and `privkey.pem`)
 - Enables restart policies
 - Adds healthchecks
+
+> **Note on TLS Certificates:** Production certificates must be provided at runtime under `docker/nginx/certs/` (`fullchain.pem` and `privkey.pem`). Private keys and certificate files are excluded from git. In development mode, `docker/entrypoint.sh` automatically generates self-signed certificates if none are present.
 
 ### Troubleshooting
 
