@@ -42,8 +42,8 @@ but the full four gates must pass before the package is declared done.
 
 | WP | Gate evidence | Targeted assertions | Manual check | Status |
 | :--- | :--- | :--- | :--- | :--- |
-| WP-1 | 4 gates | `git ls-files` has no `*.pem` | `docker compose config`, `make prod-up`, HTTPS responds | TODO |
-| WP-2 | 4 gates | cross-user denial matrix over accounts/tasks/market endpoints; listing returns only owned rows | login as two users in the SPA | TODO |
+| WP-1 | 4 gates | `git ls-files` has no `*.pem` | `docker compose config`, `make prod-up`, HTTPS responds | DONE |
+| WP-2' | 4 gates | single-operator invariant test (registration, 401 routes, public market keys) | login & registration flow | DONE |
 | WP-3 | 4 gates | raw column ≠ plaintext; model round-trip; no secret in logs | migration up/down on a DB copy | TODO |
 | WP-4 | 4 gates | each domain exception → declared status + localized message; no upstream text | trigger a sync failure in the UI | TODO |
 | WP-5 | phpstan at target level | baseline line count recorded below | — | TODO |
@@ -52,7 +52,8 @@ but the full four gates must pass before the package is declared done.
 | WP-8 | 4 gates | zero `response()->json` in controllers; locale key sets identical; pagination bounds | Accounts / Tasks / Logs screens | TODO |
 | WP-9 | 4 gates | query count constant for 10 accounts; snapshot handles malformed JSON | dashboard + account list | TODO |
 | WP-10 | 4 gates | AMF payload snapshot byte-identical; transport faked | one real sync against a test account (owner-approved) | TODO |
-| WP-11 | 4 gates | grep proves zero Blade references | `/admin/login`, SPA boot | TODO |
+| WP-11 | 4 gates | grep proves zero Blade references | `/admin/login`, SPA boot | DONE |
+
 | WP-12 | `npm run build` + 4 gates | no `axios.` in views/components | loading/empty/error/stale on 6 screens | TODO |
 | WP-13 | `npm run build` + 4 gates | — | task planner regression list (§4) | TODO |
 | WP-14 | `npm run build` + 4 gates | combined view lines − ≥ 60 % | admin + public analytics parity | TODO |

@@ -17,11 +17,11 @@ mixes a behavior change with a mass reformat.
 
 ## Roadmap
 
-| # | WP | Title | Priority | Requirements | Est. |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| 1 | WP-1 | Purge committed TLS material, mount certs at runtime | P0 | ADR-006, FR-1.1 | S |
-| 2 | WP-11 | Delete unreachable Blade UI + repo hygiene | P3 | FR-5.1, FR-5.2 | S |
-| 3 | WP-2' | Assert the single-operator invariant | P0 | ADR-001 | S |
+| # | WP | Title | Priority | Requirements | Est. | Status |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| 1 | WP-1 | Purge committed TLS material, mount certs at runtime | P0 | ADR-006, FR-1.1 | S | DONE |
+| 2 | WP-11 | Delete unreachable Blade UI + repo hygiene | P3 | FR-5.1, FR-5.2 | S | DONE |
+| 3 | WP-2' | Assert the single-operator invariant | P0 | ADR-001 | S | DONE |
 | 4 | WP-U1 | PHP 8.1 → 8.3 (Laravel 10 unchanged) | P0 | ADR-002 | M |
 | 5 | WP-U2 | Laravel 10 → 11 (skeleton restructure, Sanctum 4) | P0 | ADR-002 | L |
 | 6 | WP-U3 | Laravel 11 → latest + PHP 8.4 | P0 | ADR-002 | M |
