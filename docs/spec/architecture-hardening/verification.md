@@ -44,6 +44,7 @@ but the full four gates must pass before the package is declared done.
 | :--- | :--- | :--- | :--- | :--- |
 | WP-1 | 4 gates | `git ls-files` has no `*.pem` | `docker compose config`, `make prod-up`, HTTPS responds | DONE |
 | WP-2' | 4 gates | single-operator invariant test (registration, 401 routes, public market keys) | login & registration flow | DONE |
+| WP-U1 | 4 gates | composer.json ^8.3, Dockerfile php:8.3, zero deprecation warnings | suite execution on PHP 8.3 | DONE |
 | WP-3 | 4 gates | raw column ≠ plaintext; model round-trip; no secret in logs | migration up/down on a DB copy | TODO |
 | WP-4 | 4 gates | each domain exception → declared status + localized message; no upstream text | trigger a sync failure in the UI | TODO |
 | WP-5 | phpstan at target level | baseline line count recorded below | — | TODO |
