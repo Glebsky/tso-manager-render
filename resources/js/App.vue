@@ -317,12 +317,13 @@ export default {
         };
 
         onMounted(async () => {
-            if (isAuthenticated.value) {
+            if (isAuthenticated.value && route.path.startsWith('/admin')) {
                 await syncServerTime();
             }
             updateClocks();
             timer = setInterval(updateClocks, 1000);
         });
+
 
         onUnmounted(() => {
             if (timer) clearInterval(timer);

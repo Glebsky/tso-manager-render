@@ -20,13 +20,14 @@ window.axios.defaults.withCredentials = true;
 window.axios.interceptors.response.use(
     response => response,
     error => {
-        if (error.response?.status === 401 && window.location.pathname !== '/login' && window.location.pathname !== '/register') {
-            window.location.assign('/login');
+        if (error.response?.status === 401 && !window.location.pathname.startsWith('/admin/login') && !window.location.pathname.startsWith('/admin/register')) {
+            window.location.assign('/admin/login');
         }
 
         return Promise.reject(error);
     }
 );
+
 
 /**
  * Echo exposes an expressive API for subscribing to channels and listening

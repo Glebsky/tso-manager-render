@@ -94,10 +94,12 @@ class TaskSchedulerEngine
             if ($intervalTotalMinutes > 0) {
                 $baseline = $task->last_run_at ?? $task->created_at;
                 if ($baseline) {
-                    return $now->diffInMinutes($baseline) >= $intervalTotalMinutes;
+                    return $now->diffInMinutes($baseline, false) >= $intervalTotalMinutes
+                        || $baseline->diffInMinutes($now, false) >= $intervalTotalMinutes;
                 }
             }
         }
+
 
         return false;
     }
@@ -190,11 +192,12 @@ class TaskSchedulerEngine
 
         foreach ($accounts as $account) {
             if ($account->last_sync_at) {
-                $elapsedMinutes = $now->diffInMinutes($account->last_sync_at);
-                if ($elapsedMinutes < $syncInterval) {
+                $elapsedMinutes = (int) $now->diffInMinutes($account->last_sync_at, false);
+                if (abs($elapsedMinutes) < $syncInterval) {
                     continue;
                 }
             }
+
 
             $lockKey = "account_sync_lock:{$account->id}";
             $acquired = $this->cache->add($lockKey, true, 300);
@@ -214,13 +217,12 @@ class TaskSchedulerEngine
                     $this->cache->forget($lockKey);
                 }
             } else {
-                DB::afterCommit(function () use ($account) {
-                    AccountSyncJob::dispatch($account);
-                });
+                AccountSyncJob::dispatch($account);
             }
         }
 
         return $count;
+
     }
 
     /**
