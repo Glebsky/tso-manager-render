@@ -78,16 +78,17 @@ Rules:
 - Prefer direct, existing abstractions. Add an interface only at a real replaceable boundary or when tests require it.
 - No repository wrapper over Eloquent without demonstrated value.
 
-## 6. Account Isolation & Authorization
+## 6. Single-Operator Invariant & Account Scope (ADR-001)
 
-- Every account-specific operation receives or resolves an explicit account.
-- Every protected account/task/market mutation verifies ownership or authorized scope server-side.
-- Route-model binding is not authorization.
+- The application is single-operator by design. Application user registration is restricted to the initial operator.
+- "Account isolation" refers to game accounts, not application users.
+- Every protected mutation runs as the single authenticated operator, and every account-scoped operation receives or resolves an explicit game account.
 - Never trust account, user, server, price, resource, or task identifiers from the client.
 - Queue payloads carry stable IDs, not authenticated user/session objects.
 - Cache, lock, throttle, session, and idempotency keys include the relevant account/server identity.
-- One account's failure, lock, or rate limit must not block or expose another account.
-- Public market endpoints expose only fields explicitly serialized for public use.
+- One game account's failure, lock, or rate limit must not block or expose another account.
+- Public market endpoints remain unauthenticated and expose only fields explicitly serialized for public use (`PublicServerResource` / `MarketOfferResource`).
+
 
 ## 7. Game Protocol & External I/O
 

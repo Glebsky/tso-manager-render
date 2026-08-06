@@ -182,7 +182,14 @@ This uses `docker-compose.prod.yml` override which:
 
 **Fresh database**: Run `make fresh` to destroy volumes and rebuild everything.
 
+### Single-Operator Model (ADR-001)
+
+The application is **single-operator by design**. First-time registration creates the initial administrator user; subsequent registration requests are blocked server-side at the database transaction layer. All administration endpoints run under this single operator principal.
+
+> **Reversal / Migration Path:** If multi-operator support is required in the future, the migration path is documented in `docs/spec/architecture-hardening/decisions.md` (ADR-001): one additive database migration adding `user_id` columns, defining `scopeOwnedBy()`, and registering 3 Eloquent policies.
+
 ## Архитектура системы
+
 
 Полная визуализированная схема зависимостей фронтенда, контроллеров, сервисов, фоновых Python-парсеров и внешних API Ubisoft/TSO доступна на Foglamp:
 👉 **[Посмотреть Codebase Scan на Foglamp](https://www.foglamp.dev/scan/tso-manager-admin-fs2rdm)**

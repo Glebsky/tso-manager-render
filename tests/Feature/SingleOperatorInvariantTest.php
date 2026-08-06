@@ -80,7 +80,7 @@ class SingleOperatorInvariantTest extends TestCase
         // Attempting another registration when user already exists inside transaction
         $this->expectException(\Illuminate\Validation\ValidationException::class);
 
-        $controller = new \App\Http\Controllers\AuthController();
+        $controller = new \App\Http\Controllers\AuthController;
         $request = \Illuminate\Http\Request::create('/admin/register', 'POST', [
             'name' => 'Concurrent User',
             'email' => 'concurrent@example.com',
