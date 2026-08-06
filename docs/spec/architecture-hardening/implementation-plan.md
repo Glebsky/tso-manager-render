@@ -23,7 +23,7 @@ mixes a behavior change with a mass reformat.
 | 2 | WP-11 | Delete unreachable Blade UI + repo hygiene | P3 | FR-5.1, FR-5.2 | S | DONE |
 | 3 | WP-2' | Assert the single-operator invariant | P0 | ADR-001 | S | DONE |
 | 4 | WP-U1 | PHP 8.1 → 8.3 (Laravel 10 unchanged) | P0 | ADR-002 | M | DONE |
-| 5 | WP-U2 | Laravel 10 → 11 (skeleton restructure, Sanctum 4) | P0 | ADR-002 | L |
+| 5 | WP-U2 | Laravel 10 → 11 (skeleton restructure, Sanctum 4) | P0 | ADR-002 | L | DONE |
 | 6 | WP-U3 | Laravel 11 → latest + PHP 8.4 | P0 | ADR-002 | M |
 | 7 | WP-5 | larastan + PHPStan level 6 over the whole app | P1 | ADR-004 | M |
 | 8 | WP-4 | Central safe error contract | P0 | FR-1.4, FR-2.5 | M |
