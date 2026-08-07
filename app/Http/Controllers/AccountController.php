@@ -48,8 +48,8 @@ final class AccountController extends Controller
     public function zone(Account $account): JsonResponse
     {
         $raw = $account->zone_data;
-        $zoneData = $raw
-            ? (is_array($raw) ? $raw : json_decode($raw, true))
+        $zoneData = is_string($raw)
+            ? (json_decode($raw, true) ?? ['buildings' => [], 'specialists' => [], 'buffs' => []])
             : ['buildings' => [], 'specialists' => [], 'buffs' => []];
 
         return response()->json([
@@ -113,7 +113,7 @@ final class AccountController extends Controller
         ]);
     }
 
-    public function friendZone(Account $account, mixed $friendId): JsonResponse
+    public function friendZone(Account $account, int|string $friendId): JsonResponse
     {
         $res = $this->accountService->getFriendZone($account, (int) $friendId);
 

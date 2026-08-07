@@ -9,6 +9,7 @@ use App\Exceptions\TaskAccountNotFoundException;
 use App\Exceptions\TaskExecutionException;
 use App\Exceptions\TaskInactiveException;
 use App\Exceptions\TokenMismatchException;
+use App\Models\Account;
 use App\Models\BotLog;
 use App\Models\ScheduledTask;
 use App\Services\Tasks\TaskHandlerRegistry;
@@ -52,6 +53,7 @@ class TaskExecutionService
         if (! $account) {
             throw new TaskAccountNotFoundException($task->id);
         }
+        assert($account instanceof Account);
 
         $task->update([
             'status' => 'running',
@@ -81,7 +83,7 @@ class TaskExecutionService
      *
      * @param  array<string, mixed>  $payload
      */
-    private function executeSequenceTask(ScheduledTask $task, mixed $account, array $payload): string
+    private function executeSequenceTask(ScheduledTask $task, Account $account, array $payload): string
     {
         $actions = $payload['actions'] ?? [];
         $resultsSummary = [];
@@ -189,7 +191,7 @@ class TaskExecutionService
      *
      * @param  array<string, mixed>  $payload
      */
-    private function executeSingleTask(ScheduledTask $task, mixed $account, array $payload): string
+    private function executeSingleTask(ScheduledTask $task, Account $account, array $payload): string
     {
         try {
             $result = $this->executeSingleActionWithRetry($account, $task->task_type, $payload);
@@ -335,6 +337,7 @@ class TaskExecutionService
         if (! $account) {
             throw new TaskAccountNotFoundException($task->id);
         }
+        assert($account instanceof Account);
 
         $payload = $task->payload ?? [];
         $actions = $payload['actions'] ?? [];
@@ -413,6 +416,8 @@ class TaskExecutionService
     }
 
     /**
+     * @param  array<string, mixed>  $payload
+     * @param  array<int|string, mixed>  $stepResults
      * @return array{finished: bool, nextDelay: int}
      */
     private function finalizeSequence(ScheduledTask $task, int $accountId, array $payload, array $stepResults): array
@@ -496,7 +501,7 @@ class TaskExecutionService
      *
      * @param  array<string, mixed>  $payload
      */
-    public function executeSingleActionWithRetry(mixed $account, string $taskType, array $payload, int $maxAttempts = 2): string
+    public function executeSingleActionWithRetry(Account $account, string $taskType, array $payload, int $maxAttempts = 2): string
     {
         for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
             try {
@@ -524,7 +529,7 @@ class TaskExecutionService
      *
      * @param  array<string, mixed>  $payload
      */
-    public function executeSingleAction(mixed $account, string $taskType, array $payload): string
+    public function executeSingleAction(Account $account, string $taskType, array $payload): string
     {
         $handler = $this->handlerRegistry->getHandler($taskType);
         $result = $handler->handle($account, $payload);

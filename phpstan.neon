@@ -1,8 +1,11 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - phpstan-baseline.neon
+
 parameters:
-    level: 0
+    level: 6
     paths:
-        - app/Services/MarketCacheService.php
-        - app/Http/Middleware/HttpCacheHeaders.php
-        - app/Models/Setting.php
-    ignoreErrors:
-        - '#Call to an undefined static method App\\Models\\[a-zA-Z0-9_]+::[a-zA-Z0-9_]+\(\)#'
+        - app
+        - database
+        - routes
+        - tests

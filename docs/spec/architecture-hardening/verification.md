@@ -90,7 +90,7 @@ These behaviors are already marked done in `docs/foundbugs.md` and must not regr
 
 | Date | Level | Paths | Baseline lines | Note |
 | :--- | :--- | :--- | :--- | :--- |
-| _pending_ | 5 | app, database, routes | _record_ | initial baseline after widening scope |
+| 2026-08-07 | 6 | app, database, routes, tests | 776 lines (144 errors baseline) | initial baseline with larastan 3.10 and level 6 |
 
 The baseline must shrink or stay flat in every subsequent package; it may never grow.
 
