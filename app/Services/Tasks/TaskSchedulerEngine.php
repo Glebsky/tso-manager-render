@@ -100,7 +100,6 @@ class TaskSchedulerEngine
             }
         }
 
-
         return false;
     }
 
@@ -197,7 +196,6 @@ class TaskSchedulerEngine
                     continue;
                 }
             }
-
 
             $lockKey = "account_sync_lock:{$account->id}";
             $acquired = $this->cache->add($lockKey, true, 300);

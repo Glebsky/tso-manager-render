@@ -6,6 +6,7 @@ namespace App\Services\Market;
 
 use App\Models\MarketHistory;
 use App\Services\Market\Support\MarketPeriod;
+use App\Services\Market\Support\TimeBucket\TimeBucketExpression;
 use App\Services\Market\Support\TimeBucket\TimeBucketExpressionFactory;
 use App\Services\Market\Support\TimeGranularity;
 use Carbon\Carbon;
@@ -20,7 +21,7 @@ use Illuminate\Support\Collection;
  * Consolidates logic that was duplicated between `getAnalytics()` and
  * `getBulk()`: price statistics, period totals, the time-bucketed series and
  * the "latest price per pair" lookup. Driver specific SQL is delegated to a
- * {@see \App\Services\Market\Support\TimeBucket\TimeBucketExpression} strategy.
+ * {@see TimeBucketExpression} strategy.
  */
 final class MarketHistoryAggregator
 {

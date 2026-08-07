@@ -17,6 +17,9 @@ Output: JSON to stdout with keys: buildings, specialists, buffs, resources,
 import sys
 import json
 import re
+import warnings
+
+warnings.filterwarnings("ignore")
 
 try:
     import pyamf

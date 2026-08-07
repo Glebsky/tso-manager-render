@@ -52,12 +52,12 @@ class MarketOfferFetcher
 
                 try {
                     $pythonBin = $this->findPython();
-                    $command = escapeshellarg($pythonBin).' '.escapeshellarg($scriptPath).' '.escapeshellarg($tmpFile);
+                    $command = escapeshellarg($pythonBin).' -W ignore '.escapeshellarg($scriptPath).' '.escapeshellarg($tmpFile);
                     $output = [];
                     $exitCode = 0;
 
                     exec($command.' 2>&1', $output, $exitCode);
-                    $outputStr = implode("\n", $output);
+                    $outputStr = trim(implode("\n", $output));
 
                     if ($exitCode !== 0) {
                         throw new Exception("parse_market.py failed: {$outputStr}");
@@ -65,7 +65,31 @@ class MarketOfferFetcher
 
                     $parsed = json_decode($outputStr, true);
                     if (json_last_error() !== JSON_ERROR_NONE) {
-                        throw new Exception('Failed to decode JSON from parser: '.json_last_error_msg());
+                        $firstBrace = strpos($outputStr, '{');
+                        $firstBracket = strpos($outputStr, '[');
+                        $start = false;
+                        if ($firstBrace !== false && $firstBracket !== false) {
+                            $start = min($firstBrace, $firstBracket);
+                        } elseif ($firstBrace !== false) {
+                            $start = $firstBrace;
+                        } elseif ($firstBracket !== false) {
+                            $start = $firstBracket;
+                        }
+
+                        if ($start !== false) {
+                            $lastBrace = strrpos($outputStr, '}');
+                            $lastBracket = strrpos($outputStr, ']');
+                            $end = max($lastBrace !== false ? $lastBrace : -1, $lastBracket !== false ? $lastBracket : -1);
+
+                            if ($end > $start) {
+                                $jsonSub = substr($outputStr, $start, $end - $start + 1);
+                                $parsed = json_decode($jsonSub, true);
+                            }
+                        }
+                    }
+
+                    if (! is_array($parsed)) {
+                        throw new Exception('Failed to decode JSON from parser: '.json_last_error_msg().'. Raw output: '.substr($outputStr, 0, 500));
                     }
                 } finally {
                     @unlink($tmpFile);

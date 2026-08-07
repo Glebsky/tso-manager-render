@@ -64,7 +64,7 @@ class MarketAnalyticsTest extends TestCase
     {
         // 1. Seed some active and closed offers
         // Active offer
-        \App\Models\MarketOffer::create([
+        MarketOffer::create([
             'offer_id' => 101,
             'player_id' => 1,
             'sender_name' => 'Seller1',
@@ -82,7 +82,7 @@ class MarketAnalyticsTest extends TestCase
         ]);
 
         // Historical offer (already closed/inactive, i.e. NOT in MarketOffer)
-        \App\Models\MarketHistory::create([
+        MarketHistory::create([
             'offer_id' => 102,
             'player_id' => 2,
             'item_id' => 'Oil',
@@ -97,7 +97,7 @@ class MarketAnalyticsTest extends TestCase
         ]);
 
         // Add active to history as well (normally done during sync)
-        \App\Models\MarketHistory::create([
+        MarketHistory::create([
             'offer_id' => 101,
             'player_id' => 1,
             'item_id' => 'Oil',

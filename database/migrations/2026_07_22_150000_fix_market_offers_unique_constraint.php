@@ -18,7 +18,7 @@ return new class extends Migration
                 Schema::table('market_offers', function (Blueprint $table) {
                     $table->dropUnique(['offer_id']);
                 });
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 // Index might already be dropped or named differently
             }
 
@@ -26,7 +26,7 @@ return new class extends Migration
                 Schema::table('market_offers', function (Blueprint $table) {
                     $table->unique(['server_id', 'offer_id']);
                 });
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 // Index might already exist
             }
         }
@@ -42,7 +42,7 @@ return new class extends Migration
                 Schema::table('market_offers', function (Blueprint $table) {
                     $table->dropUnique(['server_id', 'offer_id']);
                 });
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 // Ignore
             }
 
@@ -50,7 +50,7 @@ return new class extends Migration
                 Schema::table('market_offers', function (Blueprint $table) {
                     $table->unique(['offer_id']);
                 });
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 // Ignore
             }
         }

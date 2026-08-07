@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use Illuminate\Support\Facades\File;
 use Tests\TestCase;
 
 class LangImportCommandTest extends TestCase
@@ -19,7 +20,7 @@ class LangImportCommandTest extends TestCase
 
     protected function tearDown(): void
     {
-        \Illuminate\Support\Facades\File::deleteDirectory($this->dir);
+        File::deleteDirectory($this->dir);
         parent::tearDown();
     }
 

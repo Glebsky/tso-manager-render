@@ -30,13 +30,13 @@ class ZoneAmfExecutor
 
         try {
             $pythonBin = $this->findPython();
-            $command = escapeshellarg($pythonBin).' '.escapeshellarg($scriptPath).' '.escapeshellarg($tmpFile);
+            $command = escapeshellarg($pythonBin).' -W ignore '.escapeshellarg($scriptPath).' '.escapeshellarg($tmpFile);
             $output = [];
             $exitCode = 0;
 
             exec($command.' 2>&1', $output, $exitCode);
 
-            $outputStr = implode("\n", $output);
+            $outputStr = trim(implode("\n", $output));
 
             if ($exitCode !== 0) {
                 throw new Exception("parse_zone.py failed (exit {$exitCode}): {$outputStr}");
@@ -44,10 +44,34 @@ class ZoneAmfExecutor
 
             $result = json_decode($outputStr, true);
             if (json_last_error() !== JSON_ERROR_NONE) {
+                $firstBrace = strpos($outputStr, '{');
+                $firstBracket = strpos($outputStr, '[');
+                $start = false;
+                if ($firstBrace !== false && $firstBracket !== false) {
+                    $start = min($firstBrace, $firstBracket);
+                } elseif ($firstBrace !== false) {
+                    $start = $firstBrace;
+                } elseif ($firstBracket !== false) {
+                    $start = $firstBracket;
+                }
+
+                if ($start !== false) {
+                    $lastBrace = strrpos($outputStr, '}');
+                    $lastBracket = strrpos($outputStr, ']');
+                    $end = max($lastBrace !== false ? $lastBrace : -1, $lastBracket !== false ? $lastBracket : -1);
+
+                    if ($end > $start) {
+                        $jsonSub = substr($outputStr, $start, $end - $start + 1);
+                        $result = json_decode($jsonSub, true);
+                    }
+                }
+            }
+
+            if (! is_array($result)) {
                 throw new Exception('Failed to parse zone JSON: '.json_last_error_msg().'. Raw output: '.substr($outputStr, 0, 500));
             }
 
-            return is_array($result) ? $result : [];
+            return $result;
         } finally {
             @unlink($tmpFile);
         }

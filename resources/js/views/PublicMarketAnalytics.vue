@@ -787,6 +787,11 @@ export default {
             try {
                 const data = await cachedGet('/api/public/market/servers', { ttlMs: 300000 });
                 servers.value = data.data || data || [];
+
+                const strategy = data.settings?.cache_strategy || data.cache_strategy;
+                if (strategy) {
+                    cacheStrategy.value = setMarketCacheStrategy(strategy);
+                }
                 if (servers.value.length > 0) {
                     const exists = servers.value.some(s => s.server_id === selectedServerId.value);
                     if (!exists) {

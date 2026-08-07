@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Account;
 use App\Models\ScheduledTask;
+use App\Services\TaskExecutionService;
 use App\Services\TsoAmfService;
 use App\Services\TsoAuthService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -292,7 +293,7 @@ class ScheduledTaskTest extends TestCase
             ->with(Mockery::any(), 102)
             ->andReturn('start_ok');
 
-        $service = $this->app->make(\App\Services\TaskExecutionService::class);
+        $service = $this->app->make(TaskExecutionService::class);
         $service->execute($task);
 
         $task->refresh();

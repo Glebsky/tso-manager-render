@@ -2,7 +2,9 @@
 
 namespace Tests;
 
+use App\Models\User;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Illuminate\Support\Facades\Schema;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -14,8 +16,8 @@ abstract class TestCase extends BaseTestCase
 
         if (str_contains(get_class($this), 'Tests\\Feature')) {
             try {
-                if (\Illuminate\Support\Facades\Schema::hasTable('users')) {
-                    $user = \App\Models\User::factory()->create();
+                if (Schema::hasTable('users')) {
+                    $user = User::factory()->create();
                     $this->actingAs($user);
                 }
             } catch (\Throwable $e) {

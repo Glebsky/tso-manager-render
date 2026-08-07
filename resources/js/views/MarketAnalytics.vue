@@ -1256,6 +1256,11 @@ export default {
                 presets.value = res.data.presets || [];
                 settingsForm.value = res.data.settings || { sync_interval: '15', custom_interval_minutes: 15 };
 
+                const strategy = res.data.settings?.cache_strategy || res.data.cache_strategy;
+                if (strategy) {
+                    cacheStrategy.value = setMarketCacheStrategy(strategy);
+                }
+
                 if (servers.value.length > 0) {
                     const exists = servers.value.some(s => s.server_id === selectedServerId.value);
                     if (!exists) {

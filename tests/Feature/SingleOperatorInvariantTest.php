@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Http\Controllers\AuthController;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 class SingleOperatorInvariantTest extends TestCase
@@ -78,10 +81,10 @@ class SingleOperatorInvariantTest extends TestCase
         ]);
 
         // Attempting another registration when user already exists inside transaction
-        $this->expectException(\Illuminate\Validation\ValidationException::class);
+        $this->expectException(ValidationException::class);
 
-        $controller = new \App\Http\Controllers\AuthController;
-        $request = \Illuminate\Http\Request::create('/admin/register', 'POST', [
+        $controller = new AuthController;
+        $request = Request::create('/admin/register', 'POST', [
             'name' => 'Concurrent User',
             'email' => 'concurrent@example.com',
             'password' => 'password123',

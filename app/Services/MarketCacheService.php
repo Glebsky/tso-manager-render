@@ -37,6 +37,14 @@ class MarketCacheService
     public function resolveServerId(?string $serverId = null): string
     {
         if (! empty($serverId)) {
+            $connectionServerId = MarketServerConnection::where('server_id', $serverId)
+                ->orWhere('server_id', 'LIKE', "{$serverId}\\_%")
+                ->value('server_id');
+
+            if ($connectionServerId) {
+                return $connectionServerId;
+            }
+
             return $serverId;
         }
 
@@ -67,7 +75,13 @@ class MarketCacheService
                     return (int) MarketServerConnection::sum('data_version');
                 }
 
-                $version = MarketServerConnection::where('server_id', $serverId)->value('data_version');
+                $region = explode('_', $serverId)[0];
+                $version = MarketServerConnection::where(static function ($q) use ($serverId, $region): void {
+                    $q->where('server_id', $serverId)
+                        ->orWhere('server_id', $region)
+                        ->orWhere('server_id', 'LIKE', "{$region}\\_%");
+                })->value('data_version');
+
                 if ($version !== null) {
                     return (int) $version;
                 }
@@ -92,7 +106,12 @@ class MarketCacheService
     public function bumpDataVersion(string $serverId): int
     {
         if ($serverId !== self::GLOBAL_SERVER) {
-            $updated = MarketServerConnection::where('server_id', $serverId)->increment('data_version');
+            $region = explode('_', $serverId)[0];
+            $updated = MarketServerConnection::where(static function ($q) use ($serverId, $region): void {
+                $q->where('server_id', $serverId)
+                    ->orWhere('server_id', $region)
+                    ->orWhere('server_id', 'LIKE', "{$region}\\_%");
+            })->increment('data_version');
 
             if ($updated === 0) {
                 $key = $this->fallbackVersionSettingKey($serverId);
@@ -104,6 +123,9 @@ class MarketCacheService
         // very next request on this machine.
         Cache::forget($this->versionMicroCacheKey($serverId));
         Cache::forget($this->versionMicroCacheKey(self::GLOBAL_SERVER));
+        if (str_contains($serverId, '_')) {
+            Cache::forget($this->versionMicroCacheKey(explode('_', $serverId)[0]));
+        }
 
         return $this->dataVersion($serverId);
     }

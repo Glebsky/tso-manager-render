@@ -41,10 +41,10 @@ Route::prefix('admin')->group(function () {
     });
 
     Route::post('/logout', [AuthController::class, 'logout'])
-        ->middleware('auth')
+        ->middleware('auth:sanctum')
         ->name('logout');
 
-    Route::middleware('auth')->get('/{any?}', function () {
+    Route::middleware('auth:sanctum')->get('/{any?}', function () {
         return view('app');
     })->where('any', '.*');
 });

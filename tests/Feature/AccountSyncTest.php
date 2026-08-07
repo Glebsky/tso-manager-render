@@ -61,7 +61,6 @@ class AccountSyncTest extends TestCase
         });
     }
 
-
     public function test_scheduler_skips_account_sync_when_not_due()
     {
         Queue::fake();

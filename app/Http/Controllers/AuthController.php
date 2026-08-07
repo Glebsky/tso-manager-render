@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response;
 
 class AuthController extends Controller
 {
@@ -41,7 +42,7 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended('/admin');
+        return redirect('/admin');
     }
 
     public function showRegistration(): View|RedirectResponse
@@ -55,7 +56,7 @@ class AuthController extends Controller
         return view('app');
     }
 
-    public function register(Request $request): \Symfony\Component\HttpFoundation\Response
+    public function register(Request $request): Response
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],

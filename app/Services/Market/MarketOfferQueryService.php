@@ -40,7 +40,7 @@ final class MarketOfferQueryService
         $since = $this->activeSince();
 
         return MarketOffer::query()
-            ->where('server_id', $serverId)
+            ->tap(fn ($q) => $this->applyServerFilter($q, $serverId))
             ->where(static function ($query) use ($since): void {
                 $query->where('created_at', '>=', $since)
                     ->orWhere('collected_at', '>=', $since);
@@ -57,7 +57,7 @@ final class MarketOfferQueryService
         $since = $this->activeSince();
 
         return MarketOffer::query()
-            ->where('server_id', $serverId)
+            ->tap(fn ($q) => $this->applyServerFilter($q, $serverId))
             ->where('item_id', $itemId)
             ->where('target_item_id', $targetItemId)
             ->where(static function ($query) use ($since): void {
@@ -90,7 +90,7 @@ final class MarketOfferQueryService
         $since = $this->activeSince();
 
         return MarketOffer::query()
-            ->where('server_id', $serverId)
+            ->tap(fn ($q) => $this->applyServerFilter($q, $serverId))
             ->where(static function ($query) use ($since): void {
                 $query->where('created_at', '>=', $since)
                     ->orWhere('collected_at', '>=', $since);
@@ -99,5 +99,15 @@ final class MarketOfferQueryService
             ->groupBy('item_id', 'target_item_id')
             ->get()
             ->toBase();
+    }
+
+    private function applyServerFilter(object $query, string $serverId): void
+    {
+        $region = explode('_', $serverId)[0];
+        $query->where(static function ($q) use ($serverId, $region): void {
+            $q->where('server_id', $serverId)
+                ->orWhere('server_id', $region)
+                ->orWhere('server_id', 'LIKE', "{$region}\\_%");
+        });
     }
 }

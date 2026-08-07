@@ -4,6 +4,7 @@ use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Middleware\SetCacheHeaders;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -20,11 +21,17 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->statefulApi();
 
         $middleware->alias([
-            'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
+            'cache.headers' => SetCacheHeaders::class,
         ]);
 
         $middleware->trustProxies(at: '*');
+
+        $middleware->redirectTo(
+            guests: '/admin/login',
+            users: '/admin'
+        );
     })
+
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();

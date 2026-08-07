@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Http\Controllers\LangController;
+use App\Services\LangParserService;
 use Tests\TestCase;
 
 class LegacyLangRemovalTest extends TestCase
@@ -16,8 +18,8 @@ class LegacyLangRemovalTest extends TestCase
 
     public function test_legacy_classes_are_removed(): void
     {
-        $this->assertFalse(class_exists(\App\Http\Controllers\LangController::class));
-        $this->assertFalse(class_exists(\App\Services\LangParserService::class));
+        $this->assertFalse(class_exists(LangController::class));
+        $this->assertFalse(class_exists(LangParserService::class));
     }
 
     public function test_default_locale_is_english(): void

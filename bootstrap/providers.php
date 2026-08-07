@@ -1,11 +1,19 @@
 <?php
 
+use App\Providers\AppServiceProvider;
+use App\Providers\AuthServiceProvider;
+use App\Providers\EventServiceProvider;
+use App\Providers\MarketServiceProvider;
+use App\Providers\RouteServiceProvider;
+use App\Providers\TaskServiceProvider;
+use App\Providers\TsoServiceProvider;
+
 return [
-    App\Providers\AppServiceProvider::class,
-    App\Providers\AuthServiceProvider::class,
-    App\Providers\EventServiceProvider::class,
-    App\Providers\MarketServiceProvider::class,
-    App\Providers\RouteServiceProvider::class,
-    App\Providers\TaskServiceProvider::class,
-    App\Providers\TsoServiceProvider::class,
+    AppServiceProvider::class,
+    AuthServiceProvider::class,
+    EventServiceProvider::class,
+    MarketServiceProvider::class,
+    RouteServiceProvider::class,
+    TaskServiceProvider::class,
+    TsoServiceProvider::class,
 ];

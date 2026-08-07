@@ -8,6 +8,9 @@ Usage: python parse_market.py <amf_file>
 
 import sys
 import json
+import warnings
+
+warnings.filterwarnings("ignore")
 
 try:
     import pyamf

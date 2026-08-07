@@ -28,3 +28,4 @@ yarn-error.log
 /docker/nginx/certs/*.crt
 docker/nginx/certs/
 
+/.osp/

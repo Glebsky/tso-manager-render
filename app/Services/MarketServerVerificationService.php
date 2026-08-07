@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Models\Account;
 use App\Models\MarketServerConnection;
+use Illuminate\Support\Str;
 
 class MarketServerVerificationService
 {
@@ -45,7 +46,7 @@ class MarketServerVerificationService
         $serverId = $region;
 
         if (! empty($gameWorld)) {
-            $worldSlug = \Illuminate\Support\Str::slug($gameWorld, '_');
+            $worldSlug = Str::slug($gameWorld, '_');
             if (empty($worldSlug)) {
                 $worldSlug = strtolower((string) preg_replace('/[^a-zA-Z0-9_]+/', '', $gameWorld));
             }

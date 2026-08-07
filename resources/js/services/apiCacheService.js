@@ -15,19 +15,25 @@ export function getMarketCacheStrategy() {
             return window.__MARKET_CACHE_STRATEGY__ === 'individual' ? 'individual' : 'bulk';
         }
         const stored = localStorage.getItem(CACHE_STRATEGY_KEY);
-        return stored === 'individual' ? 'individual' : 'bulk';
+        if (stored) {
+            return stored === 'individual' ? 'individual' : 'bulk';
+        }
+        return 'individual';
     } catch {
-        return 'bulk';
+        return 'individual';
     }
 }
 
 export function setMarketCacheStrategy(strategy) {
     try {
         const validStrategy = strategy === 'individual' ? 'individual' : 'bulk';
+        if (typeof window !== 'undefined') {
+            window.__MARKET_CACHE_STRATEGY__ = validStrategy;
+        }
         localStorage.setItem(CACHE_STRATEGY_KEY, validStrategy);
         return validStrategy;
     } catch {
-        return 'bulk';
+        return 'individual';
     }
 }
 
@@ -70,10 +76,17 @@ function setLastVersionCheckAt(serverId, timestamp) {
 function purgeServerEntries(serverId) {
     try {
         const marker = `"server_id":"${serverId}"`;
+        const bulkMarker = `${BULK_PREFIX}${serverId}:`;
         const keysToRemove = [];
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
-            if (key && key.startsWith(CACHE_PREFIX) && key.includes(marker)) {
+            if (
+                key &&
+                (
+                    (key.startsWith(CACHE_PREFIX) && key.includes(marker)) ||
+                    key.startsWith(bulkMarker)
+                )
+            ) {
                 keysToRemove.push(key);
             }
         }

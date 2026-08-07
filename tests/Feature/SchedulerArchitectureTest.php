@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Jobs\ExecuteScheduledTaskJob;
 use App\Jobs\MarketSyncJob;
 use App\Models\Account;
+use App\Models\MarketServerConnection;
 use App\Models\ScheduledTask;
 use App\Models\Setting;
 use App\Services\TaskExecutionService;
@@ -194,7 +195,7 @@ class SchedulerArchitectureTest extends TestCase
             'nickname' => 'market_user',
         ]);
 
-        \App\Models\MarketServerConnection::create([
+        MarketServerConnection::create([
             'server_id' => 'ru_test',
             'locale' => 'RU',
             'display_name' => 'RU Market',
