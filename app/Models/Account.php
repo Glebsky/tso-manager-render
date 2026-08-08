@@ -86,7 +86,7 @@ class Account extends Model
         }
     }
 
-    public function getPasswordAttribute($value)
+    public function getPasswordAttribute($value): ?string
     {
         if (empty($value)) {
             return '';
@@ -102,7 +102,7 @@ class Account extends Model
         }
     }
 
-    public function setPasswordAttribute($value)
+    public function setPasswordAttribute($value): void
     {
         $this->attributes['password'] = encrypt($value);
     }
