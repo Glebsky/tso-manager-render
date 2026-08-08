@@ -11,6 +11,6 @@ class GameServerErrorException extends TaskExecutionException
         parent::__construct('error.server_error', [
             'errorCode' => $errorCode,
             'errorMsg' => $errorMsg,
-        ]);
+        ], 502);
     }
 }

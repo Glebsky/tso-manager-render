@@ -11,6 +11,6 @@ class FriendBuildingNotFoundException extends TaskExecutionException
         parent::__construct('error.friend_building_not_found', [
             'grid' => $grid,
             'friendName' => $friendName,
-        ]);
+        ], 404);
     }
 }

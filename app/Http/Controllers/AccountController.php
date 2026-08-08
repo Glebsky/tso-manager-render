@@ -11,7 +11,6 @@ use App\Http\Resources\AccountResource;
 use App\Models\Account;
 use App\Services\AccountService;
 use App\Services\AccountSyncService;
-use Exception;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -70,25 +69,15 @@ final class AccountController extends Controller
 
     public function sync(Account $account): JsonResponse
     {
-        try {
-            $zoneData = $this->syncService->sync($account);
-            $freshAccount = $account->fresh();
+        $zoneData = $this->syncService->sync($account);
+        $freshAccount = $account->fresh();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Zone synced successfully.',
-                'account' => $freshAccount !== null ? (new AccountResource($freshAccount))->withZoneData() : null,
-                'zone_data' => $zoneData,
-            ]);
-        } catch (Exception $e) {
-            $freshAccount = $account->fresh();
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Sync failed: '.$e->getMessage(),
-                'account' => $freshAccount !== null ? (new AccountResource($freshAccount))->withZoneData() : null,
-            ], 500);
-        }
+        return response()->json([
+            'success' => true,
+            'message' => 'Zone synced successfully.',
+            'account' => $freshAccount !== null ? (new AccountResource($freshAccount))->withZoneData() : null,
+            'zone_data' => $zoneData,
+        ]);
     }
 
     public function action(ExecuteAccountActionRequest $request, Account $account): JsonResponse

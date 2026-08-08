@@ -12,6 +12,6 @@ class TokenMismatchException extends TaskExecutionException
             'id' => $taskId,
             'expected' => $expectedToken,
             'found' => (string) $foundToken,
-        ]);
+        ], 409);
     }
 }

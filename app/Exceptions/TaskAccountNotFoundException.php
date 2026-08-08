@@ -8,6 +8,6 @@ class TaskAccountNotFoundException extends TaskExecutionException
 {
     public function __construct(int $taskId)
     {
-        parent::__construct('error.account_not_found', ['id' => $taskId]);
+        parent::__construct('error.account_not_found', ['id' => $taskId], 404);
     }
 }

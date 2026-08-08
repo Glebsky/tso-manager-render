@@ -13,6 +13,6 @@ class PickupsUnavailableException extends TaskExecutionException
 {
     public function __construct()
     {
-        parent::__construct('error.pickups_unavailable');
+        parent::__construct('error.pickups_unavailable', [], 422);
     }
 }

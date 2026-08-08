@@ -11,6 +11,6 @@ class FriendZoneLoadException extends TaskExecutionException
         parent::__construct('error.friend_zone_failed', [
             'err' => $err,
             'errMsg' => $errMsg,
-        ]);
+        ], 502);
     }
 }

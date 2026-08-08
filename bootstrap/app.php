@@ -1,10 +1,18 @@
 <?php
 
+use App\Exceptions\Contracts\HasApiPresentation;
 use App\Http\Middleware\SetLocale;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\SetCacheHeaders;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Throwable;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -33,5 +41,52 @@ return Application::configure(basePath: dirname(__DIR__))
     })
 
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $exceptions->render(function (HasApiPresentation $e, Request $request) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json([
+                    'message' => $e->userMessage(),
+                    'code' => $e->getCode() !== 0 ? $e->getCode() : $e->httpStatus(),
+                ], $e->httpStatus());
+            }
+
+            return null;
+        });
+
+        $exceptions->render(function (Throwable $e, Request $request) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                if ($e instanceof ValidationException
+                    || $e instanceof HttpExceptionInterface
+                    || $e instanceof AuthenticationException
+                    || $e instanceof AuthorizationException) {
+                    return null;
+                }
+
+                $sensitiveKeys = ['password', 'dso_auth_password', 'dso_auth_token', 'auth_token', 'token', 'secret', 'current_password', 'password_confirmation'];
+                $redact = function (array $arr) use (&$redact, $sensitiveKeys): array {
+                    foreach ($arr as $key => $val) {
+                        if (in_array(strtolower((string) $key), $sensitiveKeys, true)) {
+                            $arr[$key] = '***REDACTED***';
+                        } elseif (is_array($val)) {
+                            $arr[$key] = $redact($val);
+                        }
+                    }
+
+                    return $arr;
+                };
+
+                Log::error($e->getMessage(), [
+                    'exception' => get_class($e),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'request' => $redact($request->all()),
+                ]);
+
+                return response()->json([
+                    'message' => __('Server error occurred. Please try again later.'),
+                    'code' => 500,
+                ], 500);
+            }
+
+            return null;
+        });
     })->create();
