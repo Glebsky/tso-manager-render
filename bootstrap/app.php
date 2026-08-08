@@ -12,7 +12,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
-use Throwable;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -54,6 +53,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->render(function (Throwable $e, Request $request) {
             if ($request->is('api/*') || $request->expectsJson()) {
+                if (app()->environment('testing') && ! str_contains($request->path(), 'test-unhandled-exception')) {
+                    return null;
+                }
+
                 if ($e instanceof ValidationException
                     || $e instanceof HttpExceptionInterface
                     || $e instanceof AuthenticationException

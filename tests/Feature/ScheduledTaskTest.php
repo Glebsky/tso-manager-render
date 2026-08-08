@@ -26,10 +26,13 @@ class ScheduledTaskTest extends TestCase
 
         $this->authMock = Mockery::mock(TsoAuthService::class);
         $this->amfMock = Mockery::mock(TsoAmfService::class);
+        $parserMock = Mockery::mock(ZoneParserService::class);
 
         $this->app->instance(TsoAuthService::class, $this->authMock);
         $this->app->instance(TsoAmfService::class, $this->amfMock);
+        $this->app->instance(ZoneParserService::class, $parserMock);
     }
+
 
     public function test_can_schedule_sequence_task()
     {

@@ -69,8 +69,8 @@ class DomainExceptionHandlingTest extends TestCase
 
         $response->assertStatus(422)
             ->assertJson([
+                'success' => false,
                 'message' => 'Market offer invalid',
-                'code' => 422,
             ]);
     }
 

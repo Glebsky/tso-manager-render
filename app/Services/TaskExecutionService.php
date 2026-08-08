@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Exceptions\GameServerErrorException;
+use App\Exceptions\InvalidTaskTypeException;
 use App\Exceptions\TaskAccountNotFoundException;
 use App\Exceptions\TaskExecutionException;
 use App\Exceptions\TaskInactiveException;
@@ -330,7 +331,7 @@ class TaskExecutionService
         }
 
         if ($task->task_type !== 'sequence') {
-            throw new Exception("Task #{$task->id} is not a sequence task.");
+            throw new InvalidTaskTypeException("Task #{$task->id} is not a sequence task.", 422, ['id' => $task->id, 'type' => $task->task_type]);
         }
 
         $account = $task->account;
@@ -509,7 +510,10 @@ class TaskExecutionService
             } catch (GameServerErrorException $e) {
                 if (in_array($e->getCode(), [1005, 1012], true) && $attempt < $maxAttempts) {
                     Log::info("[TaskExecution] Action [{$taskType}] hit game error {$e->getCode()}; resetting session and retrying (attempt {$attempt}/{$maxAttempts})");
-                    @unlink($this->authService->getCookieFile($account));
+                    $cookieFile = $this->authService->getCookieFile($account);
+                    if (file_exists($cookieFile)) {
+                        unlink($cookieFile);
+                    }
                     $this->authService->login($account);
                     $this->amfService->resetClient();
                     $account->refresh();
@@ -534,19 +538,27 @@ class TaskExecutionService
         $handler = $this->handlerRegistry->getHandler($taskType);
         $result = $handler->handle($account, $payload);
 
-        try {
+        if ($this->isAmfPayload($result)) {
             $parsed = $this->zoneParser->parse($result);
             $errorCode = (int) ($parsed['errorCode'] ?? 0);
             if ($errorCode !== 0) {
                 $errorMsg = GameErrorResolver::getMessage($errorCode);
+
                 throw new GameServerErrorException($errorCode, $errorMsg);
             }
-        } catch (GameServerErrorException $e) {
-            throw $e;
-        } catch (Throwable $e) {
-            // Ignore parse failures on non-AMF mock strings in tests
         }
 
         return $result;
+    }
+
+    private function isAmfPayload(string $payload): bool
+    {
+        if ($payload === '') {
+            return false;
+        }
+
+        return str_contains($payload, "\x00")
+            || (str_starts_with(trim($payload), '{') && str_contains($payload, 'errorCode'))
+            || str_contains($payload, 'amf');
     }
 }
