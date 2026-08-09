@@ -559,6 +559,6 @@ class TaskExecutionService
 
         return str_contains($payload, "\x00")
             || (str_starts_with(trim($payload), '{') && str_contains($payload, 'errorCode'))
-            || str_contains($payload, 'amf');
+            || str_contains($payload, '_amf_response');
     }
 }

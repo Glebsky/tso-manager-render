@@ -7,6 +7,7 @@ use App\Models\ScheduledTask;
 use App\Services\TaskExecutionService;
 use App\Services\TsoAmfService;
 use App\Services\TsoAuthService;
+use App\Services\ZoneParserService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Mockery;
@@ -29,10 +30,10 @@ class ScheduledTaskTest extends TestCase
         $parserMock = Mockery::mock(ZoneParserService::class);
 
         $this->app->instance(TsoAuthService::class, $this->authMock);
+
         $this->app->instance(TsoAmfService::class, $this->amfMock);
         $this->app->instance(ZoneParserService::class, $parserMock);
     }
-
 
     public function test_can_schedule_sequence_task()
     {
@@ -115,12 +116,12 @@ class ScheduledTaskTest extends TestCase
         $this->amfMock->shouldReceive('stopProduction')
             ->once()
             ->with(Mockery::any(), 101)
-            ->andReturn('amf_stop_response');
+            ->andReturn('stop_response');
 
         $this->amfMock->shouldReceive('startProduction')
             ->once()
             ->with(Mockery::any(), 101)
-            ->andReturn('amf_start_response');
+            ->andReturn('start_response');
 
         // Capture starting timestamp to verify delay happened
         $startTime = microtime(true);
@@ -177,18 +178,18 @@ class ScheduledTaskTest extends TestCase
         $this->amfMock->shouldReceive('stopProduction')
             ->once()
             ->with(Mockery::any(), 505)
-            ->andReturn('manual_amf_response');
+            ->andReturn('manual_response');
 
         $response = $this->postJson("/api/tasks/{$task->id}/execute");
 
         $response->assertStatus(200);
         $response->assertJsonPath('success', true);
-        $response->assertJsonPath('message', 'OK: manual_amf_response');
+        $response->assertJsonPath('message', 'OK: manual_response');
 
         $task->refresh();
         $this->assertFalse($task->is_active);
         $this->assertNotNull($task->last_run_at);
-        $this->assertEquals('OK: manual_amf_response', $task->last_result);
+        $this->assertEquals('OK: manual_response', $task->last_result);
     }
 
     public function test_can_update_scheduled_task()
