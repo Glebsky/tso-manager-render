@@ -47,7 +47,7 @@ but the full four gates must pass before the package is declared done.
 | WP-U1 | 4 gates | composer.json ^8.3, Dockerfile php:8.3, zero deprecation warnings | suite execution on PHP 8.3 | DONE |
 | WP-U2 | 4 gates | composer.json ^11.0, sanctum ^4.0, bootstrap/app.php structure, zero Kernel files | login, SPA boot, task run, market sync | DONE |
 | WP-U3 | 4 gates | composer.json ^8.4, Dockerfile php:8.4, laravel framework ^12.0 | test suite, pint, phpstan, vite build | DONE |
-| WP-3 | 4 gates | raw column ≠ plaintext; model round-trip; no secret in logs | migration up/down on a DB copy | TODO |
+| WP-3 | 4 gates | raw column ≠ plaintext; model round-trip; no secret in logs | migration up/down on a DB copy | DONE |
 | WP-4 | 4 gates | each domain exception → declared status + localized message; no upstream text | trigger a sync failure in the UI | DONE |
 | WP-5 | phpstan at target level | baseline line count recorded below | — | DONE |
 | WP-6 | 4 gates | enum values equal the stored strings; existing suite unchanged | task list/planner renders statuses | TODO |

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\Account;
+use App\Support\Security\CredentialRedactor;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -71,12 +72,12 @@ class TsoAuthService
         try {
             $params = $this->loginLegacy($account, $cookieFile, $server);
         } catch (Exception $e) {
-            Log::warning("[TsoAuth] Legacy (CipMigrated) login failed for account #{$account->id}: ".$e->getMessage());
+            Log::warning("[TsoAuth] Legacy (CipMigrated) login failed for account #{$account->id}: ".CredentialRedactor::redact($e->getMessage(), $account));
 
             try {
                 $params = $this->loginOAuth($account, $cookieFile, $server);
             } catch (Exception $e2) {
-                Log::warning("[TsoAuth] OAuth fallback login also failed for account #{$account->id}: ".$e2->getMessage());
+                Log::warning("[TsoAuth] OAuth fallback login also failed for account #{$account->id}: ".CredentialRedactor::redact($e2->getMessage(), $account));
 
                 throw $e;
             }
@@ -107,13 +108,13 @@ class TsoAuthService
             'password' => (string) $account->password,
         ], $cookieFile);
 
-        Log::info('[TsoAuth] Legacy (CipMigrated) login response: '.substr($loginRes, 0, 500));
+        Log::info('[TsoAuth] Legacy (CipMigrated) login response: '.CredentialRedactor::redact(substr($loginRes, 0, 500), $account));
 
         if (strpos($loginRes, 'OKAY') === false) {
             if (str_contains($loginRes, 'CAPTCHA') || str_contains($loginRes, 'captcha') || str_contains($loginRes, 'Captcha')) {
                 throw new Exception(__('ui.auth.captcha_required'));
             }
-            throw new Exception('Login failed: '.$loginRes);
+            throw new Exception('Login failed: '.CredentialRedactor::redact($loginRes, $account));
         }
 
         $mainUrl = $server['domain'].$server['main'];

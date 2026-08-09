@@ -6,6 +6,7 @@ namespace App\Services\Account\Sync;
 
 use App\Models\Account;
 use App\Models\BotLog;
+use App\Support\Security\CredentialRedactor;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -53,12 +54,14 @@ class AccountSyncLogger
      */
     public function logFailure(Account $account, Throwable $exception): void
     {
-        Log::error("[AccountSync] Failed for account #{$account->id}: ".$exception->getMessage(), ['exception' => $exception]);
+        $redactedMessage = CredentialRedactor::redact($exception->getMessage(), $account);
+
+        Log::error("[AccountSync] Failed for account #{$account->id}: ".$redactedMessage);
 
         BotLog::create([
             'account_id' => $account->id,
             'level' => 'error',
-            'message' => '[AccountSync] '.__('logs.account.sync_failed', ['error' => $exception->getMessage()]),
+            'message' => '[AccountSync] '.__('logs.account.sync_failed', ['error' => $redactedMessage]),
         ]);
     }
 }

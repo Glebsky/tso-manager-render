@@ -27,7 +27,7 @@ mixes a behavior change with a mass reformat.
 | 6 | WP-U3 | Laravel 11 → latest + PHP 8.4 | P0 | ADR-002 | M | DONE |
 | 7 | WP-5 | larastan + PHPStan level 6 over the whole app | P1 | ADR-004 | M | DONE |
 | 8 | WP-4 | Central safe error contract | P0 | FR-1.4, FR-2.5 | M | DONE |
-| 9 | WP-3 | Encrypted credentials at rest | P0 | ADR-007, FR-1.3 | S |
+| 9 | WP-3 | Encrypted credentials at rest | P0 | ADR-007, FR-1.3 | S | DONE |
 | 10 | WP-6 | Backed enums for task/log domain states | P1 | FR-2.4, FR-2.3 | M |
 | 11 | WP-7 | Task execution decomposition, one engine | P1 | FR-2.1, FR-2.2, FR-2.6 | L |
 | 12 | WP-15 | Regression tests for the two open task bugs | P1 | audit §E | M |

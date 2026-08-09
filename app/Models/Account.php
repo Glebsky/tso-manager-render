@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -21,6 +23,9 @@ class Account extends Model
     ];
 
     protected $casts = [
+        'password' => 'encrypted',
+        'dso_auth_user' => 'encrypted',
+        'dso_auth_token' => 'encrypted',
         'last_sync_at' => 'datetime',
     ];
 
@@ -84,27 +89,6 @@ class Account extends Model
         } catch (\Throwable $e) {
             return null;
         }
-    }
-
-    public function getPasswordAttribute($value): ?string
-    {
-        if (empty($value)) {
-            return '';
-        }
-        try {
-            return decrypt($value);
-        } catch (\Throwable $e) {
-            try {
-                return decrypt($value, false);
-            } catch (\Throwable $ex) {
-                return '';
-            }
-        }
-    }
-
-    public function setPasswordAttribute($value): void
-    {
-        $this->attributes['password'] = encrypt($value);
     }
 
     public function scheduledTasks(): HasMany

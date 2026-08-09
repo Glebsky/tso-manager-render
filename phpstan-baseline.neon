@@ -55,20 +55,8 @@ parameters:
 			path: app/Models/Account.php
 
 		-
-			message: '#^Method App\\Models\\Account\:\:getPasswordAttribute\(\) has parameter \$value with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: app/Models/Account.php
-
-		-
 			message: '#^Method App\\Models\\Account\:\:scheduledTasks\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
 			identifier: missingType.generics
-			count: 1
-			path: app/Models/Account.php
-
-		-
-			message: '#^Method App\\Models\\Account\:\:setPasswordAttribute\(\) has parameter \$value with no type specified\.$#'
-			identifier: missingType.parameter
 			count: 1
 			path: app/Models/Account.php
 

@@ -6,6 +6,7 @@ namespace App\Services\Tasks;
 
 use App\Models\BotLog;
 use App\Models\ScheduledTask;
+use App\Support\Security\CredentialRedactor;
 
 /**
  * Writes the task audit trail.
@@ -56,7 +57,7 @@ final class TaskActivityLogger
         BotLog::create([
             'account_id' => $accountId,
             'level' => 'info',
-            'message' => "[Task][Task#{$taskId}] ".$message,
+            'message' => "[Task][Task#{$taskId}] ".CredentialRedactor::redact($message),
         ]);
     }
 }
