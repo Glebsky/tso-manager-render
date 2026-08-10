@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\Tasks;
 
+use App\Enums\LogLevel;
+use App\Enums\TaskType;
 use App\Models\BotLog;
 use App\Models\ScheduledTask;
 use App\Support\Security\CredentialRedactor;
@@ -21,8 +23,8 @@ final class TaskActivityLogger
     {
         $this->log($task->account_id, (int) $task->id, __('logs.task.scheduled', [
             'id' => $task->id,
-            'type' => $task->task_type,
-            'schedule' => $task->schedule_type,
+            'type' => $task->task_type instanceof TaskType ? $task->task_type->value : $task->task_type,
+            'schedule' => $task->schedule_type?->value ?? $task->schedule_type,
         ]));
     }
 
@@ -30,7 +32,7 @@ final class TaskActivityLogger
     {
         $this->log($task->account_id, (int) $task->id, __('logs.task.updated', [
             'id' => $task->id,
-            'type' => $task->task_type,
+            'type' => $task->task_type instanceof TaskType ? $task->task_type->value : $task->task_type,
         ]));
     }
 
@@ -40,15 +42,15 @@ final class TaskActivityLogger
 
         $this->log($task->account_id, (int) $task->id, __($key, [
             'id' => $task->id,
-            'type' => $task->task_type,
+            'type' => $task->task_type instanceof TaskType ? $task->task_type->value : $task->task_type,
         ]));
     }
 
-    public function deleted(?int $accountId, int $taskId, ?string $taskType): void
+    public function deleted(?int $accountId, int $taskId, TaskType|string|null $taskType): void
     {
         $this->log($accountId, $taskId, __('logs.task.deleted', [
             'id' => $taskId,
-            'type' => $taskType,
+            'type' => $taskType instanceof TaskType ? $taskType->value : $taskType,
         ]));
     }
 
@@ -56,7 +58,7 @@ final class TaskActivityLogger
     {
         BotLog::create([
             'account_id' => $accountId,
-            'level' => 'info',
+            'level' => LogLevel::Info,
             'message' => "[Task][Task#{$taskId}] ".CredentialRedactor::redact($message),
         ]);
     }

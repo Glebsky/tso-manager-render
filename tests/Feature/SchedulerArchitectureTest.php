@@ -61,7 +61,8 @@ class SchedulerArchitectureTest extends TestCase
         Artisan::call('tso:run-scheduler', ['--mode' => 'queue']);
 
         $task->refresh();
-        $this->assertEquals('queued', $task->status);
+        $this->assertEquals('queued', $task->status?->value);
+
         $this->assertNotNull($task->execution_token);
         $this->assertNotNull($task->queued_at);
 
@@ -179,7 +180,8 @@ class SchedulerArchitectureTest extends TestCase
         $service->execute($task);
 
         $task->refresh();
-        $this->assertEquals('completed', $task->status);
+        $this->assertEquals('completed', $task->status?->value);
+
         $this->assertStringContainsString('Step 1 [stop_production]: SKIPPED (already executed)', $task->last_result);
         $this->assertStringContainsString('Step 2 [start_production]: OK', $task->last_result);
     }

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services\Tasks;
 
+use App\Enums\ScheduleType;
+use App\Enums\TaskResultPrefix;
+use App\Enums\TaskStatus;
 use App\Jobs\AccountSyncJob;
 use App\Jobs\ExecuteScheduledTaskJob;
 use App\Models\Account;
@@ -38,7 +41,7 @@ class TaskSchedulerEngine
     {
         $staleThreshold = Carbon::now()->subMinutes($timeoutMinutes);
 
-        $staleTasks = ScheduledTask::whereIn('status', ['queued', 'running'])
+        $staleTasks = ScheduledTask::whereIn('status', [TaskStatus::Queued, TaskStatus::Running])
             ->where(function ($query) use ($staleThreshold) {
                 $query->where('queued_at', '<=', $staleThreshold)
                     ->orWhereNull('queued_at');
@@ -46,11 +49,11 @@ class TaskSchedulerEngine
             ->get();
 
         foreach ($staleTasks as $task) {
-            Log::warning("[Scheduler] Resetting stale task #{$task->id} [{$task->task_type}] from status '{$task->status}' back to 'pending'");
+            Log::warning("[Scheduler] Resetting stale task #{$task->id} [{$task->task_type?->value}] from status '{$task->status?->value}' back to 'pending'");
             $task->update([
-                'status' => 'pending',
+                'status' => TaskStatus::Pending,
                 'execution_token' => null,
-                'last_result' => "WARNING: Execution timed out / stuck in {$task->status} state.",
+                'last_result' => TaskResultPrefix::Warning->format("Execution timed out / stuck in {$task->status?->value} state."),
             ]);
         }
 
@@ -62,7 +65,7 @@ class TaskSchedulerEngine
      */
     public function isTaskDue(ScheduledTask $task, Carbon $now): bool
     {
-        if ($task->schedule_type === 'daily' || is_null($task->schedule_type)) {
+        if ($task->schedule_type === ScheduleType::Daily || is_null($task->schedule_type)) {
             if (! $task->run_at_time) {
                 return false;
             }
@@ -78,7 +81,7 @@ class TaskSchedulerEngine
             return false;
         }
 
-        if ($task->schedule_type === 'once') {
+        if ($task->schedule_type === ScheduleType::Once) {
             if ($task->run_at_datetime && is_null($task->last_run_at)) {
                 return $now->greaterThanOrEqualTo($task->run_at_datetime);
             }
@@ -86,7 +89,7 @@ class TaskSchedulerEngine
             return false;
         }
 
-        if ($task->schedule_type === 'interval') {
+        if ($task->schedule_type === ScheduleType::Interval) {
             $hours = (int) $task->interval_hours;
             $minutes = (int) $task->interval_minutes;
             $intervalTotalMinutes = ($hours * 60) + $minutes;
@@ -114,9 +117,9 @@ class TaskSchedulerEngine
 
         $reserved = ScheduledTask::where('id', $task->id)
             ->where('is_active', true)
-            ->whereIn('status', ['pending', 'completed', 'failed'])
+            ->whereIn('status', [TaskStatus::Pending, TaskStatus::Completed, TaskStatus::Failed])
             ->update([
-                'status' => 'queued',
+                'status' => TaskStatus::Queued,
                 'queued_at' => now(),
                 'execution_token' => $token,
                 'completed_steps' => 0,
@@ -139,8 +142,8 @@ class TaskSchedulerEngine
                 Log::info(sprintf(
                     '[Scheduler] Task #%d [%s] reserved and dispatched (schedule=%s, token=%s, queued_at=%s)',
                     $task->id,
-                    (string) $task->task_type,
-                    (string) $task->schedule_type,
+                    (string) $task->task_type?->value,
+                    (string) $task->schedule_type?->value,
                     $token,
                     now()->toDateTimeString()
                 ));
@@ -158,7 +161,7 @@ class TaskSchedulerEngine
     public function processDueTasks(Carbon $now, string $mode = 'queue'): int
     {
         $activeTasks = ScheduledTask::where('is_active', true)
-            ->whereIn('status', ['pending', 'completed', 'failed'])
+            ->whereIn('status', [TaskStatus::Pending, TaskStatus::Completed, TaskStatus::Failed])
             ->with('account')
             ->get();
 

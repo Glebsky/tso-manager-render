@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
+use App\Enums\LogLevel;
+use App\Enums\TaskResultPrefix;
+use App\Enums\TaskStatus;
+use App\Enums\TaskType;
 use App\Models\BotLog;
 use App\Models\ScheduledTask;
 use App\Services\TaskExecutionService;
@@ -72,8 +76,8 @@ class ExecuteScheduledTaskJob implements ShouldQueue
             return;
         }
 
-        if ($task->status !== 'queued' && $task->status !== 'running') {
-            Log::info("[TaskJob] Task #{$this->taskId} has status '{$task->status}' instead of 'queued'; skipping");
+        if ($task->status !== TaskStatus::Queued && $task->status !== TaskStatus::Running) {
+            Log::info("[TaskJob] Task #{$this->taskId} has status '{$task->status?->value}' instead of 'queued'; skipping");
 
             return;
         }
@@ -92,9 +96,9 @@ class ExecuteScheduledTaskJob implements ShouldQueue
             ));
 
             $task->update([
-                'status' => 'pending',
+                'status' => TaskStatus::Pending,
                 'execution_token' => null,
-                'last_result' => 'SKIPPED: task was paused before execution.',
+                'last_result' => TaskResultPrefix::Skipped->format('task was paused before execution.'),
             ]);
 
             return;
@@ -113,7 +117,7 @@ class ExecuteScheduledTaskJob implements ShouldQueue
         }
 
         // Non-sequence tasks are a single action: run them as before.
-        if ($task->task_type !== 'sequence') {
+        if ($task->task_type !== TaskType::Sequence) {
             $executionService->execute($task, $this->executionToken, $this->force);
 
             return;
@@ -163,8 +167,8 @@ class ExecuteScheduledTaskJob implements ShouldQueue
         return sprintf(
             'state: is_active=%s status=%s schedule=%s token=%s job_token=%s completed_steps=%s queued_at=%s last_run_at=%s updated_at=%s',
             $task->is_active ? 'true' : 'false',
-            (string) $task->status,
-            (string) $task->schedule_type,
+            (string) $task->status?->value,
+            (string) $task->schedule_type?->value,
             $task->execution_token ?? 'null',
             $this->executionToken,
             (string) $task->completed_steps,
@@ -184,16 +188,16 @@ class ExecuteScheduledTaskJob implements ShouldQueue
         $task = ScheduledTask::find($this->taskId);
         if ($task) {
             $task->update([
-                'status' => 'failed',
+                'status' => TaskStatus::Failed,
                 'last_run_at' => now(),
-                'last_result' => 'FAILED: '.$exception->getMessage(),
+                'last_result' => TaskResultPrefix::Failed->format($exception->getMessage()),
                 'execution_token' => null,
             ]);
 
             BotLog::create([
                 'account_id' => $task->account_id,
-                'level' => 'error',
-                'message' => "[Task][Task#{$task->id}] ".__('logs.task.job_failed', ['id' => $task->id, 'type' => $task->task_type, 'error' => $exception->getMessage()]),
+                'level' => LogLevel::Error,
+                'message' => "[Task][Task#{$task->id}] ".__('logs.task.job_failed', ['id' => $task->id, 'type' => $task->task_type?->value ?? $task->task_type, 'error' => $exception->getMessage()]),
             ]);
         }
     }

@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
+use App\Enums\LogLevel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -18,6 +21,7 @@ class BotLog extends Model
 
     protected $casts = [
         'created_at' => 'datetime',
+        'level' => LogLevel::class,
     ];
 
     public function account(): BelongsTo

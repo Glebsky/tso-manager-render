@@ -26,8 +26,13 @@ final class UpdateScheduledTaskRequest extends ScheduledTaskRequest
 
         // Convert base rules to 'sometimes' for update flexibility
         foreach (['name', 'account_id', 'task_type', 'payload', 'schedule_type'] as $field) {
-            if (isset($rules[$field]) && is_string($rules[$field])) {
-                $rules[$field] = 'sometimes|'.$rules[$field];
+            if (isset($rules[$field])) {
+                if (is_array($rules[$field])) {
+                    $rules[$field] = array_filter($rules[$field], fn ($rule) => $rule !== 'required');
+                    array_unshift($rules[$field], 'sometimes');
+                } else {
+                    $rules[$field] = 'sometimes|'.$rules[$field];
+                }
             }
         }
 

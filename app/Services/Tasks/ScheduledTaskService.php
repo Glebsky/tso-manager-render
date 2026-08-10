@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Tasks;
 
+use App\Enums\TaskStatus;
 use App\Jobs\ExecuteScheduledTaskJob;
 use App\Models\Account;
 use App\Models\ScheduledTask;
@@ -22,8 +23,6 @@ use Illuminate\Support\Str;
 final class ScheduledTaskService
 {
     private const ACCOUNT_COLUMNS = 'account:id,username,nickname,region,status';
-
-    private const BUSY_STATUSES = ['queued', 'running'];
 
     public function __construct(private readonly TaskActivityLogger $logger) {}
 
@@ -68,7 +67,7 @@ final class ScheduledTaskService
             $task->id,
             $task->is_active ? 'true' : 'false',
             $task->is_active ? 'false' : 'true',
-            (string) $task->status,
+            (string) $task->status?->value,
             $task->execution_token ?? 'null'
         ));
 
@@ -105,7 +104,7 @@ final class ScheduledTaskService
         unset($payload['step_results']);
 
         $task->update([
-            'status' => 'queued',
+            'status' => TaskStatus::Queued,
             'queued_at' => now(),
             'execution_token' => $token,
             'completed_steps' => 0,
@@ -116,9 +115,9 @@ final class ScheduledTaskService
         Log::info(sprintf(
             '[Task] Manual "Run now" for task #%d [%s] (is_active=%s, schedule=%s, token=%s) — dispatched with force=true',
             $task->id,
-            (string) $task->task_type,
+            (string) $task->task_type?->value,
             $task->is_active ? 'true' : 'false',
-            (string) $task->schedule_type,
+            (string) $task->schedule_type?->value,
             $token
         ));
 
@@ -139,6 +138,6 @@ final class ScheduledTaskService
 
     public function isBusy(ScheduledTask $task): bool
     {
-        return in_array($task->status, self::BUSY_STATUSES, true);
+        return $task->status?->isBusy() ?? false;
     }
 }

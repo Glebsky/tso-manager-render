@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Enums\LogLevel;
 use App\Http\Resources\AccountResource;
 use App\Http\Resources\BotLogResource;
 use App\Models\Account;
@@ -28,7 +29,7 @@ class DashboardController extends Controller
             'total_accounts' => $accounts->count(),
             'active_tasks' => ScheduledTask::where('is_active', true)->count(),
             'today_actions' => BotLog::where('created_at', '>=', now()->startOfDay())->count(),
-            'errors' => BotLog::where('level', 'error')->where('created_at', '>=', now()->startOfDay())->count(),
+            'errors' => BotLog::where('level', LogLevel::Error)->where('created_at', '>=', now()->startOfDay())->count(),
         ];
 
         return response()->json([

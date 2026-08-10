@@ -50,7 +50,7 @@ but the full four gates must pass before the package is declared done.
 | WP-3 | 4 gates | raw column ≠ plaintext; model round-trip; no secret in logs | migration up/down on a DB copy | DONE |
 | WP-4 | 4 gates | each domain exception → declared status + localized message; no upstream text | trigger a sync failure in the UI | DONE |
 | WP-5 | phpstan at target level | baseline line count recorded below | — | DONE |
-| WP-6 | 4 gates | enum values equal the stored strings; existing suite unchanged | task list/planner renders statuses | TODO |
+| WP-6 | 4 gates | enum values equal the stored strings; existing suite unchanged | task list/planner renders statuses | DONE |
 | WP-7 | 4 gates | characterization suite green; finalization block appears once (grep) | manual run + sequence with delays, paused task, `once` task | TODO |
 | WP-8 | 4 gates | zero `response()->json` in controllers; locale key sets identical; pagination bounds | Accounts / Tasks / Logs screens | TODO |
 | WP-9 | 4 gates | query count constant for 10 accounts; snapshot handles malformed JSON | dashboard + account list | TODO |

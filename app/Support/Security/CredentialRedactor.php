@@ -37,7 +37,6 @@ class CredentialRedactor
             }
         }
 
-
         /** @var array<string, string> $patterns */
         $patterns = [
             '/(password=)[^\s&]+/i' => '$1[REDACTED]',

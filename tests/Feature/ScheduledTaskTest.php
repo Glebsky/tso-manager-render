@@ -301,7 +301,7 @@ class ScheduledTaskTest extends TestCase
         $service->execute($task);
 
         $task->refresh();
-        $this->assertEquals('failed', $task->status);
+        $this->assertEquals('failed', $task->status?->value);
         $this->assertArrayHasKey('step_results', $task->payload);
         $this->assertEquals('failed', $task->payload['step_results'][0]['status']);
         $this->assertStringContainsString('Building not found on grid 101', $task->payload['step_results'][0]['error']);

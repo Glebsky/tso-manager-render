@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Account\Sync;
 
+use App\Enums\LogLevel;
 use App\Models\Account;
 use App\Models\BotLog;
 use App\Support\Security\CredentialRedactor;
@@ -39,7 +40,7 @@ class AccountSyncLogger
 
         BotLog::create([
             'account_id' => $account->id,
-            'level' => 'success',
+            'level' => LogLevel::Success,
             'message' => '[AccountSync] '.__('logs.account.sync_success', [
                 'buildings' => $buildingCount,
                 'resources' => $resourceCount,
@@ -60,7 +61,7 @@ class AccountSyncLogger
 
         BotLog::create([
             'account_id' => $account->id,
-            'level' => 'error',
+            'level' => LogLevel::Error,
             'message' => '[AccountSync] '.__('logs.account.sync_failed', ['error' => $redactedMessage]),
         ]);
     }

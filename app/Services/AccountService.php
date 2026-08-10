@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\LogLevel;
 use App\Exceptions\GameServerErrorException;
 use App\Models\Account;
 use App\Models\BotLog;
@@ -86,7 +87,7 @@ final class AccountService
 
             BotLog::create([
                 'account_id' => $account->id,
-                'level' => 'success',
+                'level' => LogLevel::Success,
                 'message' => '[Account] '.$msg,
             ]);
 
@@ -99,7 +100,7 @@ final class AccountService
 
             BotLog::create([
                 'account_id' => $account->id,
-                'level' => 'error',
+                'level' => LogLevel::Error,
                 'message' => '[Account] '.$errorMsg,
             ]);
 
@@ -128,7 +129,7 @@ final class AccountService
 
         BotLog::create([
             'account_id' => $account->id,
-            'level' => 'success',
+            'level' => LogLevel::Success,
             'message' => '[Account] '.__('logs.account.session_updated'),
         ]);
 

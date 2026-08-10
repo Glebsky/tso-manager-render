@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
+use App\Enums\LogLevel;
 use App\Models\Account;
 use App\Models\BotLog;
 use App\Models\MarketServerConnection;
@@ -82,7 +83,7 @@ class MarketSyncJob implements ShouldQueue
 
             BotLog::create([
                 'account_id' => $this->account->id,
-                'level' => 'error',
+                'level' => LogLevel::Error,
                 'message' => "[Market][{$this->serverId}] ".__('logs.market.sync_job_failed', ['error' => $exception->getMessage()]),
                 'created_at' => now(),
             ]);

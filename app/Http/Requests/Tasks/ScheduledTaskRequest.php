@@ -4,20 +4,19 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Tasks;
 
+use App\Enums\ScheduleType;
+use App\Enums\TaskType;
 use App\Models\Account;
 use App\Services\Tasks\BuffPayloadValidator;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 /**
  * Shared validation rules and custom validators for Scheduled Task payloads.
  */
 abstract class ScheduledTaskRequest extends FormRequest
 {
-    private const TASK_TYPES = 'stop_production,start_production,apply_buff,send_geologist,send_explorer,send_specialist,collect_pickups,sequence';
-
-    private const STEP_TASK_TYPES = 'stop_production,start_production,apply_buff,send_geologist,send_explorer,send_specialist,collect_pickups';
-
     public function authorize(): bool
     {
         return true;
@@ -68,9 +67,9 @@ abstract class ScheduledTaskRequest extends FormRequest
         return [
             'name' => 'nullable|string|max:255',
             'account_id' => 'required|exists:accounts,id',
-            'task_type' => 'required|string|in:'.self::TASK_TYPES,
+            'task_type' => ['required', Rule::enum(TaskType::class)],
             'payload' => 'required|array',
-            'schedule_type' => 'required|string|in:daily,once,interval',
+            'schedule_type' => ['required', Rule::enum(ScheduleType::class)],
             'run_at_time' => 'required_if:schedule_type,daily|nullable|date_format:H:i',
             'run_at_datetime' => 'required_if:schedule_type,once|nullable|date',
             'interval_hours' => 'required_if:schedule_type,interval|nullable|integer|min:0',
@@ -85,14 +84,14 @@ abstract class ScheduledTaskRequest extends FormRequest
     {
         $rules = [
             'payload.actions' => 'required|array|min:1',
-            'payload.actions.*.task_type' => 'required|string|in:'.self::STEP_TASK_TYPES,
+            'payload.actions.*.task_type' => ['required', Rule::enum(TaskType::class)],
             'payload.actions.*.payload' => 'required|array',
             'payload.actions.*.delay_seconds' => 'required|integer|min:0',
         ];
 
         foreach ((array) $this->input('payload.actions', []) as $index => $action) {
             $taskType = $action['task_type'] ?? '';
-            if (in_array($taskType, ['stop_production', 'start_production'], true)) {
+            if (in_array($taskType, [TaskType::StopProduction->value, TaskType::StartProduction->value], true)) {
                 $rules["payload.actions.{$index}.payload.grid"] = 'required|integer|min:1';
             }
         }
@@ -158,7 +157,7 @@ abstract class ScheduledTaskRequest extends FormRequest
      */
     private function pickupPrefixes(): array
     {
-        if ($this->input('task_type') === 'collect_pickups') {
+        if ($this->taskTypeString() === TaskType::CollectPickups->value) {
             return ['payload.'];
         }
 
@@ -169,7 +168,11 @@ abstract class ScheduledTaskRequest extends FormRequest
         $prefixes = [];
 
         foreach ((array) $this->input('payload.actions', []) as $index => $action) {
-            if (($action['task_type'] ?? '') === 'collect_pickups') {
+            $taskType = $action['task_type'] ?? '';
+            if ($taskType instanceof TaskType) {
+                $taskType = $taskType->value;
+            }
+            if ($taskType === TaskType::CollectPickups->value) {
                 $prefixes[] = "payload.actions.{$index}.payload.";
             }
         }
@@ -208,7 +211,7 @@ abstract class ScheduledTaskRequest extends FormRequest
      */
     private function buffPrefixes(): array
     {
-        if ($this->input('task_type') === 'apply_buff') {
+        if ($this->taskTypeString() === TaskType::ApplyBuff->value) {
             return ['payload.' => 'payload'];
         }
 
@@ -219,7 +222,11 @@ abstract class ScheduledTaskRequest extends FormRequest
         $prefixes = [];
 
         foreach ((array) $this->input('payload.actions', []) as $index => $action) {
-            if (($action['task_type'] ?? '') === 'apply_buff') {
+            $taskType = $action['task_type'] ?? '';
+            if ($taskType instanceof TaskType) {
+                $taskType = $taskType->value;
+            }
+            if ($taskType === TaskType::ApplyBuff->value) {
                 $prefixes["payload.actions.{$index}.payload."] = "payload.actions.{$index}.payload";
             }
         }
@@ -227,24 +234,44 @@ abstract class ScheduledTaskRequest extends FormRequest
         return $prefixes;
     }
 
+    private function taskTypeString(): ?string
+    {
+        $val = $this->input('task_type');
+        if ($val instanceof TaskType) {
+            return $val->value;
+        }
+
+        return is_string($val) ? $val : null;
+    }
+
+    private function scheduleTypeString(): ?string
+    {
+        $val = $this->input('schedule_type');
+        if ($val instanceof ScheduleType) {
+            return $val->value;
+        }
+
+        return is_string($val) ? $val : null;
+    }
+
     private function isSequence(): bool
     {
-        return $this->input('task_type') === 'sequence';
+        return $this->taskTypeString() === TaskType::Sequence->value;
     }
 
     private function isBuildingTask(): bool
     {
-        return in_array($this->input('task_type'), ['stop_production', 'start_production'], true);
+        return in_array($this->taskTypeString(), [TaskType::StopProduction->value, TaskType::StartProduction->value], true);
     }
 
     private function isSpecialistTask(): bool
     {
-        return in_array($this->input('task_type'), ['send_geologist', 'send_explorer', 'send_specialist'], true);
+        return in_array($this->taskTypeString(), [TaskType::SendGeologist->value, TaskType::SendExplorer->value, TaskType::SendSpecialist->value], true);
     }
 
     private function validateInterval(Validator $validator): void
     {
-        if ($this->input('schedule_type') !== 'interval') {
+        if ($this->scheduleTypeString() !== ScheduleType::Interval->value) {
             return;
         }
 

@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\LogLevel;
+use App\Enums\ScheduleType;
+use App\Enums\TaskResultPrefix;
+use App\Enums\TaskStatus;
+use App\Enums\TaskType;
 use App\Exceptions\GameServerErrorException;
 use App\Exceptions\InvalidTaskTypeException;
 use App\Exceptions\TaskAccountNotFoundException;
@@ -57,7 +62,7 @@ class TaskExecutionService
         assert($account instanceof Account);
 
         $task->update([
-            'status' => 'running',
+            'status' => TaskStatus::Running,
         ]);
 
         try {
@@ -68,13 +73,13 @@ class TaskExecutionService
 
             $payload = $task->payload ?? [];
 
-            if ($task->task_type === 'sequence') {
+            if ($task->task_type === TaskType::Sequence) {
                 return $this->executeSequenceTask($task, $account, $payload);
             }
 
             return $this->executeSingleTask($task, $account, $payload);
         } catch (Throwable $e) {
-            $this->handleOverallFailure($task, $account->id, $e);
+            $this->handleOverallFailure($task, (int) $account->id, $e);
             throw $e;
         }
     }
@@ -121,7 +126,7 @@ class TaskExecutionService
 
                 BotLog::create([
                     'account_id' => $account->id,
-                    'level' => 'success',
+                    'level' => LogLevel::Success,
                     'message' => "[Task][Task#{$task->id}] ".__('logs.task.step_completed', ['id' => $task->id, 'step' => $index + 1, 'type' => $actionType]),
                 ]);
             } catch (Throwable $e) {
@@ -139,7 +144,7 @@ class TaskExecutionService
 
                 BotLog::create([
                     'account_id' => $account->id,
-                    'level' => 'error',
+                    'level' => LogLevel::Error,
                     'message' => "[Task][Task#{$task->id}] ".__('logs.task.step_failed', ['id' => $task->id, 'step' => $index + 1, 'type' => $actionType, 'error' => $errorMsg]),
                 ]);
             }
@@ -157,31 +162,31 @@ class TaskExecutionService
         $result = implode('; ', $resultsSummary);
         $payload['step_results'] = $stepResults;
 
-        $nextStatus = $hasStepError ? 'failed' : 'completed';
-        $lastResultPrefix = $hasStepError ? 'ERROR: ' : 'OK: ';
+        $nextStatus = $hasStepError ? TaskStatus::Failed : TaskStatus::Completed;
+        $lastResultPrefix = $hasStepError ? TaskResultPrefix::Error : TaskResultPrefix::Ok;
 
         $updateData = [
             'status' => $nextStatus,
             'last_run_at' => now(),
-            'last_result' => $lastResultPrefix.(strlen($result) > 150 ? substr($result, 0, 147).'...' : $result),
+            'last_result' => $lastResultPrefix->format(strlen($result) > 150 ? substr($result, 0, 147).'...' : $result),
             'payload' => $payload,
             'completed_steps' => 0,
             'execution_token' => null,
         ];
 
-        if ($task->schedule_type === 'once') {
+        if ($task->schedule_type === ScheduleType::Once) {
             $updateData['is_active'] = false;
         }
 
         $task->update($updateData);
 
-        $logLevel = $hasStepError ? 'error' : 'success';
+        $logLevel = $hasStepError ? LogLevel::Error : LogLevel::Success;
         BotLog::create([
             'account_id' => $account->id,
             'level' => $logLevel,
             'message' => "[Task][Task#{$task->id}] ".($hasStepError
-                ? __('logs.task.completed_with_errors', ['type' => $task->task_type, 'result' => strlen($result) > 100 ? substr($result, 0, 97).'...' : $result])
-                : __('logs.task.completed', ['type' => $task->task_type, 'result' => strlen($result) > 100 ? substr($result, 0, 97).'...' : $result])),
+                ? __('logs.task.completed_with_errors', ['type' => $task->task_type?->value ?? $task->task_type, 'result' => strlen($result) > 100 ? substr($result, 0, 97).'...' : $result])
+                : __('logs.task.completed', ['type' => $task->task_type?->value ?? $task->task_type, 'result' => strlen($result) > 100 ? substr($result, 0, 97).'...' : $result])),
         ]);
 
         return $result;
@@ -195,7 +200,8 @@ class TaskExecutionService
     private function executeSingleTask(ScheduledTask $task, Account $account, array $payload): string
     {
         try {
-            $result = $this->executeSingleActionWithRetry($account, $task->task_type, $payload);
+            $taskTypeStr = $task->task_type instanceof TaskType ? $task->task_type->value : (string) $task->task_type;
+            $result = $this->executeSingleActionWithRetry($account, $taskTypeStr, $payload);
             $payload['step_results'] = [
                 [
                     'status' => 'completed',
@@ -204,15 +210,15 @@ class TaskExecutionService
             ];
 
             $updateData = [
-                'status' => 'completed',
+                'status' => TaskStatus::Completed,
                 'last_run_at' => now(),
-                'last_result' => 'OK: '.(strlen($result) > 100 ? substr($result, 0, 97).'...' : $result),
+                'last_result' => TaskResultPrefix::Ok->format(strlen($result) > 100 ? substr($result, 0, 97).'...' : $result),
                 'payload' => $payload,
                 'completed_steps' => 0,
                 'execution_token' => null,
             ];
 
-            if ($task->schedule_type === 'once') {
+            if ($task->schedule_type === ScheduleType::Once) {
                 $updateData['is_active'] = false;
             }
 
@@ -220,8 +226,8 @@ class TaskExecutionService
 
             BotLog::create([
                 'account_id' => $account->id,
-                'level' => 'success',
-                'message' => "[Task][Task#{$task->id}] ".__('logs.task.completed', ['type' => $task->task_type, 'result' => strlen($result) > 100 ? substr($result, 0, 97).'...' : $result]),
+                'level' => LogLevel::Success,
+                'message' => "[Task][Task#{$task->id}] ".__('logs.task.completed', ['type' => $task->task_type?->value ?? $task->task_type, 'result' => strlen($result) > 100 ? substr($result, 0, 97).'...' : $result]),
             ]);
 
             return $result;
@@ -238,15 +244,15 @@ class TaskExecutionService
             ];
 
             $updateData = [
-                'status' => 'failed',
+                'status' => TaskStatus::Failed,
                 'last_run_at' => now(),
-                'last_result' => 'ERROR: '.$errorMsg,
+                'last_result' => TaskResultPrefix::Error->format($errorMsg),
                 'payload' => $payload,
                 'completed_steps' => 0,
                 'execution_token' => null,
             ];
 
-            if ($task->schedule_type === 'once') {
+            if ($task->schedule_type === ScheduleType::Once) {
                 $updateData['is_active'] = false;
             }
 
@@ -254,22 +260,22 @@ class TaskExecutionService
 
             BotLog::create([
                 'account_id' => $account->id,
-                'level' => 'error',
-                'message' => "[Task][Task#{$task->id}] ".__('logs.task.failed', ['type' => $task->task_type, 'error' => $errorMsg]),
+                'level' => LogLevel::Error,
+                'message' => "[Task][Task#{$task->id}] ".__('logs.task.failed', ['type' => $task->task_type?->value ?? $task->task_type, 'error' => $errorMsg]),
             ]);
 
             throw $e;
         }
     }
 
-    private function handleOverallFailure(ScheduledTask $task, mixed $accountId, Throwable $e): void
+    private function handleOverallFailure(ScheduledTask $task, int $accountId, Throwable $e): void
     {
         $errorMsg = $e instanceof TaskExecutionException
             ? (string) json_encode($e->toPayload())
             : $e->getMessage();
 
         $payload = $task->payload ?? [];
-        if ($task->task_type === 'sequence' && isset($payload['actions']) && is_array($payload['actions'])) {
+        if ($task->task_type === TaskType::Sequence && isset($payload['actions']) && is_array($payload['actions'])) {
             $completedSteps = (int) ($task->completed_steps ?? 0);
             $stepResults = $payload['step_results'] ?? [];
             if (! isset($stepResults[$completedSteps])) {
@@ -289,14 +295,14 @@ class TaskExecutionService
         }
 
         $updateData = [
-            'status' => 'failed',
+            'status' => TaskStatus::Failed,
             'last_run_at' => now(),
-            'last_result' => 'ERROR: '.$errorMsg,
+            'last_result' => TaskResultPrefix::Error->format($errorMsg),
             'payload' => $payload,
             'execution_token' => null,
         ];
 
-        if ($task->schedule_type === 'once') {
+        if ($task->schedule_type === ScheduleType::Once) {
             $updateData['is_active'] = false;
         }
 
@@ -304,8 +310,8 @@ class TaskExecutionService
 
         BotLog::create([
             'account_id' => $accountId,
-            'level' => 'error',
-            'message' => "[Task][Task#{$task->id}] ".__('logs.task.failed', ['type' => $task->task_type, 'error' => $errorMsg]),
+            'level' => LogLevel::Error,
+            'message' => "[Task][Task#{$task->id}] ".__('logs.task.failed', ['type' => $task->task_type?->value ?? $task->task_type, 'error' => $errorMsg]),
         ]);
     }
 
@@ -330,8 +336,8 @@ class TaskExecutionService
             throw new TokenMismatchException($task->id, $expectedToken, $task->execution_token);
         }
 
-        if ($task->task_type !== 'sequence') {
-            throw new InvalidTaskTypeException("Task #{$task->id} is not a sequence task.", 422, ['id' => $task->id, 'type' => $task->task_type]);
+        if ($task->task_type !== TaskType::Sequence) {
+            throw new InvalidTaskTypeException("Task #{$task->id} is not a sequence task.", 422, ['id' => $task->id, 'type' => $task->task_type?->value ?? $task->task_type]);
         }
 
         $account = $task->account;
@@ -355,7 +361,7 @@ class TaskExecutionService
         }
 
         $task->update([
-            'status' => 'running',
+            'status' => TaskStatus::Running,
             'queued_at' => now(),
             'payload' => $payload,
         ]);
@@ -380,7 +386,7 @@ class TaskExecutionService
 
             BotLog::create([
                 'account_id' => $account->id,
-                'level' => 'success',
+                'level' => LogLevel::Success,
                 'message' => "[Task][Task#{$task->id}] ".__('logs.task.step_completed', ['id' => $task->id, 'step' => $index + 1, 'type' => $actionType]),
             ]);
         } catch (Throwable $e) {
@@ -395,7 +401,7 @@ class TaskExecutionService
 
             BotLog::create([
                 'account_id' => $account->id,
-                'level' => 'error',
+                'level' => LogLevel::Error,
                 'message' => "[Task][Task#{$task->id}] ".__('logs.task.step_failed', ['id' => $task->id, 'step' => $index + 1, 'type' => $actionType, 'error' => $errorMsg]),
             ]);
         }
@@ -441,19 +447,19 @@ class TaskExecutionService
         $payload['step_results'] = $stepResults;
 
         $lastResultPrefix = ($hasStepError && $hasStepSuccess)
-            ? 'PARTIAL: '
-            : ($hasStepError ? 'ERROR: ' : 'OK: ');
+            ? TaskResultPrefix::Partial
+            : ($hasStepError ? TaskResultPrefix::Error : TaskResultPrefix::Ok);
 
         $updateData = [
-            'status' => $hasStepError ? 'failed' : 'completed',
+            'status' => $hasStepError ? TaskStatus::Failed : TaskStatus::Completed,
             'last_run_at' => now(),
-            'last_result' => $lastResultPrefix.(strlen($result) > 150 ? substr($result, 0, 147).'...' : $result),
+            'last_result' => $lastResultPrefix->format(strlen($result) > 150 ? substr($result, 0, 147).'...' : $result),
             'payload' => $payload,
             'completed_steps' => 0,
             'execution_token' => null,
         ];
 
-        if ($task->schedule_type === 'once') {
+        if ($task->schedule_type === ScheduleType::Once) {
             $updateData['is_active'] = false;
             Log::info("[Task] Task #{$task->id} deactivated by finalizeSequence(): schedule_type='once'");
         }
@@ -462,10 +468,10 @@ class TaskExecutionService
 
         BotLog::create([
             'account_id' => $accountId,
-            'level' => $hasStepError ? 'error' : 'success',
+            'level' => $hasStepError ? LogLevel::Error : LogLevel::Success,
             'message' => "[Task][Task#{$task->id}] ".($hasStepError
-                ? __('logs.task.completed_with_errors', ['type' => $task->task_type, 'result' => strlen($result) > 100 ? substr($result, 0, 97).'...' : $result])
-                : __('logs.task.completed', ['type' => $task->task_type, 'result' => strlen($result) > 100 ? substr($result, 0, 97).'...' : $result])),
+                ? __('logs.task.completed_with_errors', ['type' => $task->task_type?->value ?? $task->task_type, 'result' => strlen($result) > 100 ? substr($result, 0, 97).'...' : $result])
+                : __('logs.task.completed', ['type' => $task->task_type?->value ?? $task->task_type, 'result' => strlen($result) > 100 ? substr($result, 0, 97).'...' : $result])),
         ]);
 
         return [
@@ -484,9 +490,9 @@ class TaskExecutionService
             '[Task] Task #%d rejected in %s() because is_active=false. state: type=%s status=%s schedule=%s token=%s expected_token=%s completed_steps=%s queued_at=%s last_run_at=%s updated_at=%s last_result=%s',
             $task->id,
             $entryPoint,
-            (string) $task->task_type,
-            (string) $task->status,
-            (string) $task->schedule_type,
+            (string) $task->task_type?->value,
+            (string) $task->status?->value,
+            (string) $task->schedule_type?->value,
             $task->execution_token ?? 'null',
             $expectedToken ?? 'null',
             (string) $task->completed_steps,
@@ -502,14 +508,16 @@ class TaskExecutionService
      *
      * @param  array<string, mixed>  $payload
      */
-    public function executeSingleActionWithRetry(Account $account, string $taskType, array $payload, int $maxAttempts = 2): string
+    public function executeSingleActionWithRetry(Account $account, TaskType|string $taskType, array $payload, int $maxAttempts = 2): string
     {
+        $taskTypeStr = $taskType instanceof TaskType ? $taskType->value : $taskType;
+
         for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
             try {
-                return $this->executeSingleAction($account, $taskType, $payload);
+                return $this->executeSingleAction($account, $taskTypeStr, $payload);
             } catch (GameServerErrorException $e) {
                 if (in_array($e->getCode(), [1005, 1012], true) && $attempt < $maxAttempts) {
-                    Log::info("[TaskExecution] Action [{$taskType}] hit game error {$e->getCode()}; resetting session and retrying (attempt {$attempt}/{$maxAttempts})");
+                    Log::info("[TaskExecution] Action [{$taskTypeStr}] hit game error {$e->getCode()}; resetting session and retrying (attempt {$attempt}/{$maxAttempts})");
                     $cookieFile = $this->authService->getCookieFile($account);
                     if (file_exists($cookieFile)) {
                         unlink($cookieFile);
@@ -525,7 +533,7 @@ class TaskExecutionService
             }
         }
 
-        throw new Exception("Action [{$taskType}] failed.");
+        throw new Exception("Action [{$taskTypeStr}] failed.");
     }
 
     /**
@@ -533,9 +541,11 @@ class TaskExecutionService
      *
      * @param  array<string, mixed>  $payload
      */
-    public function executeSingleAction(Account $account, string $taskType, array $payload): string
+    public function executeSingleAction(Account $account, TaskType|string $taskType, array $payload): string
     {
-        $handler = $this->handlerRegistry->getHandler($taskType);
+        $taskTypeStr = $taskType instanceof TaskType ? $taskType->value : $taskType;
+
+        $handler = $this->handlerRegistry->getHandler($taskTypeStr);
         $result = $handler->handle($account, $payload);
 
         if ($this->isAmfPayload($result)) {

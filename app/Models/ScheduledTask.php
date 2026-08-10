@@ -1,7 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
+use App\Enums\ScheduleType;
+use App\Enums\TaskStatus;
+use App\Enums\TaskType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -35,6 +40,9 @@ class ScheduledTask extends Model
         'interval_hours' => 'integer',
         'interval_minutes' => 'integer',
         'completed_steps' => 'integer',
+        'status' => TaskStatus::class,
+        'task_type' => TaskType::class,
+        'schedule_type' => ScheduleType::class,
     ];
 
     public function account(): BelongsTo

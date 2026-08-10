@@ -62,12 +62,12 @@ class ResourcesTest extends TestCase
             'id' => 10,
             'account_id' => 1,
             'name' => 'Test Task',
-            'task_type' => 'buff_self',
+            'task_type' => 'apply_buff',
             'schedule_type' => 'daily',
             'run_at_time' => '12:00',
             'payload' => ['grid' => 123],
             'is_active' => true,
-            'status' => 'idle',
+            'status' => 'pending',
         ]);
 
         $request = Request::create('/');
@@ -76,9 +76,10 @@ class ResourcesTest extends TestCase
         $this->assertEquals(10, $resource['id']);
         $this->assertEquals(1, $resource['account_id']);
         $this->assertEquals('Test Task', $resource['name']);
-        $this->assertEquals('buff_self', $resource['task_type']);
+        $this->assertEquals('apply_buff', $resource['task_type']);
         $this->assertEquals('daily', $resource['schedule_type']);
         $this->assertTrue($resource['is_active']);
+
     }
 
     public function test_bot_log_resource_transformation(): void
