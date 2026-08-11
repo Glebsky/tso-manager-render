@@ -49,6 +49,17 @@ class TsoAuthService
     }
 
     /**
+     * Clear active session state (cookie files) for an account.
+     */
+    public function resetSession(Account $account): void
+    {
+        $cookieFile = $this->getCookieFile($account);
+        if (file_exists($cookieFile)) {
+            @unlink($cookieFile);
+        }
+    }
+
+    /**
      * Authenticate the account and store tokens.
      *
      * @return array<string, mixed>
@@ -64,10 +75,7 @@ class TsoAuthService
 
         $server = self::SERVERS[$region];
         $cookieFile = $this->getCookieFile($account);
-
-        if (file_exists($cookieFile)) {
-            @unlink($cookieFile);
-        }
+        $this->resetSession($account);
 
         try {
             $params = $this->loginLegacy($account, $cookieFile, $server);

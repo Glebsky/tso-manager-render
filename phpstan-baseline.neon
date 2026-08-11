@@ -277,34 +277,76 @@ parameters:
 			path: app/Services/MarketServerVerificationService.php
 
 		-
-			message: '#^Expression on left side of \?\? is not nullable\.$#'
-			identifier: nullCoalesce.expr
-			count: 8
-			path: app/Services/TaskExecutionService.php
-
-		-
 			message: '#^Instanceof between App\\Enums\\TaskType and App\\Enums\\TaskType will always evaluate to true\.$#'
 			identifier: instanceof.alwaysTrue
 			count: 1
 			path: app/Services/TaskExecutionService.php
 
 		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 1
+			path: app/Services/Tasks/Execution/SequenceStepExecutor.php
+
+		-
 			message: '#^Using nullsafe property access on non\-nullable type App\\Enums\\ScheduleType\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
-			path: app/Services/TaskExecutionService.php
+			path: app/Services/Tasks/Execution/TaskExecutionGuard.php
 
 		-
 			message: '#^Using nullsafe property access on non\-nullable type App\\Enums\\TaskStatus\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
-			path: app/Services/TaskExecutionService.php
+			path: app/Services/Tasks/Execution/TaskExecutionGuard.php
 
 		-
 			message: '#^Using nullsafe property access on non\-nullable type App\\Enums\\TaskType\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
-			path: app/Services/TaskExecutionService.php
+			path: app/Services/Tasks/Execution/TaskExecutionGuard.php
+
+		-
+			message: '#^Cannot cast App\\Enums\\TaskType to string\.$#'
+			identifier: cast.string
+			count: 3
+			path: app/Services/Tasks/Execution/TaskStateWriter.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 3
+			path: app/Services/Tasks/Execution/TaskStateWriter.php
+
+		-
+			message: '#^Method App\\Services\\Tasks\\Execution\\TaskStateWriter\:\:markCompleted\(\) has parameter \$payload with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/Tasks/Execution/TaskStateWriter.php
+
+		-
+			message: '#^Method App\\Services\\Tasks\\Execution\\TaskStateWriter\:\:markFailed\(\) has parameter \$payload with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/Tasks/Execution/TaskStateWriter.php
+
+		-
+			message: '#^Method App\\Services\\Tasks\\Execution\\TaskStateWriter\:\:markRunning\(\) has parameter \$payload with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/Tasks/Execution/TaskStateWriter.php
+
+		-
+			message: '#^Method App\\Services\\Tasks\\Execution\\TaskStateWriter\:\:markSequenceFinished\(\) has parameter \$payload with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/Tasks/Execution/TaskStateWriter.php
+
+		-
+			message: '#^Method App\\Services\\Tasks\\Execution\\TaskStateWriter\:\:updateStepProgress\(\) has parameter \$payload with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/Tasks/Execution/TaskStateWriter.php
 
 		-
 			message: '#^Expression on left side of \?\? is not nullable\.$#'
@@ -863,6 +905,18 @@ parameters:
 			identifier: staticMethod.notFound
 			count: 1
 			path: tests/Feature/SystemLogCleanupTest.php
+
+		-
+			message: '#^Call to an undefined method Mockery\\ExpectationInterface\|Mockery\\HigherOrderMessage\:\:once\(\)\.$#'
+			identifier: method.notFound
+			count: 5
+			path: tests/Feature/TaskExecutionCharacterizationTest.php
+
+		-
+			message: '#^Call to an undefined method Mockery\\ExpectationInterface\|Mockery\\HigherOrderMessage\:\:twice\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: tests/Feature/TaskExecutionCharacterizationTest.php
 
 		-
 			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertTrue\(\) with true will always evaluate to true\.$#'

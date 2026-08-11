@@ -109,8 +109,9 @@ class MarketOfferFetcher
                         throw new Exception(__('ui.sync.session_intercepted_market', ['code' => $errorCode]));
                     }
                     $logCallback('WARNING', __('logs.market.session_expired_retry', ['code' => $errorCode]));
-                    @unlink($this->authService->getCookieFile($account));
+                    $this->authService->resetSession($account);
                     $this->authService->login($account);
+
                     $this->amfService->resetClient();
                     $account->refresh();
                     $hasResetSession = true;

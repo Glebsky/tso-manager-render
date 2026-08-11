@@ -62,8 +62,9 @@ class AccountSyncFetcher
                         throw new Exception(__('ui.sync.session_intercepted', ['code' => $errorCode]));
                     }
                     Log::info("[AccountSync] Session expired (error {$errorCode}) for account #{$account->id}; resetting session and logging in again");
-                    @unlink($this->authService->getCookieFile($account));
+                    $this->authService->resetSession($account);
                     $this->authService->login($account);
+
                     $this->amfService->resetClient();
                     $account->refresh();
                     $hasResetSession = true;

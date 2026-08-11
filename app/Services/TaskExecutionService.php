@@ -4,32 +4,26 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Enums\LogLevel;
-use App\Enums\ScheduleType;
-use App\Enums\TaskResultPrefix;
-use App\Enums\TaskStatus;
 use App\Enums\TaskType;
-use App\Exceptions\GameServerErrorException;
-use App\Exceptions\InvalidTaskTypeException;
-use App\Exceptions\TaskAccountNotFoundException;
 use App\Exceptions\TaskExecutionException;
-use App\Exceptions\TaskInactiveException;
-use App\Exceptions\TokenMismatchException;
 use App\Models\Account;
-use App\Models\BotLog;
 use App\Models\ScheduledTask;
-use App\Services\Tasks\TaskHandlerRegistry;
+use App\Services\Tasks\Execution\SequenceStepExecutor;
+use App\Services\Tasks\Execution\SingleActionExecutor;
+use App\Services\Tasks\Execution\TaskExecutionGuard;
+use App\Services\Tasks\Execution\TaskResultSummary;
+use App\Services\Tasks\Execution\TaskStateWriter;
 use Exception;
-use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class TaskExecutionService
 {
     public function __construct(
         private readonly TsoAuthService $authService,
-        private readonly TsoAmfService $amfService,
-        private readonly ZoneParserService $zoneParser,
-        private readonly TaskHandlerRegistry $handlerRegistry,
+        private readonly TaskExecutionGuard $guard,
+        private readonly TaskStateWriter $stateWriter,
+        private readonly SingleActionExecutor $singleActionExecutor,
+        private readonly SequenceStepExecutor $sequenceStepExecutor,
     ) {}
 
     /**
@@ -39,31 +33,8 @@ class TaskExecutionService
      */
     public function execute(ScheduledTask $task, ?string $expectedToken = null, bool $force = false): string
     {
-        $task->refresh();
-
-        if (! $task->is_active && ! $force) {
-            $this->logInactive($task, 'execute', $expectedToken);
-
-            throw new TaskInactiveException($task->id);
-        }
-
-        if (! $task->is_active) {
-            Log::info("[Task] Task #{$task->id} is paused; executing anyway because force=true (manual run)");
-        }
-
-        if ($expectedToken !== null && $task->execution_token !== null && $task->execution_token !== $expectedToken) {
-            throw new TokenMismatchException($task->id, $expectedToken, $task->execution_token);
-        }
-
-        $account = $task->account;
-        if (! $account) {
-            throw new TaskAccountNotFoundException($task->id);
-        }
-        assert($account instanceof Account);
-
-        $task->update([
-            'status' => TaskStatus::Running,
-        ]);
+        $account = $this->guard->ensureCanExecute($task, $expectedToken, $force);
+        $this->stateWriter->markRunning($task);
 
         try {
             if (! $this->authService->isAuthenticated($account)) {
@@ -74,245 +45,39 @@ class TaskExecutionService
             $payload = $task->payload ?? [];
 
             if ($task->task_type === TaskType::Sequence) {
-                return $this->executeSequenceTask($task, $account, $payload);
+                return $this->sequenceStepExecutor->executeInlineSequence($task, $account, $payload);
             }
 
             return $this->executeSingleTask($task, $account, $payload);
-        } catch (Throwable $e) {
-            $this->handleOverallFailure($task, (int) $account->id, $e);
-            throw $e;
-        }
-    }
-
-    /**
-     * Execute a sequence task.
-     *
-     * @param  array<string, mixed>  $payload
-     */
-    private function executeSequenceTask(ScheduledTask $task, Account $account, array $payload): string
-    {
-        $actions = $payload['actions'] ?? [];
-        $resultsSummary = [];
-        $completedSteps = (int) ($task->completed_steps ?? 0);
-        $stepResults = $payload['step_results'] ?? [];
-        $hasStepError = false;
-
-        foreach ($actions as $index => $action) {
-            $actionType = (string) $action['task_type'];
-            $actionPayload = (array) ($action['payload'] ?? []);
-            $delay = (int) ($action['delay_seconds'] ?? 0);
-
-            if ($index < $completedSteps) {
-                $resultsSummary[] = __('tasks.step.skipped', ['step' => $index + 1, 'type' => $actionType]);
-                if (! isset($stepResults[$index])) {
-                    $stepResults[$index] = [
-                        'status' => 'completed',
-                        'error' => null,
-                    ];
-                }
-
-                continue;
-            }
-
-            try {
-                $stepResult = $this->executeSingleActionWithRetry($account, $actionType, $actionPayload);
-
-                $stepResults[$index] = [
-                    'status' => 'completed',
-                    'error' => null,
-                ];
-
-                $resultsSummary[] = __('tasks.step.ok', ['step' => $index + 1, 'type' => $actionType, 'bytes' => strlen($stepResult)]);
-
-                BotLog::create([
-                    'account_id' => $account->id,
-                    'level' => LogLevel::Success,
-                    'message' => "[Task][Task#{$task->id}] ".__('logs.task.step_completed', ['id' => $task->id, 'step' => $index + 1, 'type' => $actionType]),
-                ]);
-            } catch (Throwable $e) {
-                $hasStepError = true;
-                $errorMsg = $e instanceof TaskExecutionException
-                    ? (string) json_encode($e->toPayload())
-                    : $e->getMessage();
-
-                $stepResults[$index] = [
-                    'status' => 'failed',
-                    'error' => $errorMsg,
-                ];
-
-                $resultsSummary[] = __('tasks.step.error', ['step' => $index + 1, 'type' => $actionType, 'error' => $errorMsg]);
-
-                BotLog::create([
-                    'account_id' => $account->id,
-                    'level' => LogLevel::Error,
-                    'message' => "[Task][Task#{$task->id}] ".__('logs.task.step_failed', ['id' => $task->id, 'step' => $index + 1, 'type' => $actionType, 'error' => $errorMsg]),
-                ]);
-            }
-
-            $completedSteps = $index + 1;
-            $task->update([
-                'completed_steps' => $completedSteps,
-            ]);
-
-            if ($index < count($actions) - 1 && $delay > 0) {
-                sleep($delay);
-            }
-        }
-
-        $result = implode('; ', $resultsSummary);
-        $payload['step_results'] = $stepResults;
-
-        $nextStatus = $hasStepError ? TaskStatus::Failed : TaskStatus::Completed;
-        $lastResultPrefix = $hasStepError ? TaskResultPrefix::Error : TaskResultPrefix::Ok;
-
-        $updateData = [
-            'status' => $nextStatus,
-            'last_run_at' => now(),
-            'last_result' => $lastResultPrefix->format(strlen($result) > 150 ? substr($result, 0, 147).'...' : $result),
-            'payload' => $payload,
-            'completed_steps' => 0,
-            'execution_token' => null,
-        ];
-
-        if ($task->schedule_type === ScheduleType::Once) {
-            $updateData['is_active'] = false;
-        }
-
-        $task->update($updateData);
-
-        $logLevel = $hasStepError ? LogLevel::Error : LogLevel::Success;
-        BotLog::create([
-            'account_id' => $account->id,
-            'level' => $logLevel,
-            'message' => "[Task][Task#{$task->id}] ".($hasStepError
-                ? __('logs.task.completed_with_errors', ['type' => $task->task_type?->value ?? $task->task_type, 'result' => strlen($result) > 100 ? substr($result, 0, 97).'...' : $result])
-                : __('logs.task.completed', ['type' => $task->task_type?->value ?? $task->task_type, 'result' => strlen($result) > 100 ? substr($result, 0, 97).'...' : $result])),
-        ]);
-
-        return $result;
-    }
-
-    /**
-     * Execute a single (non-sequence) task.
-     *
-     * @param  array<string, mixed>  $payload
-     */
-    private function executeSingleTask(ScheduledTask $task, Account $account, array $payload): string
-    {
-        try {
-            $taskTypeStr = $task->task_type instanceof TaskType ? $task->task_type->value : (string) $task->task_type;
-            $result = $this->executeSingleActionWithRetry($account, $taskTypeStr, $payload);
-            $payload['step_results'] = [
-                [
-                    'status' => 'completed',
-                    'error' => null,
-                ],
-            ];
-
-            $updateData = [
-                'status' => TaskStatus::Completed,
-                'last_run_at' => now(),
-                'last_result' => TaskResultPrefix::Ok->format(strlen($result) > 100 ? substr($result, 0, 97).'...' : $result),
-                'payload' => $payload,
-                'completed_steps' => 0,
-                'execution_token' => null,
-            ];
-
-            if ($task->schedule_type === ScheduleType::Once) {
-                $updateData['is_active'] = false;
-            }
-
-            $task->update($updateData);
-
-            BotLog::create([
-                'account_id' => $account->id,
-                'level' => LogLevel::Success,
-                'message' => "[Task][Task#{$task->id}] ".__('logs.task.completed', ['type' => $task->task_type?->value ?? $task->task_type, 'result' => strlen($result) > 100 ? substr($result, 0, 97).'...' : $result]),
-            ]);
-
-            return $result;
         } catch (Throwable $e) {
             $errorMsg = $e instanceof TaskExecutionException
                 ? (string) json_encode($e->toPayload())
                 : $e->getMessage();
 
-            $payload['step_results'] = [
-                [
-                    'status' => 'failed',
-                    'error' => $errorMsg,
-                ],
-            ];
-
-            $updateData = [
-                'status' => TaskStatus::Failed,
-                'last_run_at' => now(),
-                'last_result' => TaskResultPrefix::Error->format($errorMsg),
-                'payload' => $payload,
-                'completed_steps' => 0,
-                'execution_token' => null,
-            ];
-
-            if ($task->schedule_type === ScheduleType::Once) {
-                $updateData['is_active'] = false;
-            }
-
-            $task->update($updateData);
-
-            BotLog::create([
-                'account_id' => $account->id,
-                'level' => LogLevel::Error,
-                'message' => "[Task][Task#{$task->id}] ".__('logs.task.failed', ['type' => $task->task_type?->value ?? $task->task_type, 'error' => $errorMsg]),
-            ]);
+            $payload = $task->payload ?? [];
+            $payload['step_results'] = [['status' => 'failed', 'error' => $errorMsg]];
+            $this->stateWriter->markFailed($task, (int) $account->id, $errorMsg, $payload);
 
             throw $e;
         }
     }
 
-    private function handleOverallFailure(ScheduledTask $task, int $accountId, Throwable $e): void
+    /**
+     * Execute a single non-sequence task.
+     *
+     * @param  array<string, mixed>  $payload
+     */
+    private function executeSingleTask(ScheduledTask $task, Account $account, array $payload): string
     {
-        $errorMsg = $e instanceof TaskExecutionException
-            ? (string) json_encode($e->toPayload())
-            : $e->getMessage();
+        $taskTypeStr = $task->task_type instanceof TaskType ? $task->task_type->value : (string) $task->task_type;
+        $result = $this->singleActionExecutor->executeWithRetry($account, $taskTypeStr, $payload);
 
-        $payload = $task->payload ?? [];
-        if ($task->task_type === TaskType::Sequence && isset($payload['actions']) && is_array($payload['actions'])) {
-            $completedSteps = (int) ($task->completed_steps ?? 0);
-            $stepResults = $payload['step_results'] ?? [];
-            if (! isset($stepResults[$completedSteps])) {
-                $stepResults[$completedSteps] = [
-                    'status' => 'failed',
-                    'error' => $errorMsg,
-                ];
-            }
-            $payload['step_results'] = $stepResults;
-        } else {
-            $payload['step_results'] = [
-                [
-                    'status' => 'failed',
-                    'error' => $errorMsg,
-                ],
-            ];
-        }
+        $payload['step_results'] = [['status' => 'completed', 'error' => null]];
+        $resultSummary = TaskResultSummary::formatSingle($result, true);
 
-        $updateData = [
-            'status' => TaskStatus::Failed,
-            'last_run_at' => now(),
-            'last_result' => TaskResultPrefix::Error->format($errorMsg),
-            'payload' => $payload,
-            'execution_token' => null,
-        ];
+        $this->stateWriter->markCompleted($task, (int) $account->id, $resultSummary, $payload);
 
-        if ($task->schedule_type === ScheduleType::Once) {
-            $updateData['is_active'] = false;
-        }
-
-        $task->update($updateData);
-
-        BotLog::create([
-            'account_id' => $accountId,
-            'level' => LogLevel::Error,
-            'message' => "[Task][Task#{$task->id}] ".__('logs.task.failed', ['type' => $task->task_type?->value ?? $task->task_type, 'error' => $errorMsg]),
-        ]);
+        return $result;
     }
 
     /**
@@ -324,183 +89,9 @@ class TaskExecutionService
      */
     public function executeSequenceStep(ScheduledTask $task, ?string $expectedToken = null, bool $force = false): array
     {
-        $task->refresh();
+        $account = $this->guard->ensureCanExecute($task, $expectedToken, $force);
 
-        if (! $task->is_active && ! $force) {
-            $this->logInactive($task, 'executeSequenceStep', $expectedToken);
-
-            throw new TaskInactiveException($task->id);
-        }
-
-        if ($expectedToken !== null && $task->execution_token !== null && $task->execution_token !== $expectedToken) {
-            throw new TokenMismatchException($task->id, $expectedToken, $task->execution_token);
-        }
-
-        if ($task->task_type !== TaskType::Sequence) {
-            throw new InvalidTaskTypeException("Task #{$task->id} is not a sequence task.", 422, ['id' => $task->id, 'type' => $task->task_type?->value ?? $task->task_type]);
-        }
-
-        $account = $task->account;
-        if (! $account) {
-            throw new TaskAccountNotFoundException($task->id);
-        }
-        assert($account instanceof Account);
-
-        $payload = $task->payload ?? [];
-        $actions = $payload['actions'] ?? [];
-        $stepResults = $payload['step_results'] ?? [];
-        $index = (int) ($task->completed_steps ?? 0);
-
-        if ($index === 0 && ! empty($stepResults)) {
-            $stepResults = [];
-            unset($payload['step_results']);
-        }
-
-        if (empty($actions) || $index >= count($actions)) {
-            return $this->finalizeSequence($task, (int) $account->id, $payload, $stepResults);
-        }
-
-        $task->update([
-            'status' => TaskStatus::Running,
-            'queued_at' => now(),
-            'payload' => $payload,
-        ]);
-
-        if (! $this->authService->isAuthenticated($account)) {
-            $this->authService->login($account);
-            $account->refresh();
-        }
-
-        $action = $actions[$index];
-        $actionType = (string) $action['task_type'];
-        $actionPayload = (array) ($action['payload'] ?? []);
-        $delay = (int) ($action['delay_seconds'] ?? 0);
-
-        try {
-            $stepResult = $this->executeSingleActionWithRetry($account, $actionType, $actionPayload);
-
-            $stepResults[$index] = [
-                'status' => 'completed',
-                'error' => null,
-            ];
-
-            BotLog::create([
-                'account_id' => $account->id,
-                'level' => LogLevel::Success,
-                'message' => "[Task][Task#{$task->id}] ".__('logs.task.step_completed', ['id' => $task->id, 'step' => $index + 1, 'type' => $actionType]),
-            ]);
-        } catch (Throwable $e) {
-            $errorMsg = $e instanceof TaskExecutionException
-                ? (string) json_encode($e->toPayload())
-                : $e->getMessage();
-
-            $stepResults[$index] = [
-                'status' => 'failed',
-                'error' => $errorMsg,
-            ];
-
-            BotLog::create([
-                'account_id' => $account->id,
-                'level' => LogLevel::Error,
-                'message' => "[Task][Task#{$task->id}] ".__('logs.task.step_failed', ['id' => $task->id, 'step' => $index + 1, 'type' => $actionType, 'error' => $errorMsg]),
-            ]);
-        }
-
-        $payload['step_results'] = $stepResults;
-        $task->update([
-            'completed_steps' => $index + 1,
-            'payload' => $payload,
-        ]);
-
-        if ($index + 1 >= count($actions)) {
-            return $this->finalizeSequence($task, (int) $account->id, $payload, $stepResults);
-        }
-
-        return [
-            'finished' => false,
-            'nextDelay' => $delay,
-        ];
-    }
-
-    /**
-     * @param  array<string, mixed>  $payload
-     * @param  array<int|string, mixed>  $stepResults
-     * @return array{finished: bool, nextDelay: int}
-     */
-    private function finalizeSequence(ScheduledTask $task, int $accountId, array $payload, array $stepResults): array
-    {
-        $hasStepError = false;
-        $hasStepSuccess = false;
-        $summaryParts = [];
-
-        foreach ($stepResults as $i => $stepResult) {
-            if (($stepResult['status'] ?? null) === 'failed') {
-                $hasStepError = true;
-                $summaryParts[] = __('tasks.step.error_short', ['step' => $i + 1, 'error' => $stepResult['error'] ?? 'unknown']);
-            } else {
-                $hasStepSuccess = true;
-                $summaryParts[] = __('tasks.step.ok_short', ['step' => $i + 1]);
-            }
-        }
-
-        $result = implode('; ', $summaryParts);
-        $payload['step_results'] = $stepResults;
-
-        $lastResultPrefix = ($hasStepError && $hasStepSuccess)
-            ? TaskResultPrefix::Partial
-            : ($hasStepError ? TaskResultPrefix::Error : TaskResultPrefix::Ok);
-
-        $updateData = [
-            'status' => $hasStepError ? TaskStatus::Failed : TaskStatus::Completed,
-            'last_run_at' => now(),
-            'last_result' => $lastResultPrefix->format(strlen($result) > 150 ? substr($result, 0, 147).'...' : $result),
-            'payload' => $payload,
-            'completed_steps' => 0,
-            'execution_token' => null,
-        ];
-
-        if ($task->schedule_type === ScheduleType::Once) {
-            $updateData['is_active'] = false;
-            Log::info("[Task] Task #{$task->id} deactivated by finalizeSequence(): schedule_type='once'");
-        }
-
-        $task->update($updateData);
-
-        BotLog::create([
-            'account_id' => $accountId,
-            'level' => $hasStepError ? LogLevel::Error : LogLevel::Success,
-            'message' => "[Task][Task#{$task->id}] ".($hasStepError
-                ? __('logs.task.completed_with_errors', ['type' => $task->task_type?->value ?? $task->task_type, 'result' => strlen($result) > 100 ? substr($result, 0, 97).'...' : $result])
-                : __('logs.task.completed', ['type' => $task->task_type?->value ?? $task->task_type, 'result' => strlen($result) > 100 ? substr($result, 0, 97).'...' : $result])),
-        ]);
-
-        return [
-            'finished' => true,
-            'nextDelay' => 0,
-        ];
-    }
-
-    /**
-     * Diagnostics for the "inactive or paused" case: without this snapshot the
-     * log only says the task was inactive, never in which state it got there.
-     */
-    private function logInactive(ScheduledTask $task, string $entryPoint, ?string $expectedToken): void
-    {
-        Log::warning(sprintf(
-            '[Task] Task #%d rejected in %s() because is_active=false. state: type=%s status=%s schedule=%s token=%s expected_token=%s completed_steps=%s queued_at=%s last_run_at=%s updated_at=%s last_result=%s',
-            $task->id,
-            $entryPoint,
-            (string) $task->task_type?->value,
-            (string) $task->status?->value,
-            (string) $task->schedule_type?->value,
-            $task->execution_token ?? 'null',
-            $expectedToken ?? 'null',
-            (string) $task->completed_steps,
-            $task->queued_at?->toDateTimeString() ?? 'null',
-            $task->last_run_at?->toDateTimeString() ?? 'null',
-            $task->updated_at?->toDateTimeString() ?? 'null',
-            (string) ($task->last_result ?? 'null')
-        ));
+        return $this->sequenceStepExecutor->executeSingleStep($task, $account);
     }
 
     /**
@@ -510,30 +101,7 @@ class TaskExecutionService
      */
     public function executeSingleActionWithRetry(Account $account, TaskType|string $taskType, array $payload, int $maxAttempts = 2): string
     {
-        $taskTypeStr = $taskType instanceof TaskType ? $taskType->value : $taskType;
-
-        for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
-            try {
-                return $this->executeSingleAction($account, $taskTypeStr, $payload);
-            } catch (GameServerErrorException $e) {
-                if (in_array($e->getCode(), [1005, 1012], true) && $attempt < $maxAttempts) {
-                    Log::info("[TaskExecution] Action [{$taskTypeStr}] hit game error {$e->getCode()}; resetting session and retrying (attempt {$attempt}/{$maxAttempts})");
-                    $cookieFile = $this->authService->getCookieFile($account);
-                    if (file_exists($cookieFile)) {
-                        unlink($cookieFile);
-                    }
-                    $this->authService->login($account);
-                    $this->amfService->resetClient();
-                    $account->refresh();
-                    sleep(2);
-
-                    continue;
-                }
-                throw $e;
-            }
-        }
-
-        throw new Exception("Action [{$taskTypeStr}] failed.");
+        return $this->singleActionExecutor->executeWithRetry($account, $taskType, $payload);
     }
 
     /**
@@ -543,32 +111,6 @@ class TaskExecutionService
      */
     public function executeSingleAction(Account $account, TaskType|string $taskType, array $payload): string
     {
-        $taskTypeStr = $taskType instanceof TaskType ? $taskType->value : $taskType;
-
-        $handler = $this->handlerRegistry->getHandler($taskTypeStr);
-        $result = $handler->handle($account, $payload);
-
-        if ($this->isAmfPayload($result)) {
-            $parsed = $this->zoneParser->parse($result);
-            $errorCode = (int) ($parsed['errorCode'] ?? 0);
-            if ($errorCode !== 0) {
-                $errorMsg = GameErrorResolver::getMessage($errorCode);
-
-                throw new GameServerErrorException($errorCode, $errorMsg);
-            }
-        }
-
-        return $result;
-    }
-
-    private function isAmfPayload(string $payload): bool
-    {
-        if ($payload === '') {
-            return false;
-        }
-
-        return str_contains($payload, "\x00")
-            || (str_starts_with(trim($payload), '{') && str_contains($payload, 'errorCode'))
-            || str_contains($payload, '_amf_response');
+        return $this->singleActionExecutor->executeSingleAction($account, $taskType, $payload);
     }
 }

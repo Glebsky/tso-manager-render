@@ -54,12 +54,19 @@ final class TaskActivityLogger
         ]));
     }
 
-    private function log(?int $accountId, int $taskId, string $message): void
+    public function logTaskEvent(?int $accountId, int $taskId, LogLevel|string $level, string $message): void
     {
+        $logLevel = $level instanceof LogLevel ? $level : LogLevel::from((string) $level);
+
         BotLog::create([
             'account_id' => $accountId,
-            'level' => LogLevel::Info,
-            'message' => "[Task][Task#{$taskId}] ".CredentialRedactor::redact($message),
+            'level' => $logLevel,
+            'message' => CredentialRedactor::redact("[Task][Task#{$taskId}] {$message}"),
         ]);
+    }
+
+    private function log(?int $accountId, int $taskId, string $message): void
+    {
+        $this->logTaskEvent($accountId, $taskId, LogLevel::Info, $message);
     }
 }
