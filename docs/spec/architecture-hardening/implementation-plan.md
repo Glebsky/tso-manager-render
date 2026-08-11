@@ -29,7 +29,7 @@ mixes a behavior change with a mass reformat.
 | 8 | WP-4 | Central safe error contract | P0 | FR-1.4, FR-2.5 | M | DONE |
 | 9 | WP-3 | Encrypted credentials at rest | P0 | ADR-007, FR-1.3 | S | DONE |
 | 10 | WP-6 | Backed enums for task/log domain states | P1 | FR-2.4, FR-2.3 | M | DONE |
-| 11 | WP-7 | Task execution decomposition, one engine | P1 | FR-2.1, FR-2.2, FR-2.6 | L |
+| 11 | WP-7 | Task execution decomposition, one engine | P1 | FR-2.1, FR-2.2, FR-2.6 | L | DONE |
 | 12 | WP-15 | Regression tests for the two open task bugs | P1 | audit §E | M |
 | 13 | WP-8 | Resource-based API contract, i18n, pagination | P1/P2 | ADR-003, ADR-005 | L |
 | 14 | WP-9 | Thin `Account` model, kill the N+1 | P2 | FR-3.1 | M |
