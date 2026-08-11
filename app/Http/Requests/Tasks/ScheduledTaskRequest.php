@@ -93,6 +93,8 @@ abstract class ScheduledTaskRequest extends FormRequest
             $taskType = $action['task_type'] ?? '';
             if (in_array($taskType, [TaskType::StopProduction->value, TaskType::StartProduction->value], true)) {
                 $rules["payload.actions.{$index}.payload.grid"] = 'required|integer|min:1';
+                $rules["payload.actions.{$index}.payload.building_name"] = 'nullable|string|max:255';
+                $rules["payload.actions.{$index}.payload.name"] = 'nullable|string|max:255';
             }
         }
 
@@ -108,6 +110,8 @@ abstract class ScheduledTaskRequest extends FormRequest
     {
         return [
             'payload.grid' => 'required|integer|min:1',
+            'payload.building_name' => 'nullable|string|max:255',
+            'payload.name' => 'nullable|string|max:255',
         ];
     }
 

@@ -60,7 +60,7 @@ but the full four gates must pass before the package is declared done.
 | WP-12 | `npm run build` + 4 gates | no `axios.` in views/components | loading/empty/error/stale on 6 screens | TODO |
 | WP-13 | `npm run build` + 4 gates | — | task planner regression list (§4) | TODO |
 | WP-14 | `npm run build` + 4 gates | combined view lines − ≥ 60 % | admin + public analytics parity | TODO |
-| WP-15 | 4 gates | stuck-manual-run reproduced then fixed; payload keeps `name` + `grid` | manual run of a long sequence | TODO |
+| WP-15 | 4 gates | stuck-manual-run reproduced then fixed; payload keeps `name` + `grid` | manual run of a long sequence | DONE |
 
 ---
 

@@ -41,6 +41,10 @@ final class ScheduledTaskService
      */
     public function create(array $attributes): ScheduledTask
     {
+        if (isset($attributes['payload']) && is_array($attributes['payload'])) {
+            $attributes['payload'] = $this->enrichPayloadBuildingNames((int) ($attributes['account_id'] ?? 0), $attributes['payload']);
+        }
+
         $task = ScheduledTask::create($attributes);
 
         $this->logger->scheduled($task);
@@ -53,11 +57,77 @@ final class ScheduledTaskService
      */
     public function update(ScheduledTask $task, array $attributes): ScheduledTask
     {
+        if (isset($attributes['payload']) && is_array($attributes['payload'])) {
+            $accountId = (int) ($attributes['account_id'] ?? $task->account_id);
+            $attributes['payload'] = $this->enrichPayloadBuildingNames($accountId, $attributes['payload']);
+        }
+
         $task->update($attributes);
 
         $this->logger->updated($task);
 
         return $task->fresh();
+    }
+
+    /**
+     * Auto-enrich building names in task payloads when target grid is present.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    private function enrichPayloadBuildingNames(int $accountId, array $payload): array
+    {
+        if ($accountId <= 0) {
+            return $payload;
+        }
+
+        $account = Account::find($accountId);
+        if (! $account || empty($account->zone_data)) {
+            return $payload;
+        }
+
+        $zoneData = json_decode((string) $account->zone_data, true);
+        $buildings = $zoneData['buildings'] ?? [];
+        if (! is_array($buildings) || $buildings === []) {
+            return $payload;
+        }
+
+        $gridNameMap = [];
+        foreach ($buildings as $b) {
+            if (isset($b['buildingGrid'], $b['name'])) {
+                $gridNameMap[(int) $b['buildingGrid']] = (string) $b['name'];
+            }
+        }
+
+        if ($gridNameMap === []) {
+            return $payload;
+        }
+
+        if (isset($payload['grid']) && ! isset($payload['building_name'])) {
+            $grid = (int) $payload['grid'];
+            if (isset($gridNameMap[$grid])) {
+                $payload['building_name'] = $gridNameMap[$grid];
+                if (! isset($payload['name'])) {
+                    $payload['name'] = $gridNameMap[$grid];
+                }
+            }
+        }
+
+        if (isset($payload['actions']) && is_array($payload['actions'])) {
+            foreach ($payload['actions'] as $i => $action) {
+                if (isset($action['payload']['grid']) && ! isset($action['payload']['building_name']) && is_array($action['payload'])) {
+                    $grid = (int) $action['payload']['grid'];
+                    if (isset($gridNameMap[$grid])) {
+                        $payload['actions'][$i]['payload']['building_name'] = $gridNameMap[$grid];
+                        if (! isset($payload['actions'][$i]['payload']['name'])) {
+                            $payload['actions'][$i]['payload']['name'] = $gridNameMap[$grid];
+                        }
+                    }
+                }
+            }
+        }
+
+        return $payload;
     }
 
     public function toggle(ScheduledTask $task): ScheduledTask

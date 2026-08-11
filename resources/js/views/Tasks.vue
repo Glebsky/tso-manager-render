@@ -1432,8 +1432,11 @@ export default {
 
                 let addedCount = 0;
                 for (const bTarget of selectedBuildings.value) {
+                    const bName = bTarget.buildingName || bTarget.name || (bTarget.building ? getBuildingName(bTarget.building) : null);
                     const actionPayload = {
                         grid: bTarget.buildingGrid,
+                        building_name: bName,
+                        name: bName,
                         target_scope: bTarget.scope,
                         target_player_id: bTarget.scope === 'friend' ? bTarget.friend?.id : null,
                         target_player_name: bTarget.scope === 'friend' ? (bTarget.friend?.nickname || bTarget.friend?.username) : null,
@@ -2423,14 +2426,14 @@ export default {
                 const hours = parseInt(parts[0], 10);
                 const minutes = parseInt(parts[1], 10);
 
-                // run_at_time stored in UTC, calculate next run in UTC
                 const now = new Date(currentTimeMs.value);
-                const next = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), hours, minutes, 0, 0));
+                const targetToday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), hours, minutes, 0, 0));
 
-                if (next.getTime() <= now.getTime()) {
-                    next.setUTCDate(next.getUTCDate() + 1);
+                const lastRun = parseServerDate(task.last_run_at);
+                if (lastRun && lastRun.getTime() >= targetToday.getTime()) {
+                    targetToday.setUTCDate(targetToday.getUTCDate() + 1);
                 }
-                return next;
+                return targetToday;
             }
 
             if (task.schedule_type === 'interval') {
@@ -2496,19 +2499,25 @@ export default {
         };
 
         const getBuildingDisplayName = (taskObj, action) => {
-            if (action.meta?.building) {
-                return getBuildingName(action.meta.building);
-            }
             const grid = action.payload?.grid;
-            if (!grid) return t('tasks.building_not_set');
+            let bName = action.payload?.building_name || action.payload?.name || (action.meta?.building ? getBuildingName(action.meta.building) : null);
 
-            const accId = Number(taskObj?.account_id);
-            const zd = accountZonesCache.value[accId];
-            if (zd && zd.buildings) {
-                const b = zd.buildings.find(b => Number(b.buildingGrid) === Number(grid));
-                if (b) return getBuildingName(b);
+            if (!bName && grid) {
+                const accId = Number(taskObj?.account_id);
+                const zd = accountZonesCache.value[accId];
+                if (zd && zd.buildings) {
+                    const b = zd.buildings.find(b => Number(b.buildingGrid) === Number(grid));
+                    if (b) bName = getBuildingName(b);
+                }
             }
-            return t('tasks.grid_number', { id: grid });
+
+            if (bName && grid) {
+                return `${bName} (${t('tasks.grid_number', { id: grid })})`;
+            }
+
+            if (bName) return bName;
+            if (grid) return t('tasks.grid_number', { id: grid });
+            return t('tasks.building_not_set');
         };
 
         const getBuffDisplayName = (taskObj, action) => {

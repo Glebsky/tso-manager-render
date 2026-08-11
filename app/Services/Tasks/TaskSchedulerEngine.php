@@ -70,12 +70,14 @@ class TaskSchedulerEngine
                 return false;
             }
 
-            $currentTime = $now->format('H:i');
-            $prevMinute = $now->copy()->subMinute()->format('H:i');
-            $runTime = Carbon::parse($task->run_at_time)->format('H:i');
+            $timeParts = explode(':', $task->run_at_time);
+            $hours = (int) $timeParts[0];
+            $minutes = (int) ($timeParts[1] ?? 0);
 
-            if ($runTime === $currentTime || $runTime === $prevMinute) {
-                return is_null($task->last_run_at) || $task->last_run_at->lt($now->copy()->subMinutes(2));
+            $targetToday = $now->copy()->setTime($hours, $minutes, 0);
+
+            if ($now->greaterThanOrEqualTo($targetToday)) {
+                return is_null($task->last_run_at) || $task->last_run_at->lt($targetToday);
             }
 
             return false;
