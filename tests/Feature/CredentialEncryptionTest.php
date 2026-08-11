@@ -136,4 +136,23 @@ class CredentialEncryptionTest extends TestCase
         $this->assertEquals('12345678', $rawRowDown->dso_auth_user);
         $this->assertEquals('LegacyToken999', $rawRowDown->dso_auth_token);
     }
+
+    public function test_safe_encrypted_cast_handles_unencrypted_legacy_values_without_throwing_exception(): void
+    {
+        $id = DB::table('accounts')->insertGetId([
+            'username' => 'unencrypted_user',
+            'password' => 'PlaintextPass999',
+            'dso_auth_user' => '2425303',
+            'dso_auth_token' => 'UnencryptedToken',
+            'region' => 'ru',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $account = Account::findOrFail($id);
+
+        $this->assertEquals('PlaintextPass999', $account->password);
+        $this->assertEquals('2425303', $account->dso_auth_user);
+        $this->assertEquals('UnencryptedToken', $account->dso_auth_token);
+    }
 }

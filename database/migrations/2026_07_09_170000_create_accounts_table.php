@@ -14,8 +14,9 @@ return new class extends Migration
             $table->text('password');
             $table->string('region')->default('ru');
             $table->string('nickname')->nullable();
-            $table->string('dso_auth_user')->nullable();
-            $table->string('dso_auth_token')->nullable();
+            $table->text('dso_auth_user')->nullable();
+            $table->text('dso_auth_token')->nullable();
+
             $table->string('bb_url')->nullable();
             $table->string('status')->default('offline');
             $table->text('zone_data')->nullable();

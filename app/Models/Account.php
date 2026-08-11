@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Casts\SafeEncrypted;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -23,9 +24,9 @@ class Account extends Model
     ];
 
     protected $casts = [
-        'password' => 'encrypted',
-        'dso_auth_user' => 'encrypted',
-        'dso_auth_token' => 'encrypted',
+        'password' => SafeEncrypted::class,
+        'dso_auth_user' => SafeEncrypted::class,
+        'dso_auth_token' => SafeEncrypted::class,
         'last_sync_at' => 'datetime',
     ];
 
