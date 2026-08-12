@@ -141,7 +141,7 @@ export default {
             if (accounts.value.length === 0) loading.value = true;
             try {
                 const res = await axios.get('/api/accounts');
-                accounts.value = res.data || [];
+                accounts.value = res.data.data || res.data || [];
             } catch (e) {
                 showToast(t('accounts.load_failed'), 'error');
             } finally {
@@ -153,7 +153,7 @@ export default {
             submitting.value = true;
             try {
                 const res = await axios.post('/api/accounts', form.value);
-                if (res.data.success) {
+                if (res.status === 201 || res.data.data || res.data.success) {
                     showToast(t('accounts.added'));
                     form.value.username = '';
                     form.value.password = '';

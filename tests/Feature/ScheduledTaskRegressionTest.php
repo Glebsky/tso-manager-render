@@ -154,7 +154,7 @@ class ScheduledTaskRegressionTest extends TestCase
 
         $response = $this->postJson("/api/tasks/{$task->id}/execute");
 
-        $response->assertOk();
+        $this->assertContains($response->status(), [200, 202]);
         $this->assertTrue($response->json('queued'));
         $this->assertSame(TaskStatus::Queued->value, $response->json('task.status'));
 

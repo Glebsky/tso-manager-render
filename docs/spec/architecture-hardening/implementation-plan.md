@@ -31,7 +31,7 @@ mixes a behavior change with a mass reformat.
 | 10 | WP-6 | Backed enums for task/log domain states | P1 | FR-2.4, FR-2.3 | M | DONE |
 | 11 | WP-7 | Task execution decomposition, one engine | P1 | FR-2.1, FR-2.2, FR-2.6 | L | DONE |
 | 12 | WP-15 | Regression tests for the two open task bugs | P1 | audit §E | M | DONE |
-| 13 | WP-8 | Resource-based API contract, i18n, pagination | P1/P2 | ADR-003, ADR-005 | L |
+| 13 | WP-8 | Resource-based API contract, i18n, pagination | P1/P2 | ADR-003, ADR-005 | L | DONE |
 | 14 | WP-9 | Thin `Account` model, kill the N+1 | P2 | FR-3.1 | M |
 | 15 | WP-10 | Protocol boundary: typed AMF VOs + `TsoClientInterface` | P2 | FR-3.3 | L |
 | 16 | WP-12 | Frontend API clients + composables | P3 | FR-4.2 | L |

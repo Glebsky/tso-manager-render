@@ -8,7 +8,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\PublicServerResource;
 use App\Services\Market\MarketServerService;
 use App\Services\MarketCacheService;
-use App\Support\Http\ApiResponder;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -19,7 +18,6 @@ final class PublicServerController extends Controller
     public function __construct(
         private readonly MarketServerService $servers,
         private readonly MarketCacheService $cache,
-        private readonly ApiResponder $responder,
     ) {}
 
     public function __invoke(): JsonResponse
@@ -32,6 +30,6 @@ final class PublicServerController extends Controller
             fn (): array => PublicServerResource::collection($this->servers->publicServers())->resolve()
         );
 
-        return $this->responder->data($data);
+        return new JsonResponse($data);
     }
 }

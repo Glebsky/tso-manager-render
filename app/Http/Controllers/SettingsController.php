@@ -9,7 +9,7 @@ use App\Http\Resources\SettingResource;
 use App\Models\ScheduledTask;
 use App\Models\Setting;
 use App\Services\SystemLogCleanupService;
-use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -29,31 +29,24 @@ class SettingsController extends Controller
         ]);
     }
 
-    public function update(UpdateSettingsRequest $request): JsonResponse
+    public function update(UpdateSettingsRequest $request): SettingResource
     {
         $validated = $request->validated();
 
         Setting::set('sync_interval', $validated['sync_interval']);
         Setting::set('log_retention_days', $validated['log_retention_days']);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Settings updated.',
-            'settings' => new SettingResource($validated),
-        ]);
+        return new SettingResource($validated);
     }
 
-    public function clearLogs(): JsonResponse
+    public function clearLogs(): Response
     {
         $this->logCleanupService->clearAllLogs();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'All logs cleared.',
-        ]);
+        return response()->noContent();
     }
 
-    public function stopAllTasks(): JsonResponse
+    public function stopAllTasks(): Response
     {
         $affected = ScheduledTask::query()->where('is_active', true)->pluck('id')->all();
 
@@ -65,9 +58,6 @@ class SettingsController extends Controller
 
         ScheduledTask::query()->update(['is_active' => false]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'All scheduled tasks paused.',
-        ]);
+        return response()->noContent();
     }
 }

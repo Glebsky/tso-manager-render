@@ -7,7 +7,6 @@ namespace App\Http\Controllers\Market;
 use App\Http\Controllers\Controller;
 use App\Services\Market\MarketCatalogService;
 use App\Services\MarketCacheService;
-use App\Support\Http\ApiResponder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -19,14 +18,13 @@ final class CatalogController extends Controller
     public function __construct(
         private readonly MarketCatalogService $catalog,
         private readonly MarketCacheService $cache,
-        private readonly ApiResponder $responder,
     ) {}
 
     public function goods(Request $request): JsonResponse
     {
         $serverId = $this->cache->resolveServerId($request->input('server_id'));
 
-        return $this->responder->data($this->catalog->goods($serverId));
+        return new JsonResponse($this->catalog->goods($serverId));
     }
 
     public function targets(Request $request): JsonResponse
@@ -34,11 +32,11 @@ final class CatalogController extends Controller
         $itemId = (string) $request->input('item_id');
 
         if ($itemId === '') {
-            return $this->responder->data([]);
+            return new JsonResponse([]);
         }
 
         $serverId = $this->cache->resolveServerId($request->input('server_id'));
 
-        return $this->responder->data($this->catalog->targets($serverId, $itemId));
+        return new JsonResponse($this->catalog->targets($serverId, $itemId));
     }
 }

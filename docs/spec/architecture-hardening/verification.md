@@ -53,7 +53,7 @@ but the full four gates must pass before the package is declared done.
 | WP-6 | 4 gates | enum values equal the stored strings; existing suite unchanged | task list/planner renders statuses | DONE |
 | WP-7 | 4 gates | characterization suite green; finalization block appears once (grep) | manual run + sequence with delays, paused task, `once` task | DONE |
 
-| WP-8 | 4 gates | zero `response()->json` in controllers; locale key sets identical; pagination bounds | Accounts / Tasks / Logs screens | TODO |
+| WP-8 | 4 gates | zero `response()->json` in controllers; locale key sets identical; pagination bounds | Accounts / Tasks / Logs screens | DONE |
 | WP-9 | 4 gates | query count constant for 10 accounts; snapshot handles malformed JSON | dashboard + account list | TODO |
 | WP-10 | 4 gates | AMF payload snapshot byte-identical; transport faked | one real sync against a test account (owner-approved) | TODO |
 | WP-11 | 4 gates | grep proves zero Blade references | `/admin/login`, SPA boot | DONE |

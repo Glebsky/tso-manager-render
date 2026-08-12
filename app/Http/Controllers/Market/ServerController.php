@@ -9,63 +9,61 @@ use App\Http\Requests\Market\StoreMarketServerRequest;
 use App\Http\Requests\Market\UpdateMarketServerRequest;
 use App\Models\MarketServerConnection;
 use App\Services\Market\MarketServerService;
-use App\Support\Http\ApiResponder;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
 
 /**
  * Market server connections (CRUD, verification, manual sync).
- *
- * The controller only translates HTTP to a use case and back; all rules live
- * in {@see MarketServerService}.
  */
 final class ServerController extends Controller
 {
     public function __construct(
         private readonly MarketServerService $servers,
-        private readonly ApiResponder $responder,
     ) {}
 
     public function index(): JsonResponse
     {
-        return $this->responder->data($this->servers->overview());
+        return new JsonResponse($this->servers->overview());
     }
 
     public function store(StoreMarketServerRequest $request): JsonResponse
     {
         $server = $this->servers->createForAccount($request->accountId());
 
-        return $this->responder->success(
-            $this->servers->createdMessage($server),
-            ['server' => $server]
-        );
+        return new JsonResponse([
+            'success' => true,
+            'server' => $server,
+            'message' => $this->servers->createdMessage($server),
+        ], 201);
     }
 
     public function update(UpdateMarketServerRequest $request, MarketServerConnection $server): JsonResponse
     {
         $updated = $this->servers->update($server, $request->validated());
 
-        return $this->responder->success(
-            __('ui.market.api.server_updated'),
-            ['server' => $updated]
-        );
+        return new JsonResponse([
+            'success' => true,
+            'server' => $updated,
+            'message' => __('ui.market.api.server_updated'),
+        ]);
     }
 
-    public function destroy(MarketServerConnection $server): JsonResponse
+    public function destroy(MarketServerConnection $server): Response
     {
         $this->servers->delete($server);
 
-        return $this->responder->success(__('ui.market.api.server_deleted'));
+        return response()->noContent();
     }
 
     public function verify(MarketServerConnection $server): JsonResponse
     {
         $result = $this->servers->verify($server);
 
-        return $this->responder->data($result['payload'], $result['status']);
+        return new JsonResponse($result['payload'], $result['status']);
     }
 
     public function sync(MarketServerConnection $server): JsonResponse
     {
-        return $this->responder->data($this->servers->syncNow($server));
+        return new JsonResponse($this->servers->syncNow($server));
     }
 }

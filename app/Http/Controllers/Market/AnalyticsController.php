@@ -8,7 +8,6 @@ use App\Http\Controllers\Controller;
 use App\Services\Market\MarketAnalyticsService;
 use App\Services\Market\Support\PeriodResolver;
 use App\Services\MarketCacheService;
-use App\Support\Http\ApiResponder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -22,7 +21,6 @@ final class AnalyticsController extends Controller
         private readonly MarketAnalyticsService $analytics,
         private readonly PeriodResolver $periods,
         private readonly MarketCacheService $cache,
-        private readonly ApiResponder $responder,
     ) {}
 
     public function __invoke(Request $request): JsonResponse
@@ -34,7 +32,7 @@ final class AnalyticsController extends Controller
         $targetItemId = (string) $request->input('target_item_id');
 
         if ($itemId === '' || $targetItemId === '') {
-            return $this->responder->data($this->analytics->overview(
+            return new JsonResponse($this->analytics->overview(
                 $serverId,
                 $period,
                 (int) $request->input('page', 1),
@@ -42,7 +40,7 @@ final class AnalyticsController extends Controller
             ));
         }
 
-        return $this->responder->data(
+        return new JsonResponse(
             $this->analytics->pair($serverId, $itemId, $targetItemId, $period)
         );
     }

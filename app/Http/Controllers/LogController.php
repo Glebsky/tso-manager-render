@@ -21,6 +21,9 @@ class LogController extends Controller
      */
     public function index(Request $request): AnonymousResourceCollection
     {
+        $perPage = (int) $request->input('per_page', $request->input('limit', 100));
+        $perPage = max(1, min(100, $perPage));
+
         $query = BotLog::with('account:id,username,nickname')->latest('created_at');
 
         if ($request->filled('account_id')) {
@@ -31,11 +34,14 @@ class LogController extends Controller
             $query->where('level', $request->input('level'));
         }
 
-        $logs = $query->paginate(100);
+        $logs = $query->paginate($perPage);
         $accounts = Account::select('id', 'username', 'nickname')->orderBy('username')->get();
 
         return BotLogResource::collection($logs)->additional([
             'accounts' => AccountResource::collection($accounts),
+            'meta' => [
+                'server_time' => now()->toIso8601String(),
+            ],
         ]);
     }
 }

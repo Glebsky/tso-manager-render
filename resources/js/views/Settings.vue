@@ -190,7 +190,7 @@ export default {
             clearingLogs.value = true;
             try {
                 const res = await axios.delete('/api/settings/logs');
-                if (res.data.success) {
+                if (res.status === 204 || res.data.success) {
                     showToast(t('settings.logs_cleared'));
                 }
             } catch (e) {
@@ -205,7 +205,7 @@ export default {
             stoppingTasks.value = true;
             try {
                 const res = await axios.post('/api/settings/tasks/stop');
-                if (res.data.success) {
+                if (res.status === 204 || res.data.success) {
                     showToast(t('settings.tasks_deactivated'));
                 }
             } catch (e) {

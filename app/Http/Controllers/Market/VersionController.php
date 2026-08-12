@@ -6,7 +6,6 @@ namespace App\Http\Controllers\Market;
 
 use App\Http\Controllers\Controller;
 use App\Services\MarketCacheService;
-use App\Support\Http\ApiResponder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -18,7 +17,6 @@ final class VersionController extends Controller
 {
     public function __construct(
         private readonly MarketCacheService $cache,
-        private readonly ApiResponder $responder,
     ) {}
 
     public function __invoke(Request $request): JsonResponse
@@ -26,7 +24,7 @@ final class VersionController extends Controller
         $serverId = $this->cache->resolveServerId($request->input('server_id'));
         $dataVersion = $this->cache->dataVersion($serverId);
 
-        $response = $this->responder->data([
+        $response = new JsonResponse([
             'server_id' => $serverId,
             'data_version' => $dataVersion,
         ]);

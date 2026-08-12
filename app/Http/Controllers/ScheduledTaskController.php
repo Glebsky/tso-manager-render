@@ -11,6 +11,9 @@ use App\Http\Resources\ScheduledTaskResource;
 use App\Models\ScheduledTask;
 use App\Services\Tasks\ScheduledTaskService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
 
 /**
  * RESTful HTTP entry point for the task planner.
@@ -20,14 +23,23 @@ class ScheduledTaskController extends Controller
     public function __construct(private readonly ScheduledTaskService $tasks) {}
 
     /**
-     * Show the task planner view payload.
+     * Show the task planner view payload with paginated tasks.
      */
-    public function index(): JsonResponse
+    public function index(Request $request): AnonymousResourceCollection
     {
-        return response()->json([
-            'tasks' => ScheduledTaskResource::collection($this->tasks->tasks()),
+        $perPage = (int) $request->input('per_page', 50);
+        $perPage = max(1, min(100, $perPage));
+
+        $paginator = ScheduledTask::with('account:id,username,nickname')
+            ->latest()
+            ->paginate($perPage);
+
+        return ScheduledTaskResource::collection($paginator)->additional([
+            'tasks' => ScheduledTaskResource::collection($paginator->items()),
             'accounts' => AccountResource::collection($this->tasks->accounts()),
-            'server_time' => now()->toIso8601String(),
+            'meta' => [
+                'server_time' => now()->toIso8601String(),
+            ],
         ]);
     }
 
@@ -37,55 +49,63 @@ class ScheduledTaskController extends Controller
     public function store(StoreScheduledTaskRequest $request): JsonResponse
     {
         $task = $this->tasks->create($request->attributesForTask());
+        $resource = new ScheduledTaskResource($task);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Task scheduled.',
-            'task' => new ScheduledTaskResource($task),
-            'server_time' => now()->toIso8601String(),
-        ], 201);
+        return $resource
+            ->additional([
+                'success' => true,
+                'message' => 'Task scheduled.',
+                'task' => $resource,
+                'meta' => [
+                    'server_time' => now()->toIso8601String(),
+                ],
+            ])
+            ->response()
+            ->setStatusCode(201);
     }
 
     /**
      * Update an existing scheduled task.
      */
-    public function update(UpdateScheduledTaskRequest $request, ScheduledTask $task): JsonResponse
+    public function update(UpdateScheduledTaskRequest $request, ScheduledTask $task): ScheduledTaskResource
     {
         $updated = $this->tasks->update($task, $request->attributesForTask());
+        $resource = new ScheduledTaskResource($updated);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Task updated.',
-            'task' => new ScheduledTaskResource($updated),
-            'server_time' => now()->toIso8601String(),
-        ]);
+        return $resource
+            ->additional([
+                'success' => true,
+                'message' => 'Task updated.',
+                'task' => $resource,
+                'meta' => [
+                    'server_time' => now()->toIso8601String(),
+                ],
+            ]);
     }
 
     /**
      * Toggle is_active on/off.
      */
-    public function toggle(ScheduledTask $task): JsonResponse
+    public function toggle(ScheduledTask $task): ScheduledTaskResource
     {
         $task = $this->tasks->toggle($task);
+        $resource = new ScheduledTaskResource($task);
 
-        return response()->json([
+        return $resource->additional([
             'success' => true,
             'message' => 'Task '.($task->is_active ? 'activated' : 'paused').'.',
-            'task' => new ScheduledTaskResource($task),
+            'task' => $resource,
         ]);
     }
 
     /**
      * Delete a scheduled task.
      */
-    public function destroy(ScheduledTask $task): JsonResponse
+    public function destroy(ScheduledTask $task): Response
     {
         $this->tasks->delete($task);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Task deleted.',
-        ]);
+        return response()->noContent();
     }
 
     /**
@@ -93,30 +113,41 @@ class ScheduledTaskController extends Controller
      */
     public function execute(ScheduledTask $task): JsonResponse
     {
-        $task = $this->tasks->execute($task);
-        $isQueuedOrRunning = $this->tasks->isBusy($task);
+        $executedTask = $this->tasks->execute($task);
+        $isQueuedOrRunning = $this->tasks->isBusy($executedTask);
+        $resource = new ScheduledTaskResource($executedTask);
 
-        return response()->json([
-            'success' => true,
-            'queued' => $isQueuedOrRunning,
-            'task' => new ScheduledTaskResource($task),
-            'message' => $isQueuedOrRunning
-                ? 'Task queued for background execution.'
-                : ($task->last_result ?? 'Task execution completed.'),
-        ]);
+        $responseResource = $resource
+            ->additional([
+                'success' => true,
+                'queued' => $isQueuedOrRunning,
+                'task' => $resource,
+                'message' => $isQueuedOrRunning
+                    ? 'Task queued for background execution.'
+                    : ($executedTask->last_result ?? 'Task execution completed.'),
+                'meta' => [
+                    'server_time' => now()->toIso8601String(),
+                ],
+            ]);
+
+        return $responseResource->response()->setStatusCode($isQueuedOrRunning ? 202 : 200);
     }
 
     /**
      * Lightweight status endpoint for polling a single task execution.
      */
-    public function status(ScheduledTask $task): JsonResponse
+    public function status(ScheduledTask $task): ScheduledTaskResource
     {
         $task = $this->tasks->withAccount($task);
+        $resource = new ScheduledTaskResource($task);
 
-        return response()->json([
-            'success' => true,
-            'task' => new ScheduledTaskResource($task),
-            'server_time' => now()->toIso8601String(),
-        ]);
+        return $resource
+            ->additional([
+                'success' => true,
+                'task' => $resource,
+                'meta' => [
+                    'server_time' => now()->toIso8601String(),
+                ],
+            ]);
     }
 }

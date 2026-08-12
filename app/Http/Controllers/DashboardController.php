@@ -32,10 +32,13 @@ class DashboardController extends Controller
             'errors' => BotLog::where('level', LogLevel::Error)->where('created_at', '>=', now()->startOfDay())->count(),
         ];
 
-        return response()->json([
+        return new JsonResponse([
             'accounts' => AccountResource::collection($accounts),
             'logs' => BotLogResource::collection($logs),
             'stats' => $stats,
+            'meta' => [
+                'server_time' => now()->toIso8601String(),
+            ],
         ]);
     }
 }

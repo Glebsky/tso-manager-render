@@ -228,7 +228,7 @@ export default {
             if (!confirm(t('card.confirm_delete'))) return;
             try {
                 const res = await axios.delete(`/api/accounts/${localAccount.value.id}`);
-                if (res.data.success) {
+                if (res.status === 204 || res.data.success) {
                     showToast(t('card.deleted'));
                     emit('delete-success');
                 }

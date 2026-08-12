@@ -53,7 +53,7 @@ class MarketServerConnectionTest extends TestCase
             'account_id' => $account->id,
         ]);
 
-        $response->assertStatus(200)
+        $response->assertStatus(201)
             ->assertJson(['success' => true]);
 
         $this->assertDatabaseHas('market_server_connections', [

@@ -1328,7 +1328,7 @@ export default {
             if (tasks.value.length === 0 && accounts.value.length === 0) loadingPlanner.value = true;
             try {
                 const res = await axios.get('/api/tasks');
-                tasks.value = res.data.tasks || [];
+                tasks.value = res.data.data || res.data.tasks || [];
                 accounts.value = res.data.accounts || [];
             } catch (e) {
                 showToast(t('tasks.toast.load_failed'), 'error');
@@ -2100,7 +2100,7 @@ export default {
                     res = await axios.post('/api/tasks', postData);
                 }
 
-                if (res.data.success) {
+                if (res.status === 201 || res.status === 200 || res.data.data || res.data.success) {
                     showToast(editingTaskId.value ? t('tasks.toast.task_updated') : t('tasks.toast.series_scheduled'));
                     cancelEdit();
                     loadPlanner();
@@ -2118,8 +2118,9 @@ export default {
         const toggleTask = async (task) => {
             try {
                 const res = await axios.post(`/api/tasks/${task.id}/toggle`);
-                if (res.data.success) {
-                    task.is_active = res.data.task.is_active;
+                const updated = res.data.data || res.data.task || res.data;
+                if (updated && updated.is_active !== undefined) {
+                    task.is_active = updated.is_active;
                     showToast(task.is_active ? t('tasks.toast.task_activated') : t('tasks.toast.task_paused'));
                 }
             } catch (e) {
@@ -2131,7 +2132,7 @@ export default {
             if (!confirm(t('tasks.confirm.delete_task'))) return;
             try {
                 const res = await axios.delete(`/api/tasks/${id}`);
-                if (res.data.success) {
+                if (res.status === 204 || res.data.success) {
                     showToast(t('tasks.toast.task_deleted'));
                     loadPlanner();
                 }

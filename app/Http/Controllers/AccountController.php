@@ -12,6 +12,7 @@ use App\Models\Account;
 use App\Services\AccountService;
 use App\Services\AccountSyncService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
 
 /**
  * RESTful controller for managing player game accounts.
@@ -23,61 +24,59 @@ final class AccountController extends Controller
         private readonly AccountSyncService $syncService,
     ) {}
 
-    public function index(): JsonResponse
+    public function index(): mixed
     {
-        return response()->json(AccountResource::collection(Account::latest()->get()));
+        return AccountResource::collection(Account::latest()->get())
+            ->additional([
+                'meta' => [
+                    'server_time' => now()->toIso8601String(),
+                ],
+            ]);
     }
 
-    public function store(StoreAccountRequest $request): JsonResponse
+    public function store(StoreAccountRequest $request): mixed
     {
         $account = Account::create($request->validated());
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Account added.',
-            'account' => new AccountResource($account),
-        ], 201);
+        return (new AccountResource($account))
+            ->additional([
+                'meta' => [
+                    'server_time' => now()->toIso8601String(),
+                ],
+            ])
+            ->response()
+            ->setStatusCode(201);
     }
 
-    public function show(Account $account): JsonResponse
+    public function show(Account $account): AccountResource
     {
-        return response()->json((new AccountResource($account))->withZoneData());
+        return (new AccountResource($account))->withZoneData();
     }
 
     public function zone(Account $account): JsonResponse
     {
         $raw = $account->zone_data;
-        $zoneData = is_string($raw)
-            ? (json_decode($raw, true) ?? ['buildings' => [], 'specialists' => [], 'buffs' => []])
-            : ['buildings' => [], 'specialists' => [], 'buffs' => []];
+        $zoneData = json_decode((string) $raw, true) ?? ['buildings' => [], 'specialists' => [], 'buffs' => []];
 
-        return response()->json([
+        return new JsonResponse([
             'account_id' => $account->id,
             'zone_data' => $zoneData,
         ]);
     }
 
-    public function destroy(Account $account): JsonResponse
+    public function destroy(Account $account): Response
     {
         $this->accountService->deleteAccount($account);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Account deleted.',
-        ]);
+        return response()->noContent();
     }
 
-    public function sync(Account $account): JsonResponse
+    public function sync(Account $account): AccountResource
     {
-        $zoneData = $this->syncService->sync($account);
-        $freshAccount = $account->fresh();
+        $this->syncService->sync($account);
+        $freshAccount = $account->fresh() ?? $account;
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Zone synced successfully.',
-            'account' => $freshAccount !== null ? (new AccountResource($freshAccount))->withZoneData() : null,
-            'zone_data' => $zoneData,
-        ]);
+        return (new AccountResource($freshAccount))->withZoneData();
     }
 
     public function action(ExecuteAccountActionRequest $request, Account $account): JsonResponse
@@ -85,27 +84,23 @@ final class AccountController extends Controller
         $actionType = (string) $request->input('action_type');
         $result = $this->accountService->executeAction($account, $actionType, $request->validated());
 
-        return response()->json(
+        return new JsonResponse(
             ['success' => $result['success'], 'message' => $result['message']],
             $result['success'] ? 200 : 500
         );
     }
 
-    public function updateSession(UpdateAccountSessionRequest $request, Account $account): JsonResponse
+    public function updateSession(UpdateAccountSessionRequest $request, Account $account): AccountResource
     {
-        $account = $this->accountService->updateSession($account, $request->validated());
+        $updatedAccount = $this->accountService->updateSession($account, $request->validated());
 
-        return response()->json([
-            'success' => true,
-            'message' => __('logs.account.session_updated'),
-            'account' => new AccountResource($account),
-        ]);
+        return new AccountResource($updatedAccount);
     }
 
     public function friendZone(Account $account, int|string $friendId): JsonResponse
     {
         $res = $this->accountService->getFriendZone($account, (int) $friendId);
 
-        return response()->json($res['payload'], $res['status']);
+        return new JsonResponse($res['payload'], $res['status']);
     }
 }

@@ -7,7 +7,6 @@ namespace App\Http\Controllers\Market;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\MarketSyncLogResource;
 use App\Models\MarketSyncLog;
-use App\Support\Http\ApiResponder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -16,8 +15,6 @@ use Illuminate\Http\Request;
  */
 final class SyncLogController extends Controller
 {
-    public function __construct(private readonly ApiResponder $responder) {}
-
     public function __invoke(Request $request): JsonResponse
     {
         $serverId = $request->input('server_id');
@@ -27,7 +24,7 @@ final class SyncLogController extends Controller
             ->orderByDesc('created_at')
             ->paginate((int) $request->input('limit', 10));
 
-        return $this->responder->data([
+        return new JsonResponse([
             'data' => MarketSyncLogResource::collection(collect($paginator->items()))->resolve(),
             'current_page' => $paginator->currentPage(),
             'last_page' => $paginator->lastPage(),

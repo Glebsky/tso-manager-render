@@ -157,11 +157,7 @@ class SystemLogCleanupTest extends TestCase
 
         $response = $this->actingAs($user)->deleteJson('/api/settings/logs');
 
-        $response->assertStatus(200);
-        $response->assertJson([
-            'success' => true,
-            'message' => 'All logs cleared.',
-        ]);
+        $response->assertNoContent();
 
         $this->assertEquals(0, BotLog::count());
     }
