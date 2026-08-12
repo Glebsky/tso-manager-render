@@ -873,7 +873,8 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { t } from '../lang';
-import axios from 'axios';
+import { marketApi } from '../services/api/market';
+import { accountsApi } from '../services/api/accounts';
 import { cachedGet, clearApiCache, cachedGetBulk, readBulkCache, getMarketCacheStrategy, setMarketCacheStrategy } from '../services/apiCacheService';
 import { showToast } from '../toast';
 import { getGameImageUrl, handleGameImageError } from '../services/gameImageService';
@@ -1250,13 +1251,14 @@ export default {
         // Server API methods
         const loadServers = async () => {
             try {
-                const res = await axios.get('/api/market/servers');
-                servers.value = res.data.servers || [];
-                accounts.value = res.data.accounts || [];
-                presets.value = res.data.presets || [];
-                settingsForm.value = res.data.settings || { sync_interval: '15', custom_interval_minutes: 15 };
+                const res = await marketApi.fetchMarketServers();
+                const data = res.data || res;
+                servers.value = data.servers || [];
+                accounts.value = data.accounts || [];
+                presets.value = data.presets || [];
+                settingsForm.value = data.settings || { sync_interval: '15', custom_interval_minutes: 15 };
 
-                const strategy = res.data.settings?.cache_strategy || res.data.cache_strategy;
+                const strategy = data.settings?.cache_strategy || data.cache_strategy;
                 if (strategy) {
                     cacheStrategy.value = setMarketCacheStrategy(strategy);
                 }
@@ -1351,14 +1353,13 @@ export default {
         const loadSyncLogs = async (page = 1) => {
             loadingSyncLogs.value = true;
             try {
-                const res = await axios.get('/api/market/logs', {
-                    params: { server_id: selectedServerId.value, page, limit: 10 }
-                });
-                logs.value = res.data.data || [];
+                const res = await marketApi.fetchMarketLogs({ server_id: selectedServerId.value, page, limit: 10 });
+                const data = res.data || res;
+                logs.value = data.data || data.logs || [];
                 logsPagination.value = {
-                    current_page: res.data.current_page || 1,
-                    last_page: res.data.last_page || 1,
-                    total: res.data.total || 0,
+                    current_page: data.current_page || 1,
+                    last_page: data.last_page || 1,
+                    total: data.total || 0,
                 };
             } catch (e) {
                 console.error('Failed to load logs:', e);
@@ -1370,8 +1371,8 @@ export default {
         // Server Modal Handlers
         const refreshAccounts = async () => {
             try {
-                const res = await axios.get('/api/accounts');
-                accounts.value = res.data || [];
+                const res = await accountsApi.fetchAccounts();
+                accounts.value = res.data || res.accounts || [];
             } catch (e) {
                 console.error('Failed to refresh accounts:', e);
             }
@@ -1405,10 +1406,10 @@ export default {
             try {
                 const payload = { account_id: serverForm.value.account_id };
                 if (editingServer.value) {
-                    await axios.put(`/api/market/servers/${editingServer.value.id}`, payload);
+                    await marketApi.updateMarketServer(editingServer.value.id, payload);
                     showToast(t('market.server_updated'));
                 } else {
-                    await axios.post('/api/market/servers', payload);
+                    await marketApi.saveMarketServer(payload);
                     showToast(t('market.server_created'));
                 }
                 closeServerModal();
@@ -1425,7 +1426,7 @@ export default {
         const deleteServer = async (srv) => {
             if (!confirm(t('market.confirm_delete_server', { name: srv.display_name }))) return;
             try {
-                await axios.delete(`/api/market/servers/${srv.id}`);
+                await marketApi.deleteMarketServer(srv.id);
                 showToast(t('market.server_deleted'));
                 await loadServers();
                 loadAnalyticsData({ bypass: true });
@@ -1437,8 +1438,8 @@ export default {
         const verifyServer = async (srv) => {
             verifyingId.value = srv.id;
             try {
-                const res = await axios.post(`/api/market/servers/${srv.id}/verify`);
-                showToast(res.data.message, res.data.success ? 'success' : 'warning');
+                const res = await marketApi.verifyMarketServer(srv.id);
+                showToast(res.message || 'Verification complete', res.success ? 'success' : 'warning');
                 await loadServers();
             } catch (e) {
                 const msg = e.response?.data?.message || t('market.verification_failed');
@@ -1454,15 +1455,13 @@ export default {
             syncing.value = true;
             syncingServerId.value = targetServer.id;
             try {
-                const res = await axios.post(`/api/market/servers/${targetServer.id}/sync`);
-                if (res.data.success) {
-                    showToast(t('market.sync_complete', { message: res.data.message }));
-                    clearApiCache();
-                    await loadServers();
-                    await loadAnalyticsData({ bypass: true });
-                    if (selectedItem.value && selectedTarget.value) {
-                        await fetchAnalytics({ bypass: true });
-                    }
+                const res = await marketApi.syncMarketServer(targetServer.id);
+                showToast(t('market.sync_complete', { message: res.message || '' }));
+                clearApiCache();
+                await loadServers();
+                await loadAnalyticsData({ bypass: true });
+                if (selectedItem.value && selectedTarget.value) {
+                    await fetchAnalytics({ bypass: true });
                 }
             } catch (e) {
                 const msg = e.response?.data?.message || t('market.sync_failed_toast');
@@ -1476,7 +1475,7 @@ export default {
         const saveSettings = async () => {
             saving.value = true;
             try {
-                await axios.put('/api/market/settings', settingsForm.value);
+                await marketApi.updateMarketSettings(settingsForm.value);
                 showToast(t('market.schedule_saved'));
             } catch (e) {
                 showToast('Failed to save settings.', 'error');

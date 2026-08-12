@@ -172,7 +172,7 @@
 
 <script>
 import { ref } from 'vue';
-import axios from 'axios';
+import { authApi } from '../services/api/auth';
 import LanguageSwitcher from '../components/LanguageSwitcher.vue';
 
 export default {
@@ -198,9 +198,9 @@ export default {
             errors.value = {};
 
             try {
-                const res = await axios.post('/admin/register', form.value);
-                if (res.data && res.data.redirect) {
-                    window.location.assign(res.data.redirect);
+                const res = await authApi.register(form.value);
+                if (res && res.redirect) {
+                    window.location.assign(res.redirect);
                 } else {
                     window.location.assign('/admin');
                 }

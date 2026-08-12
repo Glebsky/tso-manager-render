@@ -664,7 +664,7 @@ if (match) {
 <script>
 import { ref, computed, onMounted, h, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import axios from 'axios';
+import { accountsApi } from '../services/api/accounts';
 import { showToast } from '../toast';
 import { t, gameAny, gameAnyLookup } from '../lang';
 import { humanizeGameId, resourceName, buildingName } from '../lang/gameNames';
@@ -877,18 +877,13 @@ export default {
             if (syncing.value) return;
             syncing.value = true;
             try {
-                const res = await axios.post(`/api/accounts/${account.value.id}/sync`);
-                if (res.data.success) {
-                    showToast('Account synced successfully!');
-                    if (res.data.account) {
-                        account.value = res.data.account;
-                    }
-                } else {
-                    showToast(res.data.message || 'Sync failed.', 'error');
-                }
+                const res = await accountsApi.syncAccount(account.value.id);
+                showToast('Account synced successfully!');
+                const updatedAccount = res.data || res.account || account.value;
+                account.value = updatedAccount;
             } catch (e) {
-                if (e.response?.data?.account) {
-                    account.value = e.response.data.account;
+                if (e.response?.data?.account || e.response?.data?.data) {
+                    account.value = e.response.data.account || e.response.data.data;
                 }
                 showToast(e.response?.data?.message || 'Sync request failed.', 'error');
             } finally {
@@ -1387,16 +1382,15 @@ export default {
             const currentlyActive = isBuildingActive(b);
             const actionType = currentlyActive ? 'stop_production' : 'start_production';
             try {
-                const res = await axios.post(`/api/accounts/${account.value.id}/action`, {
-                    action_type: actionType,
+                const res = await accountsApi.executeAccountAction(account.value.id, actionType, {
                     grid: b.buildingGrid
                 });
-                if (res.data.success) {
+                if (res.success) {
                     showToast(`Production ${currentlyActive ? 'stopped' : 'started'}!`);
                     b.isProductionActive = !currentlyActive;
                     b.buildingMode = currentlyActive ? 28 : 23;
                 } else {
-                    showToast(res.data.message || 'Action failed.', 'error');
+                    showToast(res.message || 'Action failed.', 'error');
                 }
             } catch (e) {
                 showToast(e.response?.data?.message || 'Action failed.', 'error');
@@ -1408,8 +1402,8 @@ export default {
         const loadAccount = async () => {
             loading.value = true;
             try {
-                const res = await axios.get(`/api/accounts/${route.params.id}`);
-                account.value = res.data;
+                const res = await accountsApi.fetchAccountDetail(route.params.id);
+                account.value = res.data || res;
             } catch (e) {
                 showToast('Failed to load account.', 'error');
                 router.push('/accounts');
@@ -1436,17 +1430,12 @@ export default {
         const saveSession = async () => {
             sessionSubmitting.value = true;
             try {
-                const res = await axios.put(`/api/accounts/${account.value.id}/session`, sessionForm.value);
-                if (res.data.success) {
-                    showToast(t('account.session_updated'));
-                    if (res.data.account) {
-                        account.value = res.data.account;
-                    }
-                } else {
-                    showToast(res.data.message || t('account.session_save_failed'), 'error');
-                }
+                const res = await accountsApi.updateAccountSession(account.value.id, sessionForm.value);
+                showToast(t('account.session_updated'));
+                const updatedAccount = res.data || res.account || account.value;
+                account.value = updatedAccount;
             } catch (e) {
-                showToast(e.response?.data?.message || t('account.session_save_failed'), 'error');
+                showToast(e.response?.data?.message || t('account.session_failed'), 'error');
             } finally {
                 sessionSubmitting.value = false;
             }

@@ -199,7 +199,7 @@
 <script>
 import { ref, computed, onMounted } from 'vue';
 import { intlLocale } from '../lang';
-import axios from 'axios';
+import { dashboardApi } from '../services/api/dashboard';
 import AccountCard from '../components/AccountCard.vue';
 import LogEntry from '../components/LogEntry.vue';
 
@@ -225,10 +225,10 @@ export default {
         const loadData = async () => {
             loading.value = true;
             try {
-                const res = await axios.get('/api/dashboard');
-                accounts.value = res.data.accounts || [];
-                logs.value = res.data.logs || [];
-                stats.value = res.data.stats || {
+                const res = await dashboardApi.fetchDashboard();
+                accounts.value = res.accounts || [];
+                logs.value = res.logs || [];
+                stats.value = res.stats || {
                     total_accounts: 0,
                     active_tasks: 0,
                     today_actions: 0,

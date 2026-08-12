@@ -128,7 +128,7 @@
 <script>
 import { ref, onMounted, onUnmounted } from 'vue';
 import { t } from '../lang';
-import axios from 'axios';
+import { logsApi } from '../services/api/logs';
 import LogEntry from '../components/LogEntry.vue';
 import LoadingOverlay from '../components/LoadingOverlay.vue';
 import { showToast } from '../toast';
@@ -153,19 +153,17 @@ export default {
         const loadLogs = async (page = 1, background = false) => {
             if (!background) loading.value = true;
             try {
-                const res = await axios.get('/api/logs', {
-                    params: {
-                        page,
-                        account_id: filter.value.accountId,
-                        level: filter.value.level
-                    }
+                const res = await logsApi.fetchLogs({
+                    page,
+                    account_id: filter.value.accountId,
+                    level: filter.value.level
                 });
 
-                logs.value = res.data.data || [];
-                accounts.value = res.data.accounts || [];
+                logs.value = res.data || res.logs || [];
+                accounts.value = res.accounts || [];
                 pagination.value = {
-                    current_page: res.data.meta?.current_page || 1,
-                    last_page: res.data.meta?.last_page || 1
+                    current_page: res.meta?.current_page || res.current_page || 1,
+                    last_page: res.meta?.last_page || res.last_page || 1
                 };
             } catch (e) {
                 if (!background) showToast(t('logs.load_failed'), 'error');

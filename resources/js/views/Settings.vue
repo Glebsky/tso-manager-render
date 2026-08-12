@@ -127,7 +127,7 @@
 <script>
 import { ref, onMounted } from 'vue';
 import { t } from '../lang';
-import axios from 'axios';
+import { settingsApi } from '../services/api/settings';
 import { showToast } from '../toast';
 import Spinner from '../components/Spinner.vue';
 
@@ -147,8 +147,8 @@ export default {
 
         const loadSettings = async () => {
             try {
-                const res = await axios.get('/api/settings');
-                const data = res.data?.data || res.data || {};
+                const res = await settingsApi.fetchSettings();
+                const data = res?.data || res || {};
                 form.value = {
                     sync_interval: Number(data.sync_interval ?? 30),
                     log_retention_days: Number(data.log_retention_days ?? 30)
@@ -167,17 +167,15 @@ export default {
                     sync_interval: Number(form.value.sync_interval),
                     log_retention_days: Number(form.value.log_retention_days)
                 };
-                const res = await axios.put('/api/settings', payload);
-                if (res.data.success) {
-                    const data = res.data.settings?.data || res.data.settings || {};
-                    if (data.sync_interval !== undefined) {
-                        form.value.sync_interval = Number(data.sync_interval);
-                    }
-                    if (data.log_retention_days !== undefined) {
-                        form.value.log_retention_days = Number(data.log_retention_days);
-                    }
-                    showToast(t('settings.saved'));
+                const res = await settingsApi.updateSettings(payload);
+                const data = res.data || res.settings || res;
+                if (data.sync_interval !== undefined) {
+                    form.value.sync_interval = Number(data.sync_interval);
                 }
+                if (data.log_retention_days !== undefined) {
+                    form.value.log_retention_days = Number(data.log_retention_days);
+                }
+                showToast(t('settings.saved'));
             } catch (e) {
                 showToast(t('settings.save_failed'), 'error');
             } finally {
@@ -189,10 +187,8 @@ export default {
             if (!confirm(t('settings.confirm_clear_logs'))) return;
             clearingLogs.value = true;
             try {
-                const res = await axios.delete('/api/settings/logs');
-                if (res.status === 204 || res.data.success) {
-                    showToast(t('settings.logs_cleared'));
-                }
+                await settingsApi.clearLogs();
+                showToast(t('settings.logs_cleared'));
             } catch (e) {
                 showToast(t('settings.clear_failed'), 'error');
             } finally {
@@ -204,10 +200,8 @@ export default {
             if (!confirm(t('settings.confirm_pause_tasks'))) return;
             stoppingTasks.value = true;
             try {
-                const res = await axios.post('/api/settings/tasks/stop');
-                if (res.status === 204 || res.data.success) {
-                    showToast(t('settings.tasks_deactivated'));
-                }
+                await settingsApi.stopAllTasks();
+                showToast(t('settings.tasks_deactivated'));
             } catch (e) {
                 showToast(t('settings.deactivate_failed'), 'error');
             } finally {

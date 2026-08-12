@@ -41,7 +41,7 @@
 <script>
 import { ref, computed } from 'vue';
 import { buildingName } from '../lang/gameNames';
-import axios from 'axios';
+import { accountsApi } from '../services/api/accounts';
 import { showToast } from '../toast';
 import Spinner from './Spinner.vue';
 
@@ -73,16 +73,15 @@ export default {
             loading.value = true;
             const actionType = isProducing.value ? 'stop_production' : 'start_production';
             try {
-                const res = await axios.post(`/api/accounts/${props.accountId}/action`, {
-                    action_type: actionType,
+                const res = await accountsApi.executeAccountAction(props.accountId, actionType, {
                     grid: grid.value
                 });
 
-                if (res.data.success) {
+                if (res.success) {
                     showToast(`Production ${isProducing.value ? 'stopped' : 'started'}!`);
                     emit('action-success');
                 } else {
-                    showToast(res.data.message || 'Action failed.', 'error');
+                    showToast(res.message || 'Action failed.', 'error');
                 }
             } catch (e) {
                 showToast(e.response?.data?.message || 'Action failed.', 'error');

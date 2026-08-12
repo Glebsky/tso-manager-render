@@ -99,7 +99,7 @@
 import { ref, computed, watch } from 'vue';
 import { t } from '../lang';
 import { useRouter } from 'vue-router';
-import axios from 'axios';
+import { accountsApi } from '../services/api/accounts';
 import { showToast } from '../toast';
 
 export default {
@@ -199,21 +199,14 @@ export default {
             syncing.value = true;
             localAccount.value.status = 'syncing';
             try {
-                const res = await axios.post(`/api/accounts/${localAccount.value.id}/sync`);
-                if (res.data.success) {
-                    showToast(t('card.synced'));
-                    if (res.data.account) {
-                        localAccount.value = res.data.account;
-                    }
-                    emit('sync-success', res.data.account || localAccount.value);
-                } else {
-                    localAccount.value.status = 'error';
-                    showToast(res.data.message || t('card.sync_failed'), 'error');
-                    emit('sync-success');
-                }
+                const res = await accountsApi.syncAccount(localAccount.value.id);
+                showToast(t('card.synced'));
+                const updatedAccount = res.data || res.account || localAccount.value;
+                localAccount.value = updatedAccount;
+                emit('sync-success', updatedAccount);
             } catch (e) {
-                if (e.response?.data?.account) {
-                    localAccount.value = e.response.data.account;
+                if (e.response?.data?.account || e.response?.data?.data) {
+                    localAccount.value = e.response.data.account || e.response.data.data;
                 } else {
                     localAccount.value.status = 'error';
                 }
@@ -227,11 +220,9 @@ export default {
         const deleteAccount = async () => {
             if (!confirm(t('card.confirm_delete'))) return;
             try {
-                const res = await axios.delete(`/api/accounts/${localAccount.value.id}`);
-                if (res.status === 204 || res.data.success) {
-                    showToast(t('card.deleted'));
-                    emit('delete-success');
-                }
+                await accountsApi.deleteAccount(localAccount.value.id);
+                showToast(t('card.deleted'));
+                emit('delete-success');
             } catch (e) {
                 showToast(t('card.delete_failed'), 'error');
             }

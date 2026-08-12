@@ -120,7 +120,7 @@
 <script>
 import { ref, onMounted } from 'vue';
 import { t } from '../lang';
-import axios from 'axios';
+import { accountsApi } from '../services/api/accounts';
 import AccountCard from '../components/AccountCard.vue';
 import { showToast } from '../toast';
 
@@ -140,8 +140,8 @@ export default {
         const loadAccounts = async () => {
             if (accounts.value.length === 0) loading.value = true;
             try {
-                const res = await axios.get('/api/accounts');
-                accounts.value = res.data.data || res.data || [];
+                const res = await accountsApi.fetchAccounts();
+                accounts.value = res.data || res.accounts || [];
             } catch (e) {
                 showToast(t('accounts.load_failed'), 'error');
             } finally {
@@ -152,8 +152,8 @@ export default {
         const addAccount = async () => {
             submitting.value = true;
             try {
-                const res = await axios.post('/api/accounts', form.value);
-                if (res.status === 201 || res.data.data || res.data.success) {
+                const res = await accountsApi.createAccount(form.value);
+                if (res.data || res.success) {
                     showToast(t('accounts.added'));
                     form.value.username = '';
                     form.value.password = '';

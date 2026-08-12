@@ -606,7 +606,6 @@ import { showToast } from '../toast';
 import { t } from '../lang';
 import { resourceName, marketItemName } from '../lang/gameNames';
 import { TRADABLE_RESOURCES } from '../lang/resourcesCatalog';
-import axios from 'axios';
 import { cachedGet, cachedGetBulk, readBulkCache, clearApiCache, getMarketCacheStrategy, setMarketCacheStrategy } from '../services/apiCacheService';
 import { getGameImageUrl, handleGameImageError } from '../services/gameImageService';
 

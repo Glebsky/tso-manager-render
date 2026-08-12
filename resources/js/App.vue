@@ -219,7 +219,8 @@ import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { toasts } from './toast';
 import { intlLocale, t } from './lang';
-import axios from 'axios';
+import { authApi } from './services/api/auth';
+import { settingsApi } from './services/api/settings';
 import LanguageSwitcher from './components/LanguageSwitcher.vue';
 
 export default {
@@ -255,9 +256,7 @@ export default {
             loggingOut.value = true;
 
             try {
-                await axios.post('/admin/logout');
-            } catch (e) {
-                await axios.post('/logout');
+                await authApi.logout();
             } finally {
                 window.location.assign('/admin/login');
             }
@@ -306,9 +305,12 @@ export default {
 
         const syncServerTime = async () => {
             try {
-                const res = await axios.get('/api/settings');
-                if (res.data && res.data.server_time) {
-                    const serverTimeMs = Date.parse(res.data.server_time);
+                const res = await settingsApi.fetchSettings();
+                if (res && res.server_time) {
+                    const serverTimeMs = Date.parse(res.server_time);
+                    serverOffset.value = serverTimeMs - Date.now();
+                } else if (res && res.meta && res.meta.server_time) {
+                    const serverTimeMs = Date.parse(res.meta.server_time);
                     serverOffset.value = serverTimeMs - Date.now();
                 }
             } catch (e) {
