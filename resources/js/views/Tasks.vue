@@ -975,9 +975,10 @@
     </div>
 </template>
 
-<script>
+<script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import axios from 'axios';
+import { tasksApi } from '../services/api/tasks';
+import { accountsApi } from '../services/api/accounts';
 import { showToast } from '../toast';
 import { t, gameAny, gameAnyLookup, intlLocale } from '../lang';
 import { humanizeGameId, resourceName, buildingName, isBuffableBuilding, getBuildingCategory } from '../lang/gameNames';
@@ -985,11 +986,6 @@ import { canBuffTarget, isBuildingBuff, isFriendZoneBuff, getBuffDurations, form
 import { getGameImageUrl, handleGameImageError } from '../services/gameImageService';
 
 import Spinner from '../components/Spinner.vue';
-
-export default {
-    name: 'Tasks',
-    components: { Spinner },
-    setup() {
         const tasks = ref([]);
         const accounts = ref([]);
         const loadingPlanner = ref(true);
@@ -2559,143 +2555,4 @@ export default {
                 stopPollingTask(id);
             });
         });
-
-        return {
-            tasks,
-            accounts,
-            loadingPlanner,
-            scheduling,
-            selectedAccountId,
-            taskName,
-            taskType,
-            runAtTime,
-            scheduleType,
-            runAtDatetime,
-            intervalHours,
-            intervalMinutes,
-            zone,
-            payload,
-            typeIcons,
-            typeLabels,
-            availableSubTasks,
-            groupedTasks,
-            getSubTaskLabel,
-            activeDropdown,
-            selectedAccountLabel,
-            stepActionTypeLabel,
-            toggleStepActionDropdown,
-            specialistSearchTypeLabel,
-            specialistSubTaskLabel,
-            onAccountChange,
-            onStepActionTypeChange,
-            onSearchTypeChange,
-            sequenceActions,
-            stepActionType,
-            stepDelay,
-            addStepToSequence,
-            moveActionUp,
-            moveActionDown,
-            clearSequence,
-            removeAction,
-            totalBuildingsCount,
-            totalSpecialistsCount,
-            totalBuffsCount,
-            filteredBuildings,
-            filteredSpecialistsModal,
-            filteredBuffsModal,
-            scheduleTask,
-            toggleTask,
-            deleteTask,
-            runTaskNow,
-            executingTasks,
-            editingTaskId,
-            editTask,
-            cancelEdit,
-            formatDateTime,
-            formatInterval,
-            utcTimeToLocal,
-
-            // Next run time and expandable actions
-            currentTimeMs,
-            expandedTasks,
-            toggleTaskExpanded,
-            getTaskActionsList,
-            getActionStepStatus,
-            getActionStepError,
-            getTaskLastResultBadge,
-            getNextRunDate,
-            getTaskNextRunText,
-            getBuildingDisplayName,
-            getBuffDisplayName,
-
-            // target scope and friends state
-            stepTargetScope,
-            selectedFriend,
-            selectedFriendBuilding,
-            friendBuildings,
-            loadingFriendZone,
-            friendZoneError,
-            stepAmount,
-            showFriendBuildingModal,
-            friendBuildingSearch,
-            friendBuildingFilter,
-            friendsList,
-            searchedFriendBuildings,
-            filteredFriendBuildings,
-            selectFriend,
-            fetchFriendZoneBuildings,
-            openFriendBuildingModal,
-            closeFriendBuildingModal,
-            selectFriendBuilding,
-            onTargetScopeChange,
-
-            // Modal state
-            showBuildingModal,
-            showSpecialistModal,
-            showBuffModal,
-            buildingSearch,
-            buildingFilter,
-            specialistSearch,
-            buffSearch,
-            selectedBuildings,
-            selectedSpecialists,
-            selectedBuff,
-            buildingModalTab,
-            buildingCategories,
-            openBuildingModal,
-            closeBuildingModal,
-            openSpecialistModal,
-            closeSpecialistModal,
-            openBuffModal,
-            closeBuffModal,
-            selectBuff,
-
-            // Multi-select helpers
-            getBuildingTargetId,
-            isSelectedBuilding,
-            toggleBuildingSelection,
-            removeSelectedBuilding,
-            clearSelectedBuildings,
-            selectAllFilteredBuildings,
-            getSpecialistId,
-            isSelectedSpecialist,
-            toggleSpecialistSelection,
-            removeSelectedSpecialist,
-            clearSelectedSpecialists,
-            selectAllFilteredSpecialists,
-
-            // Icons and display helpers
-            getBuildingName,
-            getBuildingIcon,
-            handleBuildingIconError,
-            getSpecialistTypeName,
-            getSpecialistIcon,
-            handleSpecialistIconError,
-            getStarBuffName,
-            buffDurationLabel,
-            getBuffIcon,
-            handleBuffIconError
-        };
-    }
-};
 </script>
