@@ -36,7 +36,7 @@ mixes a behavior change with a mass reformat.
 | 15 | WP-10 | Protocol boundary: typed AMF VOs + `TsoClientInterface` | P2 | FR-3.3 | L | DONE |
 | 16 | WP-12 | Frontend API clients + composables | P3 | FR-4.2 | L | DONE |
 | 17 | WP-13 | `Tasks.vue` → `<script setup>` + component split | P3 | FR-4.1, FR-4.4 | L | DONE |
-| 18 | WP-14 | Deduplicate the two market analytics screens | P3 | FR-4.3, FR-4.4 | L |
+| 18 | WP-14 | Deduplicate the two market analytics screens | P3 | FR-4.3, FR-4.4 | L | DONE |
 
 S ≈ half a day, M ≈ 1–2 days, L ≈ 3–5 days.
 
