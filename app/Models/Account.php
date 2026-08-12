@@ -5,11 +5,15 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Casts\SafeEncrypted;
+use App\Casts\ZoneDataCast;
+use App\Support\Zone\ZoneSnapshot;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Account extends Model
 {
+    private ?ZoneSnapshot $snapshotInstance = null;
+
     protected $fillable = [
         'username',
         'password',
@@ -28,11 +32,11 @@ class Account extends Model
         'dso_auth_user' => SafeEncrypted::class,
         'dso_auth_token' => SafeEncrypted::class,
         'last_sync_at' => 'datetime',
+        'zone_data' => ZoneDataCast::class,
     ];
 
     protected $appends = [
         'server_name',
-        'is_market_connected',
         'avatar_id',
         'building_count',
     ];
@@ -42,54 +46,45 @@ class Account extends Model
         'zone_data',
     ];
 
+    public function snapshot(): ZoneSnapshot
+    {
+        return $this->snapshotInstance ??= ZoneSnapshot::fromData($this->zone_data);
+    }
+
     public function getAvatarIdAttribute(): ?int
     {
-        if (empty($this->zone_data)) {
-            return null;
-        }
-
-        try {
-            $data = is_array($this->zone_data) ? $this->zone_data : json_decode($this->zone_data, true);
-
-            return isset($data['avatarId']) ? (int) $data['avatarId'] : null;
-        } catch (\Throwable $e) {
-            return null;
-        }
+        return $this->snapshot()->avatarId();
     }
 
     public function getBuildingCountAttribute(): ?int
     {
-        if (empty($this->zone_data)) {
-            return null;
-        }
-
-        try {
-            $data = is_array($this->zone_data) ? $this->zone_data : json_decode($this->zone_data, true);
-
-            return isset($data['buildings']) && is_array($data['buildings']) ? count($data['buildings']) : null;
-        } catch (\Throwable $e) {
-            return null;
-        }
-    }
-
-    public function getIsMarketConnectedAttribute(): bool
-    {
-        return MarketServerConnection::where('account_id', $this->id)->exists();
+        return $this->snapshot()->buildingCount();
     }
 
     public function getServerNameAttribute(): ?string
     {
-        if (empty($this->zone_data)) {
-            return null;
+        return $this->snapshot()->serverName();
+    }
+
+    public function getIsMarketConnectedAttribute(): bool
+    {
+        if (array_key_exists('market_server_connections_exists', $this->attributes)) {
+            return (bool) $this->attributes['market_server_connections_exists'];
         }
 
-        try {
-            $data = is_array($this->zone_data) ? $this->zone_data : json_decode($this->zone_data, true);
-
-            return $data['gameWorldName'] ?? null;
-        } catch (\Throwable $e) {
-            return null;
+        if ($this->relationLoaded('marketServerConnections')) {
+            return $this->marketServerConnections->isNotEmpty();
         }
+
+        return $this->marketServerConnections()->exists();
+    }
+
+    /**
+     * @return HasMany<MarketServerConnection, $this>
+     */
+    public function marketServerConnections(): HasMany
+    {
+        return $this->hasMany(MarketServerConnection::class);
     }
 
     public function scheduledTasks(): HasMany

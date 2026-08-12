@@ -86,7 +86,7 @@ final class ScheduledTaskService
             return $payload;
         }
 
-        $zoneData = json_decode((string) $account->zone_data, true);
+        $zoneData = is_array($account->zone_data) ? $account->zone_data : [];
         $buildings = $zoneData['buildings'] ?? [];
         if (! is_array($buildings) || $buildings === []) {
             return $payload;

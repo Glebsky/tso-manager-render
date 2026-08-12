@@ -114,10 +114,6 @@ final class BuffPayloadValidator
      */
     private function zoneData(Account $account): array
     {
-        if (! $account->zone_data) {
-            return [];
-        }
-
-        return json_decode($account->zone_data, true) ?: [];
+        return is_array($account->zone_data) ? $account->zone_data : [];
     }
 }

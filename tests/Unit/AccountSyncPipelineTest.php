@@ -37,7 +37,7 @@ class AccountSyncPipelineTest extends TestCase
         $account->refresh();
         $this->assertEquals('online', $account->status);
         $this->assertNotNull($account->last_sync_at);
-        $this->assertStringContainsString('"userID":123', $account->zone_data);
+        $this->assertSame(123, $account->zone_data['userID'] ?? null);
 
         $persister->markError($account);
         $this->assertEquals('error', $account->fresh()->status);

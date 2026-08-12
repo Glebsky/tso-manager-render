@@ -26,7 +26,9 @@ final class AccountController extends Controller
 
     public function index(): mixed
     {
-        return AccountResource::collection(Account::latest()->get())
+        $accounts = Account::withExists('marketServerConnections')->latest()->get();
+
+        return AccountResource::collection($accounts)
             ->additional([
                 'meta' => [
                     'server_time' => now()->toIso8601String(),
@@ -55,12 +57,9 @@ final class AccountController extends Controller
 
     public function zone(Account $account): JsonResponse
     {
-        $raw = $account->zone_data;
-        $zoneData = json_decode((string) $raw, true) ?? ['buildings' => [], 'specialists' => [], 'buffs' => []];
-
         return new JsonResponse([
             'account_id' => $account->id,
-            'zone_data' => $zoneData,
+            'zone_data' => $account->snapshot()->toArray(),
         ]);
     }
 

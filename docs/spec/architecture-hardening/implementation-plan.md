@@ -32,7 +32,7 @@ mixes a behavior change with a mass reformat.
 | 11 | WP-7 | Task execution decomposition, one engine | P1 | FR-2.1, FR-2.2, FR-2.6 | L | DONE |
 | 12 | WP-15 | Regression tests for the two open task bugs | P1 | audit §E | M | DONE |
 | 13 | WP-8 | Resource-based API contract, i18n, pagination | P1/P2 | ADR-003, ADR-005 | L | DONE |
-| 14 | WP-9 | Thin `Account` model, kill the N+1 | P2 | FR-3.1 | M |
+| 14 | WP-9 | Thin `Account` model, kill the N+1 | P2 | FR-3.1 | M | DONE |
 | 15 | WP-10 | Protocol boundary: typed AMF VOs + `TsoClientInterface` | P2 | FR-3.3 | L |
 | 16 | WP-12 | Frontend API clients + composables | P3 | FR-4.2 | L |
 | 17 | WP-13 | `Tasks.vue` → `<script setup>` + component split | P3 | FR-4.1, FR-4.4 | L |

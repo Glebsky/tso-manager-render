@@ -153,7 +153,7 @@ final class AccountService
             ];
         }
 
-        $zoneData = $account->zone_data ? json_decode($account->zone_data, true) : [];
+        $zoneData = is_array($account->zone_data) ? $account->zone_data : [];
         $friends = $zoneData['friends'] ?? [];
         $friend = null;
 

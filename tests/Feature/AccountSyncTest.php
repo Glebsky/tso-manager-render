@@ -174,7 +174,7 @@ class AccountSyncTest extends TestCase
         $account->refresh();
         $this->assertEquals('online', $account->status);
         $this->assertNotNull($account->last_sync_at);
-        $this->assertJson($account->zone_data);
+        $this->assertIsArray($account->zone_data);
 
         // Lock must be released, so we can acquire it again
         $this->assertTrue(Cache::add("account_sync_lock:{$account->id}", true, 300));
