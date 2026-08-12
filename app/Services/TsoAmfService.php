@@ -5,254 +5,13 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\Account;
-use App\Services\Amf\Amf3Encoder;
+use App\Services\Amf\Transport\TsoClientInterface;
+use App\Services\Amf\Vo\defaultGame_Communication_VO_dGetFriendsVO;
+use App\Services\Amf\Vo\defaultGame_Communication_VO_dServerAction;
+use App\Services\Amf\Vo\defaultGame_Communication_VO_dServerCall;
+use App\Services\Amf\Vo\defaultGame_Communication_VO_dStartSpecialistTaskVO;
+use App\Services\Amf\Vo\defaultGame_Communication_VO_dUniqueID;
 use Exception;
-use Illuminate\Support\Facades\Log;
-
-// ── VO Classes ──────────────────────────────────────────────────────────────────
-
-class defaultGame_Communication_VO_dServerCall
-{
-    public $dsoAuthToken;
-
-    public $type;
-
-    public $zoneID;
-
-    public $dsoAuthUser;
-
-    public $data;
-
-    public $dsoAuthRandomClientID;
-}
-
-class defaultGame_Communication_VO_dServerAction
-{
-    public $endGrid;
-
-    public $grid;
-
-    public $data;
-
-    public $type;
-}
-
-class flex_messaging_messages_RemotingMessage
-{
-    public $destination;
-
-    public $operation;
-
-    public $source;
-
-    public $timestamp = 0;
-
-    public $timeToLive = 0;
-
-    public $messageId;
-
-    public $clientId = null;
-
-    public $headers;
-
-    public $body;
-}
-
-// ── AMF0 Envelope wrapper ───────────────────────────────────────────────────────
-
-function wrapAmf0Remoting(string $targetUri, string $responseUri, string $amf3Body): string
-{
-    $out = '';
-    $out .= pack('n', 3);
-    $out .= pack('n', 0);
-    $out .= pack('n', 1);
-    $out .= pack('n', strlen($targetUri)).$targetUri;
-    $out .= pack('n', strlen($responseUri)).$responseUri;
-    $out .= pack('N', 0xFFFFFFFF);
-    $out .= chr(0x11);
-    $out .= $amf3Body;
-
-    return $out;
-}
-
-// ── Load-balancer resolver ──────────────────────────────────────────────────────
-
-function getRealAmfUrl(string $bbUrl, string $dsoAuthUser, string $dsoAuthToken, string $cookieFile, int $targetZoneId = 0, ?string &$dsId = null): string
-{
-    $lsUrl = $bbUrl;
-    $amfServerUrl = '';
-
-    Log::info("[TsoAmf] Resolving real AMF server: bbUrl={$lsUrl}, user={$dsoAuthUser}, targetZoneId={$targetZoneId}");
-
-    $authUrl = rtrim($lsUrl, '/').'/authenticate';
-    $chAuth = curl_init();
-    curl_setopt($chAuth, CURLOPT_URL, $authUrl);
-    curl_setopt($chAuth, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($chAuth, CURLOPT_SSL_VERIFYPEER, false);
-    curl_setopt($chAuth, CURLOPT_POST, true);
-    curl_setopt($chAuth, CURLOPT_POSTFIELDS, http_build_query([
-        'DSOAUTHUSER' => $dsoAuthUser,
-        'DSOAUTHTOKEN' => $dsoAuthToken,
-    ]));
-    curl_setopt($chAuth, CURLOPT_COOKIEFILE, $cookieFile);
-    curl_setopt($chAuth, CURLOPT_COOKIEJAR, $cookieFile);
-    curl_setopt($chAuth, CURLOPT_HTTPHEADER, [
-        'Content-Type: application/x-www-form-urlencoded',
-        'User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.12 (KHTML, like Gecko) Chrome/9.0.570.0 Safari/534.12',
-        'Referer: http://game-cdn.thesettlersonline.net/prestaging/PS5724/SWMMO/debug/SWMMO.swf',
-    ]);
-    $authRes = (string) curl_exec($chAuth);
-    $authStatus = (int) curl_getinfo($chAuth, CURLINFO_HTTP_CODE);
-    curl_close($chAuth);
-
-    Log::info("[TsoAmf] Load server authentication: HTTP {$authStatus}, response: ".trim($authRes));
-
-    if ($authStatus === 200 && ! empty($authRes)) {
-        $parts = explode('|', trim($authRes));
-        if (count($parts) >= 3) {
-            $hash = trim($parts[2]);
-            if (strlen($hash) === 32) {
-                $dsId = substr($hash, 0, 8).'-'.
-                        substr($hash, 8, 4).'-'.
-                        substr($hash, 12, 4).'-'.
-                        substr($hash, 16, 4).'-'.
-                        substr($hash, 20);
-                Log::info("[TsoAmf] Extracted DSId from authentication response: {$dsId}");
-            }
-        }
-    }
-
-    $maxRetries = 20;
-    $lsStatus = 0;
-    $lsRes = '';
-
-    for ($i = 0; $i < $maxRetries; $i++) {
-        $ch = curl_init();
-        $requestUrl = rtrim($lsUrl, '/').'/Z'.(int) round(microtime(true) * 1000);
-        curl_setopt($ch, CURLOPT_URL, $requestUrl);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_POST, true);
-
-        $data = http_build_query([
-            'zoneID' => $targetZoneId,
-            'DSOAUTHTOKEN' => $dsoAuthToken,
-            'DSOAUTHUSER' => $dsoAuthUser,
-        ]);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-        curl_setopt($ch, CURLOPT_COOKIEFILE, $cookieFile);
-        curl_setopt($ch, CURLOPT_COOKIEJAR, $cookieFile);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Content-Type: application/x-www-form-urlencoded',
-            'User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.12 (KHTML, like Gecko) Chrome/9.0.570.0 Safari/534.12',
-            'Referer: http://game-cdn.thesettlersonline.net/prestaging/PS5724/SWMMO/debug/SWMMO.swf',
-        ]);
-
-        $lsRes = (string) curl_exec($ch);
-        $lsStatus = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-
-        Log::info("[TsoAmf] Load server attempt {$i}: HTTP {$lsStatus}, URL {$requestUrl}, response: ".substr($lsRes, 0, 300));
-
-        if ($lsStatus !== 202) {
-            $amfServerUrl = str_replace(':123443', '', trim($lsRes));
-            break;
-        }
-        sleep(2);
-    }
-
-    if (empty($amfServerUrl)) {
-        throw new Exception("Timeout waiting for Load Server. Last status: {$lsStatus}, Resp: {$lsRes}");
-    }
-
-    if (! str_starts_with($amfServerUrl, 'http')) {
-        if (str_starts_with($amfServerUrl, '//')) {
-            $amfServerUrl = 'https:'.$amfServerUrl;
-        } else {
-            $amfServerUrl = rtrim($lsUrl, '/').$amfServerUrl;
-        }
-    }
-
-    Log::info("[TsoAmf] Real AMF server resolved: {$amfServerUrl}");
-
-    return $amfServerUrl;
-}
-
-// ── AMF Client ──────────────────────────────────────────────────────────────────
-
-class TsoAmfClient
-{
-    private string $dsId = 'nil';
-
-    public function __construct(
-        private readonly string $serverUrl,
-        private readonly string $cookieFile
-    ) {}
-
-    public function setDsId(string $dsId): void
-    {
-        $this->dsId = $dsId;
-    }
-
-    public function sendCommand(mixed $dServerCall, string $destination = 'SMC', string $operation = 'ExecuteServerCall', ?string $source = 'com.bluebyte.game.servlet.EventHandler'): string
-    {
-        $message = new flex_messaging_messages_RemotingMessage;
-        $message->destination = $destination;
-        $message->operation = $operation;
-        $message->source = $source;
-        $message->messageId = sprintf(
-            '%04X%04X-%04X-%04X-%04X-%04X%04X%04X',
-            mt_rand(0, 65535), mt_rand(0, 65535),
-            mt_rand(0, 65535), mt_rand(16384, 20479),
-            mt_rand(32768, 49151),
-            mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535)
-        );
-        $message->headers = new \stdClass;
-        $message->headers->DSId = $this->dsId;
-        $message->headers->DSEndpoint = 'SMC-Endpoint';
-        $message->body = [$dServerCall];
-
-        $encoder = new Amf3Encoder;
-        $encoder->encode([$message]);
-        $amf3Body = $encoder->getOutput();
-
-        $amf0Envelope = wrapAmf0Remoting('null', '/1', $amf3Body);
-
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->serverUrl);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_POSTREDIR, 3);
-        curl_setopt($ch, CURLOPT_COOKIEFILE, $this->cookieFile);
-        curl_setopt($ch, CURLOPT_COOKIEJAR, $this->cookieFile);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Content-Type: application/x-amf',
-            'Accept: */*',
-            'User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.12 (KHTML, like Gecko) Chrome/9.0.570.0 Safari/534.12',
-            'Referer: http://game-cdn.thesettlersonline.net/prestaging/PS5724/SWMMO/debug/SWMMO.swf',
-            'x-flash-version: 11,4,402,287',
-        ]);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $amf0Envelope);
-
-        $response = (string) curl_exec($ch);
-        $error = curl_error($ch);
-        $httpCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-
-        if ($error) {
-            throw new Exception('AMF cURL Error: '.$error);
-        }
-        if ($httpCode !== 200) {
-            throw new Exception("AMF Server returned HTTP {$httpCode}. Response: ".$response);
-        }
-
-        return $response;
-    }
-}
-
-// ── Main Service ────────────────────────────────────────────────────────────────
 
 class TsoAmfService
 {
@@ -273,24 +32,23 @@ class TsoAmfService
     /** COMMAND.DESTRUCT_BUILDING — the command a click on a collectible really sends. */
     public const CMD_DESTRUCT_BUILDING = 65;
 
-    /** @var array<string, TsoAmfClient> */
-    private array $clients = [];
-
-    private string $dsId = 'nil';
-
     private int $dsoAuthRandomClientID;
 
-    public function __construct(private readonly TsoAuthService $authService)
-    {
+    public function __construct(
+        private readonly TsoAuthService $authService,
+        private readonly TsoClientInterface $client
+    ) {
         $this->dsoAuthRandomClientID = mt_rand(0, 2147483646);
     }
 
     public function setDsId(string $dsId): void
     {
-        $this->dsId = $dsId;
-        foreach ($this->clients as $client) {
-            $client->setDsId($dsId);
-        }
+        $this->client->setDsId($dsId);
+    }
+
+    public function resetClient(): void
+    {
+        $this->client->resetClients();
     }
 
     private function buildServerCall(Account $account, int $type, mixed $actionData, ?int $targetZoneId = null): defaultGame_Communication_VO_dServerCall
@@ -317,42 +75,13 @@ class TsoAmfService
         return $action;
     }
 
-    private function getClient(Account $account, int $targetZoneId = 0): TsoAmfClient
-    {
-        $clientKey = $account->id.':'.$targetZoneId;
-        if (! isset($this->clients[$clientKey])) {
-            $cookieFile = $this->authService->getCookieFile($account);
-            $dsId = 'nil';
-            $amfServerUrl = getRealAmfUrl(
-                (string) $account->bb_url,
-                (string) $account->dso_auth_user,
-                (string) $account->dso_auth_token,
-                $cookieFile,
-                $targetZoneId,
-                $dsId
-            );
-
-            $this->clients[$clientKey] = new TsoAmfClient($amfServerUrl, $cookieFile);
-            $this->clients[$clientKey]->setDsId($dsId);
-        }
-
-        return $this->clients[$clientKey];
-    }
-
-    public function resetClient(): void
-    {
-        $this->clients = [];
-    }
-
     private function sendServerCall(Account $account, int $commandType, mixed $actionData, string $destination = 'SMC', string $operation = 'ExecuteServerCall', ?string $source = 'com.bluebyte.game.servlet.EventHandler', ?int $targetZoneId = null): string
     {
         $zoneId = $targetZoneId ?? 0;
+        $call = $this->buildServerCall($account, $commandType, $actionData, $targetZoneId);
 
         try {
-            $client = $this->getClient($account, $zoneId);
-            $call = $this->buildServerCall($account, $commandType, $actionData, $targetZoneId);
-
-            return $client->sendCommand($call, $destination, $operation, $source);
+            return $this->client->sendCommand($account, $call, $destination, $operation, $source, $targetZoneId);
         } catch (Exception $e) {
             $errorMsg = $e->getMessage();
 
@@ -362,10 +91,9 @@ class TsoAmfService
                     $account->refresh();
                     $this->resetClient();
 
-                    $client = $this->getClient($account, $zoneId);
                     $call = $this->buildServerCall($account, $commandType, $actionData, $targetZoneId);
 
-                    return $client->sendCommand($call, $destination, $operation, $source);
+                    return $this->client->sendCommand($account, $call, $destination, $operation, $source, $targetZoneId);
                 } catch (Exception $retryException) {
                     throw new Exception($e->getMessage().' (Auto-relogin also failed: '.$retryException->getMessage().')');
                 }
@@ -452,9 +180,6 @@ class TsoAmfService
 
     /**
      * Collect a single island collectible (pickup).
-     *
-     * Mirrors PickupService.executePickup() in the game client: the payload is a
-     * bare dUniqueID, NOT a dServerAction wrapper like buffs/production use.
      */
     public function executePickup(Account $account, int $uniqueId1, int $uniqueId2): string
     {
@@ -467,17 +192,6 @@ class TsoAmfService
 
     /**
      * Collect one island collectible by clicking its building.
-     *
-     * Mirrors the client click path:
-     *   cGameInterface.SelectBuilding(building)
-     *     -> cCollectibleBuilding.handleSelectBuilding()
-     *     -> DestroyOnClickBuilding.handleSelectBuilding()
-     *     -> cZone.SendDestructBuildingCommand(building, "cCollectibleBuilding")
-     *        -> dServerAction { grid = building.GetGrid(), data = "cCollectibleBuilding" }
-     *           sent as COMMAND.DESTRUCT_BUILDING (65).
-     *
-     * Collectibles are "destroy on click" buildings: the destruct command is what
-     * hands the resources over, so no dUniqueID and no EXECUTE_PICKUP is involved.
      */
     public function collectCollectible(Account $account, int $grid, string $buildingClass = 'cCollectibleBuilding'): string
     {
@@ -501,25 +215,4 @@ class TsoAmfService
 
         return $this->sendServerCall($account, self::CMD_SET_TASK, $action);
     }
-}
-
-class defaultGame_Communication_VO_dUniqueID
-{
-    public $uniqueID1;
-
-    public $uniqueID2;
-}
-
-class defaultGame_Communication_VO_dStartSpecialistTaskVO
-{
-    public $uniqueID;
-
-    public $subTaskID;
-
-    public $paramString;
-}
-
-class defaultGame_Communication_VO_dGetFriendsVO
-{
-    public $version;
 }

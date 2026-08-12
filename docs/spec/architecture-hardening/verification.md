@@ -55,7 +55,7 @@ but the full four gates must pass before the package is declared done.
 
 | WP-8 | 4 gates | zero `response()->json` in controllers; locale key sets identical; pagination bounds | Accounts / Tasks / Logs screens | DONE |
 | WP-9 | 4 gates | query count constant for 10 accounts; snapshot handles malformed JSON | dashboard + account list | DONE |
-| WP-10 | 4 gates | AMF payload snapshot byte-identical; transport faked | one real sync against a test account (owner-approved) | TODO |
+| WP-10 | 4 gates | AMF payload snapshot byte-identical; transport faked | one real sync against a test account (owner-approved) | DONE |
 | WP-11 | 4 gates | grep proves zero Blade references | `/admin/login`, SPA boot | DONE |
 | WP-12 | `npm run build` + 4 gates | no `axios.` in views/components | loading/empty/error/stale on 6 screens | TODO |
 | WP-13 | `npm run build` + 4 gates | — | task planner regression list (§4) | TODO |
