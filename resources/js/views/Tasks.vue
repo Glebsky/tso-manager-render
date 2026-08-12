@@ -82,34 +82,11 @@
                 </div>
 
                 <!-- Блок времени планирования в зависимости от типа -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5 border-t border-white/5 pt-4">
-                    <!-- 1. Ежедневный запуск (Время) -->
-                    <div v-if="scheduleType === 'daily'">
-                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('tasks.run_time_daily') }}</label>
-                        <input type="time" required v-model="runAtTime" class="glass-input w-full">
-                    </div>
-
-                    <!-- 2. Одноразовый запуск (Дата и время) -->
-                    <div v-if="scheduleType === 'once'">
-                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('tasks.run_datetime') }}</label>
-                        <input type="datetime-local" required v-model="runAtDatetime" class="glass-input w-full">
-                    </div>
-
-                    <!-- 3. Интервальный запуск (Каждые X часов Y минут) -->
-                    <div v-if="scheduleType === 'interval'" class="col-span-2">
-                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('tasks.run_every') }}</label>
-                        <div class="flex gap-4">
-                            <div class="flex items-center gap-2 flex-1">
-                                <input type="number" min="0" required v-model.number="intervalHours" class="glass-input w-full">
-                                <span class="text-xs text-white/40">{{ t('tasks.hours_unit') }}</span>
-                            </div>
-                            <div class="flex items-center gap-2 flex-1">
-                                <input type="number" min="0" max="59" required v-model.number="intervalMinutes" class="glass-input w-full">
-                                <span class="text-xs text-white/40">{{ t('tasks.minutes_unit') }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <SchedulePicker v-model:runAtTime="runAtTime"
+                                v-model:runAtDatetime="runAtDatetime"
+                                v-model:intervalHours="intervalHours"
+                                v-model:intervalMinutes="intervalMinutes"
+                                :scheduleType="scheduleType" />
 
                 <!-- Панель конструктора серии действий -->
                 <div class="border-t border-white/5 pt-5 mb-5">
@@ -474,9 +451,11 @@
                     </div>
                 </div>
             </div>
-            <div v-else-if="tasks.length > 0" class="space-y-6">
+            <TaskList v-else
+                      :tasks="tasks"
+                      :filteredTasks="tasks"
+                      :accounts="accounts">
                 <div v-for="(groupTasks, accountName) in groupedTasks" :key="accountName" class="glass-card overflow-hidden">
-                    <!-- Заголовок группы (Аккаунт) -->
                     <div class="px-5 py-3 border-b border-white/5 bg-white/[0.02]">
                         <h3 class="font-medium text-white/60 flex items-center gap-2">
                             <svg class="w-4 h-4 text-emerald-400/60" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -487,491 +466,77 @@
                         </h3>
                     </div>
 
-                    <!-- Список задач -->
                     <div class="p-4 sm:p-5 space-y-4">
-                        <div v-for="task in groupTasks" :key="task.id"
-                             class="p-4 sm:p-5 rounded-2xl border transition-all duration-300 shadow-sm group"
-                             :class="task.is_active ? 'bg-white/[0.02] border-white/10 hover:border-emerald-500/30 hover:bg-emerald-500/[0.01]' : 'bg-white/[0.005] border-white/5 opacity-80 hover:opacity-100'">
-                            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                                <!-- Информация о задаче -->
-                                <div class="flex items-start sm:items-center gap-3.5 min-w-0 flex-1">
-                                    <!-- Иконка действия -->
-                                    <div class="w-11 h-11 rounded-xl flex items-center justify-center text-xl flex-shrink-0 border transition-colors shadow-inner"
-                                         :class="task.is_active ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-white/5 border-white/10 text-white/40'">
-                                        {{ task.task_type === 'sequence' ? '⛓️' : (typeIcons[task.task_type] || '📋') }}
-                                    </div>
-
-                                    <!-- Название и теги -->
-                                    <div class="min-w-0 flex-1">
-                                        <div class="flex items-center gap-2 flex-wrap mb-1">
-                                            <p class="text-sm font-bold text-white tracking-wide">
-                                                <span v-if="task.name" class="text-emerald-400">{{ task.name }}</span>
-                                                <span v-else-if="task.task_type === 'sequence'">{{ $lang.t('tasks.task_series') }} ({{ getTaskActionsList(task).length }})</span>
-                                                <span v-else>{{ typeLabels[task.task_type] || task.task_type }}</span>
-                                            </p>
-
-                                            <!-- Статус активности -->
-                                            <span class="badge text-[10px] font-semibold uppercase px-2 py-0.5"
-                                                  :class="task.is_active ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'">
-                                                {{ task.is_active ? '● ' + $lang.t('tasks.status.active') : '○ ' + $lang.t('tasks.status.pause_short') }}
-                                            </span>
-
-                                            <!-- Тип расписания -->
-                                            <span class="badge badge-neutral text-[9px] uppercase tracking-wider">
-                                                {{ task.schedule_type === 'once' ? $lang.t('tasks.once') : task.schedule_type === 'interval' ? $lang.t('tasks.interval') : $lang.t('tasks.daily') }}
-                                            </span>
-                                        </div>
-
-                                        <div class="flex flex-wrap items-center gap-2 text-[11px] text-white/50">
-                                            <!-- Раскрытие списка действий -->
-                                            <button type="button"
-                                                    @click="toggleTaskExpanded(task.id)"
-                                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/20 transition-all duration-200">
-                                                <span>{{ expandedTasks[task.id] ? '📖 ' + $lang.t('tasks.hide_actions') : '📘 ' + $lang.t('tasks.show_actions') }} ({{ getTaskActionsList(task).length }})</span>
-                                                <svg class="w-3 h-3 transition-transform duration-300" :class="{ 'rotate-180': expandedTasks[task.id] }" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                                                </svg>
-                                            </button>
-
-                                            <span v-if="task.task_type !== 'sequence' && task.payload && task.payload.grid" class="font-mono bg-white/5 px-2 py-0.5 rounded text-white/60">
-                                                {{ $lang.t('tasks.grid_number', { id: task.payload.grid }) }}
-                                            </span>
-                                            <span v-if="task.task_type !== 'sequence' && task.payload && task.payload.sub_task_id !== undefined" class="text-white/60 font-medium">
-                                                {{ getSubTaskLabel(task.task_type, task.payload.task_type, task.payload.sub_task_id) }}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Время запуска, Расписание и Кнопки управления -->
-                                <div class="flex flex-wrap items-center justify-between lg:justify-end gap-3 w-full lg:w-auto pt-3 lg:pt-0 border-t lg:border-t-0 border-white/5">
-                                    <!-- Блок времени до запуска и расписания -->
-                                    <div class="flex items-center gap-3 bg-black/20 border border-white/5 px-3.5 py-2 rounded-xl">
-                                        <!-- Время до запуска -->
-                                        <div class="text-right">
-                                            <div v-if="!task.is_active" class="flex items-center justify-end gap-1.5 text-xs text-amber-400 font-semibold">
-                                                <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-                                                <span>{{ $lang.t('tasks.status.pause_short') }}</span>
-                                            </div>
-                                            <div v-else-if="task.schedule_type === 'once' && task.last_run_at" class="flex items-center justify-end gap-1.5 text-xs text-white/40 font-medium">
-                                                <span>{{ $lang.t('tasks.status.completed') }}</span>
-                                            </div>
-                                            <div v-else class="flex flex-col items-end">
-                                                <span class="text-xs font-mono font-bold text-emerald-400 flex items-center gap-1.5">
-                                                    <svg class="w-3.5 h-3.5 text-emerald-400 animate-pulse" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                                                    </svg>
-                                                    {{ getTaskNextRunText(task).label }}
-                                                </span>
-                                                <span class="text-[9px] text-white/40 font-mono" v-if="getTaskNextRunText(task).nextRunTime">
-                                                    ({{ $lang.t('tasks.at_time') }} {{ getTaskNextRunText(task).nextRunTime }})
-                                                </span>
-                                            </div>
-                                            <p class="text-[9px] text-white/30 uppercase tracking-wider mt-0.5 font-semibold">{{ $lang.t('tasks.until_launch') }}</p>
-                                        </div>
-
-                                        <!-- Разделитель -->
-                                        <div class="h-6 w-px bg-white/10 hidden sm:block"></div>
-
-                                        <!-- Расписание -->
-                                        <div class="text-right hidden sm:block">
-                                            <p v-if="task.schedule_type === 'once'" class="text-xs text-white/70 font-mono font-medium">
-                                                {{ formatDateTime(task.run_at_datetime) }}
-                                            </p>
-                                            <p v-else-if="task.schedule_type === 'interval'" class="text-xs text-white/70 font-mono font-medium">
-                                                {{ $lang.t('tasks.every') }} {{ formatInterval(task.interval_hours, task.interval_minutes) }}
-                                            </p>
-                                            <p v-else class="text-xs text-white/70 font-mono font-medium">
-                                                {{ $lang.t('tasks.daily_at') }} {{ task.run_at_time ? utcTimeToLocal(task.run_at_time.substring(0, 5)) : '—' }}
-                                            </p>
-                                            <p class="text-[9px] text-white/30 uppercase tracking-wider mt-0.5 font-semibold">{{ $lang.t('tasks.schedule') }}</p>
-                                        </div>
-                                    </div>
-
-                                    <!-- Последний результат -->
-                                    <span v-if="getTaskLastResultBadge(task)"
-                                          class="badge text-[10px] flex-shrink-0 max-w-[120px] truncate py-1"
-                                          :class="getTaskLastResultBadge(task).class"
-                                          :title="task.last_result">
-                                        {{ getTaskLastResultBadge(task).label }}
-                                    </span>
-
-                                    <!-- Кнопки действий -->
-                                    <div class="flex items-center gap-1.5 flex-shrink-0">
-                                        <!-- Кнопка ручного запуска -->
-                                        <button @click="runTaskNow(task)"
-                                                :disabled="executingTasks[task.id]"
-                                                class="btn-secondary btn-sm flex items-center justify-center gap-1.5"
-                                                :class="executingTasks[task.id] ? 'opacity-50 cursor-not-allowed' : 'hover:border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10'"
-                                                :title="$lang.t('tasks.run_now')">
-                                            <svg v-if="executingTasks[task.id]" class="animate-spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                            </svg>
-                                            <svg v-else class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
-                                            </svg>
-                                            <span class="text-[10px] uppercase font-bold">{{ executingTasks[task.id] ? $lang.t('tasks.status.launching') : $lang.t('tasks.run_short') }}</span>
-                                        </button>
-
-                                        <!-- Кнопка редактирования -->
-                                        <button @click="editTask(task)"
-                                                class="btn-secondary btn-sm flex items-center justify-center gap-1.5"
-                                                :class="editingTaskId === task.id ? 'border-amber-500/50 bg-amber-500/20 text-amber-300' : 'hover:border-amber-500/40 text-amber-400 hover:bg-amber-500/10'"
-                                                :title="$lang.t('tasks.edit_task')">
-                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
-                                            </svg>
-                                            <span class="text-[10px] uppercase font-bold">{{ $lang.t('tasks.edit_short') }}</span>
-                                        </button>
-
-                                        <!-- Тумблер активации -->
-                                        <button @click="toggleTask(task)"
-                                                class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 flex-shrink-0"
-                                                :class="task.is_active ? 'bg-emerald-500' : 'bg-white/10'"
-                                                :title="task.is_active ? $lang.t('tasks.status.active') : $lang.t('tasks.status.pause_short')">
-                                            <span class="inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform duration-300"
-                                                  :class="task.is_active ? 'translate-x-6' : 'translate-x-1'"></span>
-                                        </button>
-
-                                        <!-- Кнопка удаления -->
-                                        <button @click="deleteTask(task.id)"
-                                                class="btn-secondary btn-sm text-red-400/60 hover:text-red-400 hover:border-red-500/40 hover:bg-red-500/10 flex-shrink-0 p-1.5"
-                                                :title="$lang.t('tasks.delete')">
-                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Раскрывающийся список действий задачи -->
-                            <div v-if="expandedTasks[task.id]" class="mt-4 pt-4 border-t border-white/5 space-y-2 animate-fade-in">
-                                <div class="flex items-center justify-between mb-2">
-                                    <p class="text-[10px] uppercase font-semibold text-white/40 tracking-wider flex items-center gap-1.5">
-                                        <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm0 5.25h.007v.008H3.75V12Zm0 5.25h.007v.008H3.75v-.008Z" />
-                                        </svg>
-                                        {{ $lang.t('tasks.actions_in_task', { count: getTaskActionsList(task).length }) }}
-                                    </p>
-                                </div>
-
-                                <div class="grid grid-cols-1 gap-2">
-                                    <div v-for="(act, aIdx) in getTaskActionsList(task)" :key="aIdx"
-                                         class="glass-card p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border transition-all duration-200"
-                                         :class="[
-                                             getActionStepStatus(task, aIdx) === 'failed'
-                                                 ? 'border-red-500/40 bg-red-500/10 shadow-lg shadow-red-500/5 hover:border-red-500/60 hover:bg-red-500/20'
-                                                 : getActionStepStatus(task, aIdx) === 'completed'
-                                                     ? 'border-emerald-500/20 bg-emerald-500/[0.02] hover:border-emerald-500/40 hover:bg-emerald-500/10'
-                                                     : 'border-white/5 bg-white/[0.01] hover:border-white/20 hover:bg-white/[0.05]'
-                                         ]">
-                                        <div class="flex items-start sm:items-center gap-3">
-                                            <span class="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold font-mono flex-shrink-0 mt-0.5 sm:mt-0"
-                                                  :class="[
-                                                      getActionStepStatus(task, aIdx) === 'failed'
-                                                          ? 'bg-red-500/20 text-red-400'
-                                                          : getActionStepStatus(task, aIdx) === 'completed'
-                                                              ? 'bg-emerald-500/20 text-emerald-400'
-                                                              : 'bg-white/10 text-white/50'
-                                                  ]">
-                                                {{ aIdx + 1 }}
-                                            </span>
-                                            <span class="text-xl flex-shrink-0">{{ typeIcons[act.task_type] || '📋' }}</span>
-                                            <div class="min-w-0 text-xs">
-                                                <div class="flex items-center gap-2 flex-wrap">
-                                                    <span class="font-semibold text-white/90">{{ typeLabels[act.task_type] || act.task_type }}</span>
-                                                    <span v-if="act.payload?.target_scope === 'friend'" class="badge badge-warning text-[9px]">{{ $lang.t('tasks.friend_zone') }}</span>
-                                                    <span v-else-if="act.payload?.target_scope === 'self'" class="badge badge-neutral text-[9px]">{{ $lang.t('tasks.my_zone') }}</span>
-
-                                                    <!-- Статус шага -->
-                                                    <span v-if="getActionStepStatus(task, aIdx) === 'completed'" class="badge badge-emerald text-[9px] flex items-center gap-1">
-                                                        ✓ {{ $lang.t('tasks.step_status.completed') }}
-                                                    </span>
-                                                    <span v-else-if="getActionStepStatus(task, aIdx) === 'failed'" class="badge badge-rose text-[9px] flex items-center gap-1">
-                                                        ❌ {{ $lang.t('tasks.step_status.failed') }}
-                                                    </span>
-                                                    <span v-else-if="getActionStepStatus(task, aIdx) === 'skipped'" class="badge badge-neutral text-[9px] opacity-60">
-                                                        ⏸️ {{ $lang.t('tasks.step_status.skipped') }}
-                                                    </span>
-                                                    <span v-else-if="getActionStepStatus(task, aIdx) === 'running'" class="badge badge-warning text-[9px] animate-pulse">
-                                                        ⏳ {{ $lang.t('tasks.step_status.running') }}
-                                                    </span>
-                                                </div>
-
-                                                <!-- Подробные параметры действия -->
-                                                <div class="text-white/60 text-[11px] mt-1 space-y-0.5">
-                                                    <!-- Здание -->
-                                                    <div v-if="['stop_production', 'start_production', 'apply_buff'].includes(act.task_type)" class="flex items-center gap-1.5 flex-wrap">
-                                                        <span class="text-white/40">{{ $lang.t('tasks.building') }}:</span>
-                                                        <span class="font-mono text-emerald-300 font-medium">
-                                                            {{ getBuildingDisplayName(task, act) }}
-                                                        </span>
-                                                    </div>
-
-                                                    <!-- Бафф -->
-                                                    <div v-if="act.task_type === 'apply_buff'" class="flex items-center gap-1.5 flex-wrap">
-                                                        <span class="text-white/40">{{ $lang.t('tasks.buff') }}:</span>
-                                                        <span class="font-medium text-amber-300">{{ getBuffDisplayName(task, act) }}</span>
-                                                        <span class="text-white/40">• {{ $lang.t('tasks.quantity') }}: <strong class="text-white font-mono">{{ act.payload?.amount || 1 }}</strong></span>
-                                                        <span v-if="act.payload?.target_player_name" class="text-emerald-400">• {{ $lang.t('tasks.friend') }}: <strong>{{ act.payload.target_player_name }}</strong></span>
-                                                    </div>
-
-                                                    <!-- Специалист -->
-                                                    <div v-if="['send_geologist', 'send_explorer'].includes(act.task_type)" class="flex items-center gap-1.5 flex-wrap">
-                                                        <span class="text-white/40">{{ $lang.t('tasks.search_type_target') }}:</span>
-                                                        <span class="font-medium text-teal-300">
-                                                            {{ getSubTaskLabel(act.task_type, act.payload?.task_type, act.payload?.sub_task_id) }}
-                                                        </span>
-                                                    </div>
-
-                                                    <!-- Блок ошибки конкретного действия -->
-                                                    <div v-if="getActionStepStatus(task, aIdx) === 'failed'" class="mt-2 p-2 bg-red-950/80 border border-red-500/40 rounded-lg text-red-300 text-xs flex items-start gap-1.5">
-                                                        <span class="flex-shrink-0">⚠️</span>
-                                                        <span><strong>{{ $lang.t('tasks.error') }}:</strong> {{ getActionStepError(task, aIdx) }}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Задержка после шага -->
-                                        <div v-if="act.delay_seconds > 0" class="flex items-center gap-1 text-[10px] text-amber-400 bg-amber-400/10 px-2 py-1 rounded-lg border border-amber-400/20 font-mono self-end sm:self-center">
-                                            <span>⏱️ {{ $lang.t('tasks.step_delay') }}:</span>
-                                            <span class="font-bold">{{ act.delay_seconds }} {{ $lang.t('tasks.seconds_unit') }}.</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <TaskCard v-for="task in groupTasks" :key="task.id"
+                                  :task="task"
+                                  :typeIcons="typeIcons"
+                                  :typeLabels="typeLabels"
+                                  :isExpanded="expandedTasks[task.id]"
+                                  :isExecuting="executingTasks[task.id]"
+                                  :getTaskActionsList="getTaskActionsList"
+                                  :getSubTaskLabel="getSubTaskLabel"
+                                  :getTaskNextRunText="getTaskNextRunText"
+                                  :formatDateTime="formatDateTime"
+                                  :formatInterval="formatInterval"
+                                  :utcTimeToLocal="utcTimeToLocal"
+                                  :getTaskLastResultBadge="getTaskLastResultBadge"
+                                  :getActionStepStatus="getActionStepStatus"
+                                  :getActionStepError="getActionStepError"
+                                  :getBuffDisplayName="getBuffDisplayName"
+                                  @toggle-expand="toggleTaskExpanded"
+                                  @toggle-active="toggleTask"
+                                  @execute="runTaskNow"
+                                  @edit="editTask"
+                                  @delete="deleteTask" />
                     </div>
                 </div>
-            </div>
-            <!-- Нет задач -->
-            <div v-else class="glass-card p-12 text-center">
-                <div class="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-8 h-8 text-white/20" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                    </svg>
-                </div>
-                <h3 class="text-white/60 font-medium mb-1">{{ t('tasks.no_tasks') }}</h3>
-                <p class="text-white/30 text-sm">{{ t('tasks.no_tasks_hint') }}</p>
-            </div>
+            </TaskList>
         </div>
 
-        <!-- МОДАЛЬНОЕ ОКНО: ВЫБОР ЗДАНИЙ -->
-        <div v-if="showBuildingModal" @click.self="closeBuildingModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-            <div class="glass-card max-w-3xl w-full flex flex-col max-h-[85vh] shadow-2xl border border-white/10">
-                <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between flex-wrap gap-2">
-                    <div class="flex items-center gap-3">
-                        <h3 class="text-base font-semibold text-white">
-                            {{ buildingModalTab === 'friend' ? (t('tasks.modal.select_friend_building') + (selectedFriend ? ' (' + (selectedFriend.nickname || selectedFriend.username) + ')' : '')) : t('tasks.modal.select_building') }}
-                        </h3>
-                        <span class="badge badge-emerald text-xs font-mono">{{ t('tasks.modal.selected_count', { count: selectedBuildings.length }) }}</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button type="button" @click="selectAllFilteredBuildings" class="btn-secondary btn-sm text-[11px] py-1 px-2.5">
-                            {{ t('tasks.modal.select_all') }}
-                        </button>
-                        <button type="button" @click="clearSelectedBuildings" class="btn-secondary btn-sm text-[11px] py-1 px-2.5 text-red-400 hover:text-red-300 border-red-500/20">
-                            {{ t('tasks.modal.clear_selection') }}
-                        </button>
-                        <button type="button" @click="closeBuildingModal" class="btn-primary btn-sm text-xs py-1 px-3">
-                            {{ t('tasks.modal.done') }}
-                        </button>
-                        <button type="button" @click="closeBuildingModal" class="text-white/40 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/5 ml-1">
-                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
+        <!-- МОДАЛЬНЫЕ ОКНА ВЫБОРА -->
+        <BuildingPicker :showModal="showBuildingModal"
+                        v-model:tab="buildingModalTab"
+                        v-model:buildingSearch="buildingSearch"
+                        v-model:friendBuildingSearch="friendBuildingSearch"
+                        :selectedBuildings="selectedBuildings"
+                        :filteredBuildings="filteredBuildings"
+                        :searchedFriendBuildings="searchedFriendBuildings"
+                        :selectedFriend="selectedFriend"
+                        :loadingFriendZone="loadingFriendZone"
+                        :zone="zone"
+                        :isSelectedBuilding="isSelectedBuilding"
+                        :getBuildingIcon="getBuildingIcon"
+                        :getBuildingName="getBuildingName"
+                        :handleBuildingIconError="handleBuildingIconError"
+                        @close="closeBuildingModal"
+                        @select-all="selectAllFilteredBuildings"
+                        @clear="clearSelectedBuildings"
+                        @toggle-building="toggleBuildingSelection" />
 
-                <!-- Кон����ент фильтров -->
-                <div class="p-4 border-b border-white/5 bg-white/[0.01] space-y-3">
-                    <div class="flex gap-1.5 flex-wrap">
-                        <button type="button" v-for="cat in buildingCategories" :key="cat"
-                                @click="buildingModalTab === 'self' ? buildingFilter = cat : friendBuildingFilter = cat"
-                                class="px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-300"
-                                :class="(buildingModalTab === 'self' ? buildingFilter === cat : friendBuildingFilter === cat)
-                                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                                    : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
-                            {{ t('account.building_filter.' + cat.toLowerCase()) }}
-                        </button>
-                    </div>
-                    <div class="relative">
-                        <input v-if="buildingModalTab === 'self'" v-model="buildingSearch" type="text" :placeholder="t('tasks.modal.search_building')" class="glass-input w-full text-xs py-2 pl-4">
-                        <input v-else v-model="friendBuildingSearch" type="text" :placeholder="t('tasks.modal.search_building')" class="glass-input w-full text-xs py-2 pl-4">
-                    </div>
-                </div>
+        <SpecialistPicker :showModal="showSpecialistModal"
+                          v-model:specialistSearch="specialistSearch"
+                          :selectedSpecialists="selectedSpecialists"
+                          :filteredSpecialistsModal="filteredSpecialistsModal"
+                          :getSpecialistId="getSpecialistId"
+                          :isSelectedSpecialist="isSelectedSpecialist"
+                          :getSpecialistIcon="getSpecialistIcon"
+                          :getSpecialistTypeName="getSpecialistTypeName"
+                          :handleSpecialistIconError="handleSpecialistIconError"
+                          @close="closeSpecialistModal"
+                          @select-all="selectAllFilteredSpecialists"
+                          @clear="clearSelectedSpecialists"
+                          @toggle-specialist="toggleSpecialistSelection" />
 
-                <!-- Список карточек зданий для 'self' -->
-                <div v-if="buildingModalTab === 'self'" class="p-6 overflow-y-auto flex-1 bg-dark-950/20">
-                    <div v-if="filteredBuildings.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div v-for="b in filteredBuildings" :key="b.buildingGrid"
-                             @click="toggleBuildingSelection(b, 'self')"
-                             class="glass-card p-3 cursor-pointer hover:border-emerald-500/40 transition-all duration-200 flex items-center justify-between gap-3"
-                             :class="isSelectedBuilding(b.buildingGrid, 'self') ? 'border-emerald-500/70 bg-emerald-500/15 shadow-lg shadow-emerald-500/5' : 'border-transparent hover:bg-white/[0.02]'">
-                            <div class="flex items-center gap-3 min-w-0">
-                                <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-dark-900/50 border border-white/5">
-                                    <img v-if="getBuildingIcon(b)" :src="getBuildingIcon(b)" :alt="getBuildingName(b)" class="w-7 h-7 object-contain" @error="handleBuildingIconError($event, b)">
-                                    <span v-else class="text-sm">🏰</span>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-xs font-semibold text-white/90 truncate">{{ getBuildingName(b) }}</p>
-                                    <p class="text-[10px] text-white/40 mt-0.5">{{ t('tasks.grid_number', { id: b.buildingGrid }) }} • {{ t('tasks.level_short') }} {{ b.upgradeLevel || 1 }}</p>
-                                </div>
-                            </div>
-                            <div class="w-5 h-5 rounded-md flex items-center justify-center border transition-all flex-shrink-0"
-                                 :class="isSelectedBuilding(b.buildingGrid, 'self') ? 'bg-emerald-500 border-emerald-400 text-dark-950 font-bold' : 'border-white/20 bg-white/5'">
-                                <span v-if="isSelectedBuilding(b.buildingGrid, 'self')" class="text-xs">✓</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div v-else class="text-center py-8 text-white/30 text-xs">
-                        <span v-if="!zone || !zone.buildings || zone.buildings.length === 0">
-                            {{ t('tasks.modal.island_not_loaded') }}
-                        </span>
-                        <span v-else>{{ t('tasks.modal.no_buildings') }}</span>
-                    </div>
-                </div>
-
-                <!-- Список карточек зданий для 'friend' -->
-                <div v-else class="p-6 overflow-y-auto flex-1 bg-dark-950/20">
-                    <div v-if="loadingFriendZone" class="text-center py-8 text-emerald-400 text-xs flex items-center justify-center gap-2">
-                        <svg class="animate-spin h-4 w-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        <span>{{ t('tasks.loading_zone') }} {{ selectedFriend?.nickname || selectedFriend?.username }}…</span>
-                    </div>
-                    <div v-else-if="!selectedFriend" class="text-center py-8 text-amber-400/80 text-xs">
-                        {{ t('tasks.select_friend') }}
-                    </div>
-                    <div v-else-if="searchedFriendBuildings.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div v-for="b in searchedFriendBuildings" :key="b.buildingGrid"
-                             @click="toggleBuildingSelection(b, 'friend', selectedFriend)"
-                             class="glass-card p-3 cursor-pointer hover:border-emerald-500/40 transition-all duration-200 flex items-center justify-between gap-3"
-                             :class="isSelectedBuilding(b.buildingGrid, 'friend', selectedFriend?.id) ? 'border-emerald-500/70 bg-emerald-500/15 shadow-lg shadow-emerald-500/5' : 'border-transparent hover:bg-white/[0.02]'">
-                            <div class="flex items-center gap-3 min-w-0">
-                                <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-dark-900/50 border border-white/5">
-                                    <img v-if="getBuildingIcon(b)" :src="getBuildingIcon(b)" :alt="getBuildingName(b)" class="w-7 h-7 object-contain" @error="handleBuildingIconError($event, b)">
-                                    <span v-else class="text-sm">🏭</span>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-xs font-semibold text-white/90 truncate">{{ getBuildingName(b) }}</p>
-                                    <p class="text-[10px] text-white/40 mt-0.5">{{ t('tasks.grid_number', { id: b.buildingGrid }) }} • {{ t('tasks.level_short') }} {{ b.upgradeLevel || 1 }}</p>
-                                </div>
-                            </div>
-                            <div class="w-5 h-5 rounded-md flex items-center justify-center border transition-all flex-shrink-0"
-                                 :class="isSelectedBuilding(b.buildingGrid, 'friend', selectedFriend?.id) ? 'bg-emerald-500 border-emerald-400 text-dark-950 font-bold' : 'border-white/20 bg-white/5'">
-                                <span v-if="isSelectedBuilding(b.buildingGrid, 'friend', selectedFriend?.id)" class="text-xs">✓</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div v-else class="text-center py-8 text-white/30 text-xs">
-                        {{ t('tasks.modal.no_buildings') }}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- МОДАЛЬНОЕ ОКНО: ВЫБОР СПЕЦИАЛИСТА -->
-        <div v-if="showSpecialistModal" @click.self="closeSpecialistModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-            <div class="glass-card max-w-2xl w-full flex flex-col max-h-[85vh] shadow-2xl border border-white/10">
-                <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between flex-wrap gap-2">
-                    <div class="flex items-center gap-3">
-                        <h3 class="text-base font-semibold text-white">{{ t('tasks.modal.select_specialist') }}</h3>
-                        <span class="badge badge-emerald text-xs font-mono">{{ t('tasks.modal.selected_count', { count: selectedSpecialists.length }) }}</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button type="button" @click="selectAllFilteredSpecialists" class="btn-secondary btn-sm text-[11px] py-1 px-2.5">
-                            {{ t('tasks.modal.select_all') }}
-                        </button>
-                        <button type="button" @click="clearSelectedSpecialists" class="btn-secondary btn-sm text-[11px] py-1 px-2.5 text-red-400 hover:text-red-300 border-red-500/20">
-                            {{ t('tasks.modal.clear_selection') }}
-                        </button>
-                        <button type="button" @click="closeSpecialistModal" class="btn-primary btn-sm text-xs py-1 px-3">
-                            {{ t('tasks.modal.done') }}
-                        </button>
-                        <button type="button" @click="closeSpecialistModal" class="text-white/40 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/5 ml-1">
-                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-                <div class="p-4 border-b border-white/5 bg-white/[0.01]">
-                    <input v-model="specialistSearch" type="text" :placeholder="t('tasks.modal.search_specialist')" class="glass-input w-full text-xs py-2 pl-4">
-                </div>
-                <div class="p-6 overflow-y-auto flex-1 bg-dark-950/20">
-                    <div v-if="filteredSpecialistsModal.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div v-for="s in filteredSpecialistsModal" :key="getSpecialistId(s)"
-                             @click="toggleSpecialistSelection(s)"
-                             class="glass-card p-3 cursor-pointer hover:border-emerald-500/40 transition-all duration-200 flex items-center justify-between gap-3"
-                             :class="isSelectedSpecialist(s) ? 'border-emerald-500/70 bg-emerald-500/15 shadow-lg shadow-emerald-500/5' : 'border-transparent hover:bg-white/[0.02]'">
-                            <div class="flex items-center gap-3 min-w-0">
-                                <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-dark-900/50 border border-white/5">
-                                    <img alt="" v-if="getSpecialistIcon(s.type)" :src="getSpecialistIcon(s.type)" class="w-8 h-8 object-contain" @error="handleSpecialistIconError($event, s.type)">
-                                    <span v-else class="text-sm">🎖️</span>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-xs font-semibold text-white/90 truncate">{{ s.name || getSpecialistTypeName(s.type) }}</p>
-                                    <p class="text-[10px] text-white/40 mt-0.5">{{ getSpecialistTypeName(s.type) }}</p>
-                                </div>
-                            </div>
-                            <div class="w-5 h-5 rounded-md flex items-center justify-center border transition-all flex-shrink-0"
-                                 :class="isSelectedSpecialist(s) ? 'bg-emerald-500 border-emerald-400 text-dark-950 font-bold' : 'border-white/20 bg-white/5'">
-                                <span v-if="isSelectedSpecialist(s)" class="text-xs">✓</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div v-else class="text-center py-8 text-white/30 text-xs">
-                        {{ t('tasks.modal.no_specialists') }}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- МОДАЛЬНОЕ ОКНО: ВЫБОР БАФФА -->
-        <div v-if="showBuffModal" @click.self="closeBuffModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-            <div class="glass-card max-w-2xl w-full flex flex-col max-h-[80vh] shadow-2xl border border-white/10">
-                <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between">
-                    <h3 class="text-base font-semibold text-white">{{ t('tasks.modal.select_buff') }}</h3>
-                    <button type="button" @click="closeBuffModal" class="text-white/40 hover:text-white transition-colors">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                </div>
-                <div class="p-4 border-b border-white/5 bg-white/[0.01]">
-                    <input v-model="buffSearch" type="text" :placeholder="t('tasks.modal.search_buff')" class="glass-input w-full text-xs py-2 pl-4">
-                </div>
-                <div class="p-6 overflow-y-auto flex-1 bg-dark-950/20">
-                    <div v-if="filteredBuffsModal.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div v-for="bf in filteredBuffsModal" :key="bf.uniqueId1 + '-' + bf.uniqueId2"
-                             @click="selectBuff(bf)"
-                             class="glass-card p-3 cursor-pointer hover:border-emerald-500/40 hover:scale-[1.01] transition-all duration-200 flex items-center gap-3"
-                             :class="payload.unique_id1 === bf.uniqueId1 ? 'border-emerald-500/50 bg-emerald-500/10' : 'border-transparent'">
-                            <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-dark-900/50 border border-white/5">
-                                <img v-if="getBuffIcon(bf)" :src="getBuffIcon(bf)" :alt="getStarBuffName(bf)" class="w-8 h-8 object-contain" @error="handleBuffIconError($event, bf)">
-                                <span v-else class="text-sm">✨</span>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <p class="text-xs font-semibold text-white/90 truncate">{{ getStarBuffName(bf) }}</p>
-                                <p class="text-[10px] text-white/40 mt-0.5">
-                                    {{ t('tasks.modal.in_stock') }}: {{ bf.amount }}
-                                    <span v-if="buffDurationLabel(bf)" class="text-emerald-400/80"> • ⏱ {{ buffDurationLabel(bf) }}</span>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                    <div v-else class="text-center py-8 text-white/30 text-xs">
-                        {{ t('tasks.modal.no_buffs') }}
-                    </div>
-                </div>
-            </div>
-        </div>
+        <BuffPicker :showModal="showBuffModal"
+                    v-model:buffSearch="buffSearch"
+                    :selectedBuffId="payload.unique_id1"
+                    :filteredBuffsModal="filteredBuffsModal"
+                    :getStarBuffName="getStarBuffName"
+                    :buffDurationLabel="buffDurationLabel"
+                    :getBuffIcon="getBuffIcon"
+                    :handleBuffIconError="handleBuffIconError"
+                    @close="closeBuffModal"
+                    @select-buff="selectBuff" />
     </div>
 </template>
 
@@ -986,6 +551,12 @@ import { canBuffTarget, isBuildingBuff, isFriendZoneBuff, getBuffDurations, form
 import { getGameImageUrl, handleGameImageError } from '../services/gameImageService';
 
 import Spinner from '../components/Spinner.vue';
+import SchedulePicker from '../components/tasks/SchedulePicker.vue';
+import BuildingPicker from '../components/tasks/BuildingPicker.vue';
+import SpecialistPicker from '../components/tasks/SpecialistPicker.vue';
+import BuffPicker from '../components/tasks/BuffPicker.vue';
+import TaskCard from '../components/tasks/TaskCard.vue';
+import TaskList from '../components/tasks/TaskList.vue';
         const tasks = ref([]);
         const accounts = ref([]);
         const loadingPlanner = ref(true);
