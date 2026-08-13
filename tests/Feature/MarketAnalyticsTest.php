@@ -245,7 +245,7 @@ class MarketAnalyticsTest extends TestCase
             'collected_at' => now(),
         ]);
 
-        // 2. Create an expired active offer (7 hours ago)
+        // 2. Create an expired active offer (7 hours ago, collected recently)
         MarketOffer::create([
             'offer_id' => 302,
             'player_id' => 2,
@@ -260,7 +260,7 @@ class MarketAnalyticsTest extends TestCase
             'volume' => 2000,
             'lots_remaining' => 5,
             'created_at' => now()->subHours(7),
-            'collected_at' => now()->subHours(7),
+            'collected_at' => now(),
         ]);
 
         $response = $this->getJson('/api/market/analytics');
