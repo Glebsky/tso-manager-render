@@ -211,4 +211,26 @@ class AccountSyncTest extends TestCase
         $response->assertJsonPath('accounts.0.building_count', 1);
         $response->assertJsonPath('accounts.0.server_name', 'Tutum');
     }
+
+    public function test_scheduler_skips_account_sync_when_session_expired_or_login_cooldown_active(): void
+    {
+        Queue::fake();
+
+        Setting::set('sync_interval', 15);
+        Setting::set('log_retention_days', 30);
+        Setting::set('timezone', 'UTC');
+
+        $account = Account::create([
+            'username' => 'captcha_user',
+            'password' => 'secret',
+            'region' => 'ru',
+            'nickname' => 'captcha_user',
+            'status' => 'session_expired',
+            'last_sync_at' => now()->subMinutes(60),
+        ]);
+
+        Artisan::call('tso:run-scheduler', ['--mode' => 'queue']);
+
+        Queue::assertNotPushed(AccountSyncJob::class);
+    }
 }

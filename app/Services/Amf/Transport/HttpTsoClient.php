@@ -120,6 +120,9 @@ class HttpTsoClient implements TsoClientInterface
         }
 
         if ($amfServerUrl === '') {
+            if ($lsStatus === 301 || ($lsStatus >= 300 && $lsStatus < 400)) {
+                throw new Exception("Load Server returned status {$lsStatus}: Session expired or invalid.");
+            }
             throw new Exception("Timeout waiting for Load Server. Last status: {$lsStatus}, Resp: {$lsRes}");
         }
 

@@ -80,6 +80,10 @@ class AccountSyncFetcher
             } catch (Exception $e) {
                 Log::warning("[AccountSync] Attempt {$attempt}/{$maxRetries} failed for account #{$account->id}: ".$e->getMessage());
                 $lastException = $e;
+
+                if ($this->authService->isCaptchaOr2faError($e->getMessage())) {
+                    throw $e;
+                }
             }
 
             if ($attempt < $maxRetries) {

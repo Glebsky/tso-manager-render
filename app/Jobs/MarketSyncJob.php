@@ -53,11 +53,39 @@ class MarketSyncJob implements ShouldQueue
             $syncService->sync($this->account, $this->serverId);
         } catch (Throwable $e) {
             Log::error("[MarketSyncJob] Failed for account #{$this->account->id} on server [{$this->serverId}]: {$e->getMessage()}");
+
+            if ($this->isUnrecoverableAuthError($e->getMessage())) {
+                $this->account->update(['status' => 'session_expired']);
+                MarketServerConnection::where('server_id', $this->serverId)->update([
+                    'sync_status' => 'error',
+                    'last_error' => $e->getMessage(),
+                ]);
+                BotLog::create([
+                    'account_id' => $this->account->id,
+                    'level' => LogLevel::Error,
+                    'message' => "[Market][{$this->serverId}] ".__('logs.market.sync_job_failed', ['error' => $e->getMessage()]),
+                    'created_at' => now(),
+                ]);
+
+                return;
+            }
+
             throw $e;
         } finally {
             Cache::forget("market_sync_lock:server:{$this->serverId}");
             Cache::forget("market_sync_lock:{$this->account->id}");
         }
+    }
+
+    private function isUnrecoverableAuthError(string $message): bool
+    {
+        return str_contains($message, 'CAPTCHA') ||
+            str_contains($message, 'captcha') ||
+            str_contains($message, 'Captcha') ||
+            str_contains($message, '2FA') ||
+            str_contains($message, 'twoFactor') ||
+            str_contains($message, 'session_expired') ||
+            str_contains($message, 'Session expired');
     }
 
     /**

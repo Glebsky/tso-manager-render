@@ -48,10 +48,33 @@ class AccountSyncJob implements ShouldQueue
             $syncService->sync($this->account);
         } catch (Throwable $e) {
             Log::error("[AccountSyncJob] Failed for account #{$this->account->id}: {$e->getMessage()}");
+
+            if ($this->isUnrecoverableAuthError($e->getMessage())) {
+                $this->account->update(['status' => 'session_expired']);
+                BotLog::create([
+                    'account_id' => $this->account->id,
+                    'level' => LogLevel::Error,
+                    'message' => '[AccountSync] '.__('logs.account.sync_job_failed', ['error' => $e->getMessage()]),
+                ]);
+
+                return;
+            }
+
             throw $e;
         } finally {
             Cache::forget("account_sync_lock:{$this->account->id}");
         }
+    }
+
+    private function isUnrecoverableAuthError(string $message): bool
+    {
+        return str_contains($message, 'CAPTCHA') ||
+            str_contains($message, 'captcha') ||
+            str_contains($message, 'Captcha') ||
+            str_contains($message, '2FA') ||
+            str_contains($message, 'twoFactor') ||
+            str_contains($message, 'session_expired') ||
+            str_contains($message, 'Session expired');
     }
 
     /**

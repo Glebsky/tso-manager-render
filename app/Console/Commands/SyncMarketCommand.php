@@ -77,6 +77,12 @@ class SyncMarketCommand extends Command
                 continue;
             }
 
+            if ($account->status === 'session_expired' || Cache::has("account_login_cooldown:{$account->id}")) {
+                $this->warn("Account #{$account->id} ({$account->username}) for server [{$serverId}] requires manual session update or is under login cooldown. Skipping.");
+
+                continue;
+            }
+
             // Check elapsed time since last successful sync for this server
             $lastLog = MarketSyncLog::where('server_id', $serverId)
                 ->where('status', 'SUCCESS')

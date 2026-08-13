@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Models\Account;
 use App\Support\Security\CredentialRedactor;
 use Exception;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
@@ -68,6 +69,14 @@ class TsoAuthService
      */
     public function login(Account $account): array
     {
+        $cooldownKey = "account_login_cooldown:{$account->id}";
+        if (Cache::has($cooldownKey)) {
+            $reason = Cache::get($cooldownKey);
+            $msg = is_string($reason) && ! empty($reason) ? $reason : __('ui.auth.captcha_required');
+
+            throw new Exception($msg);
+        }
+
         $region = (string) $account->region;
         if (! isset(self::SERVERS[$region])) {
             throw new Exception("Invalid region: {$region}");
@@ -80,16 +89,36 @@ class TsoAuthService
         try {
             $params = $this->loginLegacy($account, $cookieFile, $server);
         } catch (Exception $e) {
-            Log::warning("[TsoAuth] Legacy (CipMigrated) login failed for account #{$account->id}: ".CredentialRedactor::redact($e->getMessage(), $account));
+            $errMsg = $e->getMessage();
+            Log::warning("[TsoAuth] Legacy (CipMigrated) login failed for account #{$account->id}: ".CredentialRedactor::redact($errMsg, $account));
+
+            if ($this->isCaptchaOr2faError($errMsg)) {
+                Cache::put($cooldownKey, $errMsg, 900);
+                $account->update(['status' => 'session_expired']);
+
+                throw $e;
+            }
 
             try {
                 $params = $this->loginOAuth($account, $cookieFile, $server);
             } catch (Exception $e2) {
-                Log::warning("[TsoAuth] OAuth fallback login also failed for account #{$account->id}: ".CredentialRedactor::redact($e2->getMessage(), $account));
+                $oauthErrMsg = $e2->getMessage();
+                Log::warning("[TsoAuth] OAuth fallback login also failed for account #{$account->id}: ".CredentialRedactor::redact($oauthErrMsg, $account));
+
+                if ($this->isCaptchaOr2faError($oauthErrMsg)) {
+                    Cache::put($cooldownKey, $oauthErrMsg, 900);
+                    $account->update(['status' => 'session_expired']);
+
+                    throw $e2;
+                }
+
+                Cache::put($cooldownKey, $errMsg, 300);
 
                 throw $e;
             }
         }
+
+        Cache::forget($cooldownKey);
 
         $account->update([
             'dso_auth_user' => $params['dsoAuthUser'],
@@ -100,6 +129,17 @@ class TsoAuthService
         ]);
 
         return $params;
+    }
+
+    public function isCaptchaOr2faError(string $message): bool
+    {
+        return str_contains($message, 'CAPTCHA') ||
+            str_contains($message, 'captcha') ||
+            str_contains($message, 'Captcha') ||
+            str_contains($message, '2FA') ||
+            str_contains($message, 'twoFactor') ||
+            str_contains($message, __('ui.auth.captcha_required')) ||
+            str_contains($message, __('ui.auth.2fa_required'));
     }
 
     /**

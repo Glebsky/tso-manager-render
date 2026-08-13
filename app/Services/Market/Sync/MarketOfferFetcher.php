@@ -123,7 +123,7 @@ class MarketOfferFetcher
                 break;
             } catch (Exception $attemptEx) {
                 $logCallback('WARNING', __('logs.market.attempt_failed', ['attempt' => $attempt, 'max' => $maxRetries, 'error' => $attemptEx->getMessage()]));
-                if ($attempt === $maxRetries) {
+                if ($attempt === $maxRetries || $this->authService->isCaptchaOr2faError($attemptEx->getMessage())) {
                     throw $attemptEx;
                 }
                 sleep($retryDelay);

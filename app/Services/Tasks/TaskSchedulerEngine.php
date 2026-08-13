@@ -195,6 +195,10 @@ class TaskSchedulerEngine
         $count = 0;
 
         foreach ($accounts as $account) {
+            if ($account->status === 'session_expired' || $this->cache->has("account_login_cooldown:{$account->id}")) {
+                continue;
+            }
+
             if ($account->last_sync_at) {
                 $elapsedMinutes = (int) $now->diffInMinutes($account->last_sync_at, false);
                 if (abs($elapsedMinutes) < $syncInterval) {
