@@ -54,11 +54,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // Scheduled tasks
     Route::get('/tasks', [ScheduledTaskController::class, 'index']);
     Route::post('/tasks', [ScheduledTaskController::class, 'store']);
-    Route::put('/tasks/{task}', [ScheduledTaskController::class, 'update']);
-    Route::delete('/tasks/{task}', [ScheduledTaskController::class, 'destroy']);
-    Route::post('/tasks/{task}/toggle', [ScheduledTaskController::class, 'toggle']);
-    Route::post('/tasks/{task}/execute', [ScheduledTaskController::class, 'execute']);
-    Route::get('/tasks/{task}/status', [ScheduledTaskController::class, 'status']);
+    Route::put('/tasks/{task}', [ScheduledTaskController::class, 'update'])->whereNumber('task');
+    Route::delete('/tasks/{task}', [ScheduledTaskController::class, 'destroy'])->whereNumber('task');
+    Route::post('/tasks/{task}/toggle', [ScheduledTaskController::class, 'toggle'])->whereNumber('task');
+    Route::post('/tasks/{task}/execute', [ScheduledTaskController::class, 'execute'])->whereNumber('task');
+    Route::get('/tasks/{task}/status', [ScheduledTaskController::class, 'status'])->whereNumber('task');
 
     // Logs
     Route::get('/logs', [LogController::class, 'index']);

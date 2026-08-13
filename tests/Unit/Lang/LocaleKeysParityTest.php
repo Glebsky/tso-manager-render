@@ -20,9 +20,22 @@ class LocaleKeysParityTest extends TestCase
         $this->assertFileExists($ruFile);
         $this->assertFileExists($ukFile);
 
-        $enKeys = $this->extractKeys(json_decode((string) file_get_contents($enFile), true));
-        $ruKeys = $this->extractKeys(json_decode((string) file_get_contents($ruFile), true));
-        $ukKeys = $this->extractKeys(json_decode((string) file_get_contents($ukFile), true));
+        $enData = json_decode((string) file_get_contents($enFile), true);
+        $ruData = json_decode((string) file_get_contents($ruFile), true);
+        $ukData = json_decode((string) file_get_contents($ukFile), true);
+
+        $enKeys = array_merge(
+            $this->extractKeys($enData['ui'] ?? [], 'ui'),
+            $this->extractKeys($enData['tasks'] ?? [], 'tasks')
+        );
+        $ruKeys = array_merge(
+            $this->extractKeys($ruData['ui'] ?? [], 'ui'),
+            $this->extractKeys($ruData['tasks'] ?? [], 'tasks')
+        );
+        $ukKeys = array_merge(
+            $this->extractKeys($ukData['ui'] ?? [], 'ui'),
+            $this->extractKeys($ukData['tasks'] ?? [], 'tasks')
+        );
 
         sort($enKeys);
         sort($ruKeys);

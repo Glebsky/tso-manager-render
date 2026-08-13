@@ -1682,20 +1682,25 @@ import TaskList from '../components/tasks/TaskList.vue';
             }
         };
 
-        const toggleTask = async (task) => {
+        const toggleTask = async (taskOrId) => {
+            const taskId = typeof taskOrId === 'object' && taskOrId !== null ? taskOrId.id : taskOrId;
+            if (!taskId || taskId === 'undefined') return;
+            const task = typeof taskOrId === 'object' && taskOrId !== null ? taskOrId : tasks.value.find(t => t.id === taskId);
             try {
-                const res = await axios.post(`/api/tasks/${task.id}/toggle`);
+                const res = await axios.post(`/api/tasks/${taskId}/toggle`);
                 const updated = res.data.data || res.data.task || res.data;
                 if (updated && updated.is_active !== undefined) {
-                    task.is_active = updated.is_active;
-                    showToast(task.is_active ? t('tasks.toast.task_activated') : t('tasks.toast.task_paused'));
+                    if (task) task.is_active = updated.is_active;
+                    showToast(updated.is_active ? t('tasks.toast.task_activated') : t('tasks.toast.task_paused'));
                 }
             } catch (e) {
                 showToast(t('tasks.toast.toggle_failed'), 'error');
             }
         };
 
-        const deleteTask = async (id) => {
+        const deleteTask = async (idOrTask) => {
+            const id = typeof idOrTask === 'object' && idOrTask !== null ? idOrTask.id : idOrTask;
+            if (!id || id === 'undefined') return;
             if (!confirm(t('tasks.confirm.delete_task'))) return;
             try {
                 const res = await axios.delete(`/api/tasks/${id}`);
@@ -1719,6 +1724,7 @@ import TaskList from '../components/tasks/TaskList.vue';
         };
 
         const pollTaskExecution = (taskId) => {
+            if (!taskId || taskId === 'undefined') return;
             stopPollingTask(taskId);
 
             let attempts = 0;
@@ -1779,12 +1785,16 @@ import TaskList from '../components/tasks/TaskList.vue';
             activePollTimers[taskId] = setTimeout(doPoll, 5000);
         };
 
-        const runTaskNow = async (task) => {
-            if (executingTasks.value[task.id]) return;
-            executingTasks.value[task.id] = true;
+        const runTaskNow = async (target) => {
+            const taskId = typeof target === 'object' && target !== null ? target.id : target;
+            const taskObj = typeof target === 'object' && target !== null ? target : tasks.value.find(t => t.id === taskId);
+            if (!taskId || taskId === 'undefined') return;
+
+            if (executingTasks.value[taskId]) return;
+            executingTasks.value[taskId] = true;
 
             // Immediately reset local task state so UI doesn't show stale step_results/completed_steps
-            const idx = tasks.value.findIndex(t => t.id === task.id);
+            const idx = tasks.value.findIndex(t => t.id === taskId);
             if (idx !== -1) {
                 const oldAccount = tasks.value[idx].account;
                 const cleanPayload = { ...tasks.value[idx].payload };
@@ -1800,8 +1810,8 @@ import TaskList from '../components/tasks/TaskList.vue';
             }
 
             try {
-                const res = await axios.post(`/api/tasks/${task.id}/execute`);
-                const currentTask = res.data.task || task;
+                const res = await axios.post(`/api/tasks/${taskId}/execute`);
+                const currentTask = res.data.task || taskObj;
 
                 // Update tasks list in state
                 if (idx !== -1 && res.data.task) {
@@ -1813,23 +1823,23 @@ import TaskList from '../components/tasks/TaskList.vue';
                     };
                 }
 
-                if (currentTask.status !== 'queued' && currentTask.status !== 'running') {
+                if (currentTask && currentTask.status !== 'queued' && currentTask.status !== 'running') {
                     if (res.data.success && !currentTask.last_result?.startsWith('ERROR:')) {
                         showToast(t('tasks.toast.run_success') + ': ' + (currentTask.last_result || 'OK'));
                     } else {
                         const err = getActionStepError(currentTask, 0) || currentTask.last_result || res.data.message || t('tasks.toast.unknown');
                         showToast(t('tasks.toast.run_error') + ': ' + err, 'error');
                     }
-                    executingTasks.value[task.id] = false;
+                    executingTasks.value[taskId] = false;
                     loadPlanner();
                     return;
                 }
 
                 // Poll status periodically until execution finishes
-                pollTaskExecution(task.id);
+                pollTaskExecution(taskId);
             } catch (e) {
                 showToast(e.response?.data?.message || t('tasks.toast.run_failed'), 'error');
-                executingTasks.value[task.id] = false;
+                executingTasks.value[taskId] = false;
             }
         };
 

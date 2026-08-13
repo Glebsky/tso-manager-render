@@ -112,7 +112,7 @@
                         {{ task.is_active ? '⏸ ' + t('tasks.status.pause_short') : '▶ ' + t('tasks.status.resume_short') }}
                     </button>
 
-                    <button type="button" @click="$emit('execute', task.id)" :disabled="isExecuting"
+                    <button type="button" @click="$emit('execute', task)" :disabled="isExecuting"
                             class="btn-primary btn-sm text-xs py-1.5 px-3 flex items-center gap-1.5">
                         <svg v-if="isExecuting" class="animate-spin h-3.5 w-3.5 text-dark-950" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

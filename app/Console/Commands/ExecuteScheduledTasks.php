@@ -30,7 +30,13 @@ class ExecuteScheduledTasks extends Command
         $mode = $isAsync ? 'queue' : 'sync';
 
         if ($singleTaskId) {
-            $task = ScheduledTask::with('account')->find($singleTaskId);
+            if (! is_numeric($singleTaskId)) {
+                $this->error("Invalid task ID: {$singleTaskId}");
+
+                return self::FAILURE;
+            }
+
+            $task = ScheduledTask::with('account')->find((int) $singleTaskId);
             if (! $task) {
                 $this->error("Task #{$singleTaskId} not found.");
 

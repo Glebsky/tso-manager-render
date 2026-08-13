@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Account;
 use App\Models\ScheduledTask;
+use App\Models\User;
 use App\Services\TaskExecutionService;
 use App\Services\TsoAmfService;
 use App\Services\TsoAuthService;
@@ -307,5 +308,22 @@ class ScheduledTaskTest extends TestCase
         $this->assertStringContainsString('Building not found on grid 101', $task->payload['step_results'][0]['error']);
         $this->assertEquals('completed', $task->payload['step_results'][1]['status']);
         $this->assertNull($task->payload['step_results'][1]['error']);
+    }
+
+    public function test_invalid_non_numeric_task_parameter_returns_404(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->postJson('/api/tasks/undefined/execute')
+            ->assertStatus(404);
+
+        $this->actingAs($user)
+            ->getJson('/api/tasks/undefined/status')
+            ->assertStatus(404);
+
+        $this->actingAs($user)
+            ->postJson('/api/tasks/undefined/toggle')
+            ->assertStatus(404);
     }
 }
