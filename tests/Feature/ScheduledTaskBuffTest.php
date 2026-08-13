@@ -388,4 +388,71 @@ class ScheduledTaskBuffTest extends TestCase
         $response2->assertStatus(200);
         $response2->assertJsonCount(1, 'buildings');
     }
+
+    public function test_retries_friend_buff_task_on_error_1012(): void
+    {
+        $friendId = 20002;
+        $account = $this->createAccount(
+            [['id' => $friendId, 'username' => 'MyFriend', 'playerLevel' => 45]],
+            [['uniqueId1' => 11, 'uniqueId2' => 22, 'amount' => 5, 'buffName_string' => 'AuntIrma']]
+        );
+
+        $task = ScheduledTask::create([
+            'account_id' => $account->id,
+            'task_type' => 'apply_buff',
+            'payload' => [
+                'target_scope' => 'friend',
+                'target_player_id' => $friendId,
+                'target_player_name' => 'MyFriend',
+                'grid' => 888,
+                'unique_id1' => 11,
+                'unique_id2' => 22,
+                'amount' => 1,
+            ],
+            'schedule_type' => 'once',
+            'run_at_datetime' => now()->subMinute(),
+            'is_active' => true,
+        ]);
+
+        $this->authMock->shouldReceive('isAuthenticated')->with(Mockery::any())->andReturn(true);
+        $this->authMock->shouldReceive('resetSession')->once()->with(Mockery::any());
+        $this->authMock->shouldReceive('login')->once()->with(Mockery::any())->andReturn([]);
+
+        $this->amfMock->shouldReceive('getZone')
+            ->twice()
+            ->with(Mockery::any(), $friendId)
+            ->andReturn('raw_friend_zone_amf');
+
+        $this->parserMock->shouldReceive('parse')
+            ->twice()
+            ->with('raw_friend_zone_amf')
+            ->andReturnValues([
+                ['errorCode' => 1012], // 1st attempt hits 1012
+                [
+                    'errorCode' => 0,
+                    'buildings' => [
+                        ['buildingGrid' => 888, 'buildingName' => 'Woodcutter'],
+                    ],
+                ],
+            ]);
+
+        $this->amfMock->shouldReceive('resetClient')->once();
+
+        $this->amfMock->shouldReceive('applyBuff')
+            ->once()
+            ->with(Mockery::any(), 888, 11, 22, 1, $friendId)
+            ->andReturn('buff_friend_amf_response');
+
+        $this->parserMock->shouldReceive('parse')
+            ->once()
+            ->with('buff_friend_amf_response')
+            ->andReturn(['errorCode' => 0]);
+
+        Artisan::call('tso:execute-tasks');
+
+        $task->refresh();
+        $this->assertFalse($task->is_active);
+        $this->assertNotNull($task->last_run_at);
+        $this->assertStringContainsString('OK:', $task->last_result);
+    }
 }

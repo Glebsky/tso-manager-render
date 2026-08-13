@@ -1157,7 +1157,7 @@ export default {
 
             const canSellTarget = goods.value.some(g => g.item_id === tempTarget);
             if (!canSellTarget) {
-                showToast(`Cannot mirror: No listings for selling ${selectedTargetName.value} are available.`, 'warning');
+                showToast(t('market.cannot_mirror_no_listings', { name: selectedTargetName.value }), 'warning');
                 return;
             }
 
@@ -1182,10 +1182,10 @@ export default {
                 } else {
                     selectedTarget.value = '';
                     updateQueryParams();
-                    showToast(`Opposite trade not found. Targets reloaded.`, 'info');
+                    showToast(t('market.opposite_trade_not_found'), 'info');
                 }
             } catch (e) {
-                showToast('Failed to mirror trade pair.', 'error');
+                showToast(t('market.mirror_failed'), 'error');
             }
         };
 

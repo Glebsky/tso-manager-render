@@ -1442,7 +1442,7 @@ export default {
             verifyingId.value = srv.id;
             try {
                 const res = await marketApi.verifyMarketServer(srv.id);
-                showToast(res.message || 'Verification complete', res.success ? 'success' : 'warning');
+                showToast(res.message || t('market.verification_complete'), res.success ? 'success' : 'warning');
                 await loadServers();
             } catch (e) {
                 const msg = e.response?.data?.message || t('market.verification_failed');
@@ -1481,7 +1481,7 @@ export default {
                 await marketApi.updateMarketSettings(settingsForm.value);
                 showToast(t('market.schedule_saved'));
             } catch (e) {
-                showToast('Failed to save settings.', 'error');
+                showToast(t('market.save_settings_failed'), 'error');
             } finally {
                 saving.value = false;
             }

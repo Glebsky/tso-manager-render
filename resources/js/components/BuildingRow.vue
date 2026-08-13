@@ -78,13 +78,13 @@ export default {
                 });
 
                 if (res.success) {
-                    showToast(`Production ${isProducing.value ? 'stopped' : 'started'}!`);
+                    showToast(isProducing.value ? t('account.production_stopped') : t('account.production_started'));
                     emit('action-success');
                 } else {
-                    showToast(res.message || 'Action failed.', 'error');
+                    showToast(res.message || t('account.action_failed'), 'error');
                 }
             } catch (e) {
-                showToast(e.response?.data?.message || 'Action failed.', 'error');
+                showToast(e.response?.data?.message || t('account.action_failed'), 'error');
             } finally {
                 loading.value = false;
             }

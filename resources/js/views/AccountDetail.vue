@@ -878,14 +878,14 @@ export default {
             syncing.value = true;
             try {
                 const res = await accountsApi.syncAccount(account.value.id);
-                showToast('Account synced successfully!');
+                showToast(t('card.synced'));
                 const updatedAccount = res.data || res.account || account.value;
                 account.value = updatedAccount;
             } catch (e) {
                 if (e.response?.data?.account || e.response?.data?.data) {
                     account.value = e.response.data.account || e.response.data.data;
                 }
-                showToast(e.response?.data?.message || 'Sync request failed.', 'error');
+                showToast(e.response?.data?.message || t('account.sync_failed'), 'error');
             } finally {
                 syncing.value = false;
             }
@@ -1386,14 +1386,14 @@ export default {
                     grid: b.buildingGrid
                 });
                 if (res.success) {
-                    showToast(`Production ${currentlyActive ? 'stopped' : 'started'}!`);
+                    showToast(currentlyActive ? t('account.production_stopped') : t('account.production_started'));
                     b.isProductionActive = !currentlyActive;
                     b.buildingMode = currentlyActive ? 28 : 23;
                 } else {
-                    showToast(res.message || 'Action failed.', 'error');
+                    showToast(res.message || t('account.action_failed'), 'error');
                 }
             } catch (e) {
-                showToast(e.response?.data?.message || 'Action failed.', 'error');
+                showToast(e.response?.data?.message || t('account.action_failed'), 'error');
             } finally {
                 actionLoading.value = false;
             }
@@ -1405,7 +1405,7 @@ export default {
                 const res = await accountsApi.fetchAccountDetail(route.params.id);
                 account.value = res.data || res;
             } catch (e) {
-                showToast('Failed to load account.', 'error');
+                showToast(t('account.load_failed'), 'error');
                 router.push('/accounts');
             } finally {
                 loading.value = false;
