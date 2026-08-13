@@ -16,17 +16,17 @@
 
                 <select :value="accountFilter" @change="$emit('update:accountFilter', $event.target.value)"
                         class="glass-select text-xs py-1.5 px-3">
-                    <option value="">{{ t('tasks.all_accounts') }}</option>
-                    <option v-for="acc in accounts" :key="acc.id" :value="acc.id">
+                    <option value="" class="bg-dark-900 text-white">{{ t('tasks.all_accounts') }}</option>
+                    <option v-for="acc in accounts" :key="acc.id" :value="acc.id" class="bg-dark-900 text-white">
                         {{ acc.nickname || acc.username }}
                     </option>
                 </select>
 
                 <select :value="statusFilter" @change="$emit('update:statusFilter', $event.target.value)"
                         class="glass-select text-xs py-1.5 px-3">
-                    <option value="">{{ t('tasks.all_statuses') }}</option>
-                    <option value="active">{{ t('tasks.status.active') }}</option>
-                    <option value="paused">{{ t('tasks.status.pause_short') }}</option>
+                    <option value="" class="bg-dark-900 text-white">{{ t('tasks.all_statuses') }}</option>
+                    <option value="active" class="bg-dark-900 text-white">{{ t('tasks.status.active') }}</option>
+                    <option value="paused" class="bg-dark-900 text-white">{{ t('tasks.status.pause_short') }}</option>
                 </select>
             </div>
         </div>

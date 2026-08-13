@@ -22,12 +22,12 @@ Game protocol behavior is an external contract derived from observed traffic and
 
 ## 3. Runtime Contract
 
-- PHP `^8.4`; Laravel `^12.0`.
+- PHP `^8.5`; Laravel `^12.0`.
 - PostgreSQL in deployed environments; SQLite in test configuration.
 - Redis for cache, sessions, queues, throttling, and account-scoped runtime state.
 - Vue 3 Composition API, Vue Router, Axios, Vite 6, Tailwind CSS 3.
 - PHPUnit 10, Laravel Pint, PHPStan.
-- Modern PHP 8.4 features are enabled and allowed.
+- Modern PHP 8.5 features are enabled and allowed.
 - Do not add/replace/upgrade dependencies without approval and a documented need.
 
 ## 4. Repository Map

@@ -9,7 +9,7 @@ use App\Http\Requests\Market\MarketPopularRequest;
 use App\Http\Resources\PopularItemResource;
 use App\Services\Market\PopularItemService;
 use App\Services\Market\Support\PeriodResolver;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\JsonResponse;
 
 /**
  * Controller for retrieving popular (most traded) market items.
@@ -21,11 +21,11 @@ final class PopularController extends Controller
         private readonly PeriodResolver $periodResolver,
     ) {}
 
-    public function __invoke(MarketPopularRequest $request): AnonymousResourceCollection
+    public function __invoke(MarketPopularRequest $request): JsonResponse
     {
         $period = $this->periodResolver->resolve($request->periodKey());
         $items = $this->popular->popular($request->serverId(), $period);
 
-        return PopularItemResource::collection($items);
+        return new JsonResponse(PopularItemResource::collection($items)->resolve());
     }
 }

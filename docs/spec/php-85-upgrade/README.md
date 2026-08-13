@@ -1,7 +1,7 @@
 <!-- SDD package: php-85-upgrade v1.0 -->
 # SDD: Миграция приложения на PHP 8.5
 
-- **Статус:** Draft / Planning
+- **Статус:** Implemented / Completed
 - **Версия пакета:** 1.0
 - **Проект:** Laravel 12 / Vue 3 (TSO Manager)
 - **Компонент:** Runtime & Infrastructure (`Dockerfile`, `composer.json`, `docs/spec/constitution.md`, `AGENTS.md`)

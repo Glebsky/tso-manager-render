@@ -32,6 +32,8 @@ final class PopularItemService
             function () use ($serverId, $period): array {
                 $query = MarketHistory::query()
                     ->where('server_id', $serverId)
+                    ->whereNotNull('item_id')
+                    ->where('item_id', '!=', '')
                     ->selectRaw('item_id, item_name, count(*) as offers_count, count(distinct player_id) as sellers_count, sum(volume) as total_volume');
 
                 if ($period->isBounded()) {
