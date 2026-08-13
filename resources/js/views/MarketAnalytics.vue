@@ -752,13 +752,21 @@
 
             <!-- Section 3: Sync Logs -->
             <div class="glass-card p-6">
-                <div class="flex items-center gap-3 mb-6 border-b border-white/5 pb-3">
-                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center text-white">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 0 1 0 3.75H5.625a1.875 1.875 0 0 1 0-3.75Z" />
-                        </svg>
+                <div class="flex items-center justify-between mb-6 border-b border-white/5 pb-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center text-white">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 0 1 0 3.75H5.625a1.875 1.875 0 0 1 0-3.75Z" />
+                            </svg>
+                        </div>
+                        <h2 class="text-lg font-semibold text-white">{{ t('market.sync_log') }}</h2>
                     </div>
-                    <h2 class="text-lg font-semibold text-white">{{ t('market.sync_log') }}</h2>
+                    <button @click="loadSyncLogs(logsPagination.current_page || 1)" :disabled="loadingSyncLogs" class="btn-secondary py-1 px-3 text-xs flex items-center gap-1.5 hover:border-emerald-500/30 hover:text-emerald-400 disabled:opacity-50">
+                        <svg class="w-3.5 h-3.5" :class="{ 'animate-spin': loadingSyncLogs }" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182" />
+                        </svg>
+                        <span>{{ t('common.refresh') }}</span>
+                    </button>
                 </div>
 
                 <div class="overflow-x-auto">
@@ -799,6 +807,29 @@
                             </tr>
                         </tbody>
                     </table>
+                </div>
+
+                <!-- Pagination Controls -->
+                <div v-if="logsPagination.last_page > 1" class="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 pt-4 border-t border-white/5">
+                    <p class="text-xs text-white/30">
+                        {{ t('logs.page_of', { current: logsPagination.current_page, last: logsPagination.last_page }) }}
+                    </p>
+                    <div class="flex items-center gap-2">
+                        <button :disabled="logsPagination.current_page === 1 || loadingSyncLogs" @click="loadSyncLogs(logsPagination.current_page - 1)"
+                                class="btn-secondary py-1 px-3 text-xs flex items-center gap-1 hover:border-emerald-500/30 hover:text-emerald-400 disabled:opacity-50">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                            </svg>
+                            <span>{{ t('common.previous') }}</span>
+                        </button>
+                        <button :disabled="logsPagination.current_page === logsPagination.last_page || loadingSyncLogs" @click="loadSyncLogs(logsPagination.current_page + 1)"
+                                class="btn-secondary py-1 px-3 text-xs flex items-center gap-1 hover:border-emerald-500/30 hover:text-emerald-400 disabled:opacity-50">
+                            <span>{{ t('common.next') }}</span>
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -870,7 +901,7 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { t } from '../lang';
 import { marketApi } from '../services/api/market';
@@ -1357,12 +1388,12 @@ export default {
             loadingSyncLogs.value = true;
             try {
                 const res = await marketApi.fetchMarketLogs({ server_id: selectedServerId.value, page, limit: 10 });
-                const data = res.data || res;
-                logs.value = data.data || data.logs || [];
+                const logsList = Array.isArray(res.data) ? res.data : (Array.isArray(res) ? res : (res.logs || []));
+                logs.value = logsList;
                 logsPagination.value = {
-                    current_page: data.current_page || 1,
-                    last_page: data.last_page || 1,
-                    total: data.total || 0,
+                    current_page: res.current_page || 1,
+                    last_page: res.last_page || 1,
+                    total: res.total || logsList.length,
                 };
             } catch (e) {
                 console.error('Failed to load logs:', e);
@@ -1648,6 +1679,12 @@ export default {
             fetchAnalytics();
         };
 
+        watch(activeTab, (newTab) => {
+            if (newTab === 'settings') {
+                loadSyncLogs(1);
+            }
+        });
+
         onMounted(async () => {
             const queryServer = route.query.server || route.query.server_id;
             if (queryServer) {
@@ -1655,6 +1692,7 @@ export default {
             }
             await loadServers();
             await loadAnalyticsData();
+            await loadSyncLogs(1);
 
             const queryItem = route.query.item || route.query.item_id;
             const queryTarget = route.query.target || route.query.target_item_id;
