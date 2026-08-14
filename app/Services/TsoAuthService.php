@@ -43,7 +43,7 @@ class TsoAuthService
     {
         $dir = storage_path('app/cookies');
         if (! is_dir($dir)) {
-            if (!mkdir($dir, 0700, true) && !is_dir($dir)) {
+            if (! mkdir($dir, 0700, true) && ! is_dir($dir)) {
                 throw new \RuntimeException(sprintf('Directory "%s" was not created', $dir));
             }
         }
