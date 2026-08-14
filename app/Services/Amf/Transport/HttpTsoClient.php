@@ -35,6 +35,11 @@ class HttpTsoClient implements TsoClientInterface
     public function resolveServerUrl(Account $account, int $targetZoneId = 0, ?string &$dsId = null): string
     {
         $lsUrl = (string) $account->bb_url;
+        $scheme = parse_url($lsUrl, PHP_URL_SCHEME);
+        if (! in_array($scheme, ['http', 'https'], true)) {
+            throw new Exception("Invalid or unsupported URL scheme for account bb_url: {$scheme}");
+        }
+
         $dsoAuthUser = (string) $account->dso_auth_user;
         $dsoAuthToken = (string) $account->dso_auth_token;
         $cookieFile = $this->authService->getCookieFile($account);
@@ -45,7 +50,8 @@ class HttpTsoClient implements TsoClientInterface
         $chAuth = curl_init();
         curl_setopt($chAuth, CURLOPT_URL, $authUrl);
         curl_setopt($chAuth, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($chAuth, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($chAuth, CURLOPT_SSL_VERIFYPEER, (bool) config('game.ssl_verify', true));
+        curl_setopt($chAuth, CURLOPT_TIMEOUT, (int) config('game.http_timeout', 30));
         curl_setopt($chAuth, CURLOPT_POST, true);
         curl_setopt($chAuth, CURLOPT_POSTFIELDS, http_build_query([
             'DSOAUTHUSER' => $dsoAuthUser,
@@ -89,7 +95,8 @@ class HttpTsoClient implements TsoClientInterface
             $requestUrl = rtrim($lsUrl, '/').'/Z'.(int) round(microtime(true) * 1000);
             curl_setopt($ch, CURLOPT_URL, $requestUrl);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, (bool) config('game.ssl_verify', true));
+            curl_setopt($ch, CURLOPT_TIMEOUT, (int) config('game.http_timeout', 30));
             curl_setopt($ch, CURLOPT_POST, true);
 
             $data = http_build_query([
@@ -186,7 +193,8 @@ class HttpTsoClient implements TsoClientInterface
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $client['url']);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, (bool) config('game.ssl_verify', true));
+        curl_setopt($ch, CURLOPT_TIMEOUT, (int) config('game.http_timeout', 30));
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_POSTREDIR, 3);
         curl_setopt($ch, CURLOPT_COOKIEFILE, $client['cookie_file']);

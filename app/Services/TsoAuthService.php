@@ -43,7 +43,9 @@ class TsoAuthService
     {
         $dir = storage_path('app/cookies');
         if (! is_dir($dir)) {
-            mkdir($dir, 0755, true);
+            if (!mkdir($dir, 0700, true) && !is_dir($dir)) {
+                throw new \RuntimeException(sprintf('Directory "%s" was not created', $dir));
+            }
         }
 
         return $dir.'/account_'.$account->id.'.txt';
@@ -190,12 +192,12 @@ class TsoAuthService
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $currentUrl);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, (bool) config('game.ssl_verify', true));
             curl_setopt($ch, CURLOPT_COOKIEJAR, $cookieFile);
             curl_setopt($ch, CURLOPT_COOKIEFILE, $cookieFile);
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
             curl_setopt($ch, CURLOPT_HEADER, true);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+            curl_setopt($ch, CURLOPT_TIMEOUT, (int) config('game.http_timeout', 30));
 
             $headers = [
                 'Content-Type: application/x-www-form-urlencoded',
@@ -374,6 +376,16 @@ class TsoAuthService
     }
 
     /**
+     * Get list of all supported regions.
+     *
+     * @return list<string>
+     */
+    public static function supportedRegions(): array
+    {
+        return array_keys(self::SERVERS);
+    }
+
+    /**
      * Extract flash vars from the play page HTML.
      *
      * @return array<string, mixed>
@@ -419,7 +431,8 @@ class TsoAuthService
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, (bool) config('game.ssl_verify', true));
+        curl_setopt($ch, CURLOPT_TIMEOUT, (int) config('game.http_timeout', 30));
         curl_setopt($ch, CURLOPT_COOKIEJAR, $cookieFile);
         curl_setopt($ch, CURLOPT_COOKIEFILE, $cookieFile);
 

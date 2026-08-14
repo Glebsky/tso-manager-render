@@ -1,6 +1,7 @@
 <?php
 
 use App\Exceptions\Contracts\HasApiPresentation;
+use App\Http\Middleware\SecurityHeadersMiddleware;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
@@ -21,6 +22,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->append(SecurityHeadersMiddleware::class);
+
         $middleware->web(prepend: [
             SetLocale::class,
         ]);

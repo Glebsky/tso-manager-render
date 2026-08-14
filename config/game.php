@@ -43,4 +43,12 @@ return [
         'max_action_attempts' => 2,
         'retry_session_errors' => [1005, 1012],
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Network & Transport Security
+    |--------------------------------------------------------------------------
+    */
+    'ssl_verify' => (bool) env('TSO_SSL_VERIFY', true),
+    'http_timeout' => (int) env('TSO_HTTP_TIMEOUT', 30),
 ];

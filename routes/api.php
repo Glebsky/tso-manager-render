@@ -45,8 +45,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/accounts/{account}', [AccountController::class, 'show']);
     Route::get('/accounts/{account}/zone', [AccountController::class, 'zone']);
     Route::delete('/accounts/{account}', [AccountController::class, 'destroy']);
-    Route::post('/accounts/{account}/sync', [AccountController::class, 'sync']);
-    Route::post('/accounts/{account}/action', [AccountController::class, 'action']);
+    Route::post('/accounts/{account}/sync', [AccountController::class, 'sync'])
+        ->middleware('throttle:api-actions');
+    Route::post('/accounts/{account}/action', [AccountController::class, 'action'])
+        ->middleware('throttle:api-actions');
     Route::put('/accounts/{account}/session', [AccountController::class, 'updateSession']);
     Route::get('/accounts/{account}/friends/{friendId}/zone', [AccountController::class, 'friendZone'])
         ->whereNumber('friendId');
@@ -57,7 +59,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/tasks/{task}', [ScheduledTaskController::class, 'update'])->whereNumber('task');
     Route::delete('/tasks/{task}', [ScheduledTaskController::class, 'destroy'])->whereNumber('task');
     Route::post('/tasks/{task}/toggle', [ScheduledTaskController::class, 'toggle'])->whereNumber('task');
-    Route::post('/tasks/{task}/execute', [ScheduledTaskController::class, 'execute'])->whereNumber('task');
+    Route::post('/tasks/{task}/execute', [ScheduledTaskController::class, 'execute'])
+        ->whereNumber('task')
+        ->middleware('throttle:api-actions');
     Route::get('/tasks/{task}/status', [ScheduledTaskController::class, 'status'])->whereNumber('task');
 
     // Logs
@@ -75,12 +79,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/market/servers/{server}', [ServerController::class, 'update']);
     Route::delete('/market/servers/{server}', [ServerController::class, 'destroy']);
     Route::post('/market/servers/{server}/verify', [ServerController::class, 'verify']);
-    Route::post('/market/servers/{server}/sync', [ServerController::class, 'sync']);
+    Route::post('/market/servers/{server}/sync', [ServerController::class, 'sync'])
+        ->middleware('throttle:api-actions');
 
     // Market settings
     Route::get('/market/settings', [MarketSettingsController::class, 'index']);
     Route::put('/market/settings', [MarketSettingsController::class, 'update']);
-    Route::post('/market/sync', [MarketSettingsController::class, 'sync']);
+    Route::post('/market/sync', [MarketSettingsController::class, 'sync'])
+        ->middleware('throttle:api-actions');
     Route::get('/market/version', VersionController::class);
 
     // Cached market data endpoints share the same HTTP cache contract as the
@@ -104,16 +110,18 @@ Route::middleware('auth:sanctum')->group(function () {
 | Public Market Analytics API
 |--------------------------------------------------------------------------
 */
-Route::prefix('public/market')->group(function () {
-    Route::get('/version', VersionController::class);
+Route::prefix('public/market')
+    ->middleware('throttle:public-market')
+    ->group(function () {
+        Route::get('/version', VersionController::class);
 
-    Route::middleware(HttpCacheHeaders::class)->group(function () {
-        Route::get('/servers', PublicServerController::class);
-        Route::get('/goods', [CatalogController::class, 'goods']);
-        Route::get('/targets', [CatalogController::class, 'targets']);
-        Route::get('/popular', PopularController::class);
-        Route::get('/analytics', AnalyticsController::class);
-        Route::get('/arbitrage', ArbitrageController::class);
-        Route::get('/bulk', BulkController::class);
+        Route::middleware(HttpCacheHeaders::class)->group(function () {
+            Route::get('/servers', PublicServerController::class);
+            Route::get('/goods', [CatalogController::class, 'goods']);
+            Route::get('/targets', [CatalogController::class, 'targets']);
+            Route::get('/popular', PopularController::class);
+            Route::get('/analytics', AnalyticsController::class);
+            Route::get('/arbitrage', ArbitrageController::class);
+            Route::get('/bulk', BulkController::class);
+        });
     });
-});

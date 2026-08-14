@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Account;
 
+use App\Services\TsoAuthService;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 final class StoreAccountRequest extends FormRequest
 {
@@ -14,14 +16,14 @@ final class StoreAccountRequest extends FormRequest
     }
 
     /**
-     * @return array<string, string>
+     * @return array<string, array<int, mixed>>
      */
     public function rules(): array
     {
         return [
-            'username' => 'required|string|max:255',
-            'password' => 'required|string',
-            'region' => 'required|string|max:10',
+            'username' => ['required', 'string', 'max:255'],
+            'password' => ['required', 'string'],
+            'region' => ['required', 'string', Rule::in(TsoAuthService::supportedRegions())],
         ];
     }
 }
