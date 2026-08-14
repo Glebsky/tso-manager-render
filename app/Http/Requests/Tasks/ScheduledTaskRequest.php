@@ -87,6 +87,7 @@ abstract class ScheduledTaskRequest extends FormRequest
             'payload.actions.*.task_type' => ['required', Rule::enum(TaskType::class)],
             'payload.actions.*.payload' => 'required|array',
             'payload.actions.*.delay_seconds' => 'required|integer|min:0',
+            'payload.actions.*.meta' => 'nullable|array',
         ];
 
         foreach ((array) $this->input('payload.actions', []) as $index => $action) {
@@ -94,6 +95,7 @@ abstract class ScheduledTaskRequest extends FormRequest
             if (in_array($taskType, [TaskType::StopProduction->value, TaskType::StartProduction->value], true)) {
                 $rules["payload.actions.{$index}.payload.grid"] = 'required|integer|min:1';
                 $rules["payload.actions.{$index}.payload.building_name"] = 'nullable|string|max:255';
+                $rules["payload.actions.{$index}.payload.building_raw_name"] = 'nullable|string|max:255';
                 $rules["payload.actions.{$index}.payload.name"] = 'nullable|string|max:255';
             }
         }
@@ -111,6 +113,7 @@ abstract class ScheduledTaskRequest extends FormRequest
         return [
             'payload.grid' => 'required|integer|min:1',
             'payload.building_name' => 'nullable|string|max:255',
+            'payload.building_raw_name' => 'nullable|string|max:255',
             'payload.name' => 'nullable|string|max:255',
         ];
     }
@@ -129,6 +132,10 @@ abstract class ScheduledTaskRequest extends FormRequest
             'payload.unique_id2' => 'nullable|integer',
             'payload.specialist_type' => 'nullable|string|max:255',
             'payload.search_type' => 'nullable|string|max:255',
+            'payload.specialist_name' => 'nullable|string|max:255',
+            'payload.specialist_type_name' => 'nullable|string|max:255',
+            'payload.sub_task_label' => 'nullable|string|max:255',
+            'payload.name' => 'nullable|string|max:255',
         ];
     }
 
@@ -202,6 +209,12 @@ abstract class ScheduledTaskRequest extends FormRequest
                 $prefix.'amount' => 'nullable|integer|min:1',
                 $prefix.'target_player_id' => 'required_if:'.$prefix.'target_scope,friend|nullable|integer|min:1',
                 $prefix.'target_player_name' => 'nullable|string|max:255',
+                $prefix.'buff_name' => 'nullable|string|max:255',
+                $prefix.'buff_raw_name' => 'nullable|string|max:255',
+                $prefix.'buff_resource_name' => 'nullable|string|max:255',
+                $prefix.'building_name' => 'nullable|string|max:255',
+                $prefix.'building_raw_name' => 'nullable|string|max:255',
+                $prefix.'name' => 'nullable|string|max:255',
             ];
         }
 

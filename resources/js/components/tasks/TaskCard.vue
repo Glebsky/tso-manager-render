@@ -41,12 +41,68 @@
                             </svg>
                         </button>
 
-                        <span v-if="task.task_type !== 'sequence' && task.payload && task.payload.grid" class="font-mono bg-white/5 px-2 py-0.5 rounded text-white/60">
-                            {{ t('tasks.grid_number', { id: task.payload.grid }) }}
-                        </span>
-                        <span v-if="task.task_type !== 'sequence' && task.payload && task.payload.sub_task_id !== undefined" class="text-white/60 font-medium">
-                            {{ getSubTaskLabel(task.task_type, task.payload.task_type, task.payload.sub_task_id) }}
-                        </span>
+                        <template v-if="task.task_type !== 'sequence'">
+                            <!-- Single building stop/start task -->
+                            <span v-if="['stop_production', 'start_production'].includes(task.task_type)" class="inline-flex items-center gap-1.5 flex-wrap">
+                                <span class="inline-flex items-center gap-1 text-emerald-300 font-medium">
+                                    <img v-if="getBuildingInfo(task, { task_type: task.task_type, payload: task.payload }).icon"
+                                         :src="getBuildingInfo(task, { task_type: task.task_type, payload: task.payload }).icon"
+                                         class="w-4 h-4 object-contain rounded flex-shrink-0"
+                                         @error="handleBuildingIconError($event, getBuildingInfo(task, { task_type: task.task_type, payload: task.payload }).raw)" />
+                                    <span v-else class="text-xs">🏭</span>
+                                    <span>{{ getBuildingInfo(task, { task_type: task.task_type, payload: task.payload }).name || t('tasks.building') }}</span>
+                                </span>
+                                <span v-if="task.payload?.grid" class="font-mono bg-white/5 px-2 py-0.5 rounded text-white/60 text-[10px]">
+                                    {{ t('tasks.grid_number', { id: task.payload.grid }) }}
+                                </span>
+                            </span>
+
+                            <!-- Single buff task -->
+                            <span v-else-if="task.task_type === 'apply_buff'" class="inline-flex items-center gap-1.5 flex-wrap">
+                                <span class="inline-flex items-center gap-1 text-amber-300 font-medium">
+                                    <img v-if="getBuffInfo(task, { task_type: task.task_type, payload: task.payload }).icon"
+                                         :src="getBuffInfo(task, { task_type: task.task_type, payload: task.payload }).icon"
+                                         class="w-4 h-4 object-contain rounded flex-shrink-0"
+                                         @error="handleBuffIconError($event, getBuffInfo(task, { task_type: task.task_type, payload: task.payload }).raw)" />
+                                    <span v-else class="text-xs">✨</span>
+                                    <span>{{ getBuffInfo(task, { task_type: task.task_type, payload: task.payload }).name }}</span>
+                                    <span v-if="(task.payload?.amount || 1) > 1" class="font-bold text-amber-200">(x{{ task.payload.amount }})</span>
+                                </span>
+                                <span v-if="(task.payload?.target_scope || 'self') === 'friend'" class="text-amber-400 text-[10px]">
+                                    • 👤 {{ task.payload?.target_player_name || t('tasks.unknown_friend') }}
+                                </span>
+                                <span class="inline-flex items-center gap-1 text-emerald-300 font-medium">
+                                    • <img v-if="getBuildingInfo(task, { task_type: task.task_type, payload: task.payload }).icon"
+                                         :src="getBuildingInfo(task, { task_type: task.task_type, payload: task.payload }).icon"
+                                         class="w-4 h-4 object-contain rounded flex-shrink-0"
+                                         @error="handleBuildingIconError($event, getBuildingInfo(task, { task_type: task.task_type, payload: task.payload }).raw)" />
+                                    <span v-else class="text-xs">🏭</span>
+                                    <span>{{ getBuildingInfo(task, { task_type: task.task_type, payload: task.payload }).name || t('tasks.building') }}</span>
+                                </span>
+                                <span v-if="task.payload?.grid" class="font-mono bg-white/5 px-2 py-0.5 rounded text-white/60 text-[10px]">
+                                    {{ t('tasks.grid_number', { id: task.payload.grid }) }}
+                                </span>
+                            </span>
+
+                            <!-- Single specialist task -->
+                            <span v-else-if="['send_geologist', 'send_explorer'].includes(task.task_type)" class="inline-flex items-center gap-1.5 flex-wrap">
+                                <span class="inline-flex items-center gap-1 text-emerald-300 font-medium">
+                                    <img v-if="getSpecialistInfo(task, { task_type: task.task_type, payload: task.payload }).icon"
+                                         :src="getSpecialistInfo(task, { task_type: task.task_type, payload: task.payload }).icon"
+                                         class="w-4 h-4 object-contain rounded flex-shrink-0"
+                                         @error="handleSpecialistIconError($event)" />
+                                    <span v-else class="text-xs">🎖️</span>
+                                    <span>{{ getSpecialistInfo(task, { task_type: task.task_type, payload: task.payload }).name }}</span>
+                                </span>
+                                <span v-if="getSpecialistInfo(task, { task_type: task.task_type, payload: task.payload }).subTaskLabel" class="badge badge-neutral text-[10px]">
+                                    🧭 {{ getSpecialistInfo(task, { task_type: task.task_type, payload: task.payload }).subTaskLabel }}
+                                </span>
+                            </span>
+
+                            <span v-else-if="task.payload && task.payload.grid" class="font-mono bg-white/5 px-2 py-0.5 rounded text-white/60">
+                                {{ t('tasks.grid_number', { id: task.payload.grid }) }}
+                            </span>
+                        </template>
                     </div>
                 </div>
             </div>
@@ -144,25 +200,87 @@
             </h4>
 
             <div v-for="(act, aIdx) in getTaskActionsList(task)" :key="aIdx"
-                 class="flex items-center justify-between gap-3 text-xs p-2.5 rounded-lg border transition-all"
+                 class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 text-xs p-2.5 rounded-lg border transition-all"
                  :class="getActionStepStatus(task, aIdx) === 'running' ? 'bg-amber-500/10 border-amber-500/30 text-amber-200' :
                          getActionStepStatus(task, aIdx) === 'completed' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300' :
                          getActionStepStatus(task, aIdx) === 'failed' ? 'bg-red-500/10 border-red-500/30 text-red-300' : 'bg-white/5 border-white/5 text-white/70'">
-                <div class="flex items-center gap-2 min-w-0 flex-1">
+                <div class="flex items-center gap-2.5 min-w-0 flex-1 flex-wrap">
                     <span class="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-mono font-bold text-white/80 flex-shrink-0">
                         {{ aIdx + 1 }}
                     </span>
-                    <span class="font-medium truncate">{{ typeLabels[act.task_type] || act.task_type }}</span>
+                    <span class="font-medium truncate flex-shrink-0">{{ typeLabels[act.task_type] || act.task_type }}</span>
 
-                    <span v-if="act.task_type === 'apply_buff' && act.meta && act.meta.buff" class="badge badge-emerald text-[10px] truncate max-w-[150px]">
-                        ✨ {{ getBuffDisplayName(act.meta.buff) }}
-                    </span>
-                    <span v-if="act.payload && act.payload.grid" class="font-mono text-[10px] text-white/50">
-                        (Grid #{{ act.payload.grid }})
-                    </span>
+                    <!-- Buff Action Details -->
+                    <template v-if="act.task_type === 'apply_buff'">
+                        <span class="inline-flex items-center gap-1.5 text-amber-300 font-medium max-w-full truncate bg-amber-400/10 px-2 py-0.5 rounded-md border border-amber-400/20 text-[10px]">
+                            <img v-if="getBuffInfo(task, act).icon"
+                                 :src="getBuffInfo(task, act).icon"
+                                 class="w-4 h-4 object-contain rounded flex-shrink-0"
+                                 @error="handleBuffIconError($event, getBuffInfo(task, act).raw || act.meta?.buff)" />
+                            <span v-else class="text-[10px]">✨</span>
+                            <span class="truncate">{{ getBuffInfo(task, act).name }}</span>
+                            <span v-if="(act.payload?.amount || 1) > 1" class="font-bold text-amber-200">x{{ act.payload.amount }}</span>
+                        </span>
+
+                        <span v-if="(act.payload?.target_scope || 'self') === 'friend'" class="text-amber-400 text-[10px] whitespace-nowrap">
+                            👤 {{ act.payload?.target_player_name || t('tasks.unknown_friend') }}
+                        </span>
+
+                        <span class="inline-flex items-center gap-1 text-emerald-300 font-medium max-w-full truncate text-[10px]">
+                            <img v-if="getBuildingInfo(task, act).icon"
+                                 :src="getBuildingInfo(task, act).icon"
+                                 class="w-4 h-4 object-contain rounded flex-shrink-0"
+                                 @error="handleBuildingIconError($event, getBuildingInfo(task, act).raw || act.meta?.building)" />
+                            <span v-else class="text-[10px]">🏭</span>
+                            <span class="truncate">{{ getBuildingInfo(task, act).name || t('tasks.building') }}</span>
+                        </span>
+
+                        <span v-if="act.payload?.grid" class="font-mono text-[10px] text-white/50 bg-white/5 px-1.5 py-0.5 rounded whitespace-nowrap">
+                            Grid #{{ act.payload.grid }}
+                        </span>
+                    </template>
+
+                    <!-- Building Stop/Start Production Details -->
+                    <template v-else-if="['stop_production', 'start_production'].includes(act.task_type)">
+                        <span class="inline-flex items-center gap-1 text-emerald-300 font-medium max-w-full truncate text-[10px]">
+                            <img v-if="getBuildingInfo(task, act).icon"
+                                 :src="getBuildingInfo(task, act).icon"
+                                 class="w-4 h-4 object-contain rounded flex-shrink-0"
+                                 @error="handleBuildingIconError($event, getBuildingInfo(task, act).raw || act.meta?.building)" />
+                            <span v-else class="text-[10px]">🏭</span>
+                            <span class="truncate">{{ getBuildingInfo(task, act).name || t('tasks.building') }}</span>
+                        </span>
+
+                        <span v-if="act.payload?.grid" class="font-mono text-[10px] text-white/50 bg-white/5 px-1.5 py-0.5 rounded whitespace-nowrap">
+                            Grid #{{ act.payload.grid }}
+                        </span>
+                    </template>
+
+                    <!-- Specialist Dispatch Details -->
+                    <template v-else-if="['send_geologist', 'send_explorer'].includes(act.task_type)">
+                        <span class="inline-flex items-center gap-1.5 text-emerald-300 font-medium max-w-full truncate bg-emerald-400/10 px-2 py-0.5 rounded-md border border-emerald-400/20 text-[10px]">
+                            <img v-if="getSpecialistInfo(task, act).icon"
+                                 :src="getSpecialistInfo(task, act).icon"
+                                 class="w-4 h-4 object-contain rounded flex-shrink-0"
+                                 @error="handleSpecialistIconError($event)" />
+                            <span v-else class="text-[10px]">🎖️</span>
+                            <span class="truncate">{{ getSpecialistInfo(task, act).name }}</span>
+                        </span>
+
+                        <span v-if="getSpecialistInfo(task, act).subTaskLabel" class="badge badge-neutral text-[9px] whitespace-nowrap">
+                            🧭 {{ getSpecialistInfo(task, act).subTaskLabel }}
+                        </span>
+                    </template>
+
+                    <!-- Pickups Details -->
+                    <template v-else-if="act.task_type === 'collect_pickups'">
+                        <span class="badge badge-neutral text-[9px] whitespace-nowrap">
+                            🧺 {{ act.payload?.pickup_type === 'event' ? t('tasks.event_pickups') : t('tasks.all_pickups') }}
+                        </span>
+                    </template>
                 </div>
 
-                <div class="flex items-center gap-2 flex-shrink-0 font-mono text-[10px]">
+                <div class="flex items-center gap-2 flex-shrink-0 font-mono text-[10px] self-end sm:self-center">
                     <span v-if="act.delay_seconds > 0" class="text-white/40">⏱ {{ act.delay_seconds }}s {{ t('tasks.delay_short') }}</span>
                     <span v-if="getActionStepStatus(task, aIdx) === 'completed'" class="text-emerald-400 font-bold">✓ OK</span>
                     <span v-else-if="getActionStepStatus(task, aIdx) === 'failed'" class="text-red-400 font-bold" :title="getActionStepError(task, aIdx)">
@@ -196,7 +314,12 @@ defineProps({
     getTaskLastResultBadge: { type: Function, required: true },
     getActionStepStatus: { type: Function, required: true },
     getActionStepError: { type: Function, required: true },
-    getBuffDisplayName: { type: Function, required: true }
+    getBuildingInfo: { type: Function, required: true },
+    getBuffInfo: { type: Function, required: true },
+    getSpecialistInfo: { type: Function, required: true },
+    handleBuildingIconError: { type: Function, default: () => {} },
+    handleBuffIconError: { type: Function, default: () => {} },
+    handleSpecialistIconError: { type: Function, default: () => {} }
 });
 
 defineEmits(['toggle-expand', 'toggle-active', 'execute', 'edit', 'delete']);

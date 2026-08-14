@@ -933,11 +933,17 @@ export default {
         const startCountdown = () => {
             if (countdownInterval) clearInterval(countdownInterval);
             countdownInterval = setInterval(() => {
+                const nextOffers = [];
                 activeOffers.value.forEach(offer => {
-                    if (offer.time_left > 0) {
-                        offer.time_left--;
+                    if (offer.time_left > 1) {
+                        nextOffers.push({ ...offer, time_left: offer.time_left - 1 });
                     }
                 });
+                if (nextOffers.length !== activeOffers.value.length) {
+                    const removed = activeOffers.value.length - nextOffers.length;
+                    totalActiveCount.value = Math.max(0, totalActiveCount.value - removed);
+                }
+                activeOffers.value = nextOffers;
             }, 1000);
         };
 
@@ -951,15 +957,17 @@ export default {
                     const rawPopular = (data.popular && data.popular['1d']) || [];
                     const unwrappedPopular = Array.isArray(rawPopular) ? rawPopular : (rawPopular?.data || []);
                     popular.value = unwrappedPopular.filter(item => item && typeof item === 'object' && item.item_id);
-                    activeOffers.value = (data.active_offers || []).map(offer => {
-                        if (offer && offer.expires_at) {
-                            const expiresAt = new Date(offer.expires_at).getTime();
-                            const timeLeft = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
-                            return { ...offer, time_left: timeLeft };
-                        }
-                        return offer;
-                    });
-                    totalActiveCount.value = data.total_active_count || 0;
+                    activeOffers.value = (data.active_offers || [])
+                        .map(offer => {
+                            if (offer && offer.expires_at) {
+                                const expiresAt = new Date(offer.expires_at).getTime();
+                                const timeLeft = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
+                                return { ...offer, time_left: timeLeft };
+                            }
+                            return offer;
+                        })
+                        .filter(offer => offer.time_left > 0);
+                    totalActiveCount.value = activeOffers.value.length;
                     activeOffersPage.value = 1;
                     hasMoreActiveOffers.value = false;
                     arbitrageLoops.value = data.arbitrage || [];
@@ -987,15 +995,17 @@ export default {
                     popular.value = unwrappedPopular.filter(item => item && typeof item === 'object' && item.item_id);
                     arbitrageLoops.value = arbitrageRes || [];
                     if (analyticsRes) {
-                        activeOffers.value = (analyticsRes.active_offers || []).map(offer => {
-                            if (offer && offer.expires_at) {
-                                const expiresAt = new Date(offer.expires_at).getTime();
-                                const timeLeft = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
-                                return { ...offer, time_left: timeLeft };
-                            }
-                            return offer;
-                        });
-                        totalActiveCount.value = analyticsRes.total_active_count || 0;
+                        activeOffers.value = (analyticsRes.active_offers || [])
+                            .map(offer => {
+                                if (offer && offer.expires_at) {
+                                    const expiresAt = new Date(offer.expires_at).getTime();
+                                    const timeLeft = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
+                                    return { ...offer, time_left: timeLeft };
+                                }
+                                return offer;
+                            })
+                            .filter(offer => offer.time_left > 0);
+                        totalActiveCount.value = activeOffers.value.length;
                     }
                 }
 
@@ -1154,34 +1164,35 @@ export default {
             if (!selectedItem.value || !selectedTarget.value || !selectedServerId.value) return;
             const tempItem = selectedItem.value;
             const tempTarget = selectedTarget.value;
+            const targetName = selectedTargetName.value;
 
             const canSellTarget = goods.value.some(g => g.item_id === tempTarget);
             if (!canSellTarget) {
-                showToast(t('market.cannot_mirror_no_listings', { name: selectedTargetName.value }), 'warning');
+                showToast(t('market.cannot_mirror_no_listings', { name: targetName }), 'warning');
                 return;
             }
 
-            selectedItem.value = tempTarget;
-            updateQueryParams();
             try {
+                let targetList = [];
                 const bulk = readBulkCache(selectedServerId.value);
-                if (bulk && bulk.targets_map && bulk.targets_map[selectedItem.value]) {
-                    targets.value = bulk.targets_map[selectedItem.value];
+                if (bulk && bulk.targets_map && bulk.targets_map[tempTarget]) {
+                    targetList = bulk.targets_map[tempTarget];
                 } else {
                     const data = await cachedGet('/api/public/market/targets', {
-                        params: { server_id: selectedServerId.value, item_id: selectedItem.value },
+                        params: { server_id: selectedServerId.value, item_id: tempTarget },
                         ttlMs: bulkCacheTtlMs.value
                     });
-                    targets.value = data || [];
+                    targetList = data || [];
                 }
 
-                const hasOldItemAsTarget = targets.value.some(t => t.target_item_id === tempItem);
+                const hasOldItemAsTarget = targetList.some(t => t.target_item_id === tempItem);
                 if (hasOldItemAsTarget) {
+                    selectedItem.value = tempTarget;
+                    targets.value = targetList;
                     selectedTarget.value = tempItem;
+                    updateQueryParams();
                     await fetchAnalytics();
                 } else {
-                    selectedTarget.value = '';
-                    updateQueryParams();
                     showToast(t('market.opposite_trade_not_found'), 'info');
                 }
             } catch (e) {

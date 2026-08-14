@@ -91,7 +91,7 @@ class SyncMarketCommand extends Command
 
             $lastSyncTime = $connection->last_synced_at ?? ($lastLog ? $lastLog->created_at : null);
             if ($lastSyncTime) {
-                $elapsedMinutes = Carbon::now()->diffInMinutes($lastSyncTime);
+                $elapsedMinutes = (int) $lastSyncTime->diffInMinutes(Carbon::now(), false);
                 if ($elapsedMinutes < $interval) {
                     $this->info("Server [{$serverId}]: Last sync was {$elapsedMinutes} minutes ago. Configured interval: {$interval} minutes. Skipping.");
 

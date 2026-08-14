@@ -114,29 +114,66 @@
                                 <div class="text-xs min-w-0 flex-1">
                                     <p class="font-semibold text-white/90 wrap-anywhere leading-snug">{{ typeLabels[act.task_type] }}</p>
                                     <p class="text-white/40 text-[10px] mt-1 wrap-anywhere leading-relaxed">
-                                        <span v-if="['stop_production', 'start_production'].includes(act.task_type)">
-                                            {{ t('tasks.building') }}: {{ act.meta.building ? getBuildingName(act.meta.building) : t('tasks.grid_number', { id: act.payload.grid }) }}
+                                        <span v-if="['stop_production', 'start_production'].includes(act.task_type)" class="inline-flex items-center gap-1.5 flex-wrap">
+                                            <span class="inline-flex items-center gap-1 text-emerald-400 font-semibold">
+                                                <img v-if="getBuildingInfo(null, act).icon"
+                                                     :src="getBuildingInfo(null, act).icon"
+                                                     class="w-4 h-4 object-contain rounded flex-shrink-0"
+                                                     @error="handleBuildingIconError($event, getBuildingInfo(null, act).raw || act.meta?.building)" />
+                                                <span v-else class="text-xs flex-shrink-0">🏭</span>
+                                                <span>{{ t('tasks.building') }}: {{ getBuildingInfo(null, act).name || t('tasks.building') }}</span>
+                                            </span>
+                                            <span class="font-mono text-white/50 bg-white/5 px-1.5 py-0.5 rounded text-[9px]">
+                                                {{ t('tasks.grid_number', { id: act.payload.grid }) }}
+                                            </span>
                                         </span>
                                         <span v-if="act.task_type === 'apply_buff'" class="inline-flex items-center gap-1.5 flex-wrap">
-                                            <span class="text-emerald-400 font-semibold">
-                                                🏭 {{ t('tasks.building') }}: {{ (act.meta && act.meta.building) ? getBuildingName(act.meta.building) : t('tasks.grid_number', { id: act.payload.grid }) }}
+                                            <span class="inline-flex items-center gap-1 text-amber-300 font-medium">
+                                                <img v-if="getBuffInfo(null, act).icon"
+                                                     :src="getBuffInfo(null, act).icon"
+                                                     class="w-4 h-4 object-contain rounded flex-shrink-0"
+                                                     @error="handleBuffIconError($event, getBuffInfo(null, act).raw || act.meta?.buff)" />
+                                                <span v-else class="text-xs flex-shrink-0">✨</span>
+                                                <span>{{ t('tasks.buff') }}: <strong>{{ getBuffInfo(null, act).name }}</strong></span>
                                             </span>
-                                            <span v-if="(act.payload.target_scope || 'self') === 'friend'" class="text-amber-400">
+                                            <span class="text-white/60">
+                                                • {{ t('tasks.qty_short') }}: <strong>{{ act.payload.amount || 1 }}</strong>
+                                            </span>
+                                            <span v-if="(act.payload.target_scope || 'self') === 'friend'" class="text-amber-400 font-medium">
                                                 • 👤 {{ t('tasks.friend') }}: <strong>{{ act.payload.target_player_name || t('tasks.unknown_friend') }}</strong>
                                             </span>
                                             <span v-else class="text-white/50">
                                                 • 🏡 {{ t('tasks.my_zone') }}
                                             </span>
-                                            <span v-if="act.meta && act.meta.buff" class="text-amber-300">
-                                                • ✨ {{ t('tasks.buff') }}: <strong>{{ getStarBuffName(act.meta.buff) }}</strong>
+                                            <span class="inline-flex items-center gap-1 text-emerald-400 font-semibold">
+                                                • <img v-if="getBuildingInfo(null, act).icon"
+                                                     :src="getBuildingInfo(null, act).icon"
+                                                     class="w-4 h-4 object-contain rounded flex-shrink-0"
+                                                     @error="handleBuildingIconError($event, getBuildingInfo(null, act).raw || act.meta?.building)" />
+                                                <span v-else class="text-xs flex-shrink-0">🏭</span>
+                                                <span>{{ getBuildingInfo(null, act).name || t('tasks.building') }}</span>
                                             </span>
-                                            <span class="text-white/60">
-                                                • {{ t('tasks.qty_short') }}: <strong>{{ act.payload.amount || 1 }}</strong>
+                                            <span class="font-mono text-white/50 bg-white/5 px-1.5 py-0.5 rounded text-[9px]">
+                                                {{ t('tasks.grid_number', { id: act.payload.grid }) }}
                                             </span>
                                         </span>
-                                        <span v-if="['send_geologist', 'send_explorer'].includes(act.task_type)">
-                                            {{ t('tasks.specialist') }}: {{ act.meta.specialist ? (act.meta.specialist.name || getSpecialistTypeName(act.meta.specialist.type)) : t('tasks.type_number', { id: act.payload.unique_id1 }) }}
-                                            <span v-if="act.meta.subTaskLabel">• {{ act.meta.subTaskLabel }}</span>
+                                        <span v-if="['send_geologist', 'send_explorer'].includes(act.task_type)" class="inline-flex items-center gap-1.5 flex-wrap">
+                                            <span class="inline-flex items-center gap-1 text-emerald-300 font-medium">
+                                                <img v-if="getSpecialistInfo(null, act).icon"
+                                                     :src="getSpecialistInfo(null, act).icon"
+                                                     class="w-4 h-4 object-contain rounded flex-shrink-0"
+                                                     @error="handleSpecialistIconError($event)" />
+                                                <span v-else class="text-xs flex-shrink-0">🎖️</span>
+                                                <span>{{ getSpecialistInfo(null, act).name }}</span>
+                                            </span>
+                                            <span v-if="getSpecialistInfo(null, act).subTaskLabel" class="badge badge-neutral text-[9px]">
+                                                🧭 {{ getSpecialistInfo(null, act).subTaskLabel }}
+                                            </span>
+                                        </span>
+                                        <span v-if="act.task_type === 'collect_pickups'" class="inline-flex items-center gap-1.5 flex-wrap">
+                                            <span class="badge badge-neutral text-[9px]">
+                                                🧺 {{ act.payload?.pickup_type === 'event' ? t('tasks.event_pickups') : t('tasks.all_pickups') }}
+                                            </span>
                                         </span>
                                     </p>
                                 </div>
@@ -453,8 +490,11 @@
             </div>
             <TaskList v-else
                       :tasks="tasks"
-                      :filteredTasks="tasks"
-                      :accounts="accounts">
+                      :filteredTasks="filteredTasks"
+                      :accounts="accounts"
+                      v-model:searchQuery="taskSearchQuery"
+                      v-model:accountFilter="taskAccountFilter"
+                      v-model:statusFilter="taskStatusFilter">
                 <div v-for="(groupTasks, accountName) in groupedTasks" :key="accountName" class="glass-card overflow-hidden">
                     <div class="px-5 py-3 border-b border-white/5 bg-white/[0.02]">
                         <h3 class="font-medium text-white/60 flex items-center gap-2">
@@ -482,7 +522,12 @@
                                   :getTaskLastResultBadge="getTaskLastResultBadge"
                                   :getActionStepStatus="getActionStepStatus"
                                   :getActionStepError="getActionStepError"
-                                  :getBuffDisplayName="getBuffDisplayName"
+                                  :getBuildingInfo="getBuildingInfo"
+                                  :getBuffInfo="getBuffInfo"
+                                  :getSpecialistInfo="getSpecialistInfo"
+                                  :handleBuildingIconError="handleBuildingIconError"
+                                  :handleBuffIconError="handleBuffIconError"
+                                  :handleSpecialistIconError="handleSpecialistIconError"
                                   @toggle-expand="toggleTaskExpanded"
                                   @toggle-active="toggleTask"
                                   @execute="runTaskNow"
@@ -562,6 +607,10 @@ import TaskList from '../components/tasks/TaskList.vue';
         const loadingPlanner = ref(true);
         const scheduling = ref(false);
         const executingTasks = ref({});
+
+        const taskSearchQuery = ref('');
+        const taskAccountFilter = ref('');
+        const taskStatusFilter = ref('');
 
         const selectedAccountId = ref('');
         const taskName = ref('');
@@ -897,6 +946,11 @@ import TaskList from '../components/tasks/TaskList.vue';
                 const res = await axios.get('/api/tasks');
                 tasks.value = res.data.data || res.data.tasks || [];
                 accounts.value = res.data.accounts || [];
+
+                const distinctAccountIds = [...new Set(tasks.value.map(t => Number(t.account_id)).filter(Boolean))];
+                distinctAccountIds.forEach(id => {
+                    fetchAccountZone(id);
+                });
             } catch (e) {
                 showToast(t('tasks.toast.load_failed'), 'error');
             } finally {
@@ -1000,9 +1054,11 @@ import TaskList from '../components/tasks/TaskList.vue';
                 let addedCount = 0;
                 for (const bTarget of selectedBuildings.value) {
                     const bName = bTarget.buildingName || bTarget.name || (bTarget.building ? getBuildingName(bTarget.building) : null);
+                    const bRaw = bTarget.building?.buildingName_string || bTarget.building?.buildingName || '';
                     const actionPayload = {
                         grid: bTarget.buildingGrid,
                         building_name: bName,
+                        building_raw_name: bRaw,
                         name: bName,
                         target_scope: bTarget.scope,
                         target_player_id: bTarget.scope === 'friend' ? bTarget.friend?.id : null,
@@ -1016,6 +1072,9 @@ import TaskList from '../components/tasks/TaskList.vue';
                         const u2 = sb.uniqueId2 ?? sb.uniqueID2 ?? sb.uniqueID?.uniqueID2 ?? sb.uniqueID?.uniqueId2 ?? sb.uniqueId?.uniqueId2 ?? 0;
                         actionPayload.unique_id1 = u1;
                         actionPayload.unique_id2 = u2;
+                        actionPayload.buff_name = getStarBuffName(sb);
+                        actionPayload.buff_raw_name = sb.buffName_string || '';
+                        actionPayload.buff_resource_name = sb.resourceName_string || '';
                     }
 
                     const meta = {
@@ -1046,16 +1105,23 @@ import TaskList from '../components/tasks/TaskList.vue';
 
                 let addedCount = 0;
                 for (const spec of selectedSpecialists.value) {
+                    const specTypeName = getSpecialistTypeName(spec.type);
+                    const specName = spec.name || specTypeName;
+                    const subTaskLabel = getSubTaskLabel(stepActionType.value, payload.value.task_type, payload.value.sub_task_id);
                     const actionPayload = {
                         unique_id1: spec.uniqueId1,
                         unique_id2: spec.uniqueID2 || spec.uniqueId2 || 0,
+                        type: spec.type,
+                        specialist_name: specName,
+                        specialist_type_name: specTypeName,
+                        sub_task_label: subTaskLabel,
                         task_type: stepActionType.value === 'send_geologist' ? 0 : payload.value.task_type,
                         sub_task_id: payload.value.sub_task_id || 0
                     };
 
                     const meta = {
                         specialist: { ...spec },
-                        subTaskLabel: getSubTaskLabel(stepActionType.value, payload.value.task_type, payload.value.sub_task_id)
+                        subTaskLabel: subTaskLabel
                     };
 
                     sequenceActions.value.push({
@@ -1117,10 +1183,16 @@ import TaskList from '../components/tasks/TaskList.vue';
 
         const isStoppable = (b) => isBuffableBuilding(b);
 
-        const getBuildingName = (b) => (b ? buildingName(b.buildingName_string || b.buildingName || 'Building') : '');
+        const getBuildingName = (b) => {
+            if (!b) return '';
+            if (typeof b === 'string') return buildingName(b);
+            return buildingName(b.buildingName_string || b.buildingName || b.name || b.building_raw_name || b.building_name || 'Building');
+        };
 
         const getBuildingImageName = (building) => {
-            const name = building?.buildingName_string || building?.buildingName || '';
+            const name = typeof building === 'string'
+                ? building
+                : (building?.buildingName_string || building?.buildingName || building?.name || building?.building_raw_name || building?.building_name || '');
             let imageName = name.replace(/_lvl_\d+/i, '').replace(/decoration_/g, '').trim().toLowerCase();
             const aliases = {
                 realwoodsawmill: 'sawmill_real_planks', exoticwoodsawmill: 'sawmill_exotic_planks',
@@ -1174,7 +1246,9 @@ import TaskList from '../components/tasks/TaskList.vue';
         };
 
         const getSpecialistTypeName = (type) => {
-            return SPECIALIST_TYPES[type] || `Specialist #${type}`;
+            const raw = SPECIALIST_TYPES[type];
+            if (!raw) return `Specialist #${type}`;
+            return gameAnyLookup(raw) || humanizeGameId(raw);
         };
 
         const getSpecialistIcon = (type) => {
@@ -1239,35 +1313,40 @@ import TaskList from '../components/tasks/TaskList.vue';
         const resourceDisplayName = resourceName;
 
         const getStarBuffName = (b) => {
-            if (!b || !b.buffName_string) return t('tasks.unknown_buff');
+            if (!b) return t('tasks.unknown_buff');
+            const name = typeof b === 'string'
+                ? b
+                : (b.buffName_string || b.buff_raw_name || b.name || b.buff_name);
+            if (!name) return t('tasks.unknown_buff');
 
-            const name = b.buffName_string;
             const template = gameAnyLookup(name);
-
             if (template) {
                 let tpl = template;
                 if (tpl.includes('{0}')) {
-                    tpl = tpl.replace('{0}', resourceDisplayName(b.resourceName_string));
+                    const resName = typeof b === 'object' ? (b.resourceName_string || b.buff_resource_name || '') : '';
+                    tpl = tpl.replace('{0}', resourceDisplayName(resName));
                 }
                 tpl = tpl.replace(/\{1,\w+\}/g, '').replace(/[:\s]+$/, '').replace(/\s+/g, ' ').trim();
                 return tpl;
             }
 
             if (name === 'AddResource') {
-                return `${t('tasks.buff_add_resource')}: ${resourceDisplayName(b.resourceName_string)}`;
+                return `${t('tasks.buff_add_resource')}: ${resourceDisplayName(typeof b === 'object' ? (b.resourceName_string || b.buff_resource_name) : '')}`;
             }
             if (name === 'BuildBuilding') {
-                return `${t('tasks.buff_build_license')}: ${resourceDisplayName(b.resourceName_string)}`;
+                return `${t('tasks.buff_build_license')}: ${resourceDisplayName(typeof b === 'object' ? (b.resourceName_string || b.buff_resource_name) : '')}`;
             }
             if (name === 'Adventure') {
-                return `${t('tasks.buff_adventure')}: ${resourceDisplayName(b.resourceName_string)}`;
+                return `${t('tasks.buff_adventure')}: ${resourceDisplayName(typeof b === 'object' ? (b.resourceName_string || b.buff_resource_name) : '')}`;
             }
 
-            return name.replace(/(?<!^)(?=[A-Z])/g, ' ').replace(/_/g, ' ');
+            return humanizeGameId(name);
         };
 
         const getBuffImageName = (buff) => {
-            const name = buff?.buffName_string || buff?.name || '';
+            const name = typeof buff === 'string'
+                ? buff
+                : (buff?.buffName_string || buff?.buff_raw_name || buff?.name || buff?.buff_name || '');
             let imageName = name.trim().toLowerCase().replace(/\s+/g, '_').replace(/[\'"]/g, '');
             const aliases = {
                 aunt_irmas_basket: 'aunt_irma_basket', aunt_irmas_feast_basket: 'aunt_irma_feast_basket',
@@ -1428,9 +1507,77 @@ import TaskList from '../components/tasks/TaskList.vue';
             return [];
         });
 
+        const filteredTasks = computed(() => {
+            return tasks.value.filter(task => {
+                // Account filter
+                if (taskAccountFilter.value !== '' && taskAccountFilter.value !== null && taskAccountFilter.value !== undefined) {
+                    const accId = Number(taskAccountFilter.value);
+                    const taskAccId = task.account_id ? Number(task.account_id) : (task.account?.id ? Number(task.account.id) : null);
+                    if (taskAccId !== accId) {
+                        return false;
+                    }
+                }
+
+                // Status filter ('active' or 'paused')
+                if (taskStatusFilter.value === 'active' && !task.is_active) {
+                    return false;
+                }
+                if (taskStatusFilter.value === 'paused' && task.is_active) {
+                    return false;
+                }
+
+                // Search query filter
+                if (taskSearchQuery.value && taskSearchQuery.value.trim() !== '') {
+                    const q = taskSearchQuery.value.toLowerCase().trim();
+
+                    // Match task name
+                    if (task.name && task.name.toLowerCase().includes(q)) return true;
+
+                    // Match account nickname / username
+                    const nickname = task.account?.nickname || '';
+                    const username = task.account?.username || '';
+                    if (nickname.toLowerCase().includes(q) || username.toLowerCase().includes(q)) return true;
+
+                    // Match task type label
+                    const typeLabel = typeLabels.value ? typeLabels.value[task.task_type] : (task.task_type || '');
+                    if (typeLabel && String(typeLabel).toLowerCase().includes(q)) return true;
+
+                    // Match grid number
+                    if (task.payload?.grid && String(task.payload.grid).includes(q)) return true;
+
+                    // Match actions inside sequence or single payload
+                    const actionsList = getTaskActionsList(task);
+                    const stepMatch = actionsList.some(act => {
+                        const actTypeLabel = typeLabels.value ? typeLabels.value[act.task_type] : (act.task_type || '');
+                        if (actTypeLabel && String(actTypeLabel).toLowerCase().includes(q)) return true;
+
+                        if (act.meta?.building) {
+                            const bName = act.meta.building.buildingName_string || act.meta.building.buildingName || '';
+                            if (bName.toLowerCase().includes(q)) return true;
+                        }
+
+                        if (act.meta?.buff) {
+                            const buffName = getStarBuffName(act.meta.buff);
+                            if (buffName && buffName.toLowerCase().includes(q)) return true;
+                        }
+
+                        if (act.payload?.grid && String(act.payload.grid).includes(q)) return true;
+
+                        return false;
+                    });
+
+                    if (stepMatch) return true;
+
+                    return false;
+                }
+
+                return true;
+            });
+        });
+
         const groupedTasks = computed(() => {
             const groups = {};
-            const sortedTasks = [...tasks.value].sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
+            const sortedTasks = [...filteredTasks.value].sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
             sortedTasks.forEach(taskItem => {
                 const name = taskItem.account ? (taskItem.account.nickname || taskItem.account.username) : t('tasks.unknown_account');
                 if (!groups[name]) groups[name] = [];
@@ -1592,18 +1739,18 @@ import TaskList from '../components/tasks/TaskList.vue';
                 const zoneData = await fetchAccountZone(task.account_id);
 
                 sequenceActions.value = task.payload.actions.map(act => {
-                    const meta = { building: null, buff: null, specialist: null };
+                    const meta = act.meta && typeof act.meta === 'object' ? { ...act.meta } : { building: null, buff: null, specialist: null };
 
-                    if (['stop_production', 'start_production', 'apply_buff'].includes(act.task_type)) {
+                    if (['stop_production', 'start_production', 'apply_buff'].includes(act.task_type) && !meta.building) {
                         if (zoneData.buildings) {
                             meta.building = zoneData.buildings.find(b => b.buildingGrid == act.payload?.grid) || null;
                         }
                     }
-                    if (act.task_type === 'apply_buff') {
+                    if (act.task_type === 'apply_buff' && !meta.buff) {
                         const buffs = zoneData.availableBuffs || zoneData.buffs || [];
                         meta.buff = buffs.find(b => (b.uniqueId1 || b.uniqueID1) == act.payload?.unique_id1 && (b.uniqueId2 || b.uniqueID2) == act.payload?.unique_id2) || null;
                     }
-                    if (['send_geologist', 'send_explorer'].includes(act.task_type)) {
+                    if (['send_geologist', 'send_explorer'].includes(act.task_type) && !meta.specialist) {
                         if (zoneData.specialists) {
                             meta.specialist = zoneData.specialists.find(s => (s.uniqueId1 || s.uniqueId) == act.payload?.unique_id1) || null;
                         }
@@ -1645,7 +1792,8 @@ import TaskList from '../components/tasks/TaskList.vue';
                         actions: sequenceActions.value.map(a => ({
                             task_type: a.task_type,
                             payload: a.payload,
-                            delay_seconds: a.delay_seconds
+                            delay_seconds: a.delay_seconds,
+                            meta: a.meta || {}
                         }))
                     },
                     schedule_type: scheduleType.value
@@ -2076,43 +2224,124 @@ import TaskList from '../components/tasks/TaskList.vue';
             };
         };
 
-        const getBuildingDisplayName = (taskObj, action) => {
-            const grid = action.payload?.grid;
-            let bName = action.payload?.building_name || action.payload?.name || (action.meta?.building ? getBuildingName(action.meta.building) : null);
+        const getBuildingInfo = (taskObj, action) => {
+            const grid = action?.payload?.grid || action?.meta?.building?.buildingGrid;
+            let buildingObj = action?.meta?.building;
 
-            if (!bName && grid) {
-                const accId = Number(taskObj?.account_id);
+            if (!buildingObj && grid) {
+                const accId = Number(taskObj?.account_id || selectedAccountId.value);
                 const zd = accountZonesCache.value[accId];
                 if (zd && zd.buildings) {
-                    const b = zd.buildings.find(b => Number(b.buildingGrid) === Number(grid));
-                    if (b) bName = getBuildingName(b);
+                    buildingObj = zd.buildings.find(b => Number(b.buildingGrid) === Number(grid));
                 }
             }
 
-            if (bName && grid) {
-                return `${bName} (${t('tasks.grid_number', { id: grid })})`;
+            let name = '';
+            if (buildingObj) {
+                name = getBuildingName(buildingObj);
+            } else if (action?.payload?.building_name || action?.payload?.name) {
+                name = action.payload.building_name || action.payload.name;
+            } else if (action?.payload?.building_raw_name) {
+                name = buildingName(action.payload.building_raw_name);
             }
 
-            if (bName) return bName;
-            if (grid) return t('tasks.grid_number', { id: grid });
+            let icon = null;
+            if (buildingObj) {
+                icon = getBuildingIcon(buildingObj);
+            } else if (action?.payload?.building_raw_name) {
+                icon = getBuildingIcon(action.payload.building_raw_name);
+            } else if (action?.payload?.building_name) {
+                icon = getBuildingIcon(action.payload.building_name);
+            }
+
+            return {
+                name: name || '',
+                grid: grid || null,
+                icon: icon,
+                level: buildingObj?.upgradeLevel || null,
+                raw: buildingObj || action?.meta?.building || null
+            };
+        };
+
+        const getBuffInfo = (taskObj, action) => {
+            let buffObj = action?.meta?.buff;
+
+            if (!buffObj && action?.payload?.unique_id1) {
+                const accId = Number(taskObj?.account_id || selectedAccountId.value);
+                const zd = accountZonesCache.value[accId];
+                if (zd) {
+                    const buffs = zd.availableBuffs || zd.buffs || [];
+                    buffObj = buffs.find(b => (b.uniqueId1 || b.uniqueID1 || b.uniqueId) == action.payload.unique_id1);
+                }
+            }
+
+            let name = '';
+            if (buffObj) {
+                name = getStarBuffName(buffObj);
+            } else if (action?.payload?.buff_name) {
+                name = action.payload.buff_name;
+            } else if (action?.payload?.buff_raw_name) {
+                name = getStarBuffName({ buffName_string: action.payload.buff_raw_name, resourceName_string: action.payload.buff_resource_name });
+            } else if (action?.payload?.unique_id1) {
+                name = t('tasks.buff_number', { id: action.payload.unique_id1 });
+            } else {
+                name = t('tasks.buff_from_menu');
+            }
+
+            let icon = null;
+            if (buffObj) {
+                icon = getBuffIcon(buffObj);
+            } else if (action?.payload?.buff_raw_name) {
+                icon = getBuffIcon({ buffName_string: action.payload.buff_raw_name });
+            }
+
+            return {
+                name: name || t('tasks.buff'),
+                icon: icon,
+                amount: action?.payload?.amount || 1,
+                raw: buffObj || action?.meta?.buff || null
+            };
+        };
+
+        const getSpecialistInfo = (taskObj, action) => {
+            const u1 = action?.payload?.unique_id1;
+            let specObj = action?.meta?.specialist;
+
+            if (!specObj && u1) {
+                const accId = Number(taskObj?.account_id || selectedAccountId.value);
+                const zd = accountZonesCache.value[accId];
+                if (zd && zd.specialists) {
+                    specObj = zd.specialists.find(s => (s.uniqueId1 || s.uniqueID1 || s.uniqueId) == u1);
+                }
+            }
+
+            const type = specObj?.type ?? action?.payload?.type ?? (action?.task_type === 'send_geologist' ? 2 : 1);
+            const typeName = getSpecialistTypeName(type);
+            const name = specObj?.name || action?.payload?.specialist_name || (specObj ? typeName : (action?.payload?.specialist_type_name || typeName));
+            const icon = type !== undefined ? getSpecialistIcon(type) : null;
+            const subTaskLabel = action?.meta?.subTaskLabel || action?.payload?.sub_task_label || getSubTaskLabel(action?.task_type, action?.payload?.task_type, action?.payload?.sub_task_id);
+
+            return {
+                name: name || typeName,
+                typeName: typeName,
+                icon: icon,
+                subTaskLabel: subTaskLabel,
+                raw: specObj || action?.meta?.specialist || null
+            };
+        };
+
+        const getBuildingDisplayName = (taskObj, action) => {
+            const info = getBuildingInfo(taskObj, action);
+            if (info.name && info.grid) {
+                return `${info.name} (${t('tasks.grid_number', { id: info.grid })})`;
+            }
+            if (info.name) return info.name;
+            if (info.grid) return t('tasks.grid_number', { id: info.grid });
             return t('tasks.building_not_set');
         };
 
         const getBuffDisplayName = (taskObj, action) => {
-            if (action.meta?.buff) {
-                return getStarBuffName(action.meta.buff);
-            }
-            const u1 = action.payload?.unique_id1;
-            if (!u1) return t('tasks.buff_from_menu');
-
-            const accId = Number(taskObj?.account_id);
-            const zd = accountZonesCache.value[accId];
-            if (zd) {
-                const buffs = zd.availableBuffs || zd.buffs || [];
-                const bf = buffs.find(b => (b.uniqueId1 || b.uniqueID1) == u1);
-                if (bf) return getStarBuffName(bf);
-            }
-            return t('tasks.buff_number', { id: u1 });
+            return getBuffInfo(taskObj, action).name;
         };
 
         const closeAllDropdowns = (e) => {

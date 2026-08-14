@@ -93,35 +93,49 @@ final class ScheduledTaskService
         }
 
         $gridNameMap = [];
+        $gridRawNameMap = [];
         foreach ($buildings as $b) {
-            if (isset($b['buildingGrid'], $b['name'])) {
-                $gridNameMap[(int) $b['buildingGrid']] = (string) $b['name'];
+            $grid = isset($b['buildingGrid']) ? (int) $b['buildingGrid'] : null;
+            if ($grid !== null) {
+                if (isset($b['name'])) {
+                    $gridNameMap[$grid] = (string) $b['name'];
+                }
+                $raw = $b['buildingName_string'] ?? $b['buildingName'] ?? null;
+                if ($raw !== null) {
+                    $gridRawNameMap[$grid] = (string) $raw;
+                }
             }
         }
 
-        if ($gridNameMap === []) {
+        if ($gridNameMap === [] && $gridRawNameMap === []) {
             return $payload;
         }
 
-        if (isset($payload['grid']) && ! isset($payload['building_name'])) {
+        if (isset($payload['grid'])) {
             $grid = (int) $payload['grid'];
-            if (isset($gridNameMap[$grid])) {
+            if (! isset($payload['building_name']) && isset($gridNameMap[$grid])) {
                 $payload['building_name'] = $gridNameMap[$grid];
                 if (! isset($payload['name'])) {
                     $payload['name'] = $gridNameMap[$grid];
                 }
             }
+            if (! isset($payload['building_raw_name']) && isset($gridRawNameMap[$grid])) {
+                $payload['building_raw_name'] = $gridRawNameMap[$grid];
+            }
         }
 
         if (isset($payload['actions']) && is_array($payload['actions'])) {
             foreach ($payload['actions'] as $i => $action) {
-                if (isset($action['payload']['grid']) && ! isset($action['payload']['building_name']) && is_array($action['payload'])) {
+                if (isset($action['payload']['grid']) && is_array($action['payload'])) {
                     $grid = (int) $action['payload']['grid'];
-                    if (isset($gridNameMap[$grid])) {
+                    if (! isset($action['payload']['building_name']) && isset($gridNameMap[$grid])) {
                         $payload['actions'][$i]['payload']['building_name'] = $gridNameMap[$grid];
                         if (! isset($payload['actions'][$i]['payload']['name'])) {
                             $payload['actions'][$i]['payload']['name'] = $gridNameMap[$grid];
                         }
+                    }
+                    if (! isset($action['payload']['building_raw_name']) && isset($gridRawNameMap[$grid])) {
+                        $payload['actions'][$i]['payload']['building_raw_name'] = $gridRawNameMap[$grid];
                     }
                 }
             }

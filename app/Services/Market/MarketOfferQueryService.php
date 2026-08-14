@@ -41,7 +41,7 @@ final class MarketOfferQueryService
 
         return MarketOffer::query()
             ->tap(fn ($q) => $this->applyServerFilter($q, $serverId))
-            ->where('created_at', '>=', $since)
+            ->where('created_at', '>', $since)
             ->orderByDesc('created_at')
             ->get();
     }
@@ -57,7 +57,7 @@ final class MarketOfferQueryService
             ->tap(fn ($q) => $this->applyServerFilter($q, $serverId))
             ->where('item_id', $itemId)
             ->where('target_item_id', $targetItemId)
-            ->where('created_at', '>=', $since)
+            ->where('created_at', '>', $since)
             ->get();
     }
 
@@ -85,7 +85,7 @@ final class MarketOfferQueryService
 
         return MarketOffer::query()
             ->tap(fn ($q) => $this->applyServerFilter($q, $serverId))
-            ->where('created_at', '>=', $since)
+            ->where('created_at', '>', $since)
             ->selectRaw('item_id, target_item_id, sum(volume) as volume, count(*) as offers_count, count(distinct player_id) as sellers_count')
             ->groupBy('item_id', 'target_item_id')
             ->get()

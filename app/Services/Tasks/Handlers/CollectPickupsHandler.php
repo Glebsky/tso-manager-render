@@ -29,17 +29,17 @@ use Throwable;
 final class CollectPickupsHandler implements TaskActionHandlerInterface
 {
     /** CollectionsConsts.COLLECTIBLE_BUILDING_NORMAL */
-    private const TYPE_NORMAL = 0;
+    private const int TYPE_NORMAL = 0;
 
     /** CollectionsConsts.COLLECTIBLE_BUILDING_EVENT */
-    private const TYPE_EVENT = 1;
+    private const int TYPE_EVENT = 1;
 
-    private const DEFAULT_DELAY_MS = 250;
+    private const int DEFAULT_DELAY_MS = 250;
 
-    private const MAX_DELAY_MS = 5000;
+    private const int MAX_DELAY_MS = 5000;
 
     /** Session errors that must bubble up so TaskExecutionService can re-login and retry. */
-    private const SESSION_ERROR_CODES = [1005, 1012];
+    private const array SESSION_ERROR_CODES = [1005, 1012];
 
     public function __construct(
         private readonly TsoAmfService $amfService,

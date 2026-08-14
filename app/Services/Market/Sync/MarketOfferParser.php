@@ -14,6 +14,7 @@ class MarketOfferParser
 {
     public function __construct(
         private readonly GameTranslationResolver $gameTranslations,
+        private readonly int $offerLifetimeHours = 6,
     ) {}
 
     /**
@@ -24,6 +25,8 @@ class MarketOfferParser
     {
         $offersToInsert = [];
         $historyToInsert = [];
+
+        $expirationThreshold = $collectedAt->timestamp - ($this->offerLifetimeHours * 3600);
 
         foreach ($rawOffers as $raw) {
             $offerStr = (string) ($raw['offer'] ?? '');
@@ -67,30 +70,34 @@ class MarketOfferParser
             $targetItemName = $this->gameTranslations->name('RES', $targetItemId);
 
             $gameCreatedMs = (int) ($raw['created'] ?? 0);
-            $gameCreatedAt = $gameCreatedMs > 0 ? date('Y-m-d H:i:s', (int) ($gameCreatedMs / 1000)) : $collectedAt->toDateTimeString();
+            $gameCreatedSec = $gameCreatedMs > 0 ? (int) ($gameCreatedMs / 1000) : $collectedAt->timestamp;
+            $gameCreatedAt = date('Y-m-d H:i:s', $gameCreatedSec);
 
             $offerId = (int) ($raw['id'] ?? 0);
             if ($offerId <= 0) {
                 continue;
             }
 
-            $offersToInsert[$offerId] = [
-                'server_id' => $serverId,
-                'offer_id' => $offerId,
-                'player_id' => (int) ($raw['senderID'] ?? 0),
-                'sender_name' => (string) ($raw['senderName'] ?? 'Unknown'),
-                'item_id' => $itemId,
-                'item_name' => $itemName,
-                'amount' => $amount,
-                'target_item_id' => $targetItemId,
-                'target_item_name' => $targetItemName,
-                'target_amount' => $targetAmount,
-                'price' => $price,
-                'volume' => $volume,
-                'lots_remaining' => $lotsRemaining,
-                'created_at' => $gameCreatedAt,
-                'collected_at' => $collectedAt->toDateTimeString(),
-            ];
+            // Only add to active offers if not already expired at collection time
+            if ($gameCreatedSec > $expirationThreshold) {
+                $offersToInsert[$offerId] = [
+                    'server_id' => $serverId,
+                    'offer_id' => $offerId,
+                    'player_id' => (int) ($raw['senderID'] ?? 0),
+                    'sender_name' => (string) ($raw['senderName'] ?? 'Unknown'),
+                    'item_id' => $itemId,
+                    'item_name' => $itemName,
+                    'amount' => $amount,
+                    'target_item_id' => $targetItemId,
+                    'target_item_name' => $targetItemName,
+                    'target_amount' => $targetAmount,
+                    'price' => $price,
+                    'volume' => $volume,
+                    'lots_remaining' => $lotsRemaining,
+                    'created_at' => $gameCreatedAt,
+                    'collected_at' => $collectedAt->toDateTimeString(),
+                ];
+            }
 
             $historyToInsert[$offerId] = [
                 'server_id' => $serverId,

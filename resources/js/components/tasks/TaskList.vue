@@ -4,7 +4,7 @@
         <div class="glass-card p-4 mb-6 flex flex-wrap items-center justify-between gap-4">
             <div class="flex items-center gap-3">
                 <h2 class="text-base font-semibold text-white">{{ t('tasks.active_series') }}</h2>
-                <span class="badge badge-emerald font-mono">{{ tasks.length }}</span>
+                <span class="badge badge-emerald font-mono">{{ searchQuery || accountFilter || statusFilter ? `${filteredTasks.length} / ${tasks.length}` : tasks.length }}</span>
             </div>
 
             <!-- Фильтры задач -->

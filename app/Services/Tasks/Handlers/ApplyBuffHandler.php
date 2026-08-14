@@ -13,11 +13,11 @@ use App\Services\Tasks\Contracts\TaskActionHandlerInterface;
 use App\Services\TsoAmfService;
 use App\Services\ZoneParserService;
 
-final class ApplyBuffHandler implements TaskActionHandlerInterface
+final readonly class ApplyBuffHandler implements TaskActionHandlerInterface
 {
     public function __construct(
-        private readonly TsoAmfService $amfService,
-        private readonly ZoneParserService $zoneParser,
+        private TsoAmfService $amfService,
+        private ZoneParserService $zoneParser,
     ) {}
 
     public function supports(string $actionType): bool

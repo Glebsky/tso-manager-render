@@ -39,7 +39,7 @@ final class LoopArbitrageFinder implements ArbitrageFinder
         $since = $this->offers->activeSince();
         $offers = MarketOffer::query()
             ->where('server_id', $serverId)
-            ->where('created_at', '>=', $since)
+            ->where('created_at', '>', $since)
             ->get();
         $byPair = [];
 
