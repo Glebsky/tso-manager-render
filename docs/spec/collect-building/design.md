@@ -49,9 +49,16 @@ Tasks.vue (существующая модалка выбора зданий)
 | `app/Http/Requests/Tasks/ScheduledTaskRequest.php` | изменён | тип в building-ветках + правило `mode` |
 | `config/game.php` | изменён | `collectibles.clickable_patterns` |
 | `lang/{en,ru,uk}/{ui,tasks}.php` | изменёны | ключи локализации |
-| `resources/js/views/Tasks.vue` | изменён | 6 точек касания, см. §7 |
+| `app/Services/Game/QuestTriggerBuildingProvider.php` | новый | чтение пула квестов (FR-11) |
+| `app/Services/Game/ClickableBuildingListService.php` | новый | сводит зону + allow-list + доступность |
+| `app/Services/Game/ClickableBuildingDto.php` | новый | строка списка для UI |
+| `app/Http/Controllers/Api/ClickableBuildingController.php` | новый | эндпоинт FR-12 |
+| `app/Http/Resources/ClickableBuildingResource.php` | новый | формат ответа |
+| `routes/api.php` | изменён | один новый GET-маршрут |
+| `resources/js/views/Tasks.vue` | изменён | 8 точек касания, см. §7 |
 
-Новых миграций, моделей и эндпоинтов в обязательном объёме нет.
+Новых миграций и моделей нет. Новый эндпоинт ровно один, только на чтение (FR-12);
+существующие контракты не меняются (INV-3).
 
 ## 3. Конфиг
 
@@ -197,11 +204,21 @@ final readonly class CollectBuildingHandler implements TaskActionHandlerInterfac
 4. `onStepActionTypeChange()`: новый тип трактуется как building-действие — та же модалка выбора.
 5. Сборка шага: `payload = { grid, building_name, mode: 'auto' }`.
 6. Чип шага в сводке серии — имя здания, как у `stop_production`.
+7. В существующей модалке выбора зданий — бейдж типа и доступности в строке списка:
+   `🧺` коллекция, `🎁` подарок доступен, приглушённый `🎁` — подарка сейчас нет,
+   без бейджа — неизвестно или здание не относится к механике (FR-11).
+8. Там же — один чекбокс «только доступные», по умолчанию выключен; фильтрует только
+   отображение и никогда не влияет на payload.
+
+Данные для пунктов 7–8 берутся одним запросом к эндпоинту FR-12 при открытии
+модалки. Ошибка запроса — бейджи не рисуются, модалка работает ровно как сейчас
+(AC-11). Ни одного нового компонента и ни одного нового CSS-класса не добавляется.
 
 Режим в UI НЕ показывается и не выбирается: всегда отправляется `auto`. Это
 намеренно: оператор не должен знать о двух игровых механиках, а возможность вручную
 выбрать `collectible` остаётся только на уровне API для диагностики и тестов.
-Фактический визуальный дифф: одна новая строка в списке действий.
+Фактический визуальный дифф: одна новая строка в списке действий, бейдж в строке
+списка зданий и один чекбокс-фильтр.
 
 ## 8. Локализация
 
@@ -217,29 +234,84 @@ final readonly class CollectBuildingHandler implements TaskActionHandlerInterfac
 
 Аналогичные ключи в `en` и `uk`. Генерированные JSON — только командой экспорта.
 
-## 9. Опционально: пул квестов как источник подсказки
+## 9. Отображение зданий, доступных для выбора (FR-11, FR-12)
 
-Отдельный этап, не входящий в критический путь:
+Модалка выбора зданий с мультивыбором уже реализована (`task-planner-multi-select`),
+поэтому задача сводится к **обогащению строк списка двумя полями**, а не к
+новому интерфейсу.
+
+### 9.1. Классы
 
 ```php
 final readonly class QuestTriggerBuildingProvider
 {
-    /** @return list<string> имена зданий с активным триггером buildingselected */
+    /**
+     * Имена зданий с активным триггером buildingselected.
+     * null — пул квестов недоступен, доступность неизвестна (не пустой список!).
+     * @return list<string>|null
+     */
+    public function forAccount(Account $account): ?array;
+}
+
+final readonly class ClickableBuildingListService
+{
+    /** @return list<ClickableBuildingDto> */
     public function forAccount(Account $account): array;
+}
+
+final readonly class ClickableBuildingDto
+{
+    public function __construct(
+        public int $grid,
+        public string $buildingName,
+        public string $kind,        // collectible | quest_gift | none
+        public ?bool $available,    // null = неизвестно
+    ) {}
 }
 ```
 
-Реализация: `QUEST_TRIGGER` с `dServerAction{type: 4, data: null}`
+Реализация `QuestTriggerBuildingProvider`: `QUEST_TRIGGER` с `dServerAction{type: 4, data: null}`
 (`SERVER_STACK_GET_LATEST_QUEST_LIST`), затем из `dQuestPoolVO.mQuestVO_vector` берутся
 `mQuestDefinition.questTriggers_vector` и фильтруются по `type == 1` (`TYPE_BUILDING`) и
-`condition == CONDITION_SELECTED`; имя здания — `name_string`.
+`condition == CONDITION_SELECTED`; имя здания — `name_string`. Квесты с
+`mQuestMode >= QUEST_MODE_DEACTIVATED` отбрасываются — так же, как это делает
+`ContainsTriggerCondition()` в клиенте (`client_scripts.txt:57393`).
 
-Это даёт точный перечень «где сейчас есть подарок» и снимает потребность в
-`collections.xml` и в ручных шаблонах для этой ветки. Но:
+### 9.2. Классификация строки списка
 
-- это только **подсказка UI**, не шлюз безопасности;
-- отказ или таймаут этого запроса не блокирует ни форму, ни выполнение задачи;
-- в ветке `65` он НЕ используется вообще: там решает только allow-list.
+| `kind` | Как определяется | `available` |
+| --- | --- | --- |
+| `collectible` | Имя в allow-list (`ClickableBuildingRegistry`) | `true`: коллекция есть в зоне — значит собирается |
+| `quest_gift` | Имя есть в списке от `QuestTriggerBuildingProvider` | `true` |
+| `quest_gift` | Имя в списке отсутствует, но список получен | `false` |
+| `none` | Ни то, ни другое | `null` |
+| любое | `forAccount()` вернул `null` (пул недоступен) | `null` для всех `quest_gift` |
+
+Отличать `false` от `null` обязательно (ADR-12). Сведённые в одно значение
+«подарка нет» и «не знаю» — классический способ получить жалобу «интерфейс врёт,
+подарок там был».
+
+### 9.3. Эндпоинт
+
+`GET /api/game/clickable-buildings?account_id=…` → `ClickableBuildingResource` через
+`AnonymousResourceCollection`, как в остальном проекте. Контракт — FR-12.
+
+Границы:
+
+- только чтение (INV-8): загрузка зоны + чтение пула квестов, ничего больше;
+- ошибка пула квестов ловится внутри сервиса и превращается в `available: null` с `200`;
+- кеш ответа короткий (порядка 30 с) и только для отображения; решение в хендлере
+  кеш НЕ использует никогда (ADR-10);
+- после успешного выполнения `collect_building` кеш для аккаунта сбрасывается, иначе
+  собранный подарок остался бы «доступным» в интерфейсе (AC-10).
+
+### 9.4. Почему рантайм, а не статический список
+
+В `globals.xml` `FlyingHouse` — обычное здание без любых признаков кликабельности, а
+атрибут `destroyOnClick` стоит только у служебных объектов и НЕ стоит у коллекций
+(см. `data-sources.md`, ADR-13). Любой статический список «праздничных зданий» был бы
+догадкой по именам и устаревал бы каждый сезонный ивент. Пул квестов отвечает
+на вопрос точно и без сопровождения.
 
 ## 10. Соответствие конституции
 
