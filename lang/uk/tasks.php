@@ -19,6 +19,7 @@ return [
         'friend_not_in_list' => 'Гравець відсутній у вашому списку друзів.',
         'friend_building_not_found_grid' => 'Будівлю з сіткою #:grid не знайдено в зоні друга.',
         'friend_zone_not_cached' => 'Зону друга не завантажено або закінчився термін кешу. Будь ласка, оновіть її в інтерфейсі.',
+        'building_not_clickable' => 'Будівлю :name не можна зібрати кліком',
     ],
     'step' => [
         'skipped' => 'Крок :step [:type]: пропущено (вже виконано)',
@@ -31,5 +32,11 @@ return [
         'summary' => 'Колекції: зібрано :collected/:total',
         'skipped' => 'пропущено :skipped (:details)',
         'none_available' => 'Колекції: немає чого збирати',
+    ],
+    'building_collect' => [
+        'collected' => 'Будівля: зібрано :name (grid :grid)',
+        'gift_received' => 'Будівля: подарунок отримано :name (grid :grid)',
+        'not_found' => 'Будівля: на сітці :grid нічого збирати',
+        'nothing_to_collect' => 'Будівля: нагорода поки недоступна :name',
     ],
 ];

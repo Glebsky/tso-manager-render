@@ -19,6 +19,7 @@ return [
         'friend_not_in_list' => 'Игрок отсутствует в вашем списке друзей.',
         'friend_building_not_found_grid' => 'Здание с сеткой #:grid не найдено в зоне друга.',
         'friend_zone_not_cached' => 'Зона друга не загружена или истек срок кеша. Пожалуйста, обновите ее в интерфейсе.',
+        'building_not_clickable' => 'Здание :name нельзя собрать кликом',
     ],
     'step' => [
         'skipped' => 'Шаг :step [:type]: пропущен (уже выполнен)',
@@ -31,5 +32,11 @@ return [
         'summary' => 'Коллекции: собрано :collected/:total',
         'skipped' => 'пропущено :skipped (:details)',
         'none_available' => 'Коллекции: собирать нечего',
+    ],
+    'building_collect' => [
+        'collected' => 'Здание: собрано :name (grid :grid)',
+        'gift_received' => 'Здание: подарок получен :name (grid :grid)',
+        'not_found' => 'Здание: на сетке :grid нечего собирать',
+        'nothing_to_collect' => 'Здание: награда пока недоступна :name',
     ],
 ];

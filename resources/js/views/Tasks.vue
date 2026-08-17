@@ -114,7 +114,7 @@
                                 <div class="text-xs min-w-0 flex-1">
                                     <p class="font-semibold text-white/90 wrap-anywhere leading-snug">{{ typeLabels[act.task_type] }}</p>
                                     <p class="text-white/40 text-[10px] mt-1 wrap-anywhere leading-relaxed">
-                                        <span v-if="['stop_production', 'start_production'].includes(act.task_type)" class="inline-flex items-center gap-1.5 flex-wrap">
+                                        <span v-if="['stop_production', 'start_production', 'collect_building'].includes(act.task_type)" class="inline-flex items-center gap-1.5 flex-wrap">
                                             <span class="inline-flex items-center gap-1 text-emerald-400 font-semibold">
                                                 <img v-if="getBuildingInfo(null, act).icon"
                                                      :src="getBuildingInfo(null, act).icon"
@@ -225,6 +225,7 @@
                                     <div v-if="selectedAccountId && activeDropdown === 'stepActionType'" class="absolute z-50 mt-1.5 w-full glass-card border border-white/10 shadow-2xl rounded-xl py-1 max-h-60 overflow-y-auto">
                                         <button type="button" @click="stepActionType = 'stop_production'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">🛑 {{ t('tasks.action.stop_production') }}</button>
                                         <button type="button" @click="stepActionType = 'start_production'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">▶️ {{ t('tasks.action.start_production') }}</button>
+                                        <button type="button" @click="stepActionType = 'collect_building'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">🎁 {{ t('tasks.action.collect_building') }}</button>
                                         <button type="button" @click="stepActionType = 'apply_buff'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">⚡ {{ t('tasks.action.apply_buff') }}</button>
                                         <button type="button" @click="stepActionType = 'send_geologist'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">⛏️ {{ t('tasks.action.send_geologist') }}</button>
                                         <button type="button" @click="stepActionType = 'send_explorer'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">🧭 {{ t('tasks.action.send_explorer') }}</button>
@@ -301,8 +302,8 @@
                                             <p v-if="!selectedBuff" class="text-[10px] text-white/30 mt-1.5">{{ t('tasks.buff_first_hint') }}</p>
                                         </div>
 
-                                        <!-- 4. ЗДАНИЯ (для остановки/запуска — сразу; для баффа — после выбора баффа) -->
-                                        <div v-if="['stop_production', 'start_production'].includes(stepActionType) || (stepActionType === 'apply_buff' && selectedBuff)" class="mb-3">
+                                        <!-- 4. ЗДАНИЯ (для остановки/запуска/сбора — сразу; для баффа — после выбора баффа) -->
+                                        <div v-if="['stop_production', 'start_production', 'collect_building'].includes(stepActionType) || (stepActionType === 'apply_buff' && selectedBuff)" class="mb-3">
                                             <div class="flex items-center justify-between mb-1.5">
                                                 <label class="block text-[10px] font-medium text-white/40 uppercase">
                                                     {{ t('tasks.selected_targets', { count: selectedBuildings.length }) }}
@@ -543,6 +544,9 @@
                         v-model:tab="buildingModalTab"
                         v-model:buildingSearch="buildingSearch"
                         v-model:friendBuildingSearch="friendBuildingSearch"
+                        v-model:onlyAvailable="onlyAvailableBuildingFilter"
+                        :isCollectBuildingAction="stepActionType === 'collect_building'"
+                        :getClickableInfo="getClickableInfo"
                         :selectedBuildings="selectedBuildings"
                         :filteredBuildings="filteredBuildings"
                         :searchedFriendBuildings="searchedFriendBuildings"
@@ -643,6 +647,7 @@ import TaskList from '../components/tasks/TaskList.vue';
             const labels = {
                 stop_production: '🛑 ' + t('tasks.action.stop_production'),
                 start_production: '▶️ ' + t('tasks.action.start_production'),
+                collect_building: '🎁 ' + t('tasks.action.collect_building'),
                 apply_buff: '⚡ ' + t('tasks.action.apply_buff'),
                 send_geologist: '⛏️ ' + t('tasks.action.send_geologist'),
                 send_explorer: '🧭 ' + t('tasks.action.send_explorer'),
@@ -697,6 +702,29 @@ import TaskList from '../components/tasks/TaskList.vue';
         const stepAmount = ref(1);
         const showFriendBuildingModal = ref(false);
         const friendBuildingSearch = ref('');
+
+        const clickableBuildings = ref([]);
+        const onlyAvailableBuildingFilter = ref(false);
+        const loadingClickableBuildings = ref(false);
+
+        const fetchClickableBuildings = async (accountId) => {
+            if (!accountId) return;
+            loadingClickableBuildings.value = true;
+            try {
+                const res = await axios.get(`/api/game/clickable-buildings?account_id=${accountId}`);
+                clickableBuildings.value = res.data?.data || [];
+            } catch (err) {
+                clickableBuildings.value = [];
+            } finally {
+                loadingClickableBuildings.value = false;
+            }
+        };
+
+        const getClickableInfo = (b) => {
+            if (!b) return null;
+            const grid = Number(b.buildingGrid || b.grid);
+            return clickableBuildings.value.find(item => Number(item.grid) === grid) || null;
+        };
 
         // Multi-select building helpers
         const getBuildingTargetId = (buildingGrid, scope = 'self', friendId = null) => {
@@ -895,6 +923,7 @@ import TaskList from '../components/tasks/TaskList.vue';
         const typeIcons = {
             stop_production: '🛑',
             start_production: '▶️',
+            collect_building: '🎁',
             apply_buff: '⚡',
             send_geologist: '⛏️',
             send_explorer: '🧭',
@@ -904,6 +933,7 @@ import TaskList from '../components/tasks/TaskList.vue';
         const typeLabels = {
             stop_production: t('tasks.type_label.stop_production'),
             start_production: t('tasks.type_label.start_production'),
+            collect_building: t('tasks.type_label.collect_building'),
             apply_buff: t('tasks.type_label.apply_buff'),
             send_geologist: t('tasks.type_label.send_geologist'),
             send_explorer: t('tasks.type_label.send_explorer'),
@@ -1003,7 +1033,7 @@ import TaskList from '../components/tasks/TaskList.vue';
             selectedSpecialists.value = [];
             selectedBuff.value = null;
 
-            if (['stop_production', 'start_production'].includes(type)) {
+            if (['stop_production', 'start_production', 'collect_building'].includes(type)) {
                 payload.value = { grid: '' };
             } else if (type === 'apply_buff') {
                 payload.value = { grid: '', unique_id1: '', unique_id2: '' };
@@ -1041,7 +1071,7 @@ import TaskList from '../components/tasks/TaskList.vue';
         };
 
         const addStepToSequence = () => {
-            if (['stop_production', 'start_production', 'apply_buff'].includes(stepActionType.value)) {
+            if (['stop_production', 'start_production', 'collect_building', 'apply_buff'].includes(stepActionType.value)) {
                 if (selectedBuildings.value.length === 0) {
                     showToast(t('tasks.toast.select_building_first'), 'warning');
                     return;
@@ -1065,6 +1095,10 @@ import TaskList from '../components/tasks/TaskList.vue';
                         target_player_name: bTarget.scope === 'friend' ? (bTarget.friend?.nickname || bTarget.friend?.username) : null,
                         amount: stepActionType.value === 'apply_buff' ? stepAmount.value : 1
                     };
+
+                    if (stepActionType.value === 'collect_building') {
+                        actionPayload.mode = 'auto';
+                    }
 
                     if (stepActionType.value === 'apply_buff') {
                         const sb = selectedBuff.value || {};
@@ -1208,14 +1242,22 @@ import TaskList from '../components/tasks/TaskList.vue';
 
         const totalBuildingsCount = computed(() => {
             if (!zone.value || !zone.value.buildings) return 0;
-            return zone.value.buildings.filter(b => isBuffableBuilding(b)).length;
+            if (['apply_buff', 'stop_production', 'start_production'].includes(stepActionType.value)) {
+                return zone.value.buildings.filter(b => isBuffableBuilding(b)).length;
+            }
+            return zone.value.buildings.length;
         });
         const totalSpecialistsCount = computed(() => zone.value?.specialists?.length || 0);
         const totalBuffsCount = computed(() => zone.value?.availableBuffs?.length || 0);
 
         const filteredBuildings = computed(() => {
             if (!zone.value || !zone.value.buildings) return [];
-            let list = zone.value.buildings.filter(b => isBuffableBuilding(b));
+            let list = zone.value.buildings;
+
+            // Only filter by isBuffableBuilding for buffing, stopping, or starting production
+            if (['apply_buff', 'stop_production', 'start_production'].includes(stepActionType.value)) {
+                list = list.filter(b => isBuffableBuilding(b));
+            }
 
             // Buff-first flow: when a buff is selected, only show buildings where it can be applied.
             if (stepActionType.value === 'apply_buff' && selectedBuff.value?.buffName_string) {
@@ -1223,13 +1265,26 @@ import TaskList from '../components/tasks/TaskList.vue';
                 list = list.filter(b => canBuffTarget(buffKey, b.buildingName_string || b.buildingName || ''));
             }
 
+            // Optional "only available" filter for collect_building
+            if (onlyAvailableBuildingFilter.value && stepActionType.value === 'collect_building') {
+                list = list.filter(b => {
+                    const info = getClickableInfo(b);
+                    return info && (info.available === true || info.kind === 'collectible');
+                });
+            }
+
             if (buildingFilter.value && buildingFilter.value !== 'All') {
                 list = list.filter(b => getBuildingCategory(b) === buildingFilter.value);
             }
 
             if (buildingSearch.value) {
-                const query = buildingSearch.value.toLowerCase();
-                list = list.filter(b => getBuildingName(b).toLowerCase().includes(query) || String(b.buildingGrid).includes(query));
+                const query = buildingSearch.value.toLowerCase().trim();
+                list = list.filter(b => {
+                    const rawName = String(b.buildingName_string || b.buildingName || b.name || '').toLowerCase();
+                    const locName = getBuildingName(b).toLowerCase();
+                    const gridStr = String(b.buildingGrid || b.grid || '');
+                    return locName.includes(query) || rawName.includes(query) || gridStr.includes(query);
+                });
             }
 
             return list;
@@ -1388,8 +1443,13 @@ import TaskList from '../components/tasks/TaskList.vue';
             buildingFilter.value = 'All';
             friendBuildingFilter.value = 'All';
             friendBuildingSearch.value = '';
+            onlyAvailableBuildingFilter.value = false;
             buildingModalTab.value = tab;
             showBuildingModal.value = true;
+
+            if (stepActionType.value === 'collect_building' && selectedAccountId.value) {
+                fetchClickableBuildings(selectedAccountId.value);
+            }
         };
         const closeBuildingModal = () => { showBuildingModal.value = false; };
 
@@ -1741,7 +1801,7 @@ import TaskList from '../components/tasks/TaskList.vue';
                 sequenceActions.value = task.payload.actions.map(act => {
                     const meta = act.meta && typeof act.meta === 'object' ? { ...act.meta } : { building: null, buff: null, specialist: null };
 
-                    if (['stop_production', 'start_production', 'apply_buff'].includes(act.task_type) && !meta.building) {
+                    if (['stop_production', 'start_production', 'collect_building', 'apply_buff'].includes(act.task_type) && !meta.building) {
                         if (zoneData.buildings) {
                             meta.building = zoneData.buildings.find(b => b.buildingGrid == act.payload?.grid) || null;
                         }

@@ -19,6 +19,7 @@ return [
         'friend_not_in_list' => 'Player is not in your friends list.',
         'friend_building_not_found_grid' => 'Building with Grid #:grid not found in friend zone.',
         'friend_zone_not_cached' => 'Friend zone is not loaded or cache has expired. Please refresh it in the interface.',
+        'building_not_clickable' => 'Building :name is not clickable for collection',
     ],
     'step' => [
         'skipped' => 'Step :step [:type]: SKIPPED (already executed)',
@@ -31,5 +32,11 @@ return [
         'summary' => 'Collectibles: :collected/:total collected',
         'skipped' => ':skipped skipped (:details)',
         'none_available' => 'Collectibles: nothing to collect',
+    ],
+    'building_collect' => [
+        'collected' => 'Building: collected :name (grid :grid)',
+        'gift_received' => 'Building: gift received :name (grid :grid)',
+        'not_found' => 'Building: nothing to collect on grid :grid',
+        'nothing_to_collect' => 'Building: reward not available yet :name',
     ],
 ];

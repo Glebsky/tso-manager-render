@@ -5989,9 +5989,16 @@
         }
     },
     "tasks": {
+        "building_collect": {
+            "collected": "Здание: собрано :name (grid :grid)",
+            "gift_received": "Здание: подарок получен :name (grid :grid)",
+            "not_found": "Здание: на сетке :grid нечего собирать",
+            "nothing_to_collect": "Здание: награда пока недоступна :name"
+        },
         "error": {
             "account_not_found": "Аккаунт для задачи #:id не найден.",
             "buff_not_found": "Указанный бафф не найден в инвентаре звездного меню.",
+            "building_not_clickable": "Здание :name нельзя собрать кликом",
             "friend_building_not_found": "Шаг не выполнен: здание Grid #:grid не найдено в зоне :friendName",
             "friend_building_not_found_grid": "Здание с сеткой #:grid не найдено в зоне друга.",
             "friend_not_found": "Шаг пропущен: игрок больше не находится в списке друзей",
@@ -6524,6 +6531,7 @@
         "sync.session_intercepted_market": "Сессия перехвачена другой игрой (ошибка :code) во время синхронизации рынка.",
         "sync.zone_locked": "Игровая зона занята или заблокирована (ошибка 1012). Пожалуйста, выйдите из игры через кнопку «Выход» в меню игры (а не просто закрыв окно), подождите пару минут и попробуйте синхронизацию снова.",
         "tasks.action.apply_buff": "Применить бафф",
+        "tasks.action.collect_building": "Собрать с здания",
         "tasks.action.collect_pickups": "Собрать коллекции",
         "tasks.action.send_explorer": "Отправить разведчика",
         "tasks.action.send_geologist": "Отправить геолога",
@@ -6622,6 +6630,7 @@
         "tasks.modal.no_buffs": "Баффы не найдены.",
         "tasks.modal.no_buildings": "Здания не найдены.",
         "tasks.modal.no_specialists": "Специалисты не найдены.",
+        "tasks.modal.only_available": "Только доступные",
         "tasks.modal.search_buff": "Поиск баффа по названию...",
         "tasks.modal.search_building": "Поиск здания по названию или сетке...",
         "tasks.modal.search_specialist": "Поиск по имени или типу...",
@@ -6742,6 +6751,7 @@
         "tasks.treasure_short.short": "Кор. сокровища",
         "tasks.treasure_short.very_long": "Очень дл. сокровища",
         "tasks.type_label.apply_buff": "Применение баффа",
+        "tasks.type_label.collect_building": "Сбор с здания",
         "tasks.type_label.collect_pickups": "Сбор коллекций",
         "tasks.type_label.send_explorer": "Отправка разведчика",
         "tasks.type_label.send_geologist": "Отправка геолога",

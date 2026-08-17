@@ -5990,9 +5990,16 @@
         }
     },
     "tasks": {
+        "building_collect": {
+            "collected": "Будівля: зібрано :name (grid :grid)",
+            "gift_received": "Будівля: подарунок отримано :name (grid :grid)",
+            "not_found": "Будівля: на сітці :grid нічого збирати",
+            "nothing_to_collect": "Будівля: нагорода поки недоступна :name"
+        },
         "error": {
             "account_not_found": "Акаунт для завдання #:id не знайдено.",
             "buff_not_found": "Вказаний баф не знайдено в інвентарі зоряного меню.",
+            "building_not_clickable": "Будівлю :name не можна зібрати кліком",
             "friend_building_not_found": "Крок не виконано: будівлю Grid #:grid не знайдено в зоні :friendName",
             "friend_building_not_found_grid": "Будівлю з сіткою #:grid не знайдено в зоні друга.",
             "friend_not_found": "Крок пропущено: гравець більше не перебуває у списку друзів",
@@ -6525,6 +6532,7 @@
         "sync.session_intercepted_market": "Сесію перехоплено іншою грою (помилка :code) під час синхронізації ринку.",
         "sync.zone_locked": "Ігрова зона зайнята або заблокована (помилка 1012). Будь ласка, вийдіть із гри через кнопку «Вихід» у меню гри (а не просто закривши вікно), зачекайте кілька хвилин і спробуйте синхронізацію знову.",
         "tasks.action.apply_buff": "Застосувати баф",
+        "tasks.action.collect_building": "Зібрати з будівлі",
         "tasks.action.collect_pickups": "Зібрати колекції",
         "tasks.action.send_explorer": "Відправити розвідника",
         "tasks.action.send_geologist": "Відправити геолога",
@@ -6623,6 +6631,7 @@
         "tasks.modal.no_buffs": "Бафи не знайдено.",
         "tasks.modal.no_buildings": "Будівлі не знайдено.",
         "tasks.modal.no_specialists": "Спеціалістів не знайдено.",
+        "tasks.modal.only_available": "Тільки доступні",
         "tasks.modal.search_buff": "Пошук бафа за назвою...",
         "tasks.modal.search_building": "Пошук будівлі за назвою або сіткою...",
         "tasks.modal.search_specialist": "Пошук за ім'ям або типом...",
@@ -6743,6 +6752,7 @@
         "tasks.treasure_short.short": "Кор. скарби",
         "tasks.treasure_short.very_long": "Дуже довг. скарби",
         "tasks.type_label.apply_buff": "Застосування бафа",
+        "tasks.type_label.collect_building": "Збір з будівлі",
         "tasks.type_label.collect_pickups": "Збір колекцій",
         "tasks.type_label.send_explorer": "Відправлення розвідника",
         "tasks.type_label.send_geologist": "Відправлення геолога",

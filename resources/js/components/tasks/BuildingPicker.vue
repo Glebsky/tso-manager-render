@@ -27,17 +27,24 @@
 
             <!-- Вкладки и Поиск -->
             <div class="p-4 border-b border-white/5 bg-white/[0.01] flex flex-col gap-3">
-                <div class="flex items-center gap-2">
-                    <button type="button" @click="$emit('update:tab', 'self')"
-                            class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all"
-                            :class="tab === 'self' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
-                        {{ t('tasks.target.self_island') }}
-                    </button>
-                    <button type="button" @click="$emit('update:tab', 'friend')"
-                            class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all"
-                            :class="tab === 'friend' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
-                        {{ t('tasks.target.friend_island') }}
-                    </button>
+                <div class="flex items-center justify-between gap-2 flex-wrap">
+                    <div class="flex items-center gap-2">
+                        <button type="button" @click="$emit('update:tab', 'self')"
+                                class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all"
+                                :class="tab === 'self' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
+                            {{ t('tasks.target.self_island') }}
+                        </button>
+                        <button type="button" @click="$emit('update:tab', 'friend')"
+                                class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all"
+                                :class="tab === 'friend' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
+                            {{ t('tasks.target.friend_island') }}
+                        </button>
+                    </div>
+                    <!-- Чекбокс «Только доступные» -->
+                    <label v-if="tab === 'self' && isCollectBuildingAction" class="flex items-center gap-2 text-xs text-white/70 hover:text-white cursor-pointer select-none">
+                        <input type="checkbox" :checked="onlyAvailable" @change="$emit('update:onlyAvailable', $event.target.checked)" class="rounded border-white/20 bg-white/5 text-emerald-500 focus:ring-emerald-400 cursor-pointer">
+                        <span>{{ t('tasks.modal.only_available') }}</span>
+                    </label>
                 </div>
                 <div class="relative">
                     <input v-if="tab === 'self'" :value="buildingSearch" @input="$emit('update:buildingSearch', $event.target.value)" type="text" :placeholder="t('tasks.modal.search_building')" class="glass-input w-full text-xs py-2 pl-4">
@@ -58,7 +65,12 @@
                                 <span v-else class="text-sm">🏰</span>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <p class="text-xs font-semibold text-white/90 truncate">{{ getBuildingName(b) }}</p>
+                                <div class="flex items-center gap-1.5 min-w-0">
+                                    <p class="text-xs font-semibold text-white/90 truncate">{{ getBuildingName(b) }}</p>
+                                    <span v-if="getClickableBadge(b)" :title="getClickableBadge(b).title" class="text-xs flex-shrink-0" :class="getClickableBadge(b).classes">
+                                        {{ getClickableBadge(b).icon }}
+                                    </span>
+                                </div>
                                 <p class="text-[10px] text-white/40 mt-0.5">{{ t('tasks.grid_number', { id: b.buildingGrid }) }} • {{ t('tasks.level_short') }} {{ b.upgradeLevel || 1 }}</p>
                             </div>
                         </div>
@@ -120,7 +132,7 @@
 <script setup>
 import { t } from '../../lang';
 
-defineProps({
+const props = defineProps({
     showModal: { type: Boolean, required: true },
     tab: { type: String, default: 'self' },
     buildingSearch: { type: String, default: '' },
@@ -134,8 +146,30 @@ defineProps({
     isSelectedBuilding: { type: Function, required: true },
     getBuildingIcon: { type: Function, required: true },
     getBuildingName: { type: Function, required: true },
-    handleBuildingIconError: { type: Function, required: true }
+    handleBuildingIconError: { type: Function, required: true },
+    onlyAvailable: { type: Boolean, default: false },
+    isCollectBuildingAction: { type: Boolean, default: false },
+    getClickableInfo: { type: Function, default: null }
 });
 
-defineEmits(['close', 'select-all', 'clear', 'toggle-building', 'update:tab', 'update:buildingSearch', 'update:friendBuildingSearch']);
+defineEmits(['close', 'select-all', 'clear', 'toggle-building', 'update:tab', 'update:buildingSearch', 'update:friendBuildingSearch', 'update:onlyAvailable']);
+
+const getClickableBadge = (b) => {
+    if (!props.getClickableInfo) return null;
+    const info = props.getClickableInfo(b);
+    if (!info) return null;
+
+    if (info.kind === 'collectible') {
+        return { icon: '🧺', classes: '', title: t('tasks.action.collect_pickups') };
+    }
+    if (info.kind === 'quest_gift') {
+        if (info.available === true) {
+            return { icon: '🎁', classes: 'text-emerald-400 font-bold', title: t('tasks.action.collect_building') };
+        }
+        if (info.available === false) {
+            return { icon: '🎁', classes: 'opacity-40 grayscale', title: t('tasks.building_collect.nothing_to_collect') };
+        }
+    }
+    return null;
+};
 </script>
