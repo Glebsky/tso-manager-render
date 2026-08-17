@@ -12,6 +12,8 @@ use App\Services\Amf\Vo\defaultGame_Communication_VO_dServerCall;
 use App\Services\Amf\Vo\defaultGame_Communication_VO_dStartSpecialistTaskVO;
 use App\Services\Amf\Vo\defaultGame_Communication_VO_dUniqueID;
 use Exception;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class TsoAmfService
 {
@@ -32,23 +34,99 @@ class TsoAmfService
     /** COMMAND.DESTRUCT_BUILDING — the command a click on a collectible really sends. */
     public const CMD_DESTRUCT_BUILDING = 65;
 
-    private int $dsoAuthRandomClientID;
+    /** COMMAND.QUEST_TRIGGER — client_scripts.txt:69425 */
+    public const CMD_QUEST_TRIGGER = 100;
+
+    /** SERVER_STACK_BUILDING_SELECTED — client_scripts.txt:62956 */
+    public const QUEST_STACK_BUILDING_SELECTED = 2;
+
+    /** SERVER_STACK_GET_LATEST_QUEST_LIST — client_scripts.txt:62958 */
+    public const QUEST_STACK_GET_LATEST_QUEST_LIST = 4;
 
     public function __construct(
         private readonly TsoAuthService $authService,
         private readonly TsoClientInterface $client
-    ) {
-        $this->dsoAuthRandomClientID = mt_rand(0, 2147483646);
+    ) {}
+
+    /**
+     * Stable per-account client identity.
+     *
+     * The Flash client generates this once per running client and sends the
+     * same value with every call. Generating it per PHP process meant that the
+     * scheduler process, the queue worker and every web request each presented
+     * themselves to the game server as a different client for the same account,
+     * which the server reports as error 1012 (NEWER_SESSION_DETECTED) to whoever
+     * is not the current owner of the zone session.
+     *
+     * Persisting it per account makes all processes look like one client.
+     */
+    private function clientIdFor(Account $account): int
+    {
+        return (int) Cache::remember(
+            "tso:client_id:{$account->id}",
+            now()->addDays(30),
+            static fn (): int => mt_rand(0, 2147483646),
+        );
     }
 
-    public function setDsId(string $dsId): void
+    /**
+     * Forget the persisted client identity. Only needed when the account's
+     * credentials change, since a fresh identity forces the game server to
+     * treat the next call as a brand new client.
+     */
+    public function forgetClientId(Account $account): void
     {
-        $this->client->setDsId($dsId);
+        Cache::forget("tso:client_id:{$account->id}");
     }
 
-    public function resetClient(): void
+    public function setDsId(string $dsId, ?int $accountId = null): void
     {
-        $this->client->resetClients();
+        $this->client->setDsId($dsId, $accountId);
+    }
+
+    /**
+     * Drop cached in-memory transport state for the current process.
+     */
+    public function resetClient(?int $accountId = null): void
+    {
+        $this->client->resetClients($accountId);
+    }
+
+    /**
+     * Invalidate shared session in cache across all processes for a specific account.
+     */
+    public function invalidateSession(int $accountId): void
+    {
+        $this->client->invalidateSession($accountId);
+    }
+
+    /**
+     * Ensure the player's zone is loaded and initialized on the game server.
+     * Useful to warm up the zone before executing direct actions (like specialist/production)
+     * or to recover when game server returns error 1012.
+     */
+    public function ensureZoneLoaded(Account $account, int $maxAttempts = 3, int $delaySeconds = 2): string
+    {
+        $lastResponse = '';
+
+        for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
+            Log::info("[TsoAmf] Ensuring zone is loaded for account #{$account->id} (attempt {$attempt}/{$maxAttempts})");
+            $lastResponse = $this->getZone($account);
+
+            if (str_contains($lastResponse, '1012')) {
+                Log::info("[TsoAmf] Zone still initializing for account #{$account->id} (code 1012); waiting {$delaySeconds}s...");
+                if ($attempt < $maxAttempts) {
+                    sleep($delaySeconds);
+                }
+
+                continue;
+            }
+
+            Log::info("[TsoAmf] Zone ready for account #{$account->id} on attempt {$attempt}/{$maxAttempts}");
+            break;
+        }
+
+        return $lastResponse;
     }
 
     private function buildServerCall(Account $account, int $type, mixed $actionData, ?int $targetZoneId = null): defaultGame_Communication_VO_dServerCall
@@ -58,7 +136,7 @@ class TsoAmfService
         $call->dsoAuthUser = (int) $account->dso_auth_user;
         $call->zoneID = $targetZoneId ?? (int) $account->dso_auth_user;
         $call->type = $type;
-        $call->dsoAuthRandomClientID = $this->dsoAuthRandomClientID;
+        $call->dsoAuthRandomClientID = $this->clientIdFor($account);
         $call->data = $actionData;
 
         return $call;
@@ -89,7 +167,7 @@ class TsoAmfService
                 try {
                     $this->authService->login($account);
                     $account->refresh();
-                    $this->resetClient();
+                    $this->invalidateSession((int) $account->id);
 
                     $call = $this->buildServerCall($account, $commandType, $actionData, $targetZoneId);
 
@@ -198,6 +276,45 @@ class TsoAmfService
         $action = $this->buildServerAction(0, $grid, 0, $buildingClass);
 
         return $this->sendServerCall($account, self::CMD_DESTRUCT_BUILDING, $action);
+    }
+
+    /**
+     * Send a building selected quest trigger (COMMAND.QUEST_TRIGGER = 100).
+     *
+     * client_scripts.txt:69425 (COMMAND.QUEST_TRIGGER = 100)
+     * client_scripts.txt:62956 (SERVER_STACK_BUILDING_SELECTED = 2)
+     *
+     * Differs from collectCollectible (65): grid is passed inside data,
+     * while action.grid and action.endGrid remain 0.
+     */
+    public function sendBuildingSelectedQuestTrigger(Account $account, int $grid): string
+    {
+        $action = $this->buildServerAction(self::QUEST_STACK_BUILDING_SELECTED, 0, 0, $grid);
+
+        return $this->sendServerCall(
+            $account,
+            self::CMD_QUEST_TRIGGER,
+            $action,
+            targetZoneId: (int) $account->dso_auth_user,
+        );
+    }
+
+    /**
+     * Fetch the latest quest list / pool from server (COMMAND.QUEST_TRIGGER = 100, type = 4).
+     *
+     * client_scripts.txt:69425 (COMMAND.QUEST_TRIGGER = 100)
+     * client_scripts.txt:62958 (SERVER_STACK_GET_LATEST_QUEST_LIST = 4)
+     */
+    public function getLatestQuestList(Account $account): string
+    {
+        $action = $this->buildServerAction(self::QUEST_STACK_GET_LATEST_QUEST_LIST, 0, 0, null);
+
+        return $this->sendServerCall(
+            $account,
+            self::CMD_QUEST_TRIGGER,
+            $action,
+            targetZoneId: (int) $account->dso_auth_user,
+        );
     }
 
     public function sendSpecialist(Account $account, int $taskType, int $subTaskId, int $uniqueId1, int $uniqueId2): string

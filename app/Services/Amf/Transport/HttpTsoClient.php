@@ -9,27 +9,134 @@ use App\Services\Amf\Amf3Encoder;
 use App\Services\Amf\Vo\flex_messaging_messages_RemotingMessage;
 use App\Services\TsoAuthService;
 use Exception;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class HttpTsoClient implements TsoClientInterface
 {
-    /** @var array<string, array{url: string, cookie_file: string}> */
+    /** @var array<string, array{url: string, cookie_file: string, ds_id: string, auth_token: string, resolved_at: float}> */
     private array $clients = [];
 
-    private string $dsId = 'nil';
+    /**
+     * Per-account fallback DSIds extracted during authentication.
+     * Stored strictly per account ID to eliminate cross-account pollution.
+     *
+     * @var array<int, string>
+     */
+    private array $dsIds = [];
 
     public function __construct(
         private readonly TsoAuthService $authService,
     ) {}
 
-    public function setDsId(string $dsId): void
+    public function setDsId(string $dsId, ?int $accountId = null): void
     {
-        $this->dsId = $dsId;
+        if ($accountId !== null) {
+            $this->dsIds[$accountId] = $dsId;
+        } else {
+            $this->dsIds[0] = $dsId;
+        }
     }
 
-    public function resetClients(): void
+    /**
+     * Drop cached in-memory transport state for the current process.
+     * Pass an account id to drop only that account's entries; omit it to drop everything.
+     * Does NOT invalidate the shared cache across processes.
+     */
+    public function resetClients(?int $accountId = null): void
     {
-        $this->clients = [];
+        if ($accountId === null) {
+            $this->clients = [];
+            $this->dsIds = [];
+
+            return;
+        }
+
+        $prefix = $accountId.':';
+
+        foreach (array_keys($this->clients) as $key) {
+            if (str_starts_with($key, $prefix)) {
+                unset($this->clients[$key]);
+            }
+        }
+
+        unset($this->dsIds[$accountId]);
+    }
+
+    /**
+     * Invalidate the shared game session for an account across every process.
+     * Bumps the generation counter so all workers and web processes will resolve
+     * a fresh session on their next call.
+     */
+    public function invalidateSession(int $accountId): void
+    {
+        $this->resetClients($accountId);
+
+        Cache::put(
+            "tso:amf_gen:{$accountId}",
+            $this->sessionGeneration($accountId) + 1,
+            now()->addDay(),
+        );
+
+        Log::info("[TsoAmf] Invalidated shared game session cache for account #{$accountId} (gen {$this->sessionGeneration($accountId)})");
+    }
+
+    private function sessionGeneration(int $accountId): int
+    {
+        return (int) Cache::get("tso:amf_gen:{$accountId}", 1);
+    }
+
+    private function sharedSessionKey(int $accountId, int $zoneId): string
+    {
+        return sprintf('tso:amf_session:%d:%d:%d', $accountId, $this->sessionGeneration($accountId), $zoneId);
+    }
+
+    /**
+     * Read the game session shared by every process (scheduler, queue worker,
+     * web requests). Records are bound to the web auth token they were created
+     * with, so a re-login automatically invalidates them.
+     *
+     * @return array{url: string, cookie_file: string, ds_id: string, auth_token: string, resolved_at: float}|null
+     */
+    private function readSharedSession(int $accountId, int $zoneId, string $authToken): ?array
+    {
+        $record = Cache::get($this->sharedSessionKey($accountId, $zoneId));
+
+        if (! is_array($record) || ($record['auth_token'] ?? null) !== $authToken) {
+            return null;
+        }
+
+        return $record;
+    }
+
+    /**
+     * @param  array{url: string, cookie_file: string, ds_id: string, auth_token: string, resolved_at: float}  $session
+     */
+    private function writeSharedSession(int $accountId, int $zoneId, array $session): void
+    {
+        Cache::put(
+            $this->sharedSessionKey($accountId, $zoneId),
+            $session,
+            now()->addSeconds((int) config('game.session_ttl_seconds', 300)),
+        );
+    }
+
+    /**
+     * The game server assigns the real DSId and echoes it back in the AMF
+     * acknowledge headers. Reusing the value derived from the load-server hash
+     * keeps pointing at a session the server has already superseded, which it
+     * reports as error 1012.
+     */
+    private function extractDsIdFromResponse(string $response): ?string
+    {
+        if ($response === '') {
+            return null;
+        }
+
+        $pattern = '/DSId.{0,12}?([0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12})/s';
+
+        return preg_match($pattern, $response, $matches) === 1 ? $matches[1] : null;
     }
 
     public function resolveServerUrl(Account $account, int $targetZoneId = 0, ?string &$dsId = null): string
@@ -148,24 +255,72 @@ class HttpTsoClient implements TsoClientInterface
 
     public function sendCommand(Account $account, mixed $dServerCall, string $destination = 'SMC', string $operation = 'ExecuteServerCall', ?string $source = 'com.bluebyte.game.servlet.EventHandler', ?int $targetZoneId = null): string
     {
-        $zoneId = $targetZoneId ?? 0;
-        $clientKey = $account->id.':'.$zoneId;
+        $accountId = (int) $account->id;
+        $lock = Cache::lock("tso:amf_lock:{$accountId}", 60);
+        $locked = false;
 
-        if (! isset($this->clients[$clientKey])) {
-            $cookieFile = $this->authService->getCookieFile($account);
-            $dsId = 'nil';
-            $amfServerUrl = $this->resolveServerUrl($account, $zoneId, $dsId);
+        try {
+            $locked = (bool) $lock->block((int) config('game.session_lock_wait_seconds', 20));
+        } catch (Throwable $e) {
+            Log::warning("[TsoAmf] Proceeding without session lock for account #{$accountId}: ".$e->getMessage());
+        }
 
-            $this->clients[$clientKey] = [
-                'url' => $amfServerUrl,
-                'cookie_file' => $cookieFile,
-            ];
-            if ($dsId !== 'nil') {
-                $this->dsId = $dsId;
+        try {
+            return $this->dispatchCommand($account, $targetZoneId ?? 0, $dServerCall, $destination, $operation, $source);
+        } finally {
+            if ($locked) {
+                $lock->release();
+            }
+        }
+    }
+
+    private function dispatchCommand(Account $account, int $zoneId, mixed $dServerCall, string $destination, string $operation, ?string $source): string
+    {
+        $accountId = (int) $account->id;
+        $clientKey = $accountId.':'.$zoneId;
+        $authToken = (string) $account->dso_auth_token;
+        $ttl = (float) config('game.session_ttl_seconds', 300);
+
+        $session = $this->clients[$clientKey] ?? null;
+
+        if ($session !== null && ($session['auth_token'] !== $authToken || (microtime(true) - $session['resolved_at']) > $ttl)) {
+            $session = null;
+        }
+
+        if ($session === null) {
+            $session = $this->readSharedSession($accountId, $zoneId, $authToken);
+
+            if ($session !== null) {
+                Log::info("[TsoAmf] Reusing shared game session for account #{$accountId} (zone {$zoneId}) with DSId {$session['ds_id']}");
             }
         }
 
-        $client = $this->clients[$clientKey];
+        if ($session === null) {
+            $dsId = 'nil';
+            $amfServerUrl = $this->resolveServerUrl($account, $zoneId, $dsId);
+
+            $accountDsId = $dsId !== 'nil' ? $dsId : ($this->dsIds[$accountId] ?? 'nil');
+
+            $session = [
+                'url' => $amfServerUrl,
+                'cookie_file' => $this->authService->getCookieFile($account),
+                'ds_id' => $accountDsId,
+                'auth_token' => $authToken,
+                'resolved_at' => microtime(true),
+            ];
+
+            if ($dsId !== 'nil') {
+                $this->dsIds[$accountId] = $dsId;
+            }
+
+            $this->writeSharedSession($accountId, $zoneId, $session);
+        }
+
+        $this->clients[$clientKey] = $session;
+        $client = $session;
+        $clientDsId = $client['ds_id'] !== '' ? $client['ds_id'] : 'nil';
+
+        Log::info("[TsoAmf] Sending command [{$operation}] for account #{$accountId} (zone {$zoneId}) with DSId {$clientDsId}");
 
         $message = new flex_messaging_messages_RemotingMessage;
         $message->destination = $destination;
@@ -179,7 +334,7 @@ class HttpTsoClient implements TsoClientInterface
             mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535)
         );
         $message->headers = (object) [
-            'DSId' => $this->dsId,
+            'DSId' => $clientDsId,
             'DSEndpoint' => 'SMC-Endpoint',
         ];
         $message->body = [$dServerCall];
@@ -189,6 +344,8 @@ class HttpTsoClient implements TsoClientInterface
         $amf3Body = $encoder->getOutput();
 
         $amf0Envelope = $this->wrapAmf0Remoting('null', '/1', $amf3Body);
+
+        $startTime = microtime(true);
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $client['url']);
@@ -210,15 +367,32 @@ class HttpTsoClient implements TsoClientInterface
         curl_setopt($ch, CURLOPT_POSTFIELDS, $amf0Envelope);
 
         $response = (string) curl_exec($ch);
+        $durationMs = (int) round((microtime(true) - $startTime) * 1000);
         $error = curl_error($ch);
         $httpCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
         if ($error) {
+            Log::error("[TsoAmf] Command [{$operation}] for account #{$accountId} failed after {$durationMs}ms with cURL error: {$error}");
             throw new Exception('AMF cURL Error: '.$error);
         }
         if ($httpCode !== 200) {
+            Log::error("[TsoAmf] Command [{$operation}] for account #{$accountId} returned HTTP {$httpCode} after {$durationMs}ms. Response: ".substr($response, 0, 300));
             throw new Exception("AMF Server returned HTTP {$httpCode}. Response: ".$response);
+        }
+
+        Log::info("[TsoAmf] Command [{$operation}] for account #{$accountId} completed in {$durationMs}ms (HTTP {$httpCode}, ".strlen($response).' bytes)');
+
+        $serverDsId = $this->extractDsIdFromResponse($response);
+
+        if ($serverDsId !== null && $serverDsId !== $client['ds_id']) {
+            Log::info("[TsoAmf] Game server assigned DSId {$serverDsId} for account #{$accountId} (was {$clientDsId})");
+
+            $session['ds_id'] = $serverDsId;
+            $session['resolved_at'] = microtime(true);
+            $this->clients[$clientKey] = $session;
+            $this->dsIds[$accountId] = $serverDsId;
+            $this->writeSharedSession($accountId, $zoneId, $session);
         }
 
         return $response;

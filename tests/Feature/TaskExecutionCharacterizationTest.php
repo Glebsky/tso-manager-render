@@ -179,13 +179,13 @@ class TaskExecutionCharacterizationTest extends TestCase
                 static $attempts = 0;
                 $attempts++;
                 if ($attempts === 1) {
-                    throw new GameServerErrorException(1012, 'Session expired');
+                    throw new GameServerErrorException(1005, 'Session expired');
                 }
 
                 return 'stop_ok_retry';
             });
 
-        $this->amfMock->shouldReceive('resetClient')->once();
+        $this->amfMock->shouldReceive('invalidateSession')->once();
 
         $service = $this->app->make(TaskExecutionService::class);
         $result = $service->execute($task);

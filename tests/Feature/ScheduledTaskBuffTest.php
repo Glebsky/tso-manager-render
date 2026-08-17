@@ -415,8 +415,6 @@ class ScheduledTaskBuffTest extends TestCase
         ]);
 
         $this->authMock->shouldReceive('isAuthenticated')->with(Mockery::any())->andReturn(true);
-        $this->authMock->shouldReceive('resetSession')->once()->with(Mockery::any());
-        $this->authMock->shouldReceive('login')->once()->with(Mockery::any())->andReturn([]);
 
         $this->amfMock->shouldReceive('getZone')
             ->twice()
@@ -437,6 +435,7 @@ class ScheduledTaskBuffTest extends TestCase
             ]);
 
         $this->amfMock->shouldReceive('resetClient')->once();
+        $this->amfMock->shouldReceive('ensureZoneLoaded')->once()->andReturn('');
 
         $this->amfMock->shouldReceive('applyBuff')
             ->once()
@@ -453,6 +452,7 @@ class ScheduledTaskBuffTest extends TestCase
         $task->refresh();
         $this->assertFalse($task->is_active);
         $this->assertNotNull($task->last_run_at);
+
         $this->assertStringContainsString('OK:', $task->last_result);
     }
 }
