@@ -63,6 +63,15 @@ class ApiContractTest extends TestCase
                 'meta' => ['server_time'],
             ]);
 
+        // GET /api/game/clickable-buildings -> 200 OK
+        $clickableResponse = $this->getJson('/api/game/clickable-buildings?account_id='.$account->id);
+        $clickableResponse->assertOk()
+            ->assertJsonStructure([
+                'data' => [
+                    '*' => ['grid', 'building_name', 'kind', 'available'],
+                ],
+            ]);
+
         // DELETE /api/accounts/{id} -> 204 No Content
         $deleteResponse = $this->deleteJson('/api/accounts/'.$account->id);
         $deleteResponse->assertNoContent();
@@ -110,6 +119,19 @@ class ApiContractTest extends TestCase
             'payload' => ['pickup_type' => 'all'],
         ]);
         $storeResponse->assertCreated()
+            ->assertJsonStructure([
+                'data' => ['id', 'task_type', 'schedule_type'],
+                'meta' => ['server_time'],
+            ]);
+
+        $storeCollectBuildingResponse = $this->postJson('/api/tasks', [
+            'account_id' => $account->id,
+            'task_type' => 'collect_building',
+            'schedule_type' => 'daily',
+            'run_at_time' => '15:00',
+            'payload' => ['grid' => 1234, 'mode' => 'auto'],
+        ]);
+        $storeCollectBuildingResponse->assertCreated()
             ->assertJsonStructure([
                 'data' => ['id', 'task_type', 'schedule_type'],
                 'meta' => ['server_time'],

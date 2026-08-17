@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\Api\ClickableBuildingController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\Market\AnalyticsController;
@@ -58,6 +59,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/tasks', [ScheduledTaskController::class, 'store']);
     Route::put('/tasks/{task}', [ScheduledTaskController::class, 'update'])->whereNumber('task');
     Route::delete('/tasks/{task}', [ScheduledTaskController::class, 'destroy'])->whereNumber('task');
+
+    // Game lookups
+    Route::get('/game/clickable-buildings', [ClickableBuildingController::class, 'index']);
     Route::post('/tasks/{task}/toggle', [ScheduledTaskController::class, 'toggle'])->whereNumber('task');
     Route::post('/tasks/{task}/execute', [ScheduledTaskController::class, 'execute'])
         ->whereNumber('task')
