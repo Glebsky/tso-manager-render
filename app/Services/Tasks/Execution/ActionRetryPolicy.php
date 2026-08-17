@@ -27,23 +27,68 @@ final class ActionRetryPolicy
      */
     public function execute(Account $account, string $taskTypeStr, callable $action): string
     {
-        $maxAttempts = (int) config('game.tasks.max_action_attempts', 2);
-        $retryableCodes = (array) config('game.tasks.retry_session_errors', [1005, 1012]);
+        $maxAttempts = (int) config('game.tasks.max_action_attempts', 3);
+        $sessionCodes = (array) config('game.tasks.relogin_errors', [1005]);
+        $transportCodes = (array) config('game.tasks.transport_retry_errors', [1012]);
+        $transportDelay = (int) config('game.tasks.transport_retry_delay', 3);
+        $accountId = (int) $account->id;
+        $username = (string) ($account->username ?? $account->nickname ?? "account#{$accountId}");
 
         for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
+            Log::info("[TaskExecution] Action [{$taskTypeStr}] for account #{$accountId} ({$username}): attempt {$attempt}/{$maxAttempts} starting");
+            $startTime = microtime(true);
+
             try {
-                return $action();
+                $result = $action();
+                $durationMs = (int) round((microtime(true) - $startTime) * 1000);
+
+                Log::info("[TaskExecution] Action [{$taskTypeStr}] for account #{$accountId} ({$username}): SUCCEEDED on attempt {$attempt}/{$maxAttempts} ({$durationMs}ms)");
+
+                return $result;
             } catch (GameServerErrorException $e) {
-                if (in_array($e->getCode(), $retryableCodes, true) && $attempt < $maxAttempts) {
-                    Log::info("[TaskExecution] Action [{$taskTypeStr}] hit game error {$e->getCode()}; resetting session and retrying (attempt {$attempt}/{$maxAttempts})");
+                $code = (int) $e->getCode();
+                $durationMs = (int) round((microtime(true) - $startTime) * 1000);
+
+                if ($attempt >= $maxAttempts) {
+                    Log::error("[TaskExecution] Action [{$taskTypeStr}] for account #{$accountId} ({$username}): FAILED after {$attempt}/{$maxAttempts} attempts, last game error {$code} ({$e->getMessage()}) [{$durationMs}ms]");
+
+                    throw $e;
+                }
+
+                // 1012 (NEWER_SESSION_DETECTED / Zone loading) means the game zone is
+                // still loading or uninitialized on this connection. Do NOT re-login
+                // (which would destroy the zone loading process), but warm up the zone
+                // and retry in the same/refreshed session.
+                if (in_array($code, $transportCodes, true)) {
+                    Log::info("[TaskExecution] Action [{$taskTypeStr}] hit game error {$code} (Zone loading/unready) for account #{$accountId} ({$username}); warming up zone and retrying in {$transportDelay}s (attempt {$attempt}/{$maxAttempts})");
+
+                    $this->amfService->resetClient($accountId);
+
+                    try {
+                        $this->amfService->ensureZoneLoaded($account, maxAttempts: 2, delaySeconds: 2);
+                    } catch (\Throwable $zoneEx) {
+                        Log::warning("[TaskExecution] Zone warm-up check for account #{$accountId} returned: ".$zoneEx->getMessage());
+                    }
+
+                    sleep($transportDelay);
+
+                    continue;
+                }
+
+                if (in_array($code, $sessionCodes, true)) {
+                    Log::info("[TaskExecution] Action [{$taskTypeStr}] hit game error {$code} (Session expired) for account #{$accountId} ({$username}); re-authenticating and retrying (attempt {$attempt}/{$maxAttempts})");
+
                     $this->authService->resetSession($account);
                     $this->authService->login($account);
-                    $this->amfService->resetClient();
+                    $this->amfService->invalidateSession($accountId);
                     $account->refresh();
                     sleep(2);
 
                     continue;
                 }
+
+                Log::error("[TaskExecution] Action [{$taskTypeStr}] for account #{$accountId} ({$username}): aborted on attempt {$attempt}/{$maxAttempts} with non-retryable game error {$code} ({$e->getMessage()})");
+
                 throw $e;
             }
         }

@@ -92,11 +92,15 @@ abstract class ScheduledTaskRequest extends FormRequest
 
         foreach ((array) $this->input('payload.actions', []) as $index => $action) {
             $taskType = $action['task_type'] ?? '';
-            if (in_array($taskType, [TaskType::StopProduction->value, TaskType::StartProduction->value], true)) {
+            if ($taskType instanceof TaskType) {
+                $taskType = $taskType->value;
+            }
+            if (in_array($taskType, [TaskType::StopProduction->value, TaskType::StartProduction->value, TaskType::CollectBuilding->value], true)) {
                 $rules["payload.actions.{$index}.payload.grid"] = 'required|integer|min:1';
                 $rules["payload.actions.{$index}.payload.building_name"] = 'nullable|string|max:255';
                 $rules["payload.actions.{$index}.payload.building_raw_name"] = 'nullable|string|max:255';
                 $rules["payload.actions.{$index}.payload.name"] = 'nullable|string|max:255';
+                $rules["payload.actions.{$index}.payload.mode"] = 'nullable|string|in:auto,collectible,quest_trigger';
             }
         }
 
@@ -104,7 +108,7 @@ abstract class ScheduledTaskRequest extends FormRequest
     }
 
     /**
-     * Rules for building grid tasks (stop_production, start_production).
+     * Rules for building grid tasks (stop_production, start_production, collect_building).
      *
      * @return array<string, mixed>
      */
@@ -115,6 +119,7 @@ abstract class ScheduledTaskRequest extends FormRequest
             'payload.building_name' => 'nullable|string|max:255',
             'payload.building_raw_name' => 'nullable|string|max:255',
             'payload.name' => 'nullable|string|max:255',
+            'payload.mode' => 'nullable|string|in:auto,collectible,quest_trigger',
         ];
     }
 
@@ -278,7 +283,11 @@ abstract class ScheduledTaskRequest extends FormRequest
 
     private function isBuildingTask(): bool
     {
-        return in_array($this->taskTypeString(), [TaskType::StopProduction->value, TaskType::StartProduction->value], true);
+        return in_array($this->taskTypeString(), [
+            TaskType::StopProduction->value,
+            TaskType::StartProduction->value,
+            TaskType::CollectBuilding->value,
+        ], true);
     }
 
     private function isSpecialistTask(): bool
