@@ -40,6 +40,7 @@ services:
       - QUEUE_CONNECTION=redis
       - SESSION_DRIVER=redis
       - LOG_CHANNEL=stderr
+      - LOG_STDERR_FORMATTER=Monolog\Formatter\JsonFormatter
     networks:
       - tso-network
 
