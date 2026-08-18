@@ -1,6 +1,7 @@
 <?php
 
 use App\Exceptions\Contracts\HasApiPresentation;
+use App\Http\Middleware\RequestId;
 use App\Http\Middleware\SecurityHeadersMiddleware;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -12,6 +13,7 @@ use Illuminate\Http\Middleware\SetCacheHeaders;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use Sentry\Laravel\Integration;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -40,9 +42,13 @@ return Application::configure(basePath: dirname(__DIR__))
             guests: '/admin/login',
             users: '/admin'
         );
+
+        $middleware->prepend(RequestId::class);
     })
 
     ->withExceptions(function (Exceptions $exceptions) {
+        Integration::handles($exceptions);
+
         $exceptions->render(function (HasApiPresentation $e, Request $request) {
             if ($request->is('api/*') || $request->expectsJson()) {
                 return response()->json([

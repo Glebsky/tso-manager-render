@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Exceptions\Contracts;
 
-interface HasApiPresentation
+interface HasApiPresentation extends \Throwable
 {
     public function userMessage(): string;
 
