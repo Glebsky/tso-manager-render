@@ -9,6 +9,7 @@ use App\Models\Account;
 use App\Models\BotLog;
 use App\Services\AccountSyncService;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -17,7 +18,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-class AccountSyncJob implements ShouldQueue
+class AccountSyncJob implements ShouldQueue, ShouldBeUnique
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -36,6 +37,22 @@ class AccountSyncJob implements ShouldQueue
     {
         $this->account = $account;
         $this->onQueue('tso-accounts');
+    }
+
+    public function uniqueId(): string
+    {
+        return (string) $this->account->id;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function tags(): array
+    {
+        return [
+            'account:' . $this->account->id,
+            'account_name:' . $this->account->username,
+        ];
     }
 
     /**
@@ -68,13 +85,7 @@ class AccountSyncJob implements ShouldQueue
 
     private function isUnrecoverableAuthError(string $message): bool
     {
-        return str_contains($message, 'CAPTCHA') ||
-            str_contains($message, 'captcha') ||
-            str_contains($message, 'Captcha') ||
-            str_contains($message, '2FA') ||
-            str_contains($message, 'twoFactor') ||
-            str_contains($message, 'session_expired') ||
-            str_contains($message, 'Session expired');
+        return (bool) preg_match('/captcha|2fa|twofactor|session_expired|session expired/i', $message);
     }
 
     /**

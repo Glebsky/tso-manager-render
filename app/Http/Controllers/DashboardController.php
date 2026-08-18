@@ -19,8 +19,10 @@ class DashboardController extends Controller
 {
     public function index(): JsonResponse
     {
-        $accounts = Account::withCount('scheduledTasks')->get();
-        $logs = BotLog::with('account:id,username,nickname')
+        $accounts = Account::withExists('marketServerConnections')->withCount('scheduledTasks')->get();
+        $logs = BotLog::with(['account' => static function ($query): void {
+            $query->select('id', 'username', 'nickname')->withExists('marketServerConnections');
+        }])
             ->latest('created_at')
             ->limit(50)
             ->get();
