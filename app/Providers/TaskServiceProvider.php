@@ -6,12 +6,20 @@ namespace App\Providers;
 
 use App\Services\Game\BuildingClickResolver;
 use App\Services\Game\ClickableBuildingRegistry;
+use App\Services\Game\Mines\AmfMineCommandGateway;
+use App\Services\Game\Mines\AmfZoneSnapshotProvider;
+use App\Services\Game\Mines\ConfigMineCatalog;
+use App\Services\Game\Mines\Contracts\MineCatalogInterface;
+use App\Services\Game\Mines\Contracts\MineCommandGatewayInterface;
+use App\Services\Game\Mines\Contracts\ZoneSnapshotProviderInterface;
 use App\Services\Tasks\Handlers\ApplyBuffHandler;
+use App\Services\Tasks\Handlers\BuildMineHandler;
 use App\Services\Tasks\Handlers\CollectBuildingHandler;
 use App\Services\Tasks\Handlers\CollectPickupsHandler;
 use App\Services\Tasks\Handlers\SendSpecialistHandler;
 use App\Services\Tasks\Handlers\StartProductionHandler;
 use App\Services\Tasks\Handlers\StopProductionHandler;
+use App\Services\Tasks\Handlers\UpgradeMineHandler;
 use App\Services\Tasks\TaskHandlerRegistry;
 use Illuminate\Support\ServiceProvider;
 
@@ -30,6 +38,16 @@ final class TaskServiceProvider extends ServiceProvider
             return new BuildingClickResolver($app->make(ClickableBuildingRegistry::class));
         });
 
+        $this->app->singleton(MineCatalogInterface::class, function (): ConfigMineCatalog {
+            /** @var array<string, array{mine: string, number: int, max_level: int}> $config */
+            $config = (array) config('game.buildings.mines', []);
+
+            return new ConfigMineCatalog($config);
+        });
+
+        $this->app->bind(ZoneSnapshotProviderInterface::class, AmfZoneSnapshotProvider::class);
+        $this->app->bind(MineCommandGatewayInterface::class, AmfMineCommandGateway::class);
+
         $this->app->bind(TaskHandlerRegistry::class, function ($app): TaskHandlerRegistry {
             return new TaskHandlerRegistry($app, [
                 StopProductionHandler::class,
@@ -38,6 +56,8 @@ final class TaskServiceProvider extends ServiceProvider
                 SendSpecialistHandler::class,
                 CollectPickupsHandler::class,
                 CollectBuildingHandler::class,
+                BuildMineHandler::class,
+                UpgradeMineHandler::class,
             ]);
         });
     }

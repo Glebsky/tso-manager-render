@@ -447,7 +447,7 @@ parameters:
 		-
 			message: '#^Call to an undefined method Mockery\\ExpectationInterface\|Mockery\\HigherOrderMessage\:\:with\(\)\.$#'
 			identifier: method.notFound
-			count: 2
+			count: 4
 			path: tests/Feature/AccountSyncTest.php
 
 		-
@@ -497,6 +497,18 @@ parameters:
 			identifier: missingType.property
 			count: 1
 			path: tests/Feature/AccountSyncTest.php
+
+		-
+			message: '#^Call to an undefined method Mockery\\ExpectationInterface\|Mockery\\HigherOrderMessage\:\:once\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: tests/Feature/Game/BuildableDepositControllerTest.php
+
+		-
+			message: '#^Call to an undefined method Mockery\\ExpectationInterface\|Mockery\\HigherOrderMessage\:\:once\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: tests/Feature/Game/UpgradableMineControllerTest.php
 
 		-
 			message: '#^Method Tests\\Feature\\MarketAnalyticsTest\:\:test_expired_offers_are_filtered_out_from_active_listings\(\) has no return type specified\.$#'
@@ -757,9 +769,21 @@ parameters:
 			path: tests/Feature/SystemLogCleanupTest.php
 
 		-
+			message: '#^Call to an undefined method Mockery\\ExpectationInterface\|Mockery\\HigherOrderMessage\:\:atLeast\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: tests/Feature/TaskExecutionCharacterizationTest.php
+
+		-
 			message: '#^Call to an undefined method Mockery\\ExpectationInterface\|Mockery\\HigherOrderMessage\:\:once\(\)\.$#'
 			identifier: method.notFound
-			count: 5
+			count: 9
+			path: tests/Feature/TaskExecutionCharacterizationTest.php
+
+		-
+			message: '#^Call to an undefined method Mockery\\ExpectationInterface\|Mockery\\HigherOrderMessage\:\:times\(\)\.$#'
+			identifier: method.notFound
+			count: 1
 			path: tests/Feature/TaskExecutionCharacterizationTest.php
 
 		-
@@ -769,10 +793,58 @@ parameters:
 			path: tests/Feature/TaskExecutionCharacterizationTest.php
 
 		-
+			message: '#^Call to an undefined method Mockery\\ExpectationInterface\|Mockery\\HigherOrderMessage\:\:once\(\)\.$#'
+			identifier: method.notFound
+			count: 11
+			path: tests/Feature/Tasks/BuildMineHandlerTest.php
+
+		-
+			message: '#^Call to an undefined method Mockery\\ExpectationInterface\|Mockery\\HigherOrderMessage\:\:with\(\)\.$#'
+			identifier: method.notFound
+			count: 4
+			path: tests/Feature/Tasks/BuildMineHandlerTest.php
+
+		-
+			message: '#^Call to an undefined method Mockery\\ExpectationInterface\|Mockery\\HigherOrderMessage\:\:once\(\)\.$#'
+			identifier: method.notFound
+			count: 7
+			path: tests/Feature/Tasks/UpgradeMineHandlerTest.php
+
+		-
+			message: '#^Call to an undefined method Mockery\\ExpectationInterface\|Mockery\\HigherOrderMessage\:\:with\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: tests/Feature/Tasks/UpgradeMineHandlerTest.php
+
+		-
 			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertTrue\(\) with true will always evaluate to true\.$#'
 			identifier: method.alreadyNarrowedType
 			count: 1
 			path: tests/Unit/ExampleTest.php
+
+		-
+			message: '#^Call to an undefined method Mockery\\ExpectationInterface\|Mockery\\HigherOrderMessage\:\:once\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: tests/Unit/Game/Mines/AmfMineCommandGatewayTest.php
+
+		-
+			message: '#^Call to an undefined method Mockery\\ExpectationInterface\|Mockery\\HigherOrderMessage\:\:once\(\)\.$#'
+			identifier: method.notFound
+			count: 4
+			path: tests/Unit/Game/Mines/AmfZoneSnapshotProviderTest.php
+
+		-
+			message: '#^Call to an undefined method Mockery\\ExpectationInterface\|Mockery\\HigherOrderMessage\:\:once\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: tests/Unit/Game/Mines/MineTargetListServiceTest.php
+
+		-
+			message: '#^Call to an undefined method Mockery\\ExpectationInterface\|Mockery\\HigherOrderMessage\:\:twice\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: tests/Unit/Game/Mines/MineTargetListServiceTest.php
 
 		-
 			message: '#^Method Tests\\Unit\\Lang\\GameTranslationResolverTest\:\:makeResolver\(\) has parameter \$en with no value type specified in iterable type array\.$#'

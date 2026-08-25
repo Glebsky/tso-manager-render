@@ -102,13 +102,21 @@ abstract class ScheduledTaskRequest extends FormRequest
                 $rules["payload.actions.{$index}.payload.name"] = 'nullable|string|max:255';
                 $rules["payload.actions.{$index}.payload.mode"] = 'nullable|string|in:auto,collectible,quest_trigger';
             }
+
+            if (in_array($taskType, [TaskType::BuildMine->value, TaskType::UpgradeMine->value], true)) {
+                $rules["payload.actions.{$index}.payload.grid"] = 'required|integer|min:1';
+                $rules["payload.actions.{$index}.payload.deposit_name"] = 'nullable|string|max:255';
+                $rules["payload.actions.{$index}.payload.building_name"] = 'nullable|string|max:255';
+                $rules["payload.actions.{$index}.payload.max_level"] = 'nullable|integer|min:1|max:7';
+                $rules["payload.actions.{$index}.payload.name"] = 'nullable|string|max:255';
+            }
         }
 
         return $rules;
     }
 
     /**
-     * Rules for building grid tasks (stop_production, start_production, collect_building).
+     * Rules for building grid tasks (stop_production, start_production, collect_building, build_mine, upgrade_mine).
      *
      * @return array<string, mixed>
      */
@@ -118,6 +126,8 @@ abstract class ScheduledTaskRequest extends FormRequest
             'payload.grid' => 'required|integer|min:1',
             'payload.building_name' => 'nullable|string|max:255',
             'payload.building_raw_name' => 'nullable|string|max:255',
+            'payload.deposit_name' => 'nullable|string|max:255',
+            'payload.max_level' => 'nullable|integer|min:1|max:7',
             'payload.name' => 'nullable|string|max:255',
             'payload.mode' => 'nullable|string|in:auto,collectible,quest_trigger',
         ];
@@ -287,6 +297,8 @@ abstract class ScheduledTaskRequest extends FormRequest
             TaskType::StopProduction->value,
             TaskType::StartProduction->value,
             TaskType::CollectBuilding->value,
+            TaskType::BuildMine->value,
+            TaskType::UpgradeMine->value,
         ], true);
     }
 
