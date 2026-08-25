@@ -175,6 +175,35 @@
                                                 🧺 {{ act.payload?.pickup_type === 'event' ? t('tasks.event_pickups') : t('tasks.all_pickups') }}
                                             </span>
                                         </span>
+                                        <span v-if="act.task_type === 'build_mine'" class="inline-flex items-center gap-1.5 flex-wrap">
+                                            <span class="inline-flex items-center gap-1 text-emerald-400 font-semibold">
+                                                <img v-if="getBuildingInfo(null, act).icon"
+                                                     :src="getBuildingInfo(null, act).icon"
+                                                     class="w-4 h-4 object-contain rounded flex-shrink-0"
+                                                     @error="handleBuildingIconError($event, getBuildingInfo(null, act).raw || act.payload?.mine_name)" />
+                                                <span v-else class="text-xs flex-shrink-0">⛏️</span>
+                                                <span>{{ t('tasks.action.build_mine') }}: {{ getBuildingInfo(null, act).name || act.payload.mine_name || act.payload.deposit_name }}</span>
+                                            </span>
+                                            <span class="font-mono text-white/50 bg-white/5 px-1.5 py-0.5 rounded text-[9px]">
+                                                {{ t('tasks.grid_number', { id: act.payload.grid }) }}
+                                            </span>
+                                        </span>
+                                        <span v-if="act.task_type === 'upgrade_mine'" class="inline-flex items-center gap-1.5 flex-wrap">
+                                            <span class="inline-flex items-center gap-1 text-emerald-400 font-semibold">
+                                                <img v-if="getBuildingInfo(null, act).icon"
+                                                     :src="getBuildingInfo(null, act).icon"
+                                                     class="w-4 h-4 object-contain rounded flex-shrink-0"
+                                                     @error="handleBuildingIconError($event, getBuildingInfo(null, act).raw || act.payload?.building_name)" />
+                                                <span v-else class="text-xs flex-shrink-0">🏭</span>
+                                                <span>{{ t('tasks.action.upgrade_mine') }}: {{ getBuildingInfo(null, act).name || act.payload.building_name }}</span>
+                                            </span>
+                                            <span class="font-mono text-white/50 bg-white/5 px-1.5 py-0.5 rounded text-[9px]">
+                                                {{ t('tasks.grid_number', { id: act.payload.grid }) }}
+                                            </span>
+                                            <span v-if="act.payload.max_level" class="badge badge-emerald text-[9px]">
+                                                {{ t('tasks.level_short') }} ≤ {{ act.payload.max_level }}
+                                            </span>
+                                        </span>
                                     </p>
                                 </div>
                             </div>
@@ -226,6 +255,8 @@
                                         <button type="button" @click="stepActionType = 'stop_production'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">🛑 {{ t('tasks.action.stop_production') }}</button>
                                         <button type="button" @click="stepActionType = 'start_production'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">▶️ {{ t('tasks.action.start_production') }}</button>
                                         <button type="button" @click="stepActionType = 'collect_building'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">🎁 {{ t('tasks.action.collect_building') }}</button>
+                                        <button type="button" @click="stepActionType = 'build_mine'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">🏗️ {{ t('tasks.action.build_mine') }}</button>
+                                        <button type="button" @click="stepActionType = 'upgrade_mine'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">⬆️ {{ t('tasks.action.upgrade_mine') }}</button>
                                         <button type="button" @click="stepActionType = 'apply_buff'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">⚡ {{ t('tasks.action.apply_buff') }}</button>
                                         <button type="button" @click="stepActionType = 'send_geologist'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">⛏️ {{ t('tasks.action.send_geologist') }}</button>
                                         <button type="button" @click="stepActionType = 'send_explorer'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">🧭 {{ t('tasks.action.send_explorer') }}</button>
@@ -381,6 +412,76 @@
                                                 <span class="flex items-center gap-2 truncate">
                                                     <span>🎖️ {{ t('tasks.select_specialists') }}</span>
                                                     <span v-if="selectedSpecialists.length > 0" class="badge badge-emerald text-[10px]">{{ selectedSpecialists.length }}</span>
+                                                </span>
+                                                <svg class="w-3.5 h-3.5 text-white/30 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                                </svg>
+                                            </button>
+                                        </div>
+
+                                        <!-- ЗАЛЕЖИ (для постройки шахт) -->
+                                        <div v-if="stepActionType === 'build_mine'" class="mb-3">
+                                            <div class="flex items-center justify-between mb-1.5">
+                                                <label class="block text-[10px] font-medium text-white/40 uppercase">
+                                                    {{ t('tasks.selected_targets', { count: selectedDeposits.length }) }}
+                                                </label>
+                                                <button v-if="selectedDeposits.length > 0" type="button" @click="clearSelectedDeposits" class="text-[10px] text-red-400/80 hover:text-red-400 transition-colors">
+                                                    {{ t('tasks.modal.clear_selection') }}
+                                                </button>
+                                            </div>
+
+                                            <!-- Список выбранных чипов залежей -->
+                                            <div v-if="selectedDeposits.length > 0" class="flex flex-wrap gap-2 mb-2 max-h-40 overflow-y-auto p-2 bg-dark-900/40 rounded-xl border border-white/5">
+                                                <div v-for="(dep, dIdx) in selectedDeposits" :key="dep.grid"
+                                                     class="glass-card px-2.5 py-1.5 flex items-center gap-2 text-xs border border-emerald-500/30 bg-emerald-500/10 rounded-lg max-w-full">
+                                                    <img alt="" v-if="getBuildingIcon(dep.mine_name)" :src="getBuildingIcon(dep.mine_name)" class="w-4 h-4 object-contain flex-shrink-0" @error="handleBuildingIconError($event, dep.mine_name)" />
+                                                    <span v-else class="text-xs">⛏️</span>
+                                                    <span class="text-white/90 font-medium truncate text-xs">{{ getBuildingName(dep.mine_name) }} (Grid #{{ dep.grid }})</span>
+                                                    <button type="button" @click="removeSelectedDeposit(dIdx)" class="text-white/40 hover:text-red-400 transition-colors ml-1 font-bold flex-shrink-0">✕</button>
+                                                </div>
+                                            </div>
+
+                                            <button type="button" @click="openDepositModal"
+                                                    class="glass-select w-full flex items-center justify-between text-left text-xs py-2 bg-dark-900/40 transition-all duration-300"
+                                                    :class="{ 'border-amber-500/40 bg-amber-500/5': selectedDeposits.length === 0 }">
+                                                <span class="flex items-center gap-2 truncate">
+                                                    <span>⛏️ {{ t('tasks.select_deposits') }}</span>
+                                                    <span v-if="selectedDeposits.length > 0" class="badge badge-emerald text-[10px]">{{ selectedDeposits.length }}</span>
+                                                </span>
+                                                <svg class="w-3.5 h-3.5 text-white/30 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                                </svg>
+                                            </button>
+                                        </div>
+
+                                        <!-- ШАХТЫ (для улучшения шахт) -->
+                                        <div v-if="stepActionType === 'upgrade_mine'" class="mb-3">
+                                            <div class="flex items-center justify-between mb-1.5">
+                                                <label class="block text-[10px] font-medium text-white/40 uppercase">
+                                                    {{ t('tasks.selected_targets', { count: selectedMines.length }) }}
+                                                </label>
+                                                <button v-if="selectedMines.length > 0" type="button" @click="clearSelectedMines" class="text-[10px] text-red-400/80 hover:text-red-400 transition-colors">
+                                                    {{ t('tasks.modal.clear_selection') }}
+                                                </button>
+                                            </div>
+
+                                            <!-- Список выбранных чипов шахт -->
+                                            <div v-if="selectedMines.length > 0" class="flex flex-wrap gap-2 mb-2 max-h-40 overflow-y-auto p-2 bg-dark-900/40 rounded-xl border border-white/5">
+                                                <div v-for="(mine, mIdx) in selectedMines" :key="mine.grid"
+                                                     class="glass-card px-2.5 py-1.5 flex items-center gap-2 text-xs border border-emerald-500/30 bg-emerald-500/10 rounded-lg max-w-full">
+                                                    <img alt="" v-if="getBuildingIcon(mine.building_name)" :src="getBuildingIcon(mine.building_name)" class="w-4 h-4 object-contain flex-shrink-0" @error="handleBuildingIconError($event, mine.building_name)" />
+                                                    <span v-else class="text-xs">🏭</span>
+                                                    <span class="text-white/90 font-medium truncate text-xs">{{ getBuildingName(mine.building_name) }} (Grid #{{ mine.grid }})</span>
+                                                    <button type="button" @click="removeSelectedMine(mIdx)" class="text-white/40 hover:text-red-400 transition-colors ml-1 font-bold flex-shrink-0">✕</button>
+                                                </div>
+                                            </div>
+
+                                            <button type="button" @click="openMineModal"
+                                                    class="glass-select w-full flex items-center justify-between text-left text-xs py-2 bg-dark-900/40 transition-all duration-300"
+                                                    :class="{ 'border-amber-500/40 bg-amber-500/5': selectedMines.length === 0 }">
+                                                <span class="flex items-center gap-2 truncate">
+                                                    <span>🏭 {{ t('tasks.select_mines') }}</span>
+                                                    <span v-if="selectedMines.length > 0" class="badge badge-emerald text-[10px]">{{ selectedMines.length }}</span>
                                                 </span>
                                                 <svg class="w-3.5 h-3.5 text-white/30 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
@@ -586,11 +687,42 @@
                     :handleBuffIconError="handleBuffIconError"
                     @close="closeBuffModal"
                     @select-buff="selectBuff" />
+
+        <DepositPicker :showModal="showDepositModal"
+                       v-model:depositSearch="depositSearch"
+                       :selectedDeposits="selectedDeposits"
+                       :deposits="buildableDeposits"
+                       :loading="loadingDeposits"
+                       :isSelectedDeposit="isSelectedDeposit"
+                       :getBuildingIcon="getBuildingIcon"
+                       :getBuildingName="getBuildingName"
+                       :getDepositName="getDepositName"
+                       :handleBuildingIconError="handleBuildingIconError"
+                       @close="closeDepositModal"
+                       @select-all="selectAllDeposits"
+                       @clear="clearSelectedDeposits"
+                       @toggle-deposit="toggleDepositSelection" />
+
+        <MinePicker :showModal="showMineModal"
+                    v-model:mineSearch="mineSearch"
+                    v-model:maxLevel="upgradeMaxLevel"
+                    :selectedMines="selectedMines"
+                    :mines="upgradableMines"
+                    :loading="loadingMines"
+                    :isSelectedMine="isSelectedMine"
+                    :getBuildingIcon="getBuildingIcon"
+                    :getBuildingName="getBuildingName"
+                    :handleBuildingIconError="handleBuildingIconError"
+                    @close="closeMineModal"
+                    @select-all="selectAllMines"
+                    @clear="clearSelectedMines"
+                    @toggle-mine="toggleMineSelection" />
     </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import axios from 'axios';
 import { tasksApi } from '../services/api/tasks';
 import { accountsApi } from '../services/api/accounts';
 import { showToast } from '../toast';
@@ -604,6 +736,8 @@ import SchedulePicker from '../components/tasks/SchedulePicker.vue';
 import BuildingPicker from '../components/tasks/BuildingPicker.vue';
 import SpecialistPicker from '../components/tasks/SpecialistPicker.vue';
 import BuffPicker from '../components/tasks/BuffPicker.vue';
+import DepositPicker from '../components/tasks/DepositPicker.vue';
+import MinePicker from '../components/tasks/MinePicker.vue';
 import TaskCard from '../components/tasks/TaskCard.vue';
 import TaskList from '../components/tasks/TaskList.vue';
         const tasks = ref([]);
@@ -648,6 +782,8 @@ import TaskList from '../components/tasks/TaskList.vue';
                 stop_production: '🛑 ' + t('tasks.action.stop_production'),
                 start_production: '▶️ ' + t('tasks.action.start_production'),
                 collect_building: '🎁 ' + t('tasks.action.collect_building'),
+                build_mine: '🏗️ ' + t('tasks.action.build_mine'),
+                upgrade_mine: '⬆️ ' + t('tasks.action.upgrade_mine'),
                 apply_buff: '⚡ ' + t('tasks.action.apply_buff'),
                 send_geologist: '⛏️ ' + t('tasks.action.send_geologist'),
                 send_explorer: '🧭 ' + t('tasks.action.send_explorer'),
@@ -678,6 +814,8 @@ import TaskList from '../components/tasks/TaskList.vue';
         const showBuildingModal = ref(false);
         const showSpecialistModal = ref(false);
         const showBuffModal = ref(false);
+        const showDepositModal = ref(false);
+        const showMineModal = ref(false);
 
         const buildingCategories = ['All', 'Basic', 'Improved', 'Advanced', 'Elite'];
         const buildingSearch = ref('');
@@ -686,10 +824,20 @@ import TaskList from '../components/tasks/TaskList.vue';
 
         const specialistSearch = ref('');
         const buffSearch = ref('');
+        const depositSearch = ref('');
+        const mineSearch = ref('');
+        const upgradeMaxLevel = ref(7);
+
+        const buildableDeposits = ref([]);
+        const upgradableMines = ref([]);
+        const loadingDeposits = ref(false);
+        const loadingMines = ref(false);
 
         const selectedBuildings = ref([]);
         const selectedSpecialists = ref([]);
         const selectedBuff = ref(null);
+        const selectedDeposits = ref([]);
+        const selectedMines = ref([]);
         const buildingModalTab = ref('self');
 
         const stepTargetScope = ref('self');
@@ -724,6 +872,109 @@ import TaskList from '../components/tasks/TaskList.vue';
             if (!b) return null;
             const grid = Number(b.buildingGrid || b.grid);
             return clickableBuildings.value.find(item => Number(item.grid) === grid) || null;
+        };
+
+        const fetchBuildableDeposits = async (accountId) => {
+            if (!accountId) return;
+            loadingDeposits.value = true;
+            try {
+                const res = await axios.get(`/api/game/buildable-deposits?account_id=${accountId}`);
+                buildableDeposits.value = res.data?.data || [];
+            } catch (err) {
+                buildableDeposits.value = [];
+            } finally {
+                loadingDeposits.value = false;
+            }
+        };
+
+        const fetchUpgradableMines = async (accountId) => {
+            if (!accountId) return;
+            loadingMines.value = true;
+            try {
+                const res = await axios.get(`/api/game/upgradable-mines?account_id=${accountId}`);
+                upgradableMines.value = res.data?.data || [];
+            } catch (err) {
+                upgradableMines.value = [];
+            } finally {
+                loadingMines.value = false;
+            }
+        };
+
+        const openDepositModal = async () => {
+            if (!selectedAccountId.value) return;
+            showDepositModal.value = true;
+            await fetchBuildableDeposits(selectedAccountId.value);
+        };
+
+        const closeDepositModal = () => {
+            showDepositModal.value = false;
+        };
+
+        const openMineModal = async () => {
+            if (!selectedAccountId.value) return;
+            showMineModal.value = true;
+            await fetchUpgradableMines(selectedAccountId.value);
+        };
+
+        const closeMineModal = () => {
+            showMineModal.value = false;
+        };
+
+        const isSelectedDeposit = (grid) => {
+            return selectedDeposits.value.some(d => Number(d.grid) === Number(grid));
+        };
+
+        const toggleDepositSelection = (deposit) => {
+            const idx = selectedDeposits.value.findIndex(d => Number(d.grid) === Number(deposit.grid));
+            if (idx >= 0) {
+                selectedDeposits.value.splice(idx, 1);
+            } else {
+                selectedDeposits.value.push({ ...deposit });
+            }
+        };
+
+        const selectAllDeposits = () => {
+            const available = buildableDeposits.value.filter(d => d.allowed);
+            selectedDeposits.value = available.length > 0 ? [...available] : [...buildableDeposits.value];
+        };
+
+        const clearSelectedDeposits = () => {
+            selectedDeposits.value = [];
+        };
+
+        const removeSelectedDeposit = (index) => {
+            selectedDeposits.value.splice(index, 1);
+        };
+
+        const isSelectedMine = (grid) => {
+            return selectedMines.value.some(m => Number(m.grid) === Number(grid));
+        };
+
+        const toggleMineSelection = (mine) => {
+            const idx = selectedMines.value.findIndex(m => Number(m.grid) === Number(mine.grid));
+            if (idx >= 0) {
+                selectedMines.value.splice(idx, 1);
+            } else {
+                selectedMines.value.push({ ...mine });
+            }
+        };
+
+        const selectAllMines = () => {
+            const available = upgradableMines.value.filter(m => m.allowed);
+            selectedMines.value = available.length > 0 ? [...available] : [...upgradableMines.value];
+        };
+
+        const clearSelectedMines = () => {
+            selectedMines.value = [];
+        };
+
+        const removeSelectedMine = (index) => {
+            selectedMines.value.splice(index, 1);
+        };
+
+        const getDepositName = (name) => {
+            if (!name) return '';
+            return resourceName(name) || humanizeGameId(name);
         };
 
         // Multi-select building helpers
@@ -924,6 +1175,8 @@ import TaskList from '../components/tasks/TaskList.vue';
             stop_production: '🛑',
             start_production: '▶️',
             collect_building: '🎁',
+            build_mine: '🏗️',
+            upgrade_mine: '⬆️',
             apply_buff: '⚡',
             send_geologist: '⛏️',
             send_explorer: '🧭',
@@ -934,6 +1187,8 @@ import TaskList from '../components/tasks/TaskList.vue';
             stop_production: t('tasks.type_label.stop_production'),
             start_production: t('tasks.type_label.start_production'),
             collect_building: t('tasks.type_label.collect_building'),
+            build_mine: t('tasks.type_label.build_mine'),
+            upgrade_mine: t('tasks.type_label.upgrade_mine'),
             apply_buff: t('tasks.type_label.apply_buff'),
             send_geologist: t('tasks.type_label.send_geologist'),
             send_explorer: t('tasks.type_label.send_explorer'),
@@ -1012,6 +1267,10 @@ import TaskList from '../components/tasks/TaskList.vue';
             selectedBuildings.value = [];
             selectedSpecialists.value = [];
             selectedBuff.value = null;
+            selectedDeposits.value = [];
+            selectedMines.value = [];
+            buildableDeposits.value = [];
+            upgradableMines.value = [];
             selectedFriend.value = null;
             selectedFriendBuilding.value = null;
             stepTargetScope.value = 'self';
@@ -1032,9 +1291,15 @@ import TaskList from '../components/tasks/TaskList.vue';
             selectedBuildings.value = [];
             selectedSpecialists.value = [];
             selectedBuff.value = null;
+            selectedDeposits.value = [];
+            selectedMines.value = [];
 
             if (['stop_production', 'start_production', 'collect_building'].includes(type)) {
                 payload.value = { grid: '' };
+            } else if (type === 'build_mine') {
+                payload.value = { grid: '' };
+            } else if (type === 'upgrade_mine') {
+                payload.value = { grid: '', max_level: 7 };
             } else if (type === 'apply_buff') {
                 payload.value = { grid: '', unique_id1: '', unique_id2: '' };
             } else if (['send_geologist', 'send_explorer'].includes(type)) {
@@ -1168,6 +1433,61 @@ import TaskList from '../components/tasks/TaskList.vue';
                 }
 
                 selectedSpecialists.value = [];
+                showToast(`${t('tasks.toast.action_added')} (${addedCount})`);
+                return;
+            }
+
+            if (stepActionType.value === 'build_mine') {
+                if (selectedDeposits.value.length === 0) {
+                    showToast(t('tasks.toast.select_deposit_first'), 'warning');
+                    return;
+                }
+                let addedCount = 0;
+                for (const dep of selectedDeposits.value) {
+                    const actionPayload = {
+                        grid: Number(dep.grid),
+                        deposit_name: dep.deposit_name,
+                        mine_name: dep.mine_name
+                    };
+                    sequenceActions.value.push({
+                        task_type: 'build_mine',
+                        payload: actionPayload,
+                        delay_seconds: Number(stepDelay.value || 0),
+                        meta: {
+                            deposit: { ...dep }
+                        }
+                    });
+                    addedCount++;
+                }
+                selectedDeposits.value = [];
+                showToast(`${t('tasks.toast.action_added')} (${addedCount})`);
+                return;
+            }
+
+            if (stepActionType.value === 'upgrade_mine') {
+                if (selectedMines.value.length === 0) {
+                    showToast(t('tasks.toast.select_mine_first'), 'warning');
+                    return;
+                }
+                let addedCount = 0;
+                for (const m of selectedMines.value) {
+                    const actionPayload = {
+                        grid: Number(m.grid),
+                        building_name: m.building_name,
+                        max_level: Number(upgradeMaxLevel.value || 7)
+                    };
+                    sequenceActions.value.push({
+                        task_type: 'upgrade_mine',
+                        payload: actionPayload,
+                        delay_seconds: Number(stepDelay.value || 0),
+                        meta: {
+                            mine: { ...m },
+                            max_level: Number(upgradeMaxLevel.value || 7)
+                        }
+                    });
+                    addedCount++;
+                }
+                selectedMines.value = [];
                 showToast(`${t('tasks.toast.action_added')} (${addedCount})`);
                 return;
             }
@@ -2301,6 +2621,8 @@ import TaskList from '../components/tasks/TaskList.vue';
                 name = getBuildingName(buildingObj);
             } else if (action?.payload?.building_name || action?.payload?.name) {
                 name = action.payload.building_name || action.payload.name;
+            } else if (action?.payload?.mine_name) {
+                name = buildingName(action.payload.mine_name);
             } else if (action?.payload?.building_raw_name) {
                 name = buildingName(action.payload.building_raw_name);
             }
@@ -2310,6 +2632,8 @@ import TaskList from '../components/tasks/TaskList.vue';
                 icon = getBuildingIcon(buildingObj);
             } else if (action?.payload?.building_raw_name) {
                 icon = getBuildingIcon(action.payload.building_raw_name);
+            } else if (action?.payload?.mine_name) {
+                icon = getBuildingIcon(action.payload.mine_name);
             } else if (action?.payload?.building_name) {
                 icon = getBuildingIcon(action.payload.building_name);
             }

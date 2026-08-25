@@ -278,6 +278,39 @@
                             🧺 {{ act.payload?.pickup_type === 'event' ? t('tasks.event_pickups') : t('tasks.all_pickups') }}
                         </span>
                     </template>
+
+                    <!-- Build Mine Details -->
+                    <template v-else-if="act.task_type === 'build_mine'">
+                        <span class="inline-flex items-center gap-1 text-emerald-300 font-medium max-w-full truncate text-[10px]">
+                            <img v-if="getBuildingInfo(task, act).icon"
+                                 :src="getBuildingInfo(task, act).icon"
+                                 class="w-4 h-4 object-contain rounded flex-shrink-0"
+                                 @error="handleBuildingIconError($event, getBuildingInfo(task, act).raw || act.payload?.mine_name)" />
+                            <span v-else class="text-[10px]">⛏️</span>
+                            <span class="truncate">{{ getBuildingInfo(task, act).name || act.payload?.mine_name || act.payload?.deposit_name }}</span>
+                        </span>
+                        <span v-if="act.payload?.grid" class="font-mono text-[10px] text-white/50 bg-white/5 px-1.5 py-0.5 rounded whitespace-nowrap">
+                            Grid #{{ act.payload.grid }}
+                        </span>
+                    </template>
+
+                    <!-- Upgrade Mine Details -->
+                    <template v-else-if="act.task_type === 'upgrade_mine'">
+                        <span class="inline-flex items-center gap-1 text-emerald-300 font-medium max-w-full truncate text-[10px]">
+                            <img v-if="getBuildingInfo(task, act).icon"
+                                 :src="getBuildingInfo(task, act).icon"
+                                 class="w-4 h-4 object-contain rounded flex-shrink-0"
+                                 @error="handleBuildingIconError($event, getBuildingInfo(task, act).raw || act.payload?.building_name)" />
+                            <span v-else class="text-[10px]">🏭</span>
+                            <span class="truncate">{{ getBuildingInfo(task, act).name || act.payload?.building_name }}</span>
+                        </span>
+                        <span v-if="act.payload?.grid" class="font-mono text-[10px] text-white/50 bg-white/5 px-1.5 py-0.5 rounded whitespace-nowrap">
+                            Grid #{{ act.payload.grid }}
+                        </span>
+                        <span v-if="act.payload?.max_level" class="badge badge-emerald text-[9px] whitespace-nowrap">
+                            Lvl ≤ {{ act.payload.max_level }}
+                        </span>
+                    </template>
                 </div>
 
                 <div class="flex items-center gap-2 flex-shrink-0 font-mono text-[10px] self-end sm:self-center">
