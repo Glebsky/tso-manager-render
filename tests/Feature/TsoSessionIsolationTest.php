@@ -126,4 +126,19 @@ class TsoSessionIsolationTest extends TestCase
         $task->refresh();
         $this->assertEquals(TaskStatus::Completed, $task->status);
     }
+
+    public function test_login_lock_key_structure(): void
+    {
+        $account = Account::create([
+            'username' => 'locked_user',
+            'password' => 'secret',
+            'region' => 'ru',
+            'nickname' => 'locked_user',
+        ]);
+
+        $lockKey = "tso:login_lock:{$account->id}";
+        $lock = Cache::lock($lockKey, 10);
+        $this->assertTrue($lock->get());
+        $lock->release();
+    }
 }

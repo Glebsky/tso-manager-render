@@ -233,4 +233,55 @@ class AccountSyncTest extends TestCase
 
         Queue::assertNotPushed(AccountSyncJob::class);
     }
+
+    public function test_account_sync_recovers_from_error_1012_with_relogin_and_succeeds(): void
+    {
+        $account = Account::create([
+            'username' => 'sync_1012_user',
+            'password' => 'secret',
+            'region' => 'ru',
+            'nickname' => 'sync_1012_user',
+        ]);
+
+        $this->authMock->shouldReceive('isAuthenticated')->andReturn(true);
+        $this->authMock->shouldReceive('resetSession')->once()->with(Mockery::any());
+        $this->authMock->shouldReceive('login')->once()->with(Mockery::any())->andReturn([]);
+
+        $this->amfMock->shouldReceive('getZone')->times(2)->andReturn('zone-amf-bytes');
+        $this->amfMock->shouldReceive('invalidateSession')->once()->with((int) $account->id);
+
+        $parserMock = Mockery::mock(ZoneParserService::class);
+        $parserMock->shouldReceive('parse')
+            ->with('zone-amf-bytes')
+            ->times(2)
+            ->andReturn(
+                ['errorCode' => 1012, 'buildings' => []],
+                [
+                    'errorCode' => 0,
+                    'buildings' => [['buildingName' => 'Mayor\'s House', 'grid' => 100]],
+                    'userID' => 12345,
+                    'level' => 30,
+                    'gameWorldName' => 'TestWorld',
+                ]
+            );
+        $this->app->instance(ZoneParserService::class, $parserMock);
+
+        $this->amfMock->shouldReceive('getFriendList')->once()->andReturn('friends-amf-bytes');
+        $parserMock->shouldReceive('parse')
+            ->with('friends-amf-bytes')
+            ->once()
+            ->andReturn([
+                'friends' => [
+                    ['id' => 9999, 'nickname' => 'Friend1', 'playerLevel' => 10],
+                ],
+            ]);
+
+        $job = new AccountSyncJob($account);
+        $job->handle($this->app->make(AccountSyncService::class));
+
+        $account->refresh();
+        $this->assertEquals('online', $account->status);
+        $this->assertNotNull($account->last_sync_at);
+        $this->assertIsArray($account->zone_data);
+    }
 }

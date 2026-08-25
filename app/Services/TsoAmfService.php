@@ -74,9 +74,10 @@ class TsoAmfService
      * credentials change, since a fresh identity forces the game server to
      * treat the next call as a brand new client.
      */
-    public function forgetClientId(Account $account): void
+    public function forgetClientId(Account|int $account): void
     {
-        Cache::forget("tso:client_id:{$account->id}");
+        $id = $account instanceof Account ? $account->id : $account;
+        Cache::forget("tso:client_id:{$id}");
     }
 
     public function setDsId(string $dsId, ?int $accountId = null): void
@@ -97,6 +98,7 @@ class TsoAmfService
      */
     public function invalidateSession(int $accountId): void
     {
+        $this->forgetClientId($accountId);
         $this->client->invalidateSession($accountId);
     }
 
@@ -235,6 +237,24 @@ class TsoAmfService
         $action = $this->buildServerAction(1, $grid, 0, null);
 
         return $this->sendServerCall($account, self::CMD_STOP_PRODUCTION, $action);
+    }
+
+    public function buildBuilding(Account $account, int $buildingNumber, int $grid): string
+    {
+        return $this->sendServerCall(
+            $account,
+            self::CMD_BUILD,
+            $this->buildServerAction($buildingNumber, $grid, 0, null),
+        );
+    }
+
+    public function upgradeBuilding(Account $account, int $grid): string
+    {
+        return $this->sendServerCall(
+            $account,
+            self::CMD_UPGRADE,
+            $this->buildServerAction(0, $grid, 0, null),
+        );
     }
 
     public function applyBuff(Account $account, int $grid, int $uniqueId1, int $uniqueId2, int $amount = 1, ?int $targetZoneId = null): string

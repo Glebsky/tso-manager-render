@@ -51,8 +51,17 @@ class AccountSyncFetcher
                 $buildingCount = count($zoneData['buildings'] ?? []);
 
                 if ($errorCode === 1012) {
-                    Log::info("[AccountSync] Zone is still loading (error 1012) for account #{$account->id}; retrying in {$retryDelay}s");
-                    sleep($retryDelay);
+                    if ($hasResetSession) {
+                        throw new Exception(__('ui.sync.zone_locked'));
+                    }
+
+                    Log::info("[AccountSync] Zone locked by another session (error 1012) for account #{$account->id}; resetting session and logging in again to take over");
+                    $this->authService->resetSession($account);
+                    $this->authService->login($account);
+                    $this->amfService->invalidateSession((int) $account->id);
+                    $account->refresh();
+                    $hasResetSession = true;
+                    sleep(1);
 
                     continue;
                 }
@@ -64,8 +73,8 @@ class AccountSyncFetcher
                     Log::info("[AccountSync] Session expired (error {$errorCode}) for account #{$account->id}; resetting session and logging in again");
                     $this->authService->resetSession($account);
                     $this->authService->login($account);
-
-                    $this->amfService->resetClient();
+                    $this->amfService->invalidateSession((int) $account->id);
+                    $this->amfService->resetClient((int) $account->id);
                     $account->refresh();
                     $hasResetSession = true;
                     sleep(2);

@@ -71,6 +71,33 @@ class TsoAuthService
      */
     public function login(Account $account): array
     {
+        $lock = Cache::lock("tso:login_lock:{$account->id}", 60);
+        $locked = false;
+
+        try {
+            $locked = (bool) $lock->block(25);
+        } catch (\Throwable $e) {
+            Log::warning("[TsoAuth] Proceeding without login lock for account #{$account->id}: ".$e->getMessage());
+        }
+
+        try {
+            return $this->performLogin($account);
+        } finally {
+            if ($locked) {
+                $lock->release();
+            }
+        }
+    }
+
+    /**
+     * Internal login routine executing authentication against TSO server.
+     *
+     * @return array<string, mixed>
+     *
+     * @throws Exception
+     */
+    private function performLogin(Account $account): array
+    {
         $cooldownKey = "account_login_cooldown:{$account->id}";
         if (Cache::has($cooldownKey)) {
             $reason = Cache::get($cooldownKey);

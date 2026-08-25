@@ -177,21 +177,6 @@ class HttpTsoClient implements TsoClientInterface
 
         Log::info("[TsoAmf] Load server authentication: HTTP {$authStatus}, response: ".trim($authRes));
 
-        if ($authStatus === 200 && $authRes !== '') {
-            $parts = explode('|', trim($authRes));
-            if (count($parts) >= 3) {
-                $hash = trim($parts[2]);
-                if (strlen($hash) === 32) {
-                    $dsId = substr($hash, 0, 8).'-'.
-                            substr($hash, 8, 4).'-'.
-                            substr($hash, 12, 4).'-'.
-                            substr($hash, 16, 4).'-'.
-                            substr($hash, 20);
-                    Log::info("[TsoAmf] Extracted DSId from authentication response: {$dsId}");
-                }
-            }
-        }
-
         $maxRetries = 20;
         $lsStatus = 0;
         $lsRes = '';

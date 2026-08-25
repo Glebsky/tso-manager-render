@@ -98,8 +98,25 @@ class MarketOfferFetcher
                 $errorCode = (int) ($parsed['errorCode'] ?? 0);
 
                 if ($errorCode === 1012) {
-                    $logCallback('WARNING', __('logs.market.zone_loading_retry', ['delay' => $retryDelay]));
-                    sleep($retryDelay);
+                    if ($hasResetSession) {
+                        throw new Exception(__('ui.sync.session_intercepted_market', ['code' => $errorCode]));
+                    }
+
+                    if ($attempt === 1) {
+                        $logCallback('WARNING', __('logs.market.zone_loading_retry', ['delay' => $retryDelay]));
+                        sleep($retryDelay);
+
+                        continue;
+                    }
+
+                    $logCallback('WARNING', __('logs.market.session_expired_retry', ['code' => $errorCode]));
+                    $this->authService->resetSession($account);
+                    $this->authService->login($account);
+                    $this->amfService->invalidateSession((int) $account->id);
+                    $this->amfService->resetClient((int) $account->id);
+                    $account->refresh();
+                    $hasResetSession = true;
+                    sleep(2);
 
                     continue;
                 }
@@ -111,8 +128,8 @@ class MarketOfferFetcher
                     $logCallback('WARNING', __('logs.market.session_expired_retry', ['code' => $errorCode]));
                     $this->authService->resetSession($account);
                     $this->authService->login($account);
-
-                    $this->amfService->resetClient();
+                    $this->amfService->invalidateSession((int) $account->id);
+                    $this->amfService->resetClient((int) $account->id);
                     $account->refresh();
                     $hasResetSession = true;
                     sleep(2);
