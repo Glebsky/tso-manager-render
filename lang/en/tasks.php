@@ -39,4 +39,30 @@ return [
         'not_found' => 'Building: nothing to collect on grid :grid',
         'nothing_to_collect' => 'Building: reward not available yet :name',
     ],
+    'build_mine' => [
+        'built' => 'Mine: built :name (grid :grid)',
+        'unknown_outcome' => 'Mine: build outcome unknown on grid :grid, check manually',
+        'game_error' => 'Mine: build failed (:message)',
+        'rejected' => [
+            'no_deposit_at_grid' => 'Mine: skipped, no deposit found at grid :grid',
+            'unknown_deposit_type' => 'Mine: skipped, deposit type :name is not supported',
+            'deposit_empty' => 'Mine: skipped, deposit at grid :grid is depleted',
+            'grid_occupied' => 'Mine: skipped, grid :grid is occupied by a building',
+            'deposit_not_accessible' => 'Mine: skipped, deposit at grid :grid is not accessible',
+            'build_queue_full' => 'Mine: skipped, build queue is full',
+        ],
+    ],
+    'upgrade_mine' => [
+        'upgraded' => 'Mine: upgraded :name to level :level (grid :grid)',
+        'unknown_outcome' => 'Mine: upgrade outcome unknown on grid :grid, check manually',
+        'game_error' => 'Mine: upgrade failed (:message)',
+        'rejected' => [
+            'no_building_at_grid' => 'Mine: skipped, no building found at grid :grid',
+            'not_a_mine' => 'Mine: skipped, building :name is not a valid mine',
+            'max_level_reached' => 'Mine: skipped, :name is already at max level :level',
+            'upgrade_already_in_progress' => 'Mine: skipped, upgrade is already in progress at grid :grid',
+            'production_inactive' => 'Mine: skipped, production is inactive at grid :grid',
+            'build_queue_full' => 'Mine: skipped, build queue is full',
+        ],
+    ],
 ];
