@@ -599,7 +599,7 @@
     </div>
 </template>
 
-<script>
+<script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { showToast } from '../toast';
@@ -616,12 +616,8 @@ import MarketPriceChart from '../components/market/MarketPriceChart.vue';
 import MarketDemandChart from '../components/market/MarketDemandChart.vue';
 import MarketDataTable from '../components/market/MarketDataTable.vue';
 
-export default {
-    name: 'PublicMarketAnalytics',
-    components: { Spinner, LoadingOverlay, LanguageSwitcher, MarketPriceChart, MarketDemandChart, MarketDataTable },
-    setup() {
-        const route = useRoute();
-        const router = useRouter();
+const route = useRoute();
+const router = useRouter();
 
         const updateQueryParams = () => {
             const query = { ...route.query };
@@ -1241,74 +1237,6 @@ export default {
         onUnmounted(() => {
             if (countdownInterval) clearInterval(countdownInterval);
         });
-
-        return {
-            loading,
-            loadingPairs,
-            loadingChart,
-            servers,
-            groupedServers,
-            selectedServerId,
-            isAuthenticated,
-            onServerChange,
-            getLocaleFlag,
-            getServerWorldName,
-            serverOptionLabel,
-            goods,
-            allGoods,
-            targets,
-            popular,
-            history,
-            stats,
-            selectedItem,
-            selectedTarget,
-            calcAmount,
-            selectedItemName,
-            selectedTargetName,
-            calculatedCost,
-            calculatedMirroredCost,
-            activeVolume,
-            activeOffersCount,
-            activeSellersCount,
-            priceTrendText,
-            priceTrendClass,
-            onItemChange,
-            fetchAnalytics,
-            formatVolume,
-            selectionMode,
-            cacheStrategy,
-            onCacheStrategyChange,
-            visualTab,
-            selectedPeriod,
-            mirroredStats,
-            mirroredHistory,
-            activeOffers,
-            periods,
-            changePeriod,
-            selectVisualItem,
-            selectVisualTarget,
-            resetSelection,
-            getResourceIcon,
-            formatTimeLeft,
-            mirrorSelection,
-            copyPairLink,
-            handleIconError,
-            totalActiveCount,
-            activeOffersPage,
-            hasMoreActiveOffers,
-            loadingMore,
-            loadMoreActiveOffers,
-            arbitrageLoops,
-            showPopularItems,
-            showArbitrageSchemes,
-            showActiveListings,
-            togglePopularItems,
-            toggleArbitrageSchemes,
-            toggleActiveListings,
-            getItemName
-        };
-    }
-};
 </script>
 
 <style scoped>

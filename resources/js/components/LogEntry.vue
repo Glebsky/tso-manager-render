@@ -23,45 +23,35 @@
     </div>
 </template>
 
-<script>
+<script setup>
 import { computed } from 'vue';
 import { t } from '../lang';
 
-export default {
-    name: 'LogEntry',
-    props: {
-        log: {
-            type: Object,
-            required: true
-        }
-    },
-    setup(props) {
-        const badgeClass = computed(() => {
-            const classes = {
-                success: 'badge-success',
-                warning: 'badge-warning',
-                error: 'badge-danger',
-                info: 'badge-info'
-            };
-            return classes[props.log.level] || 'badge-neutral';
-        });
-
-        const levelLabel = computed(() => {
-            const known = ['info', 'success', 'warning', 'error'];
-            return known.includes(props.log.level) ? t('logs.level_' + props.log.level) : (props.log.level || '');
-        });
-
-        const formattedDate = computed(() => {
-            if (!props.log.created_at) return '';
-            const date = new Date(props.log.created_at);
-            return date.toLocaleString();
-        });
-
-        return {
-            badgeClass,
-            levelLabel,
-            formattedDate
-        };
+const props = defineProps({
+    log: {
+        type: Object,
+        required: true
     }
-};
+});
+
+const badgeClass = computed(() => {
+    const classes = {
+        success: 'badge-success',
+        warning: 'badge-warning',
+        error: 'badge-danger',
+        info: 'badge-info'
+    };
+    return classes[props.log.level] || 'badge-neutral';
+});
+
+const levelLabel = computed(() => {
+    const known = ['info', 'success', 'warning', 'error'];
+    return known.includes(props.log.level) ? t('logs.level_' + props.log.level) : (props.log.level || '');
+});
+
+const formattedDate = computed(() => {
+    if (!props.log.created_at) return '';
+    const date = new Date(props.log.created_at);
+    return date.toLocaleString();
+});
 </script>

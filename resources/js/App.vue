@@ -214,7 +214,7 @@
     </div>
 </template>
 
-<script>
+<script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { toasts } from './toast';
@@ -223,128 +223,106 @@ import { authApi } from './services/api/auth';
 import { settingsApi } from './services/api/settings';
 import LanguageSwitcher from './components/LanguageSwitcher.vue';
 
-export default {
-    name: 'App',
-    components: {
-        LanguageSwitcher
-    },
-    setup() {
-        const route = useRoute();
-        const mobileMenuOpen = ref(false);
-        const localTimeStr = ref('');
-        const serverTimeStr = ref('');
-        const serverOffset = ref(0);
-        const authenticatedUser = ref(window.__AUTH_USER__ || {});
-        const loggingOut = ref(false);
-        let timer = null;
+const route = useRoute();
+const mobileMenuOpen = ref(false);
+const localTimeStr = ref('');
+const serverTimeStr = ref('');
+const serverOffset = ref(0);
+const authenticatedUser = ref(window.__AUTH_USER__ || {});
+const loggingOut = ref(false);
+let timer = null;
 
-        watch(() => route.path, () => {
-            mobileMenuOpen.value = false;
-        });
+watch(() => route.path, () => {
+    mobileMenuOpen.value = false;
+});
 
-        const isAuthenticated = computed(() => {
-            return !!(authenticatedUser.value.id && !route.meta.guest);
-        });
+const isAuthenticated = computed(() => {
+    return !!(authenticatedUser.value.id && !route.meta.guest);
+});
 
-        const showSidebar = computed(() => {
-            return !!(authenticatedUser.value.id && route.path.startsWith('/admin') && !route.meta.guest && !route.meta.publicLayout && !route.meta.hideSidebar);
-        });
+const showSidebar = computed(() => {
+    return !!(authenticatedUser.value.id && route.path.startsWith('/admin') && !route.meta.guest && !route.meta.publicLayout && !route.meta.hideSidebar);
+});
 
-        const logout = async () => {
-            if (loggingOut.value) return;
+const logout = async () => {
+    if (loggingOut.value) return;
 
-            loggingOut.value = true;
+    loggingOut.value = true;
 
-            try {
-                await authApi.logout();
-            } finally {
-                window.location.assign('/admin/login');
-            }
-        };
-
-        const updateClocks = () => {
-            try {
-                const now = new Date();
-
-                // Local Time Formatting
-                localTimeStr.value = now.toLocaleDateString(intlLocale, {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric'
-                }) + ' ' + now.toLocaleTimeString(intlLocale, {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit'
-                });
-
-                // Server Time Formatting
-                let offset = serverOffset.value;
-                if (typeof offset !== 'number' || isNaN(offset)) {
-                    offset = 0;
-                }
-
-                const serverTime = new Date(now.getTime() + offset);
-
-                if (isNaN(serverTime.getTime())) {
-                    serverTimeStr.value = localTimeStr.value;
-                } else {
-                    serverTimeStr.value = serverTime.toLocaleDateString(intlLocale, {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric'
-                    }) + ' ' + serverTime.toLocaleTimeString(intlLocale, {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        second: '2-digit'
-                    });
-                }
-            } catch (err) {
-                console.error('Clock update error:', err);
-            }
-        };
-
-        const syncServerTime = async () => {
-            try {
-                const res = await settingsApi.fetchSettings();
-                if (res && res.server_time) {
-                    const serverTimeMs = Date.parse(res.server_time);
-                    serverOffset.value = serverTimeMs - Date.now();
-                } else if (res && res.meta && res.meta.server_time) {
-                    const serverTimeMs = Date.parse(res.meta.server_time);
-                    serverOffset.value = serverTimeMs - Date.now();
-                }
-            } catch (e) {
-                console.error('Failed to sync server time:', e);
-            }
-        };
-
-        onMounted(async () => {
-            if (isAuthenticated.value && route.path.startsWith('/admin')) {
-                await syncServerTime();
-            }
-            updateClocks();
-            timer = setInterval(updateClocks, 1000);
-        });
-
-
-        onUnmounted(() => {
-            if (timer) clearInterval(timer);
-        });
-
-        return {
-            t,
-            mobileMenuOpen,
-            toasts,
-            localTimeStr,
-            serverTimeStr,
-            authenticatedUser,
-            loggingOut,
-            logout,
-            isAuthenticated,
-            showSidebar
-        };
+    try {
+        await authApi.logout();
+    } finally {
+        window.location.assign('/admin/login');
     }
 };
+
+const updateClocks = () => {
+    try {
+        const now = new Date();
+
+        // Local Time Formatting
+        localTimeStr.value = now.toLocaleDateString(intlLocale, {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        }) + ' ' + now.toLocaleTimeString(intlLocale, {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
+
+        // Server Time Formatting
+        let offset = serverOffset.value;
+        if (typeof offset !== 'number' || isNaN(offset)) {
+            offset = 0;
+        }
+
+        const serverTime = new Date(now.getTime() + offset);
+
+        if (isNaN(serverTime.getTime())) {
+            serverTimeStr.value = localTimeStr.value;
+        } else {
+            serverTimeStr.value = serverTime.toLocaleDateString(intlLocale, {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            }) + ' ' + serverTime.toLocaleTimeString(intlLocale, {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+    } catch (err) {
+        console.error('Clock update error:', err);
+    }
+};
+
+const syncServerTime = async () => {
+    try {
+        const res = await settingsApi.fetchSettings();
+        if (res && res.server_time) {
+            const serverTimeMs = Date.parse(res.server_time);
+            serverOffset.value = serverTimeMs - Date.now();
+        } else if (res && res.meta && res.meta.server_time) {
+            const serverTimeMs = Date.parse(res.meta.server_time);
+            serverOffset.value = serverTimeMs - Date.now();
+        }
+    } catch (e) {
+        console.error('Failed to sync server time:', e);
+    }
+};
+
+onMounted(async () => {
+    if (isAuthenticated.value && route.path.startsWith('/admin')) {
+        await syncServerTime();
+    }
+    updateClocks();
+    timer = setInterval(updateClocks, 1000);
+});
+
+onUnmounted(() => {
+    if (timer) clearInterval(timer);
+});
 </script>
 
 <style>

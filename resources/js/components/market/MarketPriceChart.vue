@@ -131,122 +131,103 @@
     </div>
 </template>
 
-<script>
+<script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { t } from '../../lang';
 import { buildChartPoints, chartLinePath, chartAreaPath, VB_W, VB_H, PAD_L, PAD_R } from './chartGeometry';
 
-export default {
-    name: 'MarketPriceChart',
-    props: {
-        history: { type: Array, default: () => [] },
-        stats: { type: Object, default: null },
-        periods: { type: Array, default: () => [] },
-        selectedPeriod: { type: String, default: 'all' },
-        title: { type: String, default: '' },
-        itemId: { type: [String, Number], default: '' },
-        targetId: { type: [String, Number], default: '' },
-        itemName: { type: String, default: '' },
-        targetName: { type: String, default: '' },
-        gradientId: { type: String, default: 'priceGrad' },
-        getResourceIcon: { type: Function, required: true },
-        handleIconError: { type: Function, required: true },
-        formatVolume: { type: Function, required: true }
-    },
-    emits: ['change-period'],
-    setup(props) {
-        const hoveredPoint = ref(null);
-        const chartBox = ref(null);
-        const boxWidth = ref(VB_W);
+const props = defineProps({
+    history: { type: Array, default: () => [] },
+    stats: { type: Object, default: null },
+    periods: { type: Array, default: () => [] },
+    selectedPeriod: { type: String, default: 'all' },
+    title: { type: String, default: '' },
+    itemId: { type: [String, Number], default: '' },
+    targetId: { type: [String, Number], default: '' },
+    itemName: { type: String, default: '' },
+    targetName: { type: String, default: '' },
+    gradientId: { type: String, default: 'priceGrad' },
+    getResourceIcon: { type: Function, required: true },
+    handleIconError: { type: Function, required: true },
+    formatVolume: { type: Function, required: true }
+});
 
-        let observer = null;
-        onMounted(() => {
-            if (!chartBox.value) return;
-            const measure = () => {
-                boxWidth.value = chartBox.value?.clientWidth || VB_W;
-            };
-            measure();
-            if (typeof ResizeObserver !== 'undefined') {
-                observer = new ResizeObserver(measure);
-                observer.observe(chartBox.value);
-            } else {
-                window.addEventListener('resize', measure);
-            }
-        });
-        onBeforeUnmount(() => {
-            if (observer) observer.disconnect();
-        });
+defineEmits(['change-period']);
 
-        // With preserveAspectRatio="none" the viewBox is stretched horizontally.
-        // Counter-scale text and dots so they never look squashed on phones.
-        const scaleX = computed(() => boxWidth.value / VB_W);
-        const dotScaleX = computed(() => (scaleX.value > 0 ? 1 / scaleX.value : 1));
-        const labelTransform = computed(() => `scale(${dotScaleX.value} 1)`);
-        const labelX = computed(() => (PAD_L - 5) * scaleX.value);
+const hoveredPoint = ref(null);
+const chartBox = ref(null);
+const boxWidth = ref(VB_W);
 
-        const points = computed(() => buildChartPoints(props.history));
-        const priceLinePath = computed(() => chartLinePath(points.value, 'y'));
-        const priceAreaPath = computed(() => chartAreaPath(points.value, 'y'));
-
-        const meanY = computed(() => {
-            if (!props.stats || !props.stats.average || props.history.length === 0) return 120;
-            const prices = props.history.map(h => h.price);
-            const maxPrice = Math.max(...prices) || 1;
-            const minPrice = Math.min(...prices) || 0;
-            const priceDiff = (maxPrice - minPrice) || 1;
-            const calcY = maxPrice === minPrice
-                ? 120
-                : VB_H - ((props.stats.average - minPrice) / priceDiff) * 180 - 10;
-            return Math.max(20, Math.min(210, calcY));
-        });
-
-        const fmt = (val) => (val >= 1000 ? props.formatVolume(val) : Number(val).toFixed(2));
-        const maxPriceLabel = computed(() => (props.history.length ? fmt(Math.max(...props.history.map(h => h.price))) : ''));
-        const minPriceLabel = computed(() => (props.history.length ? fmt(Math.min(...props.history.map(h => h.price))) : ''));
-        const midPriceLabel = computed(() => {
-            if (!props.history.length) return '';
-            const prices = props.history.map(h => h.price);
-            return fmt((Math.max(...prices) + Math.min(...prices)) / 2);
-        });
-
-        // Tooltip is clamped so it can never overflow the card on mobile.
-        const tooltipStyle = computed(() => {
-            if (!hoveredPoint.value) return {};
-            const xRatio = hoveredPoint.value.x / VB_W;
-            const yRatio = hoveredPoint.value.y / VB_H;
-            const above = yRatio > 0.45;
-            return {
-                left: `clamp(0px, ${(xRatio * 100).toFixed(2)}% - 50%, 100% - min(15rem, 100vw - 3rem))`,
-                top: `${(yRatio * 100).toFixed(2)}%`,
-                transform: above ? 'translateY(calc(-100% - 12px))' : 'translateY(12px)'
-            };
-        });
-
-        return {
-            VB_W, VB_H, PAD_L, PAD_R,
-            chartBox,
-            hoveredPoint,
-            points,
-            priceLinePath,
-            priceAreaPath,
-            meanY,
-            maxPriceLabel,
-            minPriceLabel,
-            midPriceLabel,
-            dotScaleX,
-            labelTransform,
-            labelX,
-            tooltipStyle,
-            averageLabel: t('market.average_price'),
-            meanLabel: t('market.global_mean'),
-            priceLabel: t('market.price'),
-            offersLabel: t('market.offers'),
-            sellersLabel: t('market.sellers'),
-            volLabel: t('market.vol'),
-            emptyLabel: t('market.not_enough_history')
-        };
+let observer = null;
+onMounted(() => {
+    if (!chartBox.value) return;
+    const measure = () => {
+        boxWidth.value = chartBox.value?.clientWidth || VB_W;
+    };
+    measure();
+    if (typeof ResizeObserver !== 'undefined') {
+        observer = new ResizeObserver(measure);
+        observer.observe(chartBox.value);
+    } else {
+        window.addEventListener('resize', measure);
     }
-};
+});
+onBeforeUnmount(() => {
+    if (observer) observer.disconnect();
+});
+
+// With preserveAspectRatio="none" the viewBox is stretched horizontally.
+// Counter-scale text and dots so they never look squashed on phones.
+const scaleX = computed(() => boxWidth.value / VB_W);
+const dotScaleX = computed(() => (scaleX.value > 0 ? 1 / scaleX.value : 1));
+const labelTransform = computed(() => `scale(${dotScaleX.value} 1)`);
+const labelX = computed(() => (PAD_L - 5) * scaleX.value);
+
+const points = computed(() => buildChartPoints(props.history));
+const priceLinePath = computed(() => chartLinePath(points.value, 'y'));
+const priceAreaPath = computed(() => chartAreaPath(points.value, 'y'));
+
+const meanY = computed(() => {
+    if (!props.stats || !props.stats.average || props.history.length === 0) return 120;
+    const prices = props.history.map(h => h.price);
+    const maxPrice = Math.max(...prices) || 1;
+    const minPrice = Math.min(...prices) || 0;
+    const priceDiff = (maxPrice - minPrice) || 1;
+    const calcY = maxPrice === minPrice
+        ? 120
+        : VB_H - ((props.stats.average - minPrice) / priceDiff) * 180 - 10;
+    return Math.max(20, Math.min(210, calcY));
+});
+
+const fmt = (val) => (val >= 1000 ? props.formatVolume(val) : Number(val).toFixed(2));
+const maxPriceLabel = computed(() => (props.history.length ? fmt(Math.max(...props.history.map(h => h.price))) : ''));
+const minPriceLabel = computed(() => (props.history.length ? fmt(Math.min(...props.history.map(h => h.price))) : ''));
+const midPriceLabel = computed(() => {
+    if (!props.history.length) return '';
+    const prices = props.history.map(h => h.price);
+    return fmt((Math.max(...prices) + Math.min(...prices)) / 2);
+});
+
+// Tooltip is clamped so it can never overflow the card on mobile.
+const tooltipStyle = computed(() => {
+    if (!hoveredPoint.value) return {};
+    const xRatio = hoveredPoint.value.x / VB_W;
+    const yRatio = hoveredPoint.value.y / VB_H;
+    const above = yRatio > 0.45;
+    return {
+        left: `clamp(0px, ${(xRatio * 100).toFixed(2)}% - 50%, 100% - min(15rem, 100vw - 3rem))`,
+        top: `${(yRatio * 100).toFixed(2)}%`,
+        transform: above ? 'translateY(calc(-100% - 12px))' : 'translateY(12px)'
+    };
+});
+
+const averageLabel = computed(() => t('market.average_price'));
+const meanLabel = computed(() => t('market.global_mean'));
+const priceLabel = computed(() => t('market.price'));
+const offersLabel = computed(() => t('market.offers'));
+const sellersLabel = computed(() => t('market.sellers'));
+const volLabel = computed(() => t('market.vol'));
+const emptyLabel = computed(() => t('market.not_enough_history'));
 </script>
 
 <style scoped>

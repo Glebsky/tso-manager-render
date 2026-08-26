@@ -5,30 +5,28 @@
     </svg>
 </template>
 
-<script>
+<script setup>
 /**
  * Unified loading spinner.
  * Inherits its color from the parent (currentColor), so it fits
  * buttons, overlays and inline hints without extra props.
  */
-export default {
-    name: 'Spinner',
-    props: {
-        // xs | sm | md | lg
-        size: {
-            type: String,
-            default: 'md'
-        }
-    },
-    computed: {
-        sizeClass() {
-            return {
-                xs: 'w-3 h-3',
-                sm: 'w-4 h-4',
-                md: 'w-6 h-6',
-                lg: 'w-10 h-10'
-            }[this.size] || 'w-6 h-6';
-        }
+import { computed } from 'vue';
+
+const props = defineProps({
+    // xs | sm | md | lg
+    size: {
+        type: String,
+        default: 'md'
     }
-};
+});
+
+const sizeClass = computed(() => {
+    return {
+        xs: 'w-3 h-3',
+        sm: 'w-4 h-4',
+        md: 'w-6 h-6',
+        lg: 'w-10 h-10'
+    }[props.size] || 'w-6 h-6';
+});
 </script>

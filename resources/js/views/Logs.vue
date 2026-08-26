@@ -125,7 +125,7 @@
     </div>
 </template>
 
-<script>
+<script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
 import { t } from '../lang';
 import { logsApi } from '../services/api/logs';
@@ -133,69 +133,53 @@ import LogEntry from '../components/LogEntry.vue';
 import LoadingOverlay from '../components/LoadingOverlay.vue';
 import { showToast } from '../toast';
 
-export default {
-    name: 'Logs',
-    components: { LogEntry, LoadingOverlay },
-    setup() {
-        const loading = ref(false);
-        const logs = ref([]);
-        const accounts = ref([]);
-        const filter = ref({
-            accountId: '',
-            level: ''
-        });
-        const pagination = ref({
-            current_page: 1,
-            last_page: 1
-        });
-        let timer = null;
+const loading = ref(false);
+const logs = ref([]);
+const accounts = ref([]);
+const filter = ref({
+    accountId: '',
+    level: ''
+});
+const pagination = ref({
+    current_page: 1,
+    last_page: 1
+});
+let timer = null;
 
-        const loadLogs = async (page = 1, background = false) => {
-            if (!background) loading.value = true;
-            try {
-                const res = await logsApi.fetchLogs({
-                    page,
-                    account_id: filter.value.accountId,
-                    level: filter.value.level
-                });
+const loadLogs = async (page = 1, background = false) => {
+    if (!background) loading.value = true;
+    try {
+        const res = await logsApi.fetchLogs({
+            page,
+            account_id: filter.value.accountId,
+            level: filter.value.level
+        });
 
-                logs.value = res.data || res.logs || [];
-                accounts.value = res.accounts || [];
-                pagination.value = {
-                    current_page: res.meta?.current_page || res.current_page || 1,
-                    last_page: res.meta?.last_page || res.last_page || 1
-                };
-            } catch (e) {
-                if (!background) showToast(t('logs.load_failed'), 'error');
-            } finally {
-                if (!background) loading.value = false;
-            }
+        logs.value = res.data || res.logs || [];
+        accounts.value = res.accounts || [];
+        pagination.value = {
+            current_page: res.meta?.current_page || res.current_page || 1,
+            last_page: res.meta?.last_page || res.last_page || 1
         };
-
-        const onFilterChange = () => {
-            loadLogs(1);
-        };
-
-        onMounted(() => {
-            loadLogs(1);
-            timer = setInterval(() => {
-                loadLogs(pagination.value.current_page, true);
-            }, 10000);
-        });
-
-        onUnmounted(() => {
-            if (timer) clearInterval(timer);
-        });
-
-        return {
-            loading,
-            logs,
-            accounts,
-            filter,
-            pagination,
-            loadLogs,
-            onFilterChange
-        };
+    } catch {
+        if (!background) showToast(t('logs.load_failed'), 'error');
+    } finally {
+        if (!background) loading.value = false;
     }
 };
+
+const onFilterChange = () => {
+    loadLogs(1);
+};
+
+onMounted(() => {
+    loadLogs(1);
+    timer = setInterval(() => {
+        loadLogs(pagination.value.current_page, true);
+    }, 10000);
+});
+
+onUnmounted(() => {
+    if (timer) clearInterval(timer);
+});
 </script>

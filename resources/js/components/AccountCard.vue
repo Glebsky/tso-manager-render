@@ -95,179 +95,161 @@
     </div>
 </template>
 
-<script>
+<script setup>
 import { ref, computed, watch } from 'vue';
 import { t } from '../lang';
 import { useRouter } from 'vue-router';
 import { accountsApi } from '../services/api/accounts';
 import { showToast } from '../toast';
 
-export default {
-    name: 'AccountCard',
-    props: {
-        account: {
-            type: Object,
-            required: true
-        }
-    },
-    emits: ['sync-success', 'delete-success', 'action-success'],
-    setup(props, { emit }) {
-        const router = useRouter();
-        const syncing = ref(false);
-        const localAccount = ref({ ...props.account });
-
-        watch(() => props.account, (newVal) => {
-            localAccount.value = { ...newVal };
-        }, { deep: true });
-
-        const statusClass = computed(() => {
-            const colors = {
-                online: {
-                    gradient: 'from-emerald-500 to-teal-500',
-                    glow: '#10b981'
-                },
-                syncing: {
-                    gradient: 'from-amber-500 to-orange-500',
-                    glow: '#f59e0b'
-                },
-                error: {
-                    gradient: 'from-red-500 to-rose-500',
-                    glow: '#ef4444'
-                },
-                offline: {
-                    gradient: 'from-gray-500 to-gray-600',
-                    glow: '#6b7280'
-                }
-            };
-            return colors[localAccount.value.status] || colors.offline;
-        });
-
-        const statusDotClass = computed(() => {
-            return 'status-' + (localAccount.value.status || 'offline');
-        });
-
-        const avatarLetters = computed(() => {
-            const name = localAccount.value.nickname || localAccount.value.username || '?';
-            return name.substring(0, 2).toUpperCase();
-        });
-
-        const avatarUrl = computed(() => {
-            const avatarId = localAccount.value.avatar_id ?? zoneObject.value?.avatarId;
-            if (!avatarId) return null;
-            const idNum = parseInt(avatarId);
-            if (idNum >= 1 && idNum <= 60) {
-                return `/images/avatars/${idNum}.webp`;
-            }
-            return `https://settlersonlinewiki.eu/images/avatars/avatar_${avatarId}.webp`;
-        });
-
-        const zoneObject = computed(() => {
-            if (!localAccount.value.zone_data) return null;
-            try {
-                return typeof localAccount.value.zone_data === 'string'
-                    ? JSON.parse(localAccount.value.zone_data)
-                    : localAccount.value.zone_data;
-            } catch (e) {
-                return null;
-            }
-        });
-
-        const buildingCount = computed(() => {
-            if (localAccount.value.building_count !== undefined && localAccount.value.building_count !== null) {
-                return localAccount.value.building_count;
-            }
-            return zoneObject.value && zoneObject.value.buildings
-                ? zoneObject.value.buildings.length
-                : null;
-        });
-
-        const formatSyncTime = (timeStr) => {
-            if (!timeStr) return '';
-            const date = new Date(timeStr);
-            const now = new Date();
-            const diffMs = now - date;
-            const diffMins = Math.floor(diffMs / 60000);
-
-            if (diffMins < 1) return t('card.just_now');
-            if (diffMins < 60) return t('card.minutes_ago', { count: diffMins });
-            const diffHours = Math.floor(diffMins / 60);
-            if (diffHours < 24) return t('card.hours_ago', { count: diffHours });
-            return date.toLocaleDateString();
-        };
-
-        const syncAccount = async () => {
-            syncing.value = true;
-            localAccount.value.status = 'syncing';
-            try {
-                const res = await accountsApi.syncAccount(localAccount.value.id);
-                showToast(t('card.synced'));
-                const updatedAccount = res.data || res.account || localAccount.value;
-                localAccount.value = updatedAccount;
-                emit('sync-success', updatedAccount);
-            } catch (e) {
-                if (e.response?.data?.account || e.response?.data?.data) {
-                    localAccount.value = e.response.data.account || e.response.data.data;
-                } else {
-                    localAccount.value.status = 'error';
-                }
-                showToast(e.response?.data?.message || t('card.sync_request_failed'), 'error');
-                emit('sync-success');
-            } finally {
-                syncing.value = false;
-            }
-        };
-
-        const deleteAccount = async () => {
-            if (!confirm(t('card.confirm_delete'))) return;
-            try {
-                await accountsApi.deleteAccount(localAccount.value.id);
-                showToast(t('card.deleted'));
-                emit('delete-success');
-            } catch (e) {
-                showToast(t('card.delete_failed'), 'error');
-            }
-        };
-
-        const goToDetail = () => {
-            router.push(`/accounts/${localAccount.value.id}`);
-        };
-
-        const REGION_SERVERS = {
-            ru: { flag: '🇷🇺', name: 'RU Market', locale: 'RU' },
-            de: { flag: '🇩🇪', name: 'DE Market', locale: 'DE' },
-            en: { flag: '🇬🇧', name: 'EN Market', locale: 'EN' },
-            us: { flag: '🇺🇸', name: 'US Market', locale: 'EN' },
-            fr: { flag: '🇫🇷', name: 'FR Market', locale: 'FR' },
-            pl: { flag: '🇵🇱', name: 'PL Market', locale: 'PL' },
-            es: { flag: '🇪🇸', name: 'ES Market', locale: 'ES' },
-        };
-
-        const marketServerInfo = computed(() => {
-            const reg = String(localAccount.value?.region || '').toLowerCase();
-            if (!reg) return null;
-            const info = REGION_SERVERS[reg];
-            if (info) return { ...info, region: reg };
-            return { flag: '🌐', name: `${reg.toUpperCase()} Market`, locale: reg.toUpperCase(), region: reg };
-        });
-
-        const serverName = computed(() => {
-            return localAccount.value.server_name || zoneObject.value?.gameWorldName || null;
-        });
-
-        return {
-            syncing,
-            localAccount,
-            statusClass,
-            statusDotClass,
-            avatarLetters,
-            avatarUrl,
-            buildingCount,
-            formatSyncTime,
-            syncAccount,
-            deleteAccount,
-            goToDetail,
-            serverName,
-            marketServerInfo,
-        };
+const props = defineProps({
+    account: {
+        type: Object,
+        required: true
     }
-};</script>
+});
+
+const emit = defineEmits(['sync-success', 'delete-success', 'action-success']);
+
+const router = useRouter();
+const syncing = ref(false);
+const localAccount = ref({ ...props.account });
+
+watch(() => props.account, (newVal) => {
+    localAccount.value = { ...newVal };
+}, { deep: true });
+
+const statusClass = computed(() => {
+    const colors = {
+        online: {
+            gradient: 'from-emerald-500 to-teal-500',
+            glow: '#10b981'
+        },
+        syncing: {
+            gradient: 'from-amber-500 to-orange-500',
+            glow: '#f59e0b'
+        },
+        error: {
+            gradient: 'from-red-500 to-rose-500',
+            glow: '#ef4444'
+        },
+        offline: {
+            gradient: 'from-gray-500 to-gray-600',
+            glow: '#6b7280'
+        }
+    };
+    return colors[localAccount.value.status] || colors.offline;
+});
+
+const statusDotClass = computed(() => {
+    return 'status-' + (localAccount.value.status || 'offline');
+});
+
+const avatarLetters = computed(() => {
+    const name = localAccount.value.nickname || localAccount.value.username || '?';
+    return name.substring(0, 2).toUpperCase();
+});
+
+const zoneObject = computed(() => {
+    if (!localAccount.value.zone_data) return null;
+    try {
+        return typeof localAccount.value.zone_data === 'string'
+            ? JSON.parse(localAccount.value.zone_data)
+            : localAccount.value.zone_data;
+    } catch {
+        return null;
+    }
+});
+
+const avatarUrl = computed(() => {
+    const avatarId = localAccount.value.avatar_id ?? zoneObject.value?.avatarId;
+    if (!avatarId) return null;
+    const idNum = parseInt(avatarId);
+    if (idNum >= 1 && idNum <= 60) {
+        return `/images/avatars/${idNum}.webp`;
+    }
+    return `https://settlersonlinewiki.eu/images/avatars/avatar_${avatarId}.webp`;
+});
+
+const buildingCount = computed(() => {
+    if (localAccount.value.building_count !== undefined && localAccount.value.building_count !== null) {
+        return localAccount.value.building_count;
+    }
+    return zoneObject.value && zoneObject.value.buildings
+        ? zoneObject.value.buildings.length
+        : null;
+});
+
+const formatSyncTime = (timeStr) => {
+    if (!timeStr) return '';
+    const date = new Date(timeStr);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+
+    if (diffMins < 1) return t('card.just_now');
+    if (diffMins < 60) return t('card.minutes_ago', { count: diffMins });
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return t('card.hours_ago', { count: diffHours });
+    return date.toLocaleDateString();
+};
+
+const syncAccount = async () => {
+    syncing.value = true;
+    localAccount.value.status = 'syncing';
+    try {
+        const res = await accountsApi.syncAccount(localAccount.value.id);
+        showToast(t('card.synced'));
+        const updatedAccount = res.data || res.account || localAccount.value;
+        localAccount.value = updatedAccount;
+        emit('sync-success', updatedAccount);
+    } catch (e) {
+        if (e.response?.data?.account || e.response?.data?.data) {
+            localAccount.value = e.response.data.account || e.response.data.data;
+        } else {
+            localAccount.value.status = 'error';
+        }
+        showToast(e.response?.data?.message || t('card.sync_request_failed'), 'error');
+        emit('sync-success');
+    } finally {
+        syncing.value = false;
+    }
+};
+
+const deleteAccount = async () => {
+    if (!confirm(t('card.confirm_delete'))) return;
+    try {
+        await accountsApi.deleteAccount(localAccount.value.id);
+        showToast(t('card.deleted'));
+        emit('delete-success');
+    } catch {
+        showToast(t('card.delete_failed'), 'error');
+    }
+};
+
+const goToDetail = () => {
+    router.push(`/accounts/${localAccount.value.id}`);
+};
+
+const REGION_SERVERS = {
+    ru: { flag: '🇷🇺', name: 'RU Market', locale: 'RU' },
+    de: { flag: '🇩🇪', name: 'DE Market', locale: 'DE' },
+    en: { flag: '🇬🇧', name: 'EN Market', locale: 'EN' },
+    us: { flag: '🇺🇸', name: 'US Market', locale: 'EN' },
+    fr: { flag: '🇫🇷', name: 'FR Market', locale: 'FR' },
+    pl: { flag: '🇵🇱', name: 'PL Market', locale: 'PL' },
+    es: { flag: '🇪🇸', name: 'ES Market', locale: 'ES' },
+};
+
+const marketServerInfo = computed(() => {
+    const reg = String(localAccount.value?.region || '').toLowerCase();
+    if (!reg) return null;
+    const info = REGION_SERVERS[reg];
+    if (info) return { ...info, region: reg };
+    return { flag: '🌐', name: `${reg.toUpperCase()} Market`, locale: reg.toUpperCase(), region: reg };
+});
+
+const serverName = computed(() => {
+    return localAccount.value.server_name || zoneObject.value?.gameWorldName || null;
+});
+</script>

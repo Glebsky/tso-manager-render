@@ -196,63 +196,48 @@
     </div>
 </template>
 
-<script>
+<script setup>
 import { ref, computed, onMounted } from 'vue';
 import { intlLocale } from '../lang';
 import { dashboardApi } from '../services/api/dashboard';
 import AccountCard from '../components/AccountCard.vue';
 import LogEntry from '../components/LogEntry.vue';
 
-export default {
-    name: 'Dashboard',
-    components: { AccountCard, LogEntry },
-    setup() {
-        const loading = ref(false);
-        const accounts = ref([]);
-        const logs = ref([]);
-        const stats = ref({
+const loading = ref(false);
+const accounts = ref([]);
+const logs = ref([]);
+const stats = ref({
+    total_accounts: 0,
+    active_tasks: 0,
+    today_actions: 0,
+    errors: 0
+});
+
+const currentDate = computed(() => {
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date().toLocaleDateString(intlLocale, options);
+});
+
+const loadData = async () => {
+    loading.value = true;
+    try {
+        const res = await dashboardApi.fetchDashboard();
+        accounts.value = res.accounts || [];
+        logs.value = res.logs || [];
+        stats.value = res.stats || {
             total_accounts: 0,
             active_tasks: 0,
             today_actions: 0,
             errors: 0
-        });
-
-        const currentDate = computed(() => {
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            return new Date().toLocaleDateString(intlLocale, options);
-        });
-
-        const loadData = async () => {
-            loading.value = true;
-            try {
-                const res = await dashboardApi.fetchDashboard();
-                accounts.value = res.accounts || [];
-                logs.value = res.logs || [];
-                stats.value = res.stats || {
-                    total_accounts: 0,
-                    active_tasks: 0,
-                    today_actions: 0,
-                    errors: 0
-                };
-            } catch (e) {
-                console.error('Failed to load dashboard data:', e);
-            } finally {
-                loading.value = false;
-            }
         };
-
-        onMounted(() => {
-            loadData();
-        });
-
-        return {
-            loading,
-            accounts,
-            logs,
-            stats,
-            currentDate,
-            loadData
-        };
+    } catch (e) {
+        console.error('Failed to load dashboard data:', e);
+    } finally {
+        loading.value = false;
     }
 };
+
+onMounted(() => {
+    loadData();
+});
 </script>

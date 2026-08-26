@@ -52,53 +52,39 @@
     </div>
 </template>
 
-<script>
+<script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { locale as activeLocale, setLocale, AVAILABLE_LOCALES } from '../lang';
 
-export default {
-    name: 'LanguageSwitcher',
-    setup() {
-        const isOpen = ref(false);
-        const dropdownRef = ref(null);
-        const currentLocale = ref(activeLocale);
+const isOpen = ref(false);
+const dropdownRef = ref(null);
+const currentLocale = ref(activeLocale);
 
-        // Rendered from the single locale registry in ../lang (no duplication).
-        const availableLanguages = AVAILABLE_LOCALES;
+// Rendered from the single locale registry in ../lang (no duplication).
+const availableLanguages = AVAILABLE_LOCALES;
 
-        const currentLangInfo = computed(() => {
-            return availableLanguages.find(l => l.code === currentLocale.value) || availableLanguages[0];
-        });
+const currentLangInfo = computed(() => {
+    return availableLanguages.find(l => l.code === currentLocale.value) || availableLanguages[0];
+});
 
-        const selectLanguage = (code) => {
-            isOpen.value = false;
-            if (code !== currentLocale.value) {
-                setLocale(code);
-            }
-        };
-
-        const handleClickOutside = (e) => {
-            if (dropdownRef.value && !dropdownRef.value.contains(e.target)) {
-                isOpen.value = false;
-            }
-        };
-
-        onMounted(() => {
-            document.addEventListener('click', handleClickOutside);
-        });
-
-        onUnmounted(() => {
-            document.removeEventListener('click', handleClickOutside);
-        });
-
-        return {
-            isOpen,
-            dropdownRef,
-            currentLocale,
-            availableLanguages,
-            currentLangInfo,
-            selectLanguage
-        };
+const selectLanguage = (code) => {
+    isOpen.value = false;
+    if (code !== currentLocale.value) {
+        setLocale(code);
     }
 };
+
+const handleClickOutside = (e) => {
+    if (dropdownRef.value && !dropdownRef.value.contains(e.target)) {
+        isOpen.value = false;
+    }
+};
+
+onMounted(() => {
+    document.addEventListener('click', handleClickOutside);
+});
+
+onUnmounted(() => {
+    document.removeEventListener('click', handleClickOutside);
+});
 </script>

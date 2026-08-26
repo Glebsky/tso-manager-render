@@ -124,105 +124,88 @@
     </div>
 </template>
 
-<script>
+<script setup>
 import { ref, onMounted } from 'vue';
 import { t } from '../lang';
 import { settingsApi } from '../services/api/settings';
 import { showToast } from '../toast';
 import Spinner from '../components/Spinner.vue';
 
-export default {
-    name: 'Settings',
-    components: { Spinner },
-    setup() {
-        const loading = ref(true);
-        const saving = ref(false);
-        const clearingLogs = ref(false);
-        const stoppingTasks = ref(false);
+const loading = ref(true);
+const saving = ref(false);
+const clearingLogs = ref(false);
+const stoppingTasks = ref(false);
 
-        const form = ref({
-            sync_interval: 30,
-            log_retention_days: 30
-        });
+const form = ref({
+    sync_interval: 30,
+    log_retention_days: 30
+});
 
-        const loadSettings = async () => {
-            try {
-                const res = await settingsApi.fetchSettings();
-                const data = res?.data || res || {};
-                form.value = {
-                    sync_interval: Number(data.sync_interval ?? 30),
-                    log_retention_days: Number(data.log_retention_days ?? 30)
-                };
-            } catch (e) {
-                showToast(t('settings.load_failed'), 'error');
-            } finally {
-                loading.value = false;
-            }
+const loadSettings = async () => {
+    try {
+        const res = await settingsApi.fetchSettings();
+        const data = res?.data || res || {};
+        form.value = {
+            sync_interval: Number(data.sync_interval ?? 30),
+            log_retention_days: Number(data.log_retention_days ?? 30)
         };
-
-        const saveSettings = async () => {
-            saving.value = true;
-            try {
-                const payload = {
-                    sync_interval: Number(form.value.sync_interval),
-                    log_retention_days: Number(form.value.log_retention_days)
-                };
-                const res = await settingsApi.updateSettings(payload);
-                const data = res.data || res.settings || res;
-                if (data.sync_interval !== undefined) {
-                    form.value.sync_interval = Number(data.sync_interval);
-                }
-                if (data.log_retention_days !== undefined) {
-                    form.value.log_retention_days = Number(data.log_retention_days);
-                }
-                showToast(t('settings.saved'));
-            } catch (e) {
-                showToast(t('settings.save_failed'), 'error');
-            } finally {
-                saving.value = false;
-            }
-        };
-
-        const clearLogs = async () => {
-            if (!confirm(t('settings.confirm_clear_logs'))) return;
-            clearingLogs.value = true;
-            try {
-                await settingsApi.clearLogs();
-                showToast(t('settings.logs_cleared'));
-            } catch (e) {
-                showToast(t('settings.clear_failed'), 'error');
-            } finally {
-                clearingLogs.value = false;
-            }
-        };
-
-        const stopAllTasks = async () => {
-            if (!confirm(t('settings.confirm_pause_tasks'))) return;
-            stoppingTasks.value = true;
-            try {
-                await settingsApi.stopAllTasks();
-                showToast(t('settings.tasks_deactivated'));
-            } catch (e) {
-                showToast(t('settings.deactivate_failed'), 'error');
-            } finally {
-                stoppingTasks.value = false;
-            }
-        };
-
-        onMounted(() => {
-            loadSettings();
-        });
-
-        return {
-            loading,
-            saving,
-            clearingLogs,
-            stoppingTasks,
-            form,
-            saveSettings,
-            clearLogs,
-            stopAllTasks
-        };
+    } catch {
+        showToast(t('settings.load_failed'), 'error');
+    } finally {
+        loading.value = false;
     }
 };
+
+const saveSettings = async () => {
+    saving.value = true;
+    try {
+        const payload = {
+            sync_interval: Number(form.value.sync_interval),
+            log_retention_days: Number(form.value.log_retention_days)
+        };
+        const res = await settingsApi.updateSettings(payload);
+        const data = res.data || res.settings || res;
+        if (data.sync_interval !== undefined) {
+            form.value.sync_interval = Number(data.sync_interval);
+        }
+        if (data.log_retention_days !== undefined) {
+            form.value.log_retention_days = Number(data.log_retention_days);
+        }
+        showToast(t('settings.saved'));
+    } catch {
+        showToast(t('settings.save_failed'), 'error');
+    } finally {
+        saving.value = false;
+    }
+};
+
+const clearLogs = async () => {
+    if (!confirm(t('settings.confirm_clear_logs'))) return;
+    clearingLogs.value = true;
+    try {
+        await settingsApi.clearLogs();
+        showToast(t('settings.logs_cleared'));
+    } catch {
+        showToast(t('settings.clear_failed'), 'error');
+    } finally {
+        clearingLogs.value = false;
+    }
+};
+
+const stopAllTasks = async () => {
+    if (!confirm(t('settings.confirm_pause_tasks'))) return;
+    stoppingTasks.value = true;
+    try {
+        await settingsApi.stopAllTasks();
+        showToast(t('settings.tasks_deactivated'));
+    } catch {
+        showToast(t('settings.deactivate_failed'), 'error');
+    } finally {
+        stoppingTasks.value = false;
+    }
+};
+
+onMounted(() => {
+    loadSettings();
+});
 </script>

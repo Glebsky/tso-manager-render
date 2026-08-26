@@ -62,7 +62,7 @@
     </div>
 </template>
 
-<script>
+<script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { t } from '../../lang';
 import {
@@ -76,70 +76,52 @@ import {
     PAD_R
 } from './chartGeometry';
 
-export default {
-    name: 'MarketDemandChart',
-    props: {
-        history: { type: Array, default: () => [] },
-        title: { type: String, default: '' },
-        formatVolume: { type: Function, required: true }
-    },
-    setup(props) {
-        const chartBox = ref(null);
-        const boxWidth = ref(VB_W);
+const props = defineProps({
+    history: { type: Array, default: () => [] },
+    title: { type: String, default: '' },
+    formatVolume: { type: Function, required: true }
+});
 
-        let observer = null;
-        onMounted(() => {
-            if (!chartBox.value) return;
-            const measure = () => {
-                boxWidth.value = chartBox.value?.clientWidth || VB_W;
-            };
-            measure();
-            if (typeof ResizeObserver !== 'undefined') {
-                observer = new ResizeObserver(measure);
-                observer.observe(chartBox.value);
-            } else {
-                window.addEventListener('resize', measure);
-            }
-        });
-        onBeforeUnmount(() => {
-            if (observer) observer.disconnect();
-        });
+const chartBox = ref(null);
+const boxWidth = ref(VB_W);
 
-        const scaleX = computed(() => boxWidth.value / VB_W);
-        const dotScaleX = computed(() => (scaleX.value > 0 ? 1 / scaleX.value : 1));
-        const labelTransform = computed(() => `scale(${dotScaleX.value} 1)`);
-        const labelX = computed(() => (PAD_L - 5) * scaleX.value);
-
-        const points = computed(() => buildChartPoints(props.history));
-        const barHalfWidth = computed(() => (props.history.length === 1 ? 12 : 3));
-
-        const sellersLinePath = computed(() => chartLinePath(points.value, 'sy'));
-        const sellersAreaPath = computed(() => chartAreaPath(points.value, 'sy'));
-        const offersLinePath = computed(() => chartLinePath(points.value, 'oy'));
-        const offersAreaPath = computed(() => chartAreaPath(points.value, 'oy'));
-
-        const maxOffersLabel = computed(() => {
-            const maxVal = maxDemandValue(props.history);
-            return maxVal >= 1000 ? props.formatVolume(maxVal) : String(maxVal);
-        });
-
-        return {
-            VB_W, VB_H, PAD_L, PAD_R,
-            chartBox,
-            points,
-            barHalfWidth,
-            dotScaleX,
-            labelTransform,
-            labelX,
-            sellersLinePath,
-            sellersAreaPath,
-            offersLinePath,
-            offersAreaPath,
-            maxOffersLabel,
-            sellersLabel: t('market.sellers_count'),
-            offersLabel: t('market.active_offers'),
-            emptyLabel: t('market.not_enough_history')
-        };
+let observer = null;
+onMounted(() => {
+    if (!chartBox.value) return;
+    const measure = () => {
+        boxWidth.value = chartBox.value?.clientWidth || VB_W;
+    };
+    measure();
+    if (typeof ResizeObserver !== 'undefined') {
+        observer = new ResizeObserver(measure);
+        observer.observe(chartBox.value);
+    } else {
+        window.addEventListener('resize', measure);
     }
-};
+});
+onBeforeUnmount(() => {
+    if (observer) observer.disconnect();
+});
+
+const scaleX = computed(() => boxWidth.value / VB_W);
+const dotScaleX = computed(() => (scaleX.value > 0 ? 1 / scaleX.value : 1));
+const labelTransform = computed(() => `scale(${dotScaleX.value} 1)`);
+const labelX = computed(() => (PAD_L - 5) * scaleX.value);
+
+const points = computed(() => buildChartPoints(props.history));
+const barHalfWidth = computed(() => (props.history.length === 1 ? 12 : 3));
+
+const sellersLinePath = computed(() => chartLinePath(points.value, 'sy'));
+const sellersAreaPath = computed(() => chartAreaPath(points.value, 'sy'));
+const offersLinePath = computed(() => chartLinePath(points.value, 'oy'));
+const offersAreaPath = computed(() => chartAreaPath(points.value, 'oy'));
+
+const maxOffersLabel = computed(() => {
+    const maxVal = maxDemandValue(props.history);
+    return maxVal >= 1000 ? props.formatVolume(maxVal) : String(maxVal);
+});
+
+const sellersLabel = computed(() => t('market.sellers_count'));
+const offersLabel = computed(() => t('market.active_offers'));
+const emptyLabel = computed(() => t('market.not_enough_history'));
 </script>

@@ -117,67 +117,52 @@
     </div>
 </template>
 
-<script>
+<script setup>
 import { ref, onMounted } from 'vue';
 import { t } from '../lang';
 import { accountsApi } from '../services/api/accounts';
 import AccountCard from '../components/AccountCard.vue';
 import { showToast } from '../toast';
 
-export default {
-    name: 'Accounts',
-    components: { AccountCard },
-    setup() {
-        const accounts = ref([]);
-        const loading = ref(true);
-        const submitting = ref(false);
-        const form = ref({
-            username: '',
-            password: '',
-            region: 'ru'
-        });
+const accounts = ref([]);
+const loading = ref(true);
+const submitting = ref(false);
+const form = ref({
+    username: '',
+    password: '',
+    region: 'ru'
+});
 
-        const loadAccounts = async () => {
-            if (accounts.value.length === 0) loading.value = true;
-            try {
-                const res = await accountsApi.fetchAccounts();
-                accounts.value = res.data || res.accounts || [];
-            } catch (e) {
-                showToast(t('accounts.load_failed'), 'error');
-            } finally {
-                loading.value = false;
-            }
-        };
-
-        const addAccount = async () => {
-            submitting.value = true;
-            try {
-                const res = await accountsApi.createAccount(form.value);
-                if (res.data || res.success) {
-                    showToast(t('accounts.added'));
-                    form.value.username = '';
-                    form.value.password = '';
-                    loadAccounts();
-                }
-            } catch (e) {
-                showToast(e.response?.data?.message || t('accounts.add_failed'), 'error');
-            } finally {
-                submitting.value = false;
-            }
-        };
-
-        onMounted(() => {
-            loadAccounts();
-        });
-
-        return {
-            accounts,
-            loading,
-            form,
-            submitting,
-            loadAccounts,
-            addAccount
-        };
+const loadAccounts = async () => {
+    if (accounts.value.length === 0) loading.value = true;
+    try {
+        const res = await accountsApi.fetchAccounts();
+        accounts.value = res.data || res.accounts || [];
+    } catch {
+        showToast(t('accounts.load_failed'), 'error');
+    } finally {
+        loading.value = false;
     }
 };
+
+const addAccount = async () => {
+    submitting.value = true;
+    try {
+        const res = await accountsApi.createAccount(form.value);
+        if (res.data || res.success) {
+            showToast(t('accounts.added'));
+            form.value.username = '';
+            form.value.password = '';
+            loadAccounts();
+        }
+    } catch (e) {
+        showToast(e.response?.data?.message || t('accounts.add_failed'), 'error');
+    } finally {
+        submitting.value = false;
+    }
+};
+
+onMounted(() => {
+    loadAccounts();
+});
 </script>

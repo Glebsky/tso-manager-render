@@ -55,7 +55,7 @@
     </div>
 </template>
 
-<script>
+<script setup>
 /**
  * Responsive market table.
  *
@@ -65,12 +65,9 @@
  * Columns: [{ key, label, align?: 'right', cellClass?: string }]
  * Cells are customised through the `cell-<key>` slots.
  */
-export default {
-    name: 'MarketDataTable',
-    props: {
-        columns: { type: Array, required: true },
-        rows: { type: Array, default: () => [] },
-        emptyText: { type: String, default: '' }
-    }
-};
+defineProps({
+    columns: { type: Array, required: true },
+    rows: { type: Array, default: () => [] },
+    emptyText: { type: String, default: '' }
+});
 </script>

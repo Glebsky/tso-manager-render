@@ -900,7 +900,7 @@
     </div>
 </template>
 
-<script>
+<script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { t } from '../lang';
@@ -918,12 +918,8 @@ import MarketPriceChart from '../components/market/MarketPriceChart.vue';
 import MarketDemandChart from '../components/market/MarketDemandChart.vue';
 import MarketDataTable from '../components/market/MarketDataTable.vue';
 
-export default {
-    name: 'MarketAnalytics',
-    components: { Spinner, LoadingOverlay, MarketPriceChart, MarketDemandChart, MarketDataTable },
-    setup() {
-        const route = useRoute();
-        const router = useRouter();
+const route = useRoute();
+const router = useRouter();
 
         const updateQueryParams = () => {
             const query = { ...route.query };
@@ -1738,97 +1734,4 @@ export default {
         onUnmounted(() => {
             if (countdownInterval) clearInterval(countdownInterval);
         });
-
-        return {
-            activeTab,
-            loading,
-            getItemName,
-            loadingServers,
-            loadingPairs,
-            loadingChart,
-            loadingSyncLogs,
-            saving,
-            syncing,
-            syncingServerId,
-            servers,
-            groupedServers,
-            presets,
-            accounts,
-            selectedServerId,
-            currentServerConnection,
-            verifyingId,
-            showServerModal,
-            editingServer,
-            savingServer,
-            serverForm,
-            detectedServerInfo,
-            getLocaleFlag,
-            getVerificationBadgeClass,
-            getSyncBadgeClass,
-            openAddServerModal,
-            openEditServerModal,
-            closeServerModal,
-            saveServerModal,
-            deleteServer,
-            verifyServer,
-            syncServerNow,
-            onServerChange,
-            goods,
-            allGoods,
-            targets,
-            popular,
-            history,
-            stats,
-            activeOffers,
-            totalActiveCount,
-            hasMoreActiveOffers,
-            loadingMore,
-            loadMoreActiveOffers,
-            formatTimeLeft,
-            logs,
-            logsPagination,
-            loadSyncLogs,
-            selectionMode,
-            cacheStrategy,
-            onCacheStrategyChange,
-            visualTab,
-            selectedPeriod,
-            arbitrageLoops,
-            periods,
-            selectedItem,
-            selectedTarget,
-            calcAmount,
-            settingsForm,
-            selectedItemName,
-            selectedTargetName,
-            calculatedCost,
-            calculatedMirroredCost,
-            activeVolume,
-            activeOffersCount,
-            activeSellersCount,
-            priceTrendText,
-            priceTrendClass,
-            formatVolume,
-            getResourceIcon,
-            handleIconError,
-            getStatusBadgeClass,
-            formatDateTime,
-            showPopularItems,
-            showArbitrageSchemes,
-            showActiveListings,
-            togglePopularItems,
-            toggleArbitrageSchemes,
-            toggleActiveListings,
-            saveSettings,
-            onItemChange,
-            fetchAnalytics,
-            selectVisualItem,
-            selectVisualTarget,
-            resetSelection,
-            mirrorSelection,
-            copyPairLink,
-            changePeriod,
-        };
-    }
-};
 </script>

@@ -170,57 +170,42 @@
     </div>
 </template>
 
-<script>
+<script setup>
 import { ref } from 'vue';
 import { authApi } from '../services/api/auth';
 import LanguageSwitcher from '../components/LanguageSwitcher.vue';
 
-export default {
-    name: 'Register',
-    components: {
-        LanguageSwitcher
-    },
-    setup() {
-        const form = ref({
-            name: '',
-            email: '',
-            password: '',
-            password_confirmation: ''
-        });
+const form = ref({
+    name: '',
+    email: '',
+    password: '',
+    password_confirmation: ''
+});
 
-        const errors = ref({});
-        const loading = ref(false);
+const errors = ref({});
+const loading = ref(false);
 
-        const submit = async () => {
-            if (loading.value) return;
+const submit = async () => {
+    if (loading.value) return;
 
-            loading.value = true;
-            errors.value = {};
+    loading.value = true;
+    errors.value = {};
 
-            try {
-                const res = await authApi.register(form.value);
-                if (res && res.redirect) {
-                    window.location.assign(res.redirect);
-                } else {
-                    window.location.assign('/admin');
-                }
-            } catch (err) {
-                if (err.response && err.response.status === 422) {
-                    errors.value = err.response.data.errors || {};
-                } else {
-                    console.error('Registration failed:', err);
-                }
-            } finally {
-                loading.value = false;
-            }
-        };
-
-        return {
-            form,
-            errors,
-            loading,
-            submit
-        };
+    try {
+        const res = await authApi.register(form.value);
+        if (res && res.redirect) {
+            window.location.assign(res.redirect);
+        } else {
+            window.location.assign('/admin');
+        }
+    } catch (err) {
+        if (err.response && err.response.status === 422) {
+            errors.value = err.response.data.errors || {};
+        } else {
+            console.error('Registration failed:', err);
+        }
+    } finally {
+        loading.value = false;
     }
 };
 </script>
