@@ -23,8 +23,8 @@ final class TaskActivityLogger
     {
         $this->log($task->account_id, (int) $task->id, __('logs.task.scheduled', [
             'id' => $task->id,
-            'type' => $task->task_type instanceof TaskType ? $task->task_type->value : $task->task_type,
-            'schedule' => $task->schedule_type?->value ?? $task->schedule_type,
+            'type' => $task->task_type->value,
+            'schedule' => $task->schedule_type->value,
         ]));
     }
 
@@ -32,7 +32,7 @@ final class TaskActivityLogger
     {
         $this->log($task->account_id, (int) $task->id, __('logs.task.updated', [
             'id' => $task->id,
-            'type' => $task->task_type instanceof TaskType ? $task->task_type->value : $task->task_type,
+            'type' => $task->task_type->value,
         ]));
     }
 
@@ -42,7 +42,7 @@ final class TaskActivityLogger
 
         $this->log($task->account_id, (int) $task->id, __($key, [
             'id' => $task->id,
-            'type' => $task->task_type instanceof TaskType ? $task->task_type->value : $task->task_type,
+            'type' => $task->task_type->value,
         ]));
     }
 

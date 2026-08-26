@@ -6,6 +6,7 @@ use App\Models\Account;
 use App\Models\MarketOffer;
 use App\Models\MarketServerConnection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -209,7 +210,6 @@ class MarketServerConnectionTest extends TestCase
         );
 
         // Run sync command --sync
-        $this->artisan('tso:sync-market --sync')
-            ->assertExitCode(0);
+        $this->assertSame(0, Artisan::call('tso:sync-market', ['--sync' => true]));
     }
 }

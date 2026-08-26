@@ -50,7 +50,7 @@ class RunSchedulerCommand extends Command
 
         $this->info("Scheduler cycle completed. Tasks reserved/dispatched: {$tasksProcessed}, Market sync triggered: ".($marketProcessed ? 'Yes' : 'No').', Account sync triggered: '.($accountSyncProcessed > 0 ? "Yes ({$accountSyncProcessed})" : 'No').', Log retention cleanup: '.($logCleanupProcessed ? 'Yes' : 'No'));
 
-        if ($this->option('work') || ($mode === 'cron' && $this->option('work'))) {
+        if ($this->option('work')) {
             $this->info('Running inline TSO queue worker (--stop-when-empty --max-time=50)...');
             Artisan::call('queue:work', [
                 '--queue' => 'tso-tasks,tso-accounts,tso-market',

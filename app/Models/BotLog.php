@@ -24,6 +24,9 @@ class BotLog extends Model
         'level' => LogLevel::class,
     ];
 
+    /**
+     * @return BelongsTo<Account, $this>
+     */
     public function account(): BelongsTo
     {
         return $this->belongsTo(Account::class);
@@ -34,7 +37,7 @@ class BotLog extends Model
      */
     protected static function booted(): void
     {
-        static::creating(function (BotLog $log) {
+        static::creating(static function (BotLog $log) {
             if (is_null($log->created_at)) {
                 $log->created_at = now();
             }

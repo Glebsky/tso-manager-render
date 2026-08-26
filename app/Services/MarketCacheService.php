@@ -132,6 +132,12 @@ class MarketCacheService
 
     /**
      * Remember cached data per server and endpoint (L3 application cache).
+     *
+     * @template TCacheValue
+     *
+     * @param  array<string, mixed>  $params
+     * @param  Closure(): TCacheValue  $callback
+     * @return TCacheValue
      */
     public function remember(string $serverId, string $endpoint, array $params, int $ttlSeconds, Closure $callback): mixed
     {
@@ -147,6 +153,8 @@ class MarketCacheService
      * Generate an ETag based on server, data version, locale, params and a
      * coarse time bucket. The bucket guarantees that time-dependent
      * responses are revalidated at least once per bucket even between syncs.
+     *
+     * @param  array<string, mixed>  $params
      */
     public function generateETag(string $serverId, string $endpoint, array $params): string
     {
@@ -170,6 +178,9 @@ class MarketCacheService
 
     /**
      * Recursively sort parameters by key for canonical cache keys.
+     *
+     * @param  array<string, mixed>  $params
+     * @return array<string, mixed>
      */
     private function canonicalizeParams(array $params): array
     {

@@ -35,7 +35,6 @@ final class TaskExecutionGuard
         if (! $account) {
             throw new TaskAccountNotFoundException($task->id);
         }
-        assert($account instanceof Account);
 
         return $account;
     }
@@ -45,9 +44,9 @@ final class TaskExecutionGuard
         Log::warning(sprintf(
             '[Task] Task #%d rejected because is_active=false. state: type=%s status=%s schedule=%s token=%s expected_token=%s completed_steps=%s queued_at=%s last_run_at=%s updated_at=%s last_result=%s',
             $task->id,
-            (string) $task->task_type?->value,
-            (string) $task->status?->value,
-            (string) $task->schedule_type?->value,
+            $task->task_type->value,
+            $task->status->value,
+            $task->schedule_type->value,
             $task->execution_token ?? 'null',
             $expectedToken ?? 'null',
             (string) $task->completed_steps,

@@ -32,8 +32,7 @@ final class AmfMineCommandGatewayTest extends TestCase
     {
         /** @var TsoAmfService&MockInterface $mockAmf */
         $mockAmf = Mockery::mock(TsoAmfService::class);
-        $mockAmf->shouldReceive('buildBuilding')
-            ->once()
+        $mockAmf->expects('buildBuilding')
             ->with($this->account, 50, 6431)
             ->andReturn('dummy_response');
 
@@ -47,8 +46,7 @@ final class AmfMineCommandGatewayTest extends TestCase
     {
         /** @var TsoAmfService&MockInterface $mockAmf */
         $mockAmf = Mockery::mock(TsoAmfService::class);
-        $mockAmf->shouldReceive('upgradeBuilding')
-            ->once()
+        $mockAmf->expects('upgradeBuilding')
             ->with($this->account, 6431)
             ->andReturn('dummy_response');
 
@@ -62,8 +60,7 @@ final class AmfMineCommandGatewayTest extends TestCase
     {
         /** @var TsoAmfService&MockInterface $mockAmf */
         $mockAmf = Mockery::mock(TsoAmfService::class);
-        $mockAmf->shouldReceive('buildBuilding')
-            ->once()
+        $mockAmf->expects('buildBuilding')
             ->andReturn('ok');
 
         $gateway = new AmfMineCommandGateway($mockAmf);

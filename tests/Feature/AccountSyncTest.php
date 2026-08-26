@@ -17,15 +17,16 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Mockery;
+use Mockery\MockInterface;
 use Tests\TestCase;
 
 class AccountSyncTest extends TestCase
 {
     use RefreshDatabase;
 
-    private $authMock;
+    private MockInterface $authMock;
 
-    private $amfMock;
+    private MockInterface $amfMock;
 
     protected function setUp(): void
     {
@@ -38,7 +39,7 @@ class AccountSyncTest extends TestCase
         $this->app->instance(TsoAmfService::class, $this->amfMock);
     }
 
-    public function test_scheduler_dispatches_account_sync_job_when_due()
+    public function test_scheduler_dispatches_account_sync_job_when_due(): void
     {
         Queue::fake();
 
@@ -61,7 +62,7 @@ class AccountSyncTest extends TestCase
         });
     }
 
-    public function test_scheduler_skips_account_sync_when_not_due()
+    public function test_scheduler_skips_account_sync_when_not_due(): void
     {
         Queue::fake();
 
@@ -82,7 +83,7 @@ class AccountSyncTest extends TestCase
         Queue::assertNotPushed(AccountSyncJob::class);
     }
 
-    public function test_scheduler_skips_account_sync_when_interval_is_zero()
+    public function test_scheduler_skips_account_sync_when_interval_is_zero(): void
     {
         Queue::fake();
 
@@ -103,7 +104,7 @@ class AccountSyncTest extends TestCase
         Queue::assertNotPushed(AccountSyncJob::class);
     }
 
-    public function test_scheduler_atomic_lock_prevents_duplicate_account_sync()
+    public function test_scheduler_atomic_lock_prevents_duplicate_account_sync(): void
     {
         Queue::fake();
 
@@ -127,7 +128,7 @@ class AccountSyncTest extends TestCase
         Queue::assertNotPushed(AccountSyncJob::class);
     }
 
-    public function test_account_sync_job_executes_successfully_and_releases_lock()
+    public function test_account_sync_job_executes_successfully_and_releases_lock(): void
     {
         // No storage fake needed
 
@@ -180,7 +181,7 @@ class AccountSyncTest extends TestCase
         $this->assertTrue(Cache::add("account_sync_lock:{$account->id}", true, 300));
     }
 
-    public function test_zone_data_is_hidden_by_default_in_json_and_visible_when_explicit()
+    public function test_zone_data_is_hidden_by_default_in_json_and_visible_when_explicit(): void
     {
         $account = Account::create([
             'username' => 'test_user',
@@ -247,14 +248,14 @@ class AccountSyncTest extends TestCase
         $this->authMock->shouldReceive('resetSession')->once()->with(Mockery::any());
         $this->authMock->shouldReceive('login')->once()->with(Mockery::any())->andReturn([]);
 
-        $this->amfMock->shouldReceive('getZone')->times(2)->andReturn('zone-amf-bytes');
+        $this->amfMock->shouldReceive('getZone')->twice()->andReturn('zone-amf-bytes');
         $this->amfMock->shouldReceive('invalidateSession')->once()->with((int) $account->id);
 
         $parserMock = Mockery::mock(ZoneParserService::class);
         $parserMock->shouldReceive('parse')
             ->with('zone-amf-bytes')
-            ->times(2)
-            ->andReturn(
+            ->twice()
+            ->andReturnValues([
                 ['errorCode' => 1012, 'buildings' => []],
                 [
                     'errorCode' => 0,
@@ -262,8 +263,8 @@ class AccountSyncTest extends TestCase
                     'userID' => 12345,
                     'level' => 30,
                     'gameWorldName' => 'TestWorld',
-                ]
-            );
+                ],
+            ]);
         $this->app->instance(ZoneParserService::class, $parserMock);
 
         $this->amfMock->shouldReceive('getFriendList')->once()->andReturn('friends-amf-bytes');

@@ -34,11 +34,11 @@ final class AmfZoneSnapshotProviderTest extends TestCase
     {
         /** @var TsoAmfService&MockInterface $mockAmf */
         $mockAmf = Mockery::mock(TsoAmfService::class);
-        $mockAmf->shouldReceive('getZone')->once()->with($this->account)->andReturn('raw_amf_zone');
+        $mockAmf->expects('getZone')->with($this->account)->andReturn('raw_amf_zone');
 
         /** @var ZoneParserService&MockInterface $mockZones */
         $mockZones = Mockery::mock(ZoneParserService::class);
-        $mockZones->shouldReceive('parse')->once()->with('raw_amf_zone')->andReturn([
+        $mockZones->expects('parse')->with('raw_amf_zone')->andReturn([
             'errorCode' => 0,
             'deposits' => [
                 ['grid' => 6431, 'name' => 'IronOre', 'amount' => 12400, 'max_amount' => 15000, 'accessible' => 0],
@@ -87,11 +87,11 @@ final class AmfZoneSnapshotProviderTest extends TestCase
     {
         /** @var TsoAmfService&MockInterface $mockAmf */
         $mockAmf = Mockery::mock(TsoAmfService::class);
-        $mockAmf->shouldReceive('getZone')->once()->with($this->account)->andReturn('raw_amf_zone');
+        $mockAmf->expects('getZone')->with($this->account)->andReturn('raw_amf_zone');
 
         /** @var ZoneParserService&MockInterface $mockZones */
         $mockZones = Mockery::mock(ZoneParserService::class);
-        $mockZones->shouldReceive('parse')->once()->with('raw_amf_zone')->andReturn([
+        $mockZones->expects('parse')->with('raw_amf_zone')->andReturn([
             'errorCode' => 1005,
         ]);
 

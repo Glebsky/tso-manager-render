@@ -11,8 +11,8 @@ use Illuminate\Console\Command;
 
 class ExecuteScheduledTasks extends Command
 {
-    protected $signature = 'tso:execute-tasks 
-                            {--task= : Run a specific task ID directly} 
+    protected $signature = 'tso:execute-tasks
+                            {--task= : Run a specific task ID directly}
                             {--async : Dispatch tasks to queue instead of running synchronously}';
 
     protected $description = 'Execute scheduled TSO tasks (legacy CLI wrapper).';
@@ -44,10 +44,9 @@ class ExecuteScheduledTasks extends Command
             }
 
             $account = $task->account;
-            $this->info("Running task #{$task->id} [{$task->task_type}] for account [{$account->username}]");
-            $success = $this->engine->reserveAndDispatchTask($task, $mode);
-
-            if (! $success) {
+            $username = $account->username ?? 'unknown';
+            $this->info("Running task #{$task->id} [{$task->task_type->value}] for account [{$username}]");
+            if (! $this->engine->reserveAndDispatchTask($task, $mode)) {
                 $this->info("  → Task #{$task->id} is already reserved/running.");
             }
 

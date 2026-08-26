@@ -171,7 +171,7 @@ final class MarketBulkService
         /** @var list<string> $keys */
         $keys = (array) config('market.bulk.periods', ['1d', '7d']);
 
-        return array_values($keys);
+        return $keys;
     }
 
     private function nextSyncAt(string $serverId, int $intervalMinutes): CarbonInterface

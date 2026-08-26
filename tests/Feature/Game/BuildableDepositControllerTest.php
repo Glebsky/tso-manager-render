@@ -49,8 +49,7 @@ final class BuildableDepositControllerTest extends TestCase
 
         /** @var ZoneSnapshotProviderInterface&MockInterface $mockZones */
         $mockZones = Mockery::mock(ZoneSnapshotProviderInterface::class);
-        $mockZones->shouldReceive('forAccount')
-            ->once()
+        $mockZones->expects('forAccount')
             ->andReturn(new ZoneSnapshot(
                 depositsByGrid: [
                     6431 => new DepositSnapshot(grid: 6431, name: 'IronOre', amount: 1000, maxAmount: 1000),

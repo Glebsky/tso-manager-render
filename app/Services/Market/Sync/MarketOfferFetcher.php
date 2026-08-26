@@ -47,7 +47,7 @@ class MarketOfferFetcher
                     throw new Exception('parse_market.py not found in storage/app/');
                 }
 
-                $tmpFile = storage_path('app/temp_market_'.uniqid().'.amf');
+                $tmpFile = storage_path('app/temp_market_'.uniqid('',true).'.amf');
                 file_put_contents($tmpFile, $rawAmf);
 
                 try {

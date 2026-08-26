@@ -7,6 +7,7 @@ namespace App\Services\Market;
 use App\Models\MarketOffer;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Collection as SupportCollection;
 
@@ -77,7 +78,7 @@ final class MarketOfferQueryService
     /**
      * Per-pair aggregates of the currently active offers.
      *
-     * @return SupportCollection<int, object>
+     * @return SupportCollection<int, MarketOffer>
      */
     public function activeInfoByPair(string $serverId): SupportCollection
     {
@@ -92,10 +93,13 @@ final class MarketOfferQueryService
             ->toBase();
     }
 
-    private function applyServerFilter(object $query, string $serverId): void
+    /**
+     * @param  Builder<MarketOffer>  $query
+     */
+    private function applyServerFilter(Builder $query, string $serverId): void
     {
         $region = explode('_', $serverId)[0];
-        $query->where(static function ($q) use ($serverId, $region): void {
+        $query->where(static function (Builder $q) use ($serverId, $region): void {
             $q->where('server_id', $serverId)
                 ->orWhere('server_id', $region)
                 ->orWhere('server_id', 'LIKE', "{$region}\\_%");

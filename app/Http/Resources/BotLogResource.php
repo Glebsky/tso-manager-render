@@ -23,9 +23,9 @@ class BotLogResource extends JsonResource
         return [
             'id' => $this->id,
             'account_id' => $this->account_id,
-            'level' => $this->level instanceof \BackedEnum ? $this->level->value : $this->level,
+            'level' => $this->level->value,
             'message' => $this->message,
-            'context' => $this->context,
+            'context' => null,
             'created_at' => $this->created_at?->toIso8601String(),
             'account' => new AccountResource($this->whenLoaded('account')),
         ];

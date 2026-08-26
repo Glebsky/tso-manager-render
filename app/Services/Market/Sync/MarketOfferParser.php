@@ -26,7 +26,7 @@ class MarketOfferParser
         $offersToInsert = [];
         $historyToInsert = [];
 
-        $expirationThreshold = $collectedAt->timestamp - ($this->offerLifetimeHours * 3600);
+        $expirationThreshold = (int) $collectedAt->timestamp - ($this->offerLifetimeHours * 3600);
 
         foreach ($rawOffers as $raw) {
             $offerStr = (string) ($raw['offer'] ?? '');
@@ -69,8 +69,8 @@ class MarketOfferParser
             $itemName = $this->gameTranslations->name('RES', $itemId);
             $targetItemName = $this->gameTranslations->name('RES', $targetItemId);
 
-            $gameCreatedMs = (int) ($raw['created'] ?? 0);
-            $gameCreatedSec = $gameCreatedMs > 0 ? (int) ($gameCreatedMs / 1000) : $collectedAt->timestamp;
+            $gameCreatedMs = is_numeric($raw['created'] ?? null) ? (int) $raw['created'] : 0;
+            $gameCreatedSec = $gameCreatedMs > 0 ? (int) ($gameCreatedMs / 1000) : (int) $collectedAt->timestamp;
             $gameCreatedAt = date('Y-m-d H:i:s', $gameCreatedSec);
 
             $offerId = (int) ($raw['id'] ?? 0);

@@ -117,7 +117,7 @@ final class SequenceStepExecutor
     public function executeSingleStep(ScheduledTask $task, Account $account): array
     {
         if ($task->task_type !== TaskType::Sequence) {
-            throw new InvalidTaskTypeException("Task #{$task->id} is not a sequence task.", 422, ['id' => $task->id, 'type' => $task->task_type?->value ?? $task->task_type]);
+            throw new InvalidTaskTypeException("Task #{$task->id} is not a sequence task.", 422, ['id' => $task->id, 'type' => $task->task_type->value]);
         }
 
         $payload = $task->payload ?? [];
@@ -203,12 +203,16 @@ final class SequenceStepExecutor
         $summaryParts = [];
 
         foreach ($stepResults as $i => $stepResult) {
-            if (($stepResult['status'] ?? null) === 'failed') {
+            $stepNumber = (int) $i + 1;
+            $stepStatus = is_array($stepResult) ? ($stepResult['status'] ?? null) : null;
+            $stepError = is_array($stepResult) ? ($stepResult['error'] ?? 'unknown') : 'unknown';
+
+            if ($stepStatus === 'failed') {
                 $hasStepError = true;
-                $summaryParts[] = __('tasks.step.error_short', ['step' => $i + 1, 'error' => $stepResult['error'] ?? 'unknown']);
+                $summaryParts[] = (string) __('tasks.step.error_short', ['step' => $stepNumber, 'error' => $stepError]);
             } else {
                 $hasStepSuccess = true;
-                $summaryParts[] = __('tasks.step.ok_short', ['step' => $i + 1]);
+                $summaryParts[] = (string) __('tasks.step.ok_short', ['step' => $stepNumber]);
             }
         }
 

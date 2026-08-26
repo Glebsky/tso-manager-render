@@ -109,19 +109,21 @@ final class MarketHistoryAggregator
     {
         $bucket = $this->bucketExpression($period->granularity);
 
+        /** @var list<array<string, mixed>> */
         return $this->pairQuery($serverId, $itemId, $targetItemId, $period)
             ->selectRaw("{$bucket} as time_bucket, ".self::SERIES_AGGREGATES)
             ->groupBy('time_bucket')
             ->orderBy('time_bucket')
             ->get()
-            ->map(fn ($row): array => $this->formatSeriesRow($row, $period->granularity))
+            ->map(fn (MarketHistory $row): array => $this->formatSeriesRow($row, $period->granularity))
+            ->values()
             ->all();
     }
 
     /**
      * Aggregates for every pair of a server in one query (bulk endpoint).
      *
-     * @return Collection<int, object>
+     * @return Collection<int, MarketHistory>
      */
     public function statsByPair(string $serverId, CarbonInterface $since): Collection
     {
@@ -210,6 +212,9 @@ final class MarketHistoryAggregator
         return $itemId.'|'.$targetItemId;
     }
 
+    /**
+     * @return Builder<MarketHistory>
+     */
     private function pairQuery(string $serverId, string $itemId, string $targetItemId, MarketPeriod $period): Builder
     {
         return MarketHistory::query()
@@ -227,6 +232,7 @@ final class MarketHistoryAggregator
     }
 
     /**
+     * @param  MarketHistory|object{time_bucket: mixed, price: mixed, volume: mixed, sellers_count: mixed, offers_count: mixed, avg_amount?: mixed, avg_target_amount?: mixed}  $row
      * @return array<string, mixed>
      */
     private function formatSeriesRow(object $row, TimeGranularity $granularity): array

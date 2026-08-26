@@ -4,6 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property mixed $time_bucket
+ * @property ?int $offers_count
+ * @property ?int $sellers_count
+ * @property ?int $total_volume
+ * @property ?float $avg_amount
+ * @property ?float $avg_target_amount
+ */
 class MarketHistory extends Model
 {
     protected $table = 'market_history';

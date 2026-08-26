@@ -52,6 +52,7 @@ class GameLangFileWriterTest extends TestCase
         $this->assertFileExists($path);
 
         $content = file_get_contents($path);
+        $this->assertIsString($content);
         $this->assertStringContainsString('DO NOT EDIT', $content);
         $this->assertStringContainsString('declare(strict_types=1);', $content);
 

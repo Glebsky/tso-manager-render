@@ -25,7 +25,7 @@ class ZoneAmfExecutor
             throw new Exception('parse_zone.py not found in storage/app/. Please deploy the script.');
         }
 
-        $tmpFile = storage_path('app/temp_zone_'.uniqid().'.amf');
+        $tmpFile = storage_path('app/temp_zone_'.uniqid('',true).'.amf');
         file_put_contents($tmpFile, $rawAmf);
 
         try {

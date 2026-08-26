@@ -40,17 +40,21 @@ final class PopularItemService
                     $query->where('collected_at', '>=', $period->since);
                 }
 
+                /** @var list<array<string, mixed>> */
                 return $query->groupBy('item_id', 'item_name')
                     ->orderByDesc('offers_count')
                     ->orderByDesc('total_volume')
                     ->limit((int) config('market.popular_items_limit'))
                     ->get()
-                    ->map(function ($row) {
-                        $row->item_name = $this->names->resolve($row->item_id, $row->item_name);
-
-                        return $row;
-                    })
-                    ->toArray();
+                    ->map(fn (MarketHistory $row): array => [
+                        'item_id' => (string) $row->item_id,
+                        'item_name' => $this->names->resolve((string) $row->item_id, (string) $row->item_name),
+                        'offers_count' => (int) $row->offers_count,
+                        'sellers_count' => (int) $row->sellers_count,
+                        'total_volume' => (int) $row->total_volume,
+                    ])
+                    ->values()
+                    ->all();
             }
         );
     }

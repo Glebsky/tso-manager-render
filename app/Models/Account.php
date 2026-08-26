@@ -87,11 +87,17 @@ class Account extends Model
         return $this->hasMany(MarketServerConnection::class);
     }
 
+    /**
+     * @return HasMany<ScheduledTask, $this>
+     */
     public function scheduledTasks(): HasMany
     {
         return $this->hasMany(ScheduledTask::class);
     }
 
+    /**
+     * @return HasMany<BotLog, $this>
+     */
     public function botLogs(): HasMany
     {
         return $this->hasMany(BotLog::class);

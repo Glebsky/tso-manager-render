@@ -69,7 +69,7 @@ class TaskExecutionService
      */
     private function executeSingleTask(ScheduledTask $task, Account $account, array $payload): string
     {
-        $taskTypeStr = $task->task_type instanceof TaskType ? $task->task_type->value : (string) $task->task_type;
+        $taskTypeStr = $task->task_type->value;
         $result = $this->singleActionExecutor->executeWithRetry($account, $taskTypeStr, $payload);
 
         $payload['step_results'] = [['status' => 'completed', 'error' => null]];

@@ -49,8 +49,7 @@ final class MineTargetListServiceTest extends TestCase
     {
         /** @var ZoneSnapshotProviderInterface&MockInterface $mockZones */
         $mockZones = Mockery::mock(ZoneSnapshotProviderInterface::class);
-        $mockZones->shouldReceive('forAccount')
-            ->once()
+        $mockZones->expects('forAccount')
             ->with($this->account)
             ->andReturn(new ZoneSnapshot(
                 depositsByGrid: [
@@ -85,8 +84,7 @@ final class MineTargetListServiceTest extends TestCase
     {
         /** @var ZoneSnapshotProviderInterface&MockInterface $mockZones */
         $mockZones = Mockery::mock(ZoneSnapshotProviderInterface::class);
-        $mockZones->shouldReceive('forAccount')
-            ->once()
+        $mockZones->expects('forAccount')
             ->with($this->account)
             ->andReturn(new ZoneSnapshot(
                 depositsByGrid: [],
@@ -119,7 +117,7 @@ final class MineTargetListServiceTest extends TestCase
     {
         /** @var ZoneSnapshotProviderInterface&MockInterface $mockZones */
         $mockZones = Mockery::mock(ZoneSnapshotProviderInterface::class);
-        $mockZones->shouldReceive('forAccount')
+        $mockZones->expects('forAccount')
             ->twice()
             ->with($this->account)
             ->andReturn(new ZoneSnapshot(

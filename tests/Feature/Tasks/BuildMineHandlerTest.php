@@ -57,8 +57,7 @@ final class BuildMineHandlerTest extends TestCase
     {
         /** @var ZoneSnapshotProviderInterface&MockInterface $mockZones */
         $mockZones = Mockery::mock(ZoneSnapshotProviderInterface::class);
-        $mockZones->shouldReceive('forAccount')
-            ->once()
+        $mockZones->expects('forAccount')
             ->with($this->account)
             ->andReturn(new ZoneSnapshot(
                 depositsByGrid: [6431 => new DepositSnapshot(grid: 6431, name: 'IronOre', amount: 1000, maxAmount: 1000)],
@@ -68,14 +67,13 @@ final class BuildMineHandlerTest extends TestCase
 
         /** @var MineCommandGatewayInterface&MockInterface $mockGateway */
         $mockGateway = Mockery::mock(MineCommandGatewayInterface::class);
-        $mockGateway->shouldReceive('buildMine')
-            ->once()
+        $mockGateway->expects('buildMine')
             ->with($this->account, 50, 6431)
             ->andReturn('dummy_amf_ok');
 
         /** @var ZoneParserService&MockInterface $mockParser */
         $mockParser = Mockery::mock(ZoneParserService::class);
-        $mockParser->shouldReceive('parse')
+        $mockParser->expects('parse')
             ->with('dummy_amf_ok')
             ->andReturn(['errorCode' => 0]);
 
@@ -92,8 +90,7 @@ final class BuildMineHandlerTest extends TestCase
     {
         /** @var ZoneSnapshotProviderInterface&MockInterface $mockZones */
         $mockZones = Mockery::mock(ZoneSnapshotProviderInterface::class);
-        $mockZones->shouldReceive('forAccount')
-            ->once()
+        $mockZones->expects('forAccount')
             ->with($this->account)
             ->andReturn(new ZoneSnapshot(
                 depositsByGrid: [6431 => new DepositSnapshot(grid: 6431, name: 'IronOre', amount: 1000, maxAmount: 1000)],
@@ -120,8 +117,7 @@ final class BuildMineHandlerTest extends TestCase
     {
         /** @var ZoneSnapshotProviderInterface&MockInterface $mockZones */
         $mockZones = Mockery::mock(ZoneSnapshotProviderInterface::class);
-        $mockZones->shouldReceive('forAccount')
-            ->once()
+        $mockZones->expects('forAccount')
             ->with($this->account)
             ->andReturn(new ZoneSnapshot(
                 depositsByGrid: [6431 => new DepositSnapshot(grid: 6431, name: 'Stone', amount: 1000, maxAmount: 1000)],
@@ -148,8 +144,7 @@ final class BuildMineHandlerTest extends TestCase
     {
         /** @var ZoneSnapshotProviderInterface&MockInterface $mockZones */
         $mockZones = Mockery::mock(ZoneSnapshotProviderInterface::class);
-        $mockZones->shouldReceive('forAccount')
-            ->once()
+        $mockZones->expects('forAccount')
             ->with($this->account)
             ->andReturn(new ZoneSnapshot(
                 depositsByGrid: [6431 => new DepositSnapshot(grid: 6431, name: 'IronOre', amount: 1000, maxAmount: 1000)],
@@ -176,8 +171,7 @@ final class BuildMineHandlerTest extends TestCase
     {
         /** @var ZoneSnapshotProviderInterface&MockInterface $mockZones */
         $mockZones = Mockery::mock(ZoneSnapshotProviderInterface::class);
-        $mockZones->shouldReceive('forAccount')
-            ->once()
+        $mockZones->expects('forAccount')
             ->with($this->account)
             ->andReturn(new ZoneSnapshot(
                 depositsByGrid: [6431 => new DepositSnapshot(grid: 6431, name: 'IronOre', amount: 1000, maxAmount: 1000)],
@@ -187,14 +181,13 @@ final class BuildMineHandlerTest extends TestCase
 
         /** @var MineCommandGatewayInterface&MockInterface $mockGateway */
         $mockGateway = Mockery::mock(MineCommandGatewayInterface::class);
-        $mockGateway->shouldReceive('buildMine')
-            ->once()
+        $mockGateway->expects('buildMine')
             ->with($this->account, 50, 6431)
             ->andReturn('dummy_amf_1005');
 
         /** @var ZoneParserService&MockInterface $mockParser */
         $mockParser = Mockery::mock(ZoneParserService::class);
-        $mockParser->shouldReceive('parse')
+        $mockParser->expects('parse')
             ->with('dummy_amf_1005')
             ->andReturn(['errorCode' => 1005]);
 
@@ -210,8 +203,7 @@ final class BuildMineHandlerTest extends TestCase
     {
         /** @var ZoneSnapshotProviderInterface&MockInterface $mockZones */
         $mockZones = Mockery::mock(ZoneSnapshotProviderInterface::class);
-        $mockZones->shouldReceive('forAccount')
-            ->once()
+        $mockZones->expects('forAccount')
             ->with($this->account)
             ->andReturn(new ZoneSnapshot(
                 depositsByGrid: [6431 => new DepositSnapshot(grid: 6431, name: 'IronOre', amount: 1000, maxAmount: 1000)],
@@ -221,14 +213,13 @@ final class BuildMineHandlerTest extends TestCase
 
         /** @var MineCommandGatewayInterface&MockInterface $mockGateway */
         $mockGateway = Mockery::mock(MineCommandGatewayInterface::class);
-        $mockGateway->shouldReceive('buildMine')
-            ->once()
+        $mockGateway->expects('buildMine')
             ->with($this->account, 50, 6431)
             ->andReturn('dummy_amf_1012');
 
         /** @var ZoneParserService&MockInterface $mockParser */
         $mockParser = Mockery::mock(ZoneParserService::class);
-        $mockParser->shouldReceive('parse')
+        $mockParser->expects('parse')
             ->with('dummy_amf_1012')
             ->andReturn(['errorCode' => 1012]);
 
@@ -244,8 +235,7 @@ final class BuildMineHandlerTest extends TestCase
     {
         /** @var ZoneSnapshotProviderInterface&MockInterface $mockZones */
         $mockZones = Mockery::mock(ZoneSnapshotProviderInterface::class);
-        $mockZones->shouldReceive('forAccount')
-            ->once()
+        $mockZones->expects('forAccount')
             ->with($this->account)
             ->andReturn(new ZoneSnapshot(
                 depositsByGrid: [6431 => new DepositSnapshot(grid: 6431, name: 'IronOre', amount: 1000, maxAmount: 1000)],
@@ -255,14 +245,13 @@ final class BuildMineHandlerTest extends TestCase
 
         /** @var MineCommandGatewayInterface&MockInterface $mockGateway */
         $mockGateway = Mockery::mock(MineCommandGatewayInterface::class);
-        $mockGateway->shouldReceive('buildMine')
-            ->once()
+        $mockGateway->expects('buildMine')
             ->with($this->account, 50, 6431)
             ->andReturn('dummy_amf_error');
 
         /** @var ZoneParserService&MockInterface $mockParser */
         $mockParser = Mockery::mock(ZoneParserService::class);
-        $mockParser->shouldReceive('parse')
+        $mockParser->expects('parse')
             ->with('dummy_amf_error')
             ->andReturn(['errorCode' => 500]);
 

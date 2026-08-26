@@ -117,7 +117,7 @@ class SingleOperatorInvariantTest extends TestCase
             $uri = $route->uri();
 
             // Format URI cleanly
-            $testUri = preg_replace('/\{[^}]+\}/', '1', $uri);
+            $testUri = (string) preg_replace('/\{[^}]+\}/', '1', $uri);
             if (! str_starts_with($testUri, '/')) {
                 $testUri = '/'.$testUri;
             }

@@ -12,6 +12,8 @@ class MarketServerVerificationService
 {
     /**
      * Determine server and locale from account properties.
+     *
+     * @return array{detected_server_id: ?string, detected_locale: ?string, game_world: ?string, confidence: string}
      */
     public function detectServerForAccount(Account $account): array
     {
@@ -65,6 +67,8 @@ class MarketServerVerificationService
 
     /**
      * Verify if the account matches the target server connection.
+     *
+     * @return array{status: string, detected_server: ?string, message: string, detected_locale: ?string}
      */
     public function verifyAccountServerMatch(Account $account, MarketServerConnection $connection): array
     {
@@ -77,7 +81,8 @@ class MarketServerVerificationService
             return [
                 'status' => 'unverified',
                 'detected_server' => null,
-                'message' => __('ui.market.verification_unverified'),
+                'detected_locale' => null,
+                'message' => (string) __('ui.market.verification_unverified'),
             ];
         }
 
@@ -92,7 +97,7 @@ class MarketServerVerificationService
                 'status' => 'verified',
                 'detected_server' => $detectedServerId,
                 'detected_locale' => $detection['detected_locale'],
-                'message' => __('ui.market.verification_verified'),
+                'message' => (string) __('ui.market.verification_verified'),
             ];
         }
 
@@ -100,7 +105,7 @@ class MarketServerVerificationService
             'status' => 'mismatch',
             'detected_server' => $detectedServerId,
             'detected_locale' => $detection['detected_locale'],
-            'message' => __('ui.market.verification_mismatch', ['detected' => $detectedServerId, 'server' => $connection->server_id]),
+            'message' => (string) __('ui.market.verification_mismatch', ['detected' => $detectedServerId, 'server' => $connection->server_id]),
         ];
     }
 }

@@ -32,13 +32,14 @@ class MarketOfferPersister
             $offerIds = array_column($history, 'offer_id');
             $existingIds = [];
             if (! empty($offerIds)) {
-                foreach (array_chunk($offerIds, 500) as $idChunk) {
-                    $chunkExisting = MarketHistory::where('server_id', $serverId)
-                        ->whereIn('offer_id', $idChunk)
-                        ->pluck('offer_id')
-                        ->toArray();
-                    $existingIds = array_merge($existingIds, $chunkExisting);
-                }
+                $existingIds = collect($offerIds)
+                    ->chunk(500)
+                    ->flatMap(function ($idChunk) use ($serverId) {
+                        return MarketHistory::where('server_id', $serverId)
+                            ->whereIn('offer_id', $idChunk)
+                            ->pluck('offer_id');
+                    })
+                    ->all();
             }
 
             $existingIdsSet = array_flip($existingIds);

@@ -334,8 +334,8 @@ abstract class ScheduledTaskRequest extends FormRequest
             return;
         }
 
-        $account = Account::find($accountId);
-        if (! $account) {
+        $account = Account::find((int) $accountId);
+        if (! $account instanceof Account) {
             return;
         }
 

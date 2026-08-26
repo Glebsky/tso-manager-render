@@ -12,6 +12,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ScheduledTask extends Model
 {
+    protected $attributes = [
+        'status' => 'pending',
+        'is_active' => true,
+    ];
+
     protected $fillable = [
         'name',
         'account_id',
@@ -45,6 +50,9 @@ class ScheduledTask extends Model
         'schedule_type' => ScheduleType::class,
     ];
 
+    /**
+     * @return BelongsTo<Account, $this>
+     */
     public function account(): BelongsTo
     {
         return $this->belongsTo(Account::class);

@@ -49,8 +49,7 @@ final class UpgradableMineControllerTest extends TestCase
 
         /** @var ZoneSnapshotProviderInterface&MockInterface $mockZones */
         $mockZones = Mockery::mock(ZoneSnapshotProviderInterface::class);
-        $mockZones->shouldReceive('forAccount')
-            ->once()
+        $mockZones->expects('forAccount')
             ->andReturn(new ZoneSnapshot(
                 depositsByGrid: [],
                 buildingsByGrid: [

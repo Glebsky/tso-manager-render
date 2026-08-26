@@ -27,6 +27,9 @@ class ExecuteScheduledTaskJob implements ShouldQueue
 
     public int $timeout = 120;
 
+    /**
+     * @var list<int>
+     */
     public array $backoff = [30, 120, 300];
 
     /**
@@ -77,7 +80,7 @@ class ExecuteScheduledTaskJob implements ShouldQueue
         }
 
         if ($task->status !== TaskStatus::Queued && $task->status !== TaskStatus::Running) {
-            Log::info("[TaskJob] Task #{$this->taskId} has status '{$task->status?->value}' instead of 'queued'; skipping");
+            Log::info("[TaskJob] Task #{$this->taskId} has status '{$task->status->value}' instead of 'queued'; skipping");
 
             return;
         }
@@ -167,8 +170,8 @@ class ExecuteScheduledTaskJob implements ShouldQueue
         return sprintf(
             'state: is_active=%s status=%s schedule=%s token=%s job_token=%s completed_steps=%s queued_at=%s last_run_at=%s updated_at=%s',
             $task->is_active ? 'true' : 'false',
-            (string) $task->status?->value,
-            (string) $task->schedule_type?->value,
+            $task->status->value,
+            $task->schedule_type->value,
             $task->execution_token ?? 'null',
             $this->executionToken,
             (string) $task->completed_steps,
@@ -197,7 +200,7 @@ class ExecuteScheduledTaskJob implements ShouldQueue
             BotLog::create([
                 'account_id' => $task->account_id,
                 'level' => LogLevel::Error,
-                'message' => "[Task][Task#{$task->id}] ".__('logs.task.job_failed', ['id' => $task->id, 'type' => $task->task_type?->value ?? $task->task_type, 'error' => $exception->getMessage()]),
+                'message' => "[Task][Task#{$task->id}] ".__('logs.task.job_failed', ['id' => $task->id, 'type' => $task->task_type->value, 'error' => $exception->getMessage()]),
             ]);
         }
     }

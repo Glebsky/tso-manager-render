@@ -10,17 +10,18 @@ use App\Services\TsoAuthService;
 use App\Services\ZoneParserService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
+use Mockery\MockInterface;
 use Tests\TestCase;
 
 class ScheduledTaskCollectPickupsTest extends TestCase
 {
     use RefreshDatabase;
 
-    private $authMock;
+    private MockInterface $authMock;
 
-    private $amfMock;
+    private MockInterface $amfMock;
 
-    private $parserMock;
+    private MockInterface $parserMock;
 
     protected function setUp(): void
     {
@@ -64,7 +65,7 @@ class ScheduledTaskCollectPickupsTest extends TestCase
         ]);
     }
 
-    public function test_collects_every_available_pickup()
+    public function test_collects_every_available_pickup(): void
     {
         $account = $this->createAccount();
 
@@ -83,7 +84,7 @@ class ScheduledTaskCollectPickupsTest extends TestCase
         $this->assertStringContainsString('2/2', $result);
     }
 
-    public function test_event_filter_only_collects_event_pickups()
+    public function test_event_filter_only_collects_event_pickups(): void
     {
         $account = $this->createAccount();
 
@@ -101,7 +102,7 @@ class ScheduledTaskCollectPickupsTest extends TestCase
         $this->assertStringContainsString('1/1', $result);
     }
 
-    public function test_stale_pickup_is_skipped_and_does_not_fail_the_task()
+    public function test_stale_pickup_is_skipped_and_does_not_fail_the_task(): void
     {
         $account = $this->createAccount();
 
@@ -121,7 +122,7 @@ class ScheduledTaskCollectPickupsTest extends TestCase
         $this->assertStringContainsString('2001', $result);
     }
 
-    public function test_missing_pickups_key_throws_pickups_unavailable()
+    public function test_missing_pickups_key_throws_pickups_unavailable(): void
     {
         $account = $this->createAccount();
 
@@ -133,7 +134,7 @@ class ScheduledTaskCollectPickupsTest extends TestCase
         $this->handler()->handle($account, []);
     }
 
-    public function test_empty_island_returns_nothing_to_collect()
+    public function test_empty_island_returns_nothing_to_collect(): void
     {
         $account = $this->createAccount();
 
@@ -145,7 +146,7 @@ class ScheduledTaskCollectPickupsTest extends TestCase
         $this->assertSame(__('tasks.pickups.none_available'), $result);
     }
 
-    public function test_can_schedule_collect_pickups_task_via_api()
+    public function test_can_schedule_collect_pickups_task_via_api(): void
     {
         $account = $this->createAccount();
 
@@ -168,7 +169,7 @@ class ScheduledTaskCollectPickupsTest extends TestCase
         ]);
     }
 
-    public function test_invalid_pickup_type_is_rejected()
+    public function test_invalid_pickup_type_is_rejected(): void
     {
         $account = $this->createAccount();
 

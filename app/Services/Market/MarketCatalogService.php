@@ -57,6 +57,7 @@ final class MarketCatalogService
      */
     public function distinctGoods(string $serverId): array
     {
+        /** @var list<array{item_id: string, item_name: string}> */
         return $this->distinctPairColumn(
             MarketOffer::query()->where('server_id', $serverId)->select('item_id', 'item_name'),
             MarketHistory::query()->where('server_id', $serverId)->select('item_id', 'item_name'),
@@ -70,6 +71,7 @@ final class MarketCatalogService
      */
     public function distinctTargets(string $serverId, string $itemId): array
     {
+        /** @var list<array{target_item_id: string, target_item_name: string}> */
         return $this->distinctPairColumn(
             MarketOffer::query()->where('server_id', $serverId)->where('item_id', $itemId)->select('target_item_id', 'target_item_name'),
             MarketHistory::query()->where('server_id', $serverId)->where('item_id', $itemId)->select('target_item_id', 'target_item_name'),
@@ -95,21 +97,24 @@ final class MarketCatalogService
     }
 
     /**
+     * @param  Builder<MarketOffer>  $offers
+     * @param  Builder<MarketHistory>  $history
      * @return list<array<string, string>>
      */
     private function distinctPairColumn(Builder $offers, Builder $history, string $idColumn, string $nameColumn): array
     {
+        /** @var list<array<string, string>> */
         return $offers->union($history)
             ->distinct()
             ->orderBy($nameColumn)
             ->get()
             ->unique($idColumn)
-            ->map(fn ($row): array => [
-                $idColumn => $row->{$idColumn},
-                $nameColumn => $this->names->resolve($row->{$idColumn}, $row->{$nameColumn}),
+            ->map(fn (MarketOffer $row): array => [
+                $idColumn => (string) $row->{$idColumn},
+                $nameColumn => $this->names->resolve((string) $row->{$idColumn}, (string) $row->{$nameColumn}),
             ])
             ->sortBy($nameColumn, SORT_NATURAL | SORT_FLAG_CASE)
             ->values()
-            ->toArray();
+            ->all();
     }
 }

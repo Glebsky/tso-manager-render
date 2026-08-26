@@ -119,8 +119,8 @@ class SystemLogCleanupTest extends TestCase
         Setting::set('last_log_cleanup_at', null);
 
         $mockService = Mockery::mock(SystemLogCleanupService::class)->makePartial();
-        $mockService->shouldReceive('shouldRunCleanup')->andReturn(true);
-        $mockService->shouldReceive('cleanExpiredLogs')->andThrow(new \RuntimeException('DB connection failed'));
+        $mockService->allows('shouldRunCleanup')->andReturn(true);
+        $mockService->allows('cleanExpiredLogs')->andThrow(new \RuntimeException('DB connection failed'));
 
         $this->app->instance(SystemLogCleanupService::class, $mockService);
 
@@ -129,6 +129,7 @@ class SystemLogCleanupTest extends TestCase
         $exitCode = Artisan::call('tso:run-scheduler');
 
         $this->assertEquals(0, $exitCode);
+        /** @phpstan-ignore staticMethod.notFound */
         Log::shouldHaveReceived('error')
             ->once()
             ->withArgs(function ($message) {

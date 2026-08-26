@@ -91,7 +91,7 @@ final class AccountController extends Controller
 
     public function updateSession(UpdateAccountSessionRequest $request, Account $account): AccountResource
     {
-        $updatedAccount = $this->accountService->updateSession($account, $request->validated());
+        $updatedAccount = $this->accountService->updateSession($account, $request->sessionData());
 
         return new AccountResource($updatedAccount);
     }

@@ -141,18 +141,18 @@ class MarketCacheTest extends TestCase
         $response1->assertStatus(200);
         $this->assertTrue($response1->headers->has('ETag'));
         $this->assertTrue($response1->headers->has('X-Data-Version'));
-        $cacheControl = $response1->headers->get('Cache-Control');
+        $cacheControl = (string) $response1->headers->get('Cache-Control');
         $this->assertStringContainsString('public', $cacheControl);
         $this->assertStringContainsString('max-age=60', $cacheControl);
         $this->assertStringContainsString('stale-while-revalidate=240', $cacheControl);
 
-        $etag = $response1->headers->get('ETag');
+        $etag = (string) $response1->headers->get('ETag');
 
         // Sending same ETag within the same time bucket returns 304
         $response2 = $this->withHeaders(['If-None-Match' => $etag])
             ->getJson('/api/public/market/servers');
         $response2->assertStatus(304);
-        $cacheControl304 = $response2->headers->get('Cache-Control');
+        $cacheControl304 = (string) $response2->headers->get('Cache-Control');
         $this->assertStringContainsString('public', $cacheControl304);
         $this->assertStringContainsString('max-age=60', $cacheControl304);
         $this->assertStringContainsString('stale-while-revalidate=240', $cacheControl304);
@@ -171,7 +171,7 @@ class MarketCacheTest extends TestCase
             ]);
 
         $this->assertSame('1', $response->headers->get('X-Data-Version'));
-        $cacheControl = $response->headers->get('Cache-Control');
+        $cacheControl = (string) $response->headers->get('Cache-Control');
         $this->assertStringContainsString('no-store', $cacheControl);
         $this->assertStringContainsString('no-cache', $cacheControl);
         $this->assertStringContainsString('must-revalidate', $cacheControl);
@@ -188,7 +188,7 @@ class MarketCacheTest extends TestCase
         $this->assertTrue($response->headers->has('ETag'));
         $this->assertTrue($response->headers->has('X-Data-Version'));
         $this->assertSame('1', $response->headers->get('X-Data-Version'));
-        $cacheControl = $response->headers->get('Cache-Control');
+        $cacheControl = (string) $response->headers->get('Cache-Control');
         $this->assertStringContainsString('private', $cacheControl);
         $this->assertStringContainsString('max-age=60', $cacheControl);
         $this->assertStringContainsString('stale-while-revalidate=240', $cacheControl);

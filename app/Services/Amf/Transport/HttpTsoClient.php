@@ -103,11 +103,25 @@ class HttpTsoClient implements TsoClientInterface
     {
         $record = Cache::get($this->sharedSessionKey($accountId, $zoneId));
 
-        if (! is_array($record) || ($record['auth_token'] ?? null) !== $authToken) {
+        if (! is_array($record)
+            || ! isset($record['url'], $record['cookie_file'], $record['ds_id'], $record['auth_token'], $record['resolved_at'])
+            || ! is_string($record['url'])
+            || ! is_string($record['cookie_file'])
+            || ! is_string($record['ds_id'])
+            || ! is_string($record['auth_token'])
+            || ! is_numeric($record['resolved_at'])
+            || $record['auth_token'] !== $authToken
+        ) {
             return null;
         }
 
-        return $record;
+        return [
+            'url' => $record['url'],
+            'cookie_file' => $record['cookie_file'],
+            'ds_id' => $record['ds_id'],
+            'auth_token' => $record['auth_token'],
+            'resolved_at' => (float) $record['resolved_at'],
+        ];
     }
 
     /**
@@ -150,6 +164,9 @@ class HttpTsoClient implements TsoClientInterface
         $dsoAuthUser = (string) $account->dso_auth_user;
         $dsoAuthToken = (string) $account->dso_auth_token;
         $cookieFile = $this->authService->getCookieFile($account);
+        if ($cookieFile === '') {
+            throw new Exception("Cookie file for account #{$account->id} cannot be empty.");
+        }
 
         Log::info("[TsoAmf] Resolving real AMF server: bbUrl={$lsUrl}, user={$dsoAuthUser}, targetZoneId={$targetZoneId}");
 
@@ -284,17 +301,21 @@ class HttpTsoClient implements TsoClientInterface
             $dsId = 'nil';
             $amfServerUrl = $this->resolveServerUrl($account, $zoneId, $dsId);
 
-            $accountDsId = $dsId !== 'nil' ? $dsId : ($this->dsIds[$accountId] ?? 'nil');
+            $resolvedDsId = ($dsId !== null && $dsId !== 'nil') ? $dsId : ($this->dsIds[$accountId] ?? 'nil');
+            $cookieFile = $this->authService->getCookieFile($account);
+            if ($cookieFile === '' || $amfServerUrl === '') {
+                throw new Exception('Invalid AMF server URL or cookie file.');
+            }
 
             $session = [
                 'url' => $amfServerUrl,
-                'cookie_file' => $this->authService->getCookieFile($account),
-                'ds_id' => $accountDsId,
+                'cookie_file' => $cookieFile,
+                'ds_id' => $resolvedDsId,
                 'auth_token' => $authToken,
                 'resolved_at' => microtime(true),
             ];
 
-            if ($dsId !== 'nil') {
+            if ($dsId !== null && $dsId !== 'nil') {
                 $this->dsIds[$accountId] = $dsId;
             }
 
@@ -331,6 +352,10 @@ class HttpTsoClient implements TsoClientInterface
         $amf0Envelope = $this->wrapAmf0Remoting('null', '/1', $amf3Body);
 
         $startTime = microtime(true);
+
+        if ($client['url'] === '' || $client['cookie_file'] === '') {
+            throw new Exception('Invalid client URL or cookie file.');
+        }
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $client['url']);

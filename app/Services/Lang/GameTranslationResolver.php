@@ -82,7 +82,7 @@ final class GameTranslationResolver
             if (isset($catalog[$section])) {
                 $sec = $catalog[$section];
                 foreach ($candidates as $cand) {
-                    if (isset($sec[$cand]) && is_string($sec[$cand])) {
+                    if (isset($sec[$cand])) {
                         return $sec[$cand];
                     }
                 }
@@ -90,7 +90,7 @@ final class GameTranslationResolver
                 $idLowerClean = str_replace([' ', '_'], '', strtolower($id));
                 foreach ($sec as $k => $v) {
                     $kLowerClean = str_replace([' ', '_'], '', strtolower($k));
-                    if ($kLowerClean === $idLowerClean && is_string($v)) {
+                    if ($kLowerClean === $idLowerClean) {
                         return $v;
                     }
                 }

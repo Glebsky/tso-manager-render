@@ -11,17 +11,18 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Mockery;
+use Mockery\MockInterface;
 use Tests\TestCase;
 
 class ScheduledTaskBuffTest extends TestCase
 {
     use RefreshDatabase;
 
-    private $authMock;
+    private MockInterface $authMock;
 
-    private $amfMock;
+    private MockInterface $amfMock;
 
-    private $parserMock;
+    private MockInterface $parserMock;
 
     protected function setUp(): void
     {
@@ -38,6 +39,9 @@ class ScheduledTaskBuffTest extends TestCase
 
     /**
      * Helper to create account with mock zone data.
+     *
+     * @param  list<array<string, mixed>>  $friends
+     * @param  list<array<string, mixed>>  $buffs
      */
     private function createAccount(array $friends = [], array $buffs = []): Account
     {
@@ -54,7 +58,7 @@ class ScheduledTaskBuffTest extends TestCase
         ]);
     }
 
-    public function test_can_schedule_self_buff_task_with_valid_inventory()
+    public function test_can_schedule_self_buff_task_with_valid_inventory(): void
     {
         $account = $this->createAccount(
             [],
@@ -82,7 +86,7 @@ class ScheduledTaskBuffTest extends TestCase
         ]);
     }
 
-    public function test_schedule_fails_when_buff_missing_or_insufficient()
+    public function test_schedule_fails_when_buff_missing_or_insufficient(): void
     {
         $account = $this->createAccount(
             [],
@@ -122,7 +126,7 @@ class ScheduledTaskBuffTest extends TestCase
         $response2->assertStatus(422);
     }
 
-    public function test_can_schedule_friend_buff_task_when_cached()
+    public function test_can_schedule_friend_buff_task_when_cached(): void
     {
         $friendId = 20002;
         $account = $this->createAccount(
@@ -156,7 +160,7 @@ class ScheduledTaskBuffTest extends TestCase
         $response->assertStatus(201);
     }
 
-    public function test_schedule_fails_when_friend_or_friend_building_missing_in_cache()
+    public function test_schedule_fails_when_friend_or_friend_building_missing_in_cache(): void
     {
         $friendId = 20002;
         $account = $this->createAccount(
@@ -206,7 +210,7 @@ class ScheduledTaskBuffTest extends TestCase
         $response2->assertStatus(422);
     }
 
-    public function test_executes_self_buff_task_successfully()
+    public function test_executes_self_buff_task_successfully(): void
     {
         $account = $this->createAccount(
             [],
@@ -245,10 +249,10 @@ class ScheduledTaskBuffTest extends TestCase
         $task->refresh();
         $this->assertFalse($task->is_active);
         $this->assertNotNull($task->last_run_at);
-        $this->assertStringContainsString('OK:', $task->last_result);
+        $this->assertStringContainsString('OK:', (string) $task->last_result);
     }
 
-    public function test_executes_friend_buff_task_successfully()
+    public function test_executes_friend_buff_task_successfully(): void
     {
         $friendId = 20002;
         $account = $this->createAccount(
@@ -307,10 +311,10 @@ class ScheduledTaskBuffTest extends TestCase
         $task->refresh();
         $this->assertFalse($task->is_active);
         $this->assertNotNull($task->last_run_at);
-        $this->assertStringContainsString('OK:', $task->last_result);
+        $this->assertStringContainsString('OK:', (string) $task->last_result);
     }
 
-    public function test_execution_fails_with_mapped_error_message()
+    public function test_execution_fails_with_mapped_error_message(): void
     {
         $account = $this->createAccount(
             [],
@@ -347,11 +351,11 @@ class ScheduledTaskBuffTest extends TestCase
 
         $task->refresh();
         $this->assertFalse($task->is_active);
-        $this->assertStringContainsString('tasks.error.server_error', $task->last_result);
-        $this->assertStringContainsString('25', $task->last_result);
+        $this->assertStringContainsString('tasks.error.server_error', (string) $task->last_result);
+        $this->assertStringContainsString('25', (string) $task->last_result);
     }
 
-    public function test_friend_zone_endpoint_caching()
+    public function test_friend_zone_endpoint_caching(): void
     {
         $friendId = 20002;
         $account = $this->createAccount(
@@ -373,11 +377,12 @@ class ScheduledTaskBuffTest extends TestCase
             ->andReturn([
                 'errorCode' => 0,
                 'buildings' => [
-                    ['buildingGrid' => 999, 'buildingName' => 'IronMine', 'level' => 3, 'isProductionActive' => true],
+                    ['buildingGrid' => 888, 'buildingName_string' => 'Bakery'],
                 ],
             ]);
 
         $response1 = $this->getJson("/api/accounts/{$account->id}/friends/{$friendId}/zone");
+
         $response1->assertStatus(200);
         $response1->assertJsonPath('success', true);
         $response1->assertJsonPath('friend.username', 'MyFriend');
@@ -453,6 +458,6 @@ class ScheduledTaskBuffTest extends TestCase
         $this->assertFalse($task->is_active);
         $this->assertNotNull($task->last_run_at);
 
-        $this->assertStringContainsString('OK:', $task->last_result);
+        $this->assertStringContainsString('OK:', (string) $task->last_result);
     }
 }

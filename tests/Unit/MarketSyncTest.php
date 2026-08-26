@@ -28,7 +28,7 @@ class MarketSyncTest extends TestCase
                 'senderName' => 'TraderBob',
                 'offer' => 'Oil,100|Coin,50',
                 'lotsRemaining' => 2,
-                'created' => now()->timestamp * 1000,
+                'created' => (int) now()->timestamp * 1000,
             ],
             [
                 // Invalid offer string - ignored

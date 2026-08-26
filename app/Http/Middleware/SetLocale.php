@@ -35,7 +35,7 @@ class SetLocale
 
         // 4. Queue the cookie if it's missing or different from request
         if ($request->cookie('app_locale') !== $locale) {
-            cookie()->queue('app_locale', $locale, 60 * 24 * 365, '/', null, false, false);
+            cookie()->queue('app_locale', $locale, now()->addYear(), '/', null, false, false);
         }
 
         return $next($request);

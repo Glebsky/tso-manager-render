@@ -26,11 +26,17 @@ final class ScheduledTaskService
 
     public function __construct(private readonly TaskActivityLogger $logger) {}
 
+    /**
+     * @return Collection<int, ScheduledTask>
+     */
     public function tasks(): Collection
     {
         return ScheduledTask::with(self::ACCOUNT_COLUMNS)->orderBy('id', 'desc')->get();
     }
 
+    /**
+     * @return Collection<int, Account>
+     */
     public function accounts(): Collection
     {
         return Account::orderBy('username')->get();
@@ -66,7 +72,7 @@ final class ScheduledTaskService
 
         $this->logger->updated($task);
 
-        return $task->fresh();
+        return $task->fresh() ?? $task;
     }
 
     /**
@@ -86,7 +92,7 @@ final class ScheduledTaskService
             return $payload;
         }
 
-        $zoneData = is_array($account->zone_data) ? $account->zone_data : [];
+        $zoneData = $account->zone_data ?? [];
         $buildings = $zoneData['buildings'] ?? [];
         if (! is_array($buildings) || $buildings === []) {
             return $payload;
@@ -151,7 +157,7 @@ final class ScheduledTaskService
             $task->id,
             $task->is_active ? 'true' : 'false',
             $task->is_active ? 'false' : 'true',
-            (string) $task->status?->value,
+            $task->status->value,
             $task->execution_token ?? 'null'
         ));
 
@@ -199,9 +205,9 @@ final class ScheduledTaskService
         Log::info(sprintf(
             '[Task] Manual "Run now" for task #%d [%s] (is_active=%s, schedule=%s, token=%s) — dispatched with force=true',
             $task->id,
-            (string) $task->task_type?->value,
+            $task->task_type->value,
             $task->is_active ? 'true' : 'false',
-            (string) $task->schedule_type?->value,
+            $task->schedule_type->value,
             $token
         ));
 
@@ -222,6 +228,6 @@ final class ScheduledTaskService
 
     public function isBusy(ScheduledTask $task): bool
     {
-        return $task->status?->isBusy() ?? false;
+        return $task->status->isBusy();
     }
 }

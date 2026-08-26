@@ -213,9 +213,13 @@ class TsoAuthService
         $maxRedirects = 10;
         $currentUrl = $url;
         $isPost = ($postData !== null);
-        $postFields = $isPost ? http_build_query($postData) : null;
+        $postFields = $isPost ? http_build_query($postData) : '';
 
         for ($i = 0; $i < $maxRedirects; $i++) {
+            if ($currentUrl === '' || $cookieFile === '') {
+                throw new Exception('Invalid URL or cookie file.');
+            }
+
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $currentUrl);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -257,7 +261,9 @@ class TsoAuthService
                     $location = trim($matches[1]);
                     if (! str_starts_with($location, 'http')) {
                         $parsed = parse_url($currentUrl);
-                        $location = $parsed['scheme'].'://'.$parsed['host'].$location;
+                        if (is_array($parsed) && isset($parsed['scheme'], $parsed['host'])) {
+                            $location = $parsed['scheme'].'://'.$parsed['host'].$location;
+                        }
                     }
                     $currentUrl = $location;
 
@@ -295,11 +301,14 @@ class TsoAuthService
         }
 
         $oauthTokenUrl = 'https://connect.ubisoft.com/v2/webauth/public/ubiservices/oauthToken';
-        $oauthTokenBody = json_encode([
-            'headers' => [
-                'Content-Type' => 'application/json',
-                'Accept' => 'application/json',
+        $oauthTokenBody = (string) json_encode([
+            'operationName' => 'SignIn',
+            'variables' => [
+                'input' => [
+                    'rememberMe' => true,
+                ],
             ],
+            'query' => 'mutation SignIn($input: SignInInput!) { signIn(input: $input) { ... on SignInResultSuccess { accessToken } } }',
         ]);
         $oauthTokenHeaders = [
             'Content-Type: application/json',
@@ -307,13 +316,13 @@ class TsoAuthService
         ];
         $oauthTokenRes = $this->curlRequest($oauthTokenUrl, $oauthTokenBody, $cookieFile, false, $oauthTokenHeaders);
         $oauthTokenData = json_decode($oauthTokenRes, true);
-        $accessToken = $oauthTokenData['accessToken'] ?? null;
-        if (! $accessToken) {
+        $accessToken = is_array($oauthTokenData) ? ($oauthTokenData['accessToken'] ?? null) : null;
+        if (! is_string($accessToken) || $accessToken === '') {
             throw new Exception('Ubisoft login failed (could not get oauthToken): '.$oauthTokenRes);
         }
 
         $authTokenUrl = 'https://api.partners.ubisoft.com/v1/profiles/authentication/token';
-        $authTokenBody = json_encode(['rememberMe' => true]);
+        $authTokenBody = (string) json_encode(['rememberMe' => true]);
         $credentials = base64_encode(trim((string) $account->username).':'.trim((string) $account->password));
         $authTokenHeaders = [
             'Content-Type: application/json',
@@ -324,12 +333,12 @@ class TsoAuthService
         $authTokenRes = $this->curlRequest($authTokenUrl, $authTokenBody, $cookieFile, false, $authTokenHeaders);
         $authTokenData = json_decode($authTokenRes, true);
 
-        if (isset($authTokenData['twoFactorAuthenticationTicket'])) {
-            throw new Exception(__('ui.auth.2fa_required'));
+        if (is_array($authTokenData) && isset($authTokenData['twoFactorAuthenticationTicket'])) {
+            throw new Exception((string) __('ui.auth.2fa_required'));
         }
 
-        $token = $authTokenData['token'] ?? null;
-        if (! $token) {
+        $token = is_array($authTokenData) ? ($authTokenData['token'] ?? null) : null;
+        if (! is_string($token) || $token === '') {
             throw new Exception('Ubisoft authentication failed (could not get token): '.$authTokenRes);
         }
 
@@ -343,21 +352,27 @@ class TsoAuthService
         }
         parse_str($callbackParts['query'], $callbackOpts);
         $consentRedirectUrl = $callbackOpts['redirectUrl'] ?? null;
-        if (! $consentRedirectUrl) {
+        if (! is_string($consentRedirectUrl) || $consentRedirectUrl === '') {
             throw new Exception('Consent redirectUrl missing in callback redirect: '.$callbackRedirect);
         }
-        $consentRedirectParts = parse_url((string) $consentRedirectUrl);
-        parse_str($consentRedirectParts['query'] ?? '', $consentOpts);
+        $consentRedirectParts = parse_url($consentRedirectUrl);
+        $consentOpts = [];
+        if (isset($consentRedirectParts['query'])) {
+            parse_str($consentRedirectParts['query'], $consentOpts);
+        }
         $profileToken = $consentOpts['profile_token'] ?? null;
 
         unset($redirectUrlOpts['token']);
-        $redirectUrlOpts['profile_token'] = $profileToken;
+        if (is_string($profileToken)) {
+            $redirectUrlOpts['profile_token'] = $profileToken;
+        }
         $consentUrl = 'https://api.partners.ubisoft.com/v1/oauth/consents';
-        $consentBody = json_encode([
+        $consentBody = (string) json_encode([
             'scopesConsented' => ['offline_access', 'openid', 'profile', 'email'],
             'isConsented' => true,
             'redirectUrl' => 'https://api.partners.ubisoft.com/v1/oauth/authorize/callback?'.http_build_query($redirectUrlOpts),
         ]);
+        $clientId = is_string($redirectUrlOpts['client_id'] ?? null) ? $redirectUrlOpts['client_id'] : '';
         $consentHeaders = [
             'Content-Type: application/json',
             'Ubi-RequestedPlatformType: uplay',
@@ -455,6 +470,10 @@ class TsoAuthService
      */
     private function curlRequest(string $url, mixed $postData, string $cookieFile, bool $returnRedirect = false, ?array $headers = null): string
     {
+        if ($url === '' || $cookieFile === '') {
+            throw new Exception('Invalid URL or cookie file.');
+        }
+
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -502,7 +521,7 @@ class TsoAuthService
             if (preg_match('/^Location:\s*([^\r\n]+)/mi', $response, $matches)) {
                 return trim($matches[1]);
             }
-            if (isset($info['redirect_url']) && $info['redirect_url']) {
+            if (! empty($info['redirect_url'])) {
                 return (string) $info['redirect_url'];
             }
 
