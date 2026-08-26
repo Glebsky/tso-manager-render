@@ -30,8 +30,6 @@ class ZoneDataCast implements CastsAttributes
             return $value;
         }
 
-        $encoded = json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-
-        return $encoded !== false ? $encoded : null;
+        return json_encode($value, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
 }

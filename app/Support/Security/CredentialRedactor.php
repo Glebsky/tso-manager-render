@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Security;
 
 use App\Models\Account;
+use Throwable;
 
 class CredentialRedactor
 {
@@ -21,18 +22,18 @@ class CredentialRedactor
             try {
                 $password = $account->password;
                 if (! empty($password)) {
-                    $message = str_replace((string) $password, '[REDACTED]', $message);
+                    $message = str_replace($password, '[REDACTED]', $message);
                 }
-            } catch (\Throwable $e) {
+            } catch (Throwable) {
                 // Ignore decryption failure on invalid account
             }
 
             try {
                 $token = $account->dso_auth_token;
                 if (! empty($token)) {
-                    $message = str_replace((string) $token, '[REDACTED]', $message);
+                    $message = str_replace($token, '[REDACTED]', $message);
                 }
-            } catch (\Throwable $e) {
+            } catch (Throwable) {
                 // Ignore decryption failure on invalid account
             }
         }
@@ -52,7 +53,7 @@ class CredentialRedactor
             '/("token"\s*:\s*")[^"]+(")/i' => '$1[REDACTED]$2',
         ];
 
-        $redacted = preg_replace(array_keys($patterns), array_values($patterns), $message);
+        $redacted = preg_replace(array_keys($patterns), $patterns, $message);
 
         return is_string($redacted) ? $redacted : $message;
     }
@@ -77,7 +78,7 @@ class CredentialRedactor
             'credentials',
         ];
 
-        array_walk_recursive($context, function (&$value, $key) use ($sensitiveKeys, $account): void {
+        array_walk_recursive($context, static function (&$value, $key) use ($sensitiveKeys, $account): void {
             if (is_string($key) && in_array(strtolower($key), $sensitiveKeys, true)) {
                 $value = '[REDACTED]';
             } elseif (is_string($value)) {

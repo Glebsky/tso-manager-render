@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Tasks\Handlers;
 
 use App\Enums\TaskType;
+use App\Exceptions\GameServerErrorException;
 use App\Exceptions\InvalidTaskTypeException;
 use App\Models\Account;
 use App\Services\Game\Mines\Contracts\MineCommandGatewayInterface;
@@ -36,6 +37,9 @@ final readonly class BuildMineHandler implements TaskActionHandlerInterface
 
     /**
      * @param  array<string, mixed>  $payload
+     *
+     * @throws GameServerErrorException
+     * @throws InvalidTaskTypeException
      */
     public function handle(Account $account, array $payload): string
     {
@@ -70,7 +74,7 @@ final readonly class BuildMineHandler implements TaskActionHandlerInterface
         $responseCode = $this->extractErrorCode($rawAmf);
 
         if ($responseCode === 0) {
-            MineTargetListService::clearCache((int) $account->id);
+            MineTargetListService::clearCache($account->id);
 
             return __('tasks.build_mine.built', ['name' => $decision->mineName, 'grid' => $grid]);
         }
@@ -82,7 +86,7 @@ final readonly class BuildMineHandler implements TaskActionHandlerInterface
                 $grid,
                 $responseCode,
             ));
-            MineTargetListService::clearCache((int) $account->id);
+            MineTargetListService::clearCache($account->id);
 
             return __('tasks.build_mine.unknown_outcome', ['grid' => $grid]);
         }

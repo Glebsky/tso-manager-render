@@ -17,11 +17,11 @@ use Illuminate\Database\Eloquent\Builder;
  * was copy-pasted four times in the old controller (goods, targets, bulk
  * goods, bulk targets map). It exists once here.
  */
-final class MarketCatalogService
+final readonly class MarketCatalogService
 {
     public function __construct(
-        private readonly ResourceNameResolver $names,
-        private readonly MarketCacheService $cache,
+        private ResourceNameResolver $names,
+        private MarketCacheService $cache,
     ) {}
 
     /**

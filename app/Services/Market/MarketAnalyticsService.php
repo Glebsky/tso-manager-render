@@ -19,15 +19,15 @@ use Carbon\Carbon;
  * That is what allowed the former 400-line controller method to shrink to a
  * handful of readable calls.
  */
-final class MarketAnalyticsService
+final readonly class MarketAnalyticsService
 {
     public function __construct(
-        private readonly MarketCacheService $cache,
-        private readonly MarketOfferQueryService $offers,
-        private readonly MarketHistoryAggregator $history,
-        private readonly PopularItemService $popularItems,
-        private readonly PeriodResolver $periods,
-        private readonly ResourceNameResolver $names,
+        private MarketCacheService $cache,
+        private MarketOfferQueryService $offers,
+        private MarketHistoryAggregator $history,
+        private PopularItemService $popularItems,
+        private PeriodResolver $periods,
+        private ResourceNameResolver $names,
     ) {}
 
     /**
@@ -125,8 +125,8 @@ final class MarketAnalyticsService
                 continue;
             }
 
-            $secondsLeft = $now->diffInSeconds(Carbon::parse((string) $offer['expires_at']), false);
-            $offers[$index]['time_left'] = $secondsLeft > 0 ? $secondsLeft : 0;
+            $secondsLeft = $now->diffInSeconds(Carbon::parse((string) $offer['expires_at']));
+            $offers[$index]['time_left'] = max(0, $secondsLeft);
         }
 
         return $offers;

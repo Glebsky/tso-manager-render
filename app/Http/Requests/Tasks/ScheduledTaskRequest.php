@@ -11,6 +11,7 @@ use App\Services\Tasks\BuffPayloadValidator;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Psr\SimpleCache\InvalidArgumentException;
 
 /**
  * Shared validation rules and custom validators for Scheduled Task payloads.
@@ -321,6 +322,9 @@ abstract class ScheduledTaskRequest extends FormRequest
         }
     }
 
+    /**
+     * @throws InvalidArgumentException
+     */
     private function validateBuffPayloads(Validator $validator): void
     {
         $prefixes = $this->buffPrefixes();
@@ -340,13 +344,14 @@ abstract class ScheduledTaskRequest extends FormRequest
         }
 
         $buffValidator = app(BuffPayloadValidator::class);
+        $errorBag = $validator->errors();
 
         foreach ($prefixes as $prefix => $inputKey) {
             $errors = $buffValidator->validate($account, (array) $this->input($inputKey, []), $prefix);
 
             foreach ($errors as $field => $messages) {
                 foreach ($messages as $message) {
-                    $validator->errors()->add($field, $message);
+                    $errorBag->add($field, $message);
                 }
             }
 

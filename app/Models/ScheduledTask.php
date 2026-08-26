@@ -7,9 +7,32 @@ namespace App\Models;
 use App\Enums\ScheduleType;
 use App\Enums\TaskStatus;
 use App\Enums\TaskType;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property string $name
+ * @property int $account_id
+ * @property TaskType $task_type
+ * @property ScheduleType $schedule_type
+ * @property ?string $run_at_time
+ * @property ?Carbon $run_at_datetime
+ * @property ?int $interval_hours
+ * @property ?int $interval_minutes
+ * @property ?array<string, mixed> $payload
+ * @property bool $is_active
+ * @property TaskStatus $status
+ * @property ?Carbon $queued_at
+ * @property ?string $execution_token
+ * @property int $completed_steps
+ * @property ?Carbon $last_run_at
+ * @property ?string $last_result
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property ?Account $account
+ */
 class ScheduledTask extends Model
 {
     protected $attributes = [

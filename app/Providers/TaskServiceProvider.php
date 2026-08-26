@@ -27,18 +27,18 @@ final class TaskServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->singleton(ClickableBuildingRegistry::class, function ($app): ClickableBuildingRegistry {
+        $this->app->singleton(ClickableBuildingRegistry::class, static function (): ClickableBuildingRegistry {
             /** @var list<array{pattern: string, kind: int}> $patterns */
             $patterns = config('game.collectibles.clickable_patterns', []);
 
             return new ClickableBuildingRegistry($patterns);
         });
 
-        $this->app->singleton(BuildingClickResolver::class, function ($app): BuildingClickResolver {
+        $this->app->singleton(BuildingClickResolver::class, static function ($app): BuildingClickResolver {
             return new BuildingClickResolver($app->make(ClickableBuildingRegistry::class));
         });
 
-        $this->app->singleton(MineCatalogInterface::class, function (): ConfigMineCatalog {
+        $this->app->singleton(MineCatalogInterface::class, static function (): ConfigMineCatalog {
             /** @var array<string, array{mine: string, number: int, max_level: int}> $config */
             $config = (array) config('game.buildings.mines', []);
 
@@ -48,7 +48,7 @@ final class TaskServiceProvider extends ServiceProvider
         $this->app->bind(ZoneSnapshotProviderInterface::class, AmfZoneSnapshotProvider::class);
         $this->app->bind(MineCommandGatewayInterface::class, AmfMineCommandGateway::class);
 
-        $this->app->bind(TaskHandlerRegistry::class, function ($app): TaskHandlerRegistry {
+        $this->app->bind(TaskHandlerRegistry::class, static function ($app): TaskHandlerRegistry {
             return new TaskHandlerRegistry($app, [
                 StopProductionHandler::class,
                 StartProductionHandler::class,

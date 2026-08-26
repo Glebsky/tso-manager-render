@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Services\Tasks\Execution;
 
-final class StepOutcome
+final readonly class StepOutcome
 {
     public function __construct(
-        public readonly int $stepIndex,
-        public readonly string $actionType,
-        public readonly bool $isSuccess,
-        public readonly bool $isSkipped,
-        public readonly ?string $output = null,
-        public readonly ?string $errorMessage = null,
+        public int $stepIndex,
+        public string $actionType,
+        public bool $isSuccess,
+        public bool $isSkipped,
+        public ?string $output = null,
+        public ?string $errorMessage = null,
     ) {}
 
     public static function success(int $stepIndex, string $actionType, string $output): self

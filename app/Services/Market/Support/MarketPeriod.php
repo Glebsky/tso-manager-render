@@ -12,12 +12,12 @@ use Carbon\CarbonInterface;
  * Replaces the `$period` / `$dateFilter` / `$groupByExpression` triple of
  * loose variables that used to be recomputed in every controller method.
  */
-final class MarketPeriod
+final readonly class MarketPeriod
 {
     public function __construct(
-        public readonly string $key,
-        public readonly ?CarbonInterface $since,
-        public readonly TimeGranularity $granularity,
+        public string $key,
+        public ?CarbonInterface $since,
+        public TimeGranularity $granularity,
     ) {}
 
     public function withGranularity(TimeGranularity $granularity): self

@@ -17,15 +17,14 @@ use Illuminate\Support\Collection as SupportCollection;
  * The `where('created_at', '>=', now()->subHours(6))` literal used to appear
  * in five places; the offer lifetime is now configuration injected once.
  */
-final class MarketOfferQueryService
+final readonly class MarketOfferQueryService
 {
-    public function __construct(private readonly int $offerLifetimeHours) {}
+    public function __construct(private int $offerLifetimeHours) {}
 
     public function activeSince(?CarbonInterface $now = null): CarbonInterface
     {
-        $reference = $now instanceof CarbonInterface ? $now->copy() : Carbon::now();
-
-        return $reference->subHours($this->offerLifetimeHours);
+        return ($now !== null ? $now->copy() : Carbon::now())
+            ->subHours($this->offerLifetimeHours);
     }
 
     public function expiresAt(CarbonInterface $createdAt): CarbonInterface
@@ -98,7 +97,7 @@ final class MarketOfferQueryService
      */
     private function applyServerFilter(Builder $query, string $serverId): void
     {
-        $region = explode('_', $serverId)[0];
+        $region = explode('_', $serverId, 2)[0];
         $query->where(static function (Builder $q) use ($serverId, $region): void {
             $q->where('server_id', $serverId)
                 ->orWhere('server_id', $region)

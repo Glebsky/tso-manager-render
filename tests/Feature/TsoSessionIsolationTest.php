@@ -117,7 +117,7 @@ class TsoSessionIsolationTest extends TestCase
             });
 
         $this->amfMock->shouldReceive('resetClient')->with((int) $account->id)->once();
-        $this->amfMock->shouldReceive('ensureZoneLoaded')->with(Mockery::any(), Mockery::any(), Mockery::any())->once()->andReturn('zone_data');
+        $this->amfMock->shouldReceive('ensureZoneLoaded')->once()->andReturn('zone_data');
 
         $service = $this->app->make(TaskExecutionService::class);
         $result = $service->execute($task);

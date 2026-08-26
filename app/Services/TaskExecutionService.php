@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\TaskType;
+use App\Exceptions\TaskAccountNotFoundException;
 use App\Exceptions\TaskExecutionException;
+use App\Exceptions\TaskInactiveException;
+use App\Exceptions\TokenMismatchException;
 use App\Models\Account;
 use App\Models\ScheduledTask;
 use App\Services\Tasks\Execution\SequenceStepExecutor;
@@ -16,20 +19,24 @@ use App\Services\Tasks\Execution\TaskStateWriter;
 use Exception;
 use Throwable;
 
-class TaskExecutionService
+readonly class TaskExecutionService
 {
     public function __construct(
-        private readonly TsoAuthService $authService,
-        private readonly TaskExecutionGuard $guard,
-        private readonly TaskStateWriter $stateWriter,
-        private readonly SingleActionExecutor $singleActionExecutor,
-        private readonly SequenceStepExecutor $sequenceStepExecutor,
+        private TsoAuthService $authService,
+        private TaskExecutionGuard $guard,
+        private TaskStateWriter $stateWriter,
+        private SingleActionExecutor $singleActionExecutor,
+        private SequenceStepExecutor $sequenceStepExecutor,
     ) {}
 
     /**
      * Execute the given scheduled task.
      *
-     * @throws Exception
+     * @throws TaskExecutionException
+     * @throws Throwable
+     * @throws TaskAccountNotFoundException
+     * @throws TaskInactiveException
+     * @throws TokenMismatchException
      */
     public function execute(ScheduledTask $task, ?string $expectedToken = null, bool $force = false): string
     {
@@ -51,12 +58,12 @@ class TaskExecutionService
             return $this->executeSingleTask($task, $account, $payload);
         } catch (Throwable $e) {
             $errorMsg = $e instanceof TaskExecutionException
-                ? (string) json_encode($e->toPayload())
+                ? (string) json_encode($e->toPayload(), JSON_THROW_ON_ERROR)
                 : $e->getMessage();
 
             $payload = $task->payload ?? [];
             $payload['step_results'] = [['status' => 'failed', 'error' => $errorMsg]];
-            $this->stateWriter->markFailed($task, (int) $account->id, $errorMsg, $payload);
+            $this->stateWriter->markFailed($task, $account->id, $errorMsg, $payload);
 
             throw $e;
         }
@@ -66,6 +73,8 @@ class TaskExecutionService
      * Execute a single non-sequence task.
      *
      * @param  array<string, mixed>  $payload
+     *
+     * @throws Throwable
      */
     private function executeSingleTask(ScheduledTask $task, Account $account, array $payload): string
     {
@@ -73,9 +82,9 @@ class TaskExecutionService
         $result = $this->singleActionExecutor->executeWithRetry($account, $taskTypeStr, $payload);
 
         $payload['step_results'] = [['status' => 'completed', 'error' => null]];
-        $resultSummary = TaskResultSummary::formatSingle($result, true);
+        $resultSummary = TaskResultSummary::formatSingle($result);
 
-        $this->stateWriter->markCompleted($task, (int) $account->id, $resultSummary, $payload);
+        $this->stateWriter->markCompleted($task, $account->id, $resultSummary, $payload);
 
         return $result;
     }
@@ -86,6 +95,7 @@ class TaskExecutionService
      * @return array{finished: bool, nextDelay: int}
      *
      * @throws Exception
+     * @throws Throwable
      */
     public function executeSequenceStep(ScheduledTask $task, ?string $expectedToken = null, bool $force = false): array
     {
@@ -98,8 +108,10 @@ class TaskExecutionService
      * Execute a single action step with session error (1012, 1005) retry logic.
      *
      * @param  array<string, mixed>  $payload
+     *
+     * @throws Throwable
      */
-    public function executeSingleActionWithRetry(Account $account, TaskType|string $taskType, array $payload, int $maxAttempts = 2): string
+    public function executeSingleActionWithRetry(Account $account, TaskType|string $taskType, array $payload): string
     {
         return $this->singleActionExecutor->executeWithRetry($account, $taskType, $payload);
     }
@@ -108,6 +120,8 @@ class TaskExecutionService
      * Execute a single action step via TaskHandlerRegistry.
      *
      * @param  array<string, mixed>  $payload
+     *
+     * @throws Throwable
      */
     public function executeSingleAction(Account $account, TaskType|string $taskType, array $payload): string
     {

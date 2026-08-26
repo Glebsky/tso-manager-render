@@ -17,31 +17,31 @@ use Illuminate\Support\Facades\Log;
 
 class TsoAmfService
 {
-    public const CMD_BUILD = 50;
+    public const int CMD_BUILD = 50;
 
-    public const CMD_UPGRADE = 60;
+    public const int CMD_UPGRADE = 60;
 
-    public const CMD_APPLY_BUFF = 61;
+    public const int CMD_APPLY_BUFF = 61;
 
-    public const CMD_SET_TASK = 95;
+    public const int CMD_SET_TASK = 95;
 
-    public const CMD_STOP_PRODUCTION = 107;
+    public const int CMD_STOP_PRODUCTION = 107;
 
-    public const CMD_GET_ZONE = 1001;
+    public const int CMD_GET_ZONE = 1001;
 
-    public const CMD_EXECUTE_PICKUP = 13002;
+    public const int CMD_EXECUTE_PICKUP = 13002;
 
     /** COMMAND.DESTRUCT_BUILDING — the command a click on a collectible really sends. */
-    public const CMD_DESTRUCT_BUILDING = 65;
+    public const int CMD_DESTRUCT_BUILDING = 65;
 
     /** COMMAND.QUEST_TRIGGER — client_scripts.txt:69425 */
-    public const CMD_QUEST_TRIGGER = 100;
+    public const int CMD_QUEST_TRIGGER = 100;
 
     /** SERVER_STACK_BUILDING_SELECTED — client_scripts.txt:62956 */
-    public const QUEST_STACK_BUILDING_SELECTED = 2;
+    public const int QUEST_STACK_BUILDING_SELECTED = 2;
 
     /** SERVER_STACK_GET_LATEST_QUEST_LIST — client_scripts.txt:62958 */
-    public const QUEST_STACK_GET_LATEST_QUEST_LIST = 4;
+    public const int QUEST_STACK_GET_LATEST_QUEST_LIST = 4;
 
     public function __construct(
         private readonly TsoAuthService $authService,
@@ -65,14 +65,14 @@ class TsoAmfService
         return (int) Cache::remember(
             "tso:client_id:{$account->id}",
             now()->addDays(30),
-            static fn (): int => mt_rand(0, 2147483646),
+            static fn (): int => random_int(0, 2147483646),
         );
     }
 
     /**
      * Forget the persisted client identity. Only needed when the account's
      * credentials change, since a fresh identity forces the game server to
-     * treat the next call as a brand new client.
+     * treat the next call as a brand-new client.
      */
     public function forgetClientId(Account|int $account): void
     {
@@ -106,6 +106,8 @@ class TsoAmfService
      * Ensure the player's zone is loaded and initialized on the game server.
      * Useful to warm up the zone before executing direct actions (like specialist/production)
      * or to recover when game server returns error 1012.
+     *
+     * @throws Exception
      */
     public function ensureZoneLoaded(Account $account, int $maxAttempts = 3, int $delaySeconds = 2): string
     {
@@ -155,9 +157,11 @@ class TsoAmfService
         return $action;
     }
 
+    /**
+     * @throws Exception
+     */
     private function sendServerCall(Account $account, int $commandType, mixed $actionData, string $destination = 'SMC', string $operation = 'ExecuteServerCall', ?string $source = 'com.bluebyte.game.servlet.EventHandler', ?int $targetZoneId = null): string
     {
-        $zoneId = $targetZoneId ?? 0;
         $call = $this->buildServerCall($account, $commandType, $actionData, $targetZoneId);
 
         try {
@@ -169,13 +173,13 @@ class TsoAmfService
                 try {
                     $this->authService->login($account);
                     $account->refresh();
-                    $this->invalidateSession((int) $account->id);
+                    $this->invalidateSession($account->id);
 
                     $call = $this->buildServerCall($account, $commandType, $actionData, $targetZoneId);
 
                     return $this->client->sendCommand($account, $call, $destination, $operation, $source, $targetZoneId);
                 } catch (Exception $retryException) {
-                    throw new Exception($e->getMessage().' (Auto-relogin also failed: '.$retryException->getMessage().')');
+                    throw new \RuntimeException($e->getMessage().' (Auto-relogin also failed: '.$retryException->getMessage().')');
                 }
             }
 
@@ -183,6 +187,9 @@ class TsoAmfService
         }
     }
 
+    /**
+     * @throws Exception
+     */
     public function getZone(Account $account, ?int $targetZoneId = null): string
     {
         $zoneId = $targetZoneId ?? (int) $account->dso_auth_user;
@@ -198,6 +205,9 @@ class TsoAmfService
         );
     }
 
+    /**
+     * @throws Exception
+     */
     public function getMarketOffers(Account $account): string
     {
         return $this->sendServerCall(
@@ -210,6 +220,9 @@ class TsoAmfService
         );
     }
 
+    /**
+     * @throws Exception
+     */
     public function getFriendList(Account $account): string
     {
         $getFriends = new defaultGame_Communication_VO_dGetFriendsVO;
@@ -225,38 +238,53 @@ class TsoAmfService
         );
     }
 
+    /**
+     * @throws Exception
+     */
     public function stopProduction(Account $account, int $grid): string
     {
-        $action = $this->buildServerAction(0, $grid, 0, null);
+        $action = $this->buildServerAction(0, $grid, 0);
 
         return $this->sendServerCall($account, self::CMD_STOP_PRODUCTION, $action);
     }
 
+    /**
+     * @throws Exception
+     */
     public function startProduction(Account $account, int $grid): string
     {
-        $action = $this->buildServerAction(1, $grid, 0, null);
+        $action = $this->buildServerAction(1, $grid, 0);
 
         return $this->sendServerCall($account, self::CMD_STOP_PRODUCTION, $action);
     }
 
+    /**
+     * @throws Exception
+     */
     public function buildBuilding(Account $account, int $buildingNumber, int $grid): string
     {
         return $this->sendServerCall(
             $account,
             self::CMD_BUILD,
-            $this->buildServerAction($buildingNumber, $grid, 0, null),
+            $this->buildServerAction($buildingNumber, $grid, 0),
         );
     }
 
+    /**
+     * @throws Exception
+     */
     public function upgradeBuilding(Account $account, int $grid): string
     {
         return $this->sendServerCall(
             $account,
             self::CMD_UPGRADE,
-            $this->buildServerAction(0, $grid, 0, null),
+            $this->buildServerAction(0, $grid, 0),
         );
     }
 
+    /**
+     * @throws Exception
+     */
     public function applyBuff(Account $account, int $grid, int $uniqueId1, int $uniqueId2, int $amount = 1, ?int $targetZoneId = null): string
     {
         $buffUid = new defaultGame_Communication_VO_dUniqueID;
@@ -278,6 +306,8 @@ class TsoAmfService
 
     /**
      * Collect a single island collectible (pickup).
+     *
+     * @throws Exception
      */
     public function executePickup(Account $account, int $uniqueId1, int $uniqueId2): string
     {
@@ -290,6 +320,8 @@ class TsoAmfService
 
     /**
      * Collect one island collectible by clicking its building.
+     *
+     * @throws Exception
      */
     public function collectCollectible(Account $account, int $grid, string $buildingClass = 'cCollectibleBuilding'): string
     {
@@ -306,6 +338,8 @@ class TsoAmfService
      *
      * Differs from collectCollectible (65): grid is passed inside data,
      * while action.grid and action.endGrid remain 0.
+     *
+     * @throws Exception
      */
     public function sendBuildingSelectedQuestTrigger(Account $account, int $grid): string
     {
@@ -324,10 +358,12 @@ class TsoAmfService
      *
      * client_scripts.txt:69425 (COMMAND.QUEST_TRIGGER = 100)
      * client_scripts.txt:62958 (SERVER_STACK_GET_LATEST_QUEST_LIST = 4)
+     *
+     * @throws Exception
      */
     public function getLatestQuestList(Account $account): string
     {
-        $action = $this->buildServerAction(self::QUEST_STACK_GET_LATEST_QUEST_LIST, 0, 0, null);
+        $action = $this->buildServerAction(self::QUEST_STACK_GET_LATEST_QUEST_LIST, 0, 0);
 
         return $this->sendServerCall(
             $account,
@@ -337,6 +373,9 @@ class TsoAmfService
         );
     }
 
+    /**
+     * @throws Exception
+     */
     public function sendSpecialist(Account $account, int $taskType, int $subTaskId, int $uniqueId1, int $uniqueId2): string
     {
         $specUid = new defaultGame_Communication_VO_dUniqueID;

@@ -12,11 +12,11 @@ use App\Services\MarketCacheService;
 /**
  * Most traded goods of a server within a period.
  */
-final class PopularItemService
+final readonly class PopularItemService
 {
     public function __construct(
-        private readonly ResourceNameResolver $names,
-        private readonly MarketCacheService $cache,
+        private ResourceNameResolver $names,
+        private MarketCacheService $cache,
     ) {}
 
     /**

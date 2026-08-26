@@ -22,6 +22,9 @@ class ExecuteScheduledTasks extends Command
         parent::__construct();
     }
 
+    /**
+     * @throws \Throwable
+     */
     public function handle(): int
     {
         $now = Carbon::now();

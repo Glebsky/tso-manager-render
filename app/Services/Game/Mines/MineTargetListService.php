@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Game\Mines;
 
+use App\Exceptions\GameServerErrorException;
 use App\Models\Account;
 use App\Services\Game\Mines\Contracts\MineCatalogInterface;
 use App\Services\Game\Mines\Contracts\ZoneSnapshotProviderInterface;
@@ -38,10 +39,12 @@ final readonly class MineTargetListService
 
     /**
      * @return list<array{grid: int, deposit_name: string, mine_name: string, amount: int, max_amount: int, allowed: bool, reason: string}>
+     *
+     * @throws GameServerErrorException
      */
     public function buildableDeposits(Account $account, bool $skipCache = false): array
     {
-        $cacheKey = self::buildableCacheKey((int) $account->id);
+        $cacheKey = self::buildableCacheKey($account->id);
 
         if (! $skipCache && Cache::has($cacheKey)) {
             /** @var list<array{grid: int, deposit_name: string, mine_name: string, amount: int, max_amount: int, allowed: bool, reason: string}> $cached */
@@ -79,10 +82,12 @@ final readonly class MineTargetListService
 
     /**
      * @return list<array{grid: int, building_name: string, deposit_name: string, level: int, max_level: int, is_active: bool, upgrade_in_progress: bool, allowed: bool, reason: string}>
+     *
+     * @throws GameServerErrorException
      */
     public function upgradableMines(Account $account, bool $skipCache = false): array
     {
-        $cacheKey = self::upgradableCacheKey((int) $account->id);
+        $cacheKey = self::upgradableCacheKey($account->id);
 
         if (! $skipCache && Cache::has($cacheKey)) {
             /** @var list<array{grid: int, building_name: string, deposit_name: string, level: int, max_level: int, is_active: bool, upgrade_in_progress: bool, allowed: bool, reason: string}> $cached */

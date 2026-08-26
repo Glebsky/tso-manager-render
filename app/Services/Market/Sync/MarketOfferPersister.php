@@ -7,6 +7,7 @@ namespace App\Services\Market\Sync;
 use App\Models\MarketHistory;
 use App\Models\MarketOffer;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 /**
  * Service responsible for batch database persistence of active offers and history.
@@ -16,10 +17,12 @@ class MarketOfferPersister
     /**
      * @param  list<array<string, mixed>>  $offers
      * @param  list<array<string, mixed>>  $history
+     *
+     * @throws Throwable
      */
     public function persist(string $serverId, array $offers, array $history): void
     {
-        DB::transaction(function () use ($serverId, $offers, $history) {
+        DB::transaction(static function () use ($serverId, $offers, $history) {
             // Clear active offers for this server ONLY
             MarketOffer::where('server_id', $serverId)->delete();
 

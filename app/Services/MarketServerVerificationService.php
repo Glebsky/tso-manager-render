@@ -17,7 +17,7 @@ class MarketServerVerificationService
      */
     public function detectServerForAccount(Account $account): array
     {
-        $region = strtolower((string) ($account->region ?? ''));
+        $region = strtolower($account->region ?? '');
         if (empty($region)) {
             return [
                 'detected_server_id' => null,
@@ -50,7 +50,7 @@ class MarketServerVerificationService
         if (! empty($gameWorld)) {
             $worldSlug = Str::slug($gameWorld, '_');
             if (empty($worldSlug)) {
-                $worldSlug = strtolower((string) preg_replace('/[^a-zA-Z0-9_]+/', '', $gameWorld));
+                $worldSlug = strtolower(preg_replace('/\W+/', '', $gameWorld) ?? '');
             }
             if (! empty($worldSlug)) {
                 $serverId = "{$region}_{$worldSlug}";
@@ -86,8 +86,8 @@ class MarketServerVerificationService
             ];
         }
 
-        $detectedRegion = strtolower((string) $account->region);
-        $targetRegion = explode('_', $targetServerId)[0];
+        $detectedRegion = strtolower($account->region);
+        $targetRegion = explode('_', $targetServerId, 2)[0];
 
         $isMatch = ($detectedServerId === $targetServerId)
             || ($detectedRegion === $targetRegion && $detection['detected_locale'] === $targetLocale);

@@ -19,7 +19,7 @@ final readonly class ConfigMineCatalog implements MineCatalogInterface
         $definitions = [];
         foreach ($config as $depositName => $entry) {
             $definitions[] = new MineDefinition(
-                depositName: (string) $depositName,
+                depositName: $depositName,
                 buildingName: $entry['mine'],
                 buildingNumber: $entry['number'],
                 maxUpgradeLevel: $entry['max_level'],
@@ -30,24 +30,18 @@ final readonly class ConfigMineCatalog implements MineCatalogInterface
 
     public function findByDeposit(string $depositName): ?MineDefinition
     {
-        foreach ($this->definitions as $definition) {
-            if ($definition->depositName === $depositName) {
-                return $definition;
-            }
-        }
-
-        return null;
+        return array_find(
+            $this->definitions,
+            static fn (MineDefinition $definition): bool => $definition->depositName === $depositName
+        );
     }
 
     public function findByBuilding(string $buildingName): ?MineDefinition
     {
-        foreach ($this->definitions as $definition) {
-            if ($definition->buildingName === $buildingName) {
-                return $definition;
-            }
-        }
-
-        return null;
+        return array_find(
+            $this->definitions,
+            static fn (MineDefinition $definition): bool => $definition->buildingName === $buildingName
+        );
     }
 
     /**

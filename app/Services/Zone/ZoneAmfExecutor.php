@@ -22,10 +22,10 @@ class ZoneAmfExecutor
     {
         $scriptPath = storage_path('app/parse_zone.py');
         if (! file_exists($scriptPath)) {
-            throw new Exception('parse_zone.py not found in storage/app/. Please deploy the script.');
+            throw new \RuntimeException('parse_zone.py not found in storage/app/. Please deploy the script.');
         }
 
-        $tmpFile = storage_path('app/temp_zone_'.uniqid('',true).'.amf');
+        $tmpFile = storage_path('app/temp_zone_'.uniqid('', true).'.amf');
         file_put_contents($tmpFile, $rawAmf);
 
         try {
@@ -39,10 +39,10 @@ class ZoneAmfExecutor
             $outputStr = trim(implode("\n", $output));
 
             if ($exitCode !== 0) {
-                throw new Exception("parse_zone.py failed (exit {$exitCode}): {$outputStr}");
+                throw new \RuntimeException("parse_zone.py failed (exit {$exitCode}): {$outputStr}");
             }
 
-            $result = json_decode($outputStr, true);
+            $result = json_decode($outputStr, true, 512, JSON_THROW_ON_ERROR);
             if (json_last_error() !== JSON_ERROR_NONE) {
                 $firstBrace = strpos($outputStr, '{');
                 $firstBracket = strpos($outputStr, '[');
@@ -62,13 +62,13 @@ class ZoneAmfExecutor
 
                     if ($end > $start) {
                         $jsonSub = substr($outputStr, $start, $end - $start + 1);
-                        $result = json_decode($jsonSub, true);
+                        $result = json_decode($jsonSub, true, 512, JSON_THROW_ON_ERROR);
                     }
                 }
             }
 
             if (! is_array($result)) {
-                throw new Exception('Failed to parse zone JSON: '.json_last_error_msg().'. Raw output: '.substr($outputStr, 0, 500));
+                throw new \RuntimeException('Failed to parse zone JSON: '.json_last_error_msg().'. Raw output: '.substr($outputStr, 0, 500));
             }
 
             return $result;
@@ -79,11 +79,12 @@ class ZoneAmfExecutor
 
     /**
      * Locate a working Python binary.
+     *
+     * @throws Exception
      */
     private function findPython(): string
     {
-        $candidates = ['python', 'python3', 'py'];
-        foreach ($candidates as $bin) {
+        foreach (['python', 'python3', 'py'] as $bin) {
             $out = [];
             $code = 0;
             exec(escapeshellarg($bin).' --version 2>&1', $out, $code);
@@ -91,6 +92,6 @@ class ZoneAmfExecutor
                 return $bin;
             }
         }
-        throw new Exception('Python not found. Install Python and ensure it is on PATH.');
+        throw new \RuntimeException('Python not found. Install Python and ensure it is on PATH.');
     }
 }

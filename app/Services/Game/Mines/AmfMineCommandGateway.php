@@ -14,11 +14,17 @@ final readonly class AmfMineCommandGateway implements MineCommandGatewayInterfac
         private TsoAmfService $amf,
     ) {}
 
+    /**
+     * @throws \Exception
+     */
     public function buildMine(Account $account, int $buildingNumber, int $grid): string
     {
         return $this->amf->buildBuilding($account, $buildingNumber, $grid);
     }
 
+    /**
+     * @throws \Exception
+     */
     public function upgradeMine(Account $account, int $grid): string
     {
         return $this->amf->upgradeBuilding($account, $grid);

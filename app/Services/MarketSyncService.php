@@ -11,22 +11,26 @@ use App\Services\Market\Sync\MarketOfferParser;
 use App\Services\Market\Sync\MarketOfferPersister;
 use App\Services\Market\Sync\MarketSyncLogger;
 use Exception;
+use Throwable;
 
 /**
  * High-level orchestrator for market data synchronization.
  */
-class MarketSyncService
+readonly class MarketSyncService
 {
     public function __construct(
-        private readonly MarketOfferFetcher $fetcher,
-        private readonly MarketOfferParser $parser,
-        private readonly MarketOfferPersister $persister,
-        private readonly MarketSyncLogger $syncLogger,
-        private readonly MarketCacheService $cacheService,
+        private MarketOfferFetcher $fetcher,
+        private MarketOfferParser $parser,
+        private MarketOfferPersister $persister,
+        private MarketSyncLogger $syncLogger,
+        private MarketCacheService $cacheService,
     ) {}
 
     /**
      * @return array<string, mixed>
+     *
+     * @throws Exception
+     * @throws Throwable
      */
     public function sync(Account $account, ?string $serverId = null): array
     {
@@ -35,18 +39,16 @@ class MarketSyncService
 
         if (empty($serverId)) {
             $connection = MarketServerConnection::where('account_id', $account->id)->first();
-            $serverId = $connection ? $connection->server_id : strtolower((string) ($account->region ?? 'ru'));
+            $serverId = $connection->server_id ?? strtolower($account->region ?? 'ru');
         }
 
         $connection = MarketServerConnection::where('server_id', $serverId)->first();
-        if ($connection) {
-            $connection->update(['sync_status' => 'syncing']);
-        }
+        $connection?->update(['sync_status' => 'syncing']);
 
         try {
             $this->syncLogger->log($account, $action, 'INFO', __('logs.market.sync_started', ['server' => $serverId]), $serverId);
 
-            $parsed = $this->fetcher->fetch($account, $serverId, function (string $status, string $message) use ($account, $action, $serverId): void {
+            $parsed = $this->fetcher->fetch($account, function (string $status, string $message) use ($account, $action, $serverId): void {
                 $this->syncLogger->log($account, $action, $status, $message, $serverId);
             });
 
@@ -60,13 +62,11 @@ class MarketSyncService
 
             $this->syncLogger->log($account, $action, 'SUCCESS', $message, $serverId);
 
-            if ($connection) {
-                $connection->update([
-                    'sync_status' => 'connected',
-                    'last_synced_at' => now(),
-                    'last_error' => null,
-                ]);
-            }
+            $connection?->update([
+                'sync_status' => 'connected',
+                'last_synced_at' => now(),
+                'last_error' => null,
+            ]);
 
             $this->cacheService->bumpDataVersion($serverId);
 
@@ -79,12 +79,10 @@ class MarketSyncService
         } catch (Exception $e) {
             $this->syncLogger->log($account, $action, 'ERROR', __('logs.market.sync_failed', ['error' => $e->getMessage()]), $serverId);
 
-            if ($connection) {
-                $connection->update([
-                    'sync_status' => 'error',
-                    'last_error' => $e->getMessage(),
-                ]);
-            }
+            $connection?->update([
+                'sync_status' => 'error',
+                'last_error' => $e->getMessage(),
+            ]);
 
             throw $e;
         }

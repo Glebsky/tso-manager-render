@@ -25,9 +25,9 @@ use Throwable;
  */
 final class MarketServerService
 {
-    private const ACCOUNT_COLUMNS = 'account:id,username,nickname,region,status';
+    private const string ACCOUNT_COLUMNS = 'account:id,username,nickname,region,status';
 
-    private const ACCOUNT_COLUMNS_WITH_ZONE = 'account:id,username,nickname,region,status,zone_data';
+    private const string ACCOUNT_COLUMNS_WITH_ZONE = 'account:id,username,nickname,region,status,zone_data';
 
     public function __construct(
         private readonly MarketCacheService $cache,
@@ -251,7 +251,7 @@ final class MarketServerService
         }
 
         try {
-            return (array) $this->sync->sync($account, $server->server_id);
+            return $this->sync->sync($account, $server->server_id);
         } catch (Throwable $e) {
             throw MarketOperationException::serverError(
                 __('ui.market.api.sync_failed', ['error' => $e->getMessage()])
@@ -283,7 +283,7 @@ final class MarketServerService
     private function normalizedServers(): Collection
     {
         return MarketServerConnection::with(self::ACCOUNT_COLUMNS_WITH_ZONE)
-            ->orderBy('id', 'asc')
+            ->orderBy('id')
             ->get()
             ->map(function (MarketServerConnection $server): MarketServerConnection {
                 if ($server->account && $server->account->server_name) {

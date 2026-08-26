@@ -6,6 +6,7 @@ namespace App\Services\Tasks\Handlers;
 
 use App\Enums\BuildingClickMode;
 use App\Enums\TaskType;
+use App\Exceptions\BuildingNotClickableException;
 use App\Exceptions\GameServerErrorException;
 use App\Exceptions\InvalidTaskTypeException;
 use App\Models\Account;
@@ -15,6 +16,7 @@ use App\Services\GameErrorResolver;
 use App\Services\Tasks\Contracts\TaskActionHandlerInterface;
 use App\Services\TsoAmfService;
 use App\Services\ZoneParserService;
+use Exception;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -36,6 +38,11 @@ final readonly class CollectBuildingHandler implements TaskActionHandlerInterfac
 
     /**
      * @param  array<string, mixed>  $payload
+     *
+     * @throws BuildingNotClickableException
+     * @throws GameServerErrorException
+     * @throws InvalidTaskTypeException
+     * @throws Exception
      */
     public function handle(Account $account, array $payload): string
     {
@@ -98,7 +105,7 @@ final readonly class CollectBuildingHandler implements TaskActionHandlerInterfac
         $responseCode = $this->extractErrorCode($rawAmf);
 
         if ($responseCode === 0) {
-            ClickableBuildingListService::clearCache((int) $account->id);
+            ClickableBuildingListService::clearCache($account->id);
 
             return $decision->mode === BuildingClickMode::Collectible
                 ? __('tasks.building_collect.collected', ['name' => $buildingName, 'grid' => $grid])

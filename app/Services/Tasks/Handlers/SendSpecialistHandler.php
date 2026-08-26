@@ -8,15 +8,18 @@ use App\Models\Account;
 use App\Services\Tasks\Contracts\TaskActionHandlerInterface;
 use App\Services\TsoAmfService;
 
-final class SendSpecialistHandler implements TaskActionHandlerInterface
+final readonly class SendSpecialistHandler implements TaskActionHandlerInterface
 {
-    public function __construct(private readonly TsoAmfService $amfService) {}
+    public function __construct(private TsoAmfService $amfService) {}
 
     public function supports(string $actionType): bool
     {
         return in_array($actionType, ['send_geologist', 'send_explorer', 'send_specialist'], true);
     }
 
+    /**
+     * @throws \Exception
+     */
     public function handle(Account $account, array $payload): string
     {
         $taskTypeVal = (int) ($payload['task_type'] ?? 0);

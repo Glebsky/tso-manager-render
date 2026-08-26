@@ -10,6 +10,6 @@ class UnknownTaskActionException extends TaskExecutionException
     {
         parent::__construct('error.unknown_action_type', [
             'taskType' => $taskType,
-        ], 422);
+        ]);
     }
 }

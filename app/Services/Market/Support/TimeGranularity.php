@@ -8,7 +8,7 @@ namespace App\Services\Market\Support;
  * Whitelisted time-bucket granularities.
  *
  * The previous implementation passed a raw `$groupByExpression` string
- * straight into `selectRaw()`. Modelling it as an enum makes the set of legal
+ * straight into `selectRaw()`. Modeling it as an enum makes the set of legal
  * values explicit and removes any possibility of identifier injection.
  */
 enum TimeGranularity: string

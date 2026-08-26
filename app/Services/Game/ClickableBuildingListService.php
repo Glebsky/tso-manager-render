@@ -32,10 +32,10 @@ class ClickableBuildingListService
     ];
 
     public function __construct(
-        private ClickableBuildingRegistry $registry,
-        private QuestTriggerBuildingProvider $questProvider,
-        private ZoneParserService $zoneParser,
-        private TsoAmfService $amf,
+        private readonly ClickableBuildingRegistry $registry,
+        private readonly QuestTriggerBuildingProvider $questProvider,
+        private readonly ZoneParserService $zoneParser,
+        private readonly TsoAmfService $amf,
     ) {}
 
     /**
@@ -43,14 +43,14 @@ class ClickableBuildingListService
      */
     public function forAccount(Account $account, bool $skipCache = false): array
     {
-        $cacheKey = self::cacheKey((int) $account->id);
+        $cacheKey = self::cacheKey($account->id);
 
         if (! $skipCache && Cache::has($cacheKey)) {
             /** @var list<array{grid: int, building_name: string, kind: string, available: bool|null}> $cached */
             $cached = Cache::get($cacheKey);
 
             return array_map(
-                fn (array $item) => new ClickableBuildingDto(
+                static fn (array $item) => new ClickableBuildingDto(
                     grid: (int) $item['grid'],
                     buildingName: (string) $item['building_name'],
                     kind: (string) $item['kind'],
@@ -64,7 +64,7 @@ class ClickableBuildingListService
 
         Cache::put(
             $cacheKey,
-            array_map(fn (ClickableBuildingDto $dto) => $dto->toArray(), $dtos),
+            array_map(static fn (ClickableBuildingDto $dto) => $dto->toArray(), $dtos),
             self::CACHE_TTL_SECONDS
         );
 
@@ -73,7 +73,7 @@ class ClickableBuildingListService
 
     public static function cacheKey(int $accountId): string
     {
-        return "clickable_buildings_{$accountId}";
+        return "clickable_buildings_$accountId";
     }
 
     public static function clearCache(int $accountId): void
@@ -101,8 +101,7 @@ class ClickableBuildingListService
                 continue;
             }
 
-            $dto = $this->classifyBuilding($grid, $name, $activeQuestBuildings);
-            $result[] = $dto;
+            $result[] = $this->classifyBuilding($grid, $name, $activeQuestBuildings);
         }
 
         return $result;
@@ -154,13 +153,10 @@ class ClickableBuildingListService
 
     public function isKnownQuestGiftCandidate(string $buildingName): bool
     {
-        foreach (self::QUEST_GIFT_CANDIDATE_PATTERNS as $pattern) {
-            if (preg_match($pattern, $buildingName) === 1) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any(
+            self::QUEST_GIFT_CANDIDATE_PATTERNS,
+            static fn (string $pattern): bool => preg_match($pattern, $buildingName) === 1
+        );
     }
 
     /**
@@ -185,7 +181,7 @@ class ClickableBuildingListService
 
             return $bList;
         } catch (Throwable $e) {
-            Log::warning("[ClickableBuildingListService] Account #{$account->id}: failed to load buildings: {$e->getMessage()}");
+            Log::warning("[ClickableBuildingListService] Account #$account->id: failed to load buildings: {$e->getMessage()}");
 
             return [];
         }

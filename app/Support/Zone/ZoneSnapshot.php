@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Zone;
 
+use Throwable;
+
 final readonly class ZoneSnapshot
 {
     /**
@@ -24,11 +26,11 @@ final readonly class ZoneSnapshot
 
         if (is_string($data) && $data !== '') {
             try {
-                $decoded = json_decode($data, true);
+                $decoded = json_decode($data, true, 512, JSON_THROW_ON_ERROR);
                 if (is_array($decoded)) {
                     return new self($decoded);
                 }
-            } catch (\Throwable) {
+            } catch (Throwable) {
                 // Return empty snapshot on invalid json
             }
         }

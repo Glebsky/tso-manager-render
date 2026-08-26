@@ -13,6 +13,11 @@ use Illuminate\Support\Facades\Log;
 
 final class TaskExecutionGuard
 {
+    /**
+     * @throws TaskInactiveException
+     * @throws TaskAccountNotFoundException
+     * @throws TokenMismatchException
+     */
     public function ensureCanExecute(ScheduledTask $task, ?string $expectedToken = null, bool $force = false): Account
     {
         $task->refresh();
@@ -49,11 +54,11 @@ final class TaskExecutionGuard
             $task->schedule_type->value,
             $task->execution_token ?? 'null',
             $expectedToken ?? 'null',
-            (string) $task->completed_steps,
+            $task->completed_steps,
             $task->queued_at?->toDateTimeString() ?? 'null',
             $task->last_run_at?->toDateTimeString() ?? 'null',
             $task->updated_at?->toDateTimeString() ?? 'null',
-            (string) ($task->last_result ?? 'null')
+            $task->last_result ?? 'null'
         ));
     }
 }

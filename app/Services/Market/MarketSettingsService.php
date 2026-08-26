@@ -7,16 +7,16 @@ namespace App\Services\Market;
 use App\Models\Setting;
 
 /**
- * Reads and writes the market synchronisation settings.
+ * Reads and writes the market synchronization settings.
  *
  * The "is it custom? then read the other key" resolution used to be inlined in
  * both getServers() and getBulk(); it now exists once.
  */
 final class MarketSettingsService
 {
-    private const KEY_INTERVAL = 'market_sync_interval';
+    private const string KEY_INTERVAL = 'market_sync_interval';
 
-    private const KEY_CUSTOM_MINUTES = 'market_custom_interval_minutes';
+    private const string KEY_CUSTOM_MINUTES = 'market_custom_interval_minutes';
 
     public function syncInterval(): string
     {

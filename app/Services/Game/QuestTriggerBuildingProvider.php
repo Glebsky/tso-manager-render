@@ -21,8 +21,8 @@ class QuestTriggerBuildingProvider
     private const int QUEST_MODE_DEACTIVATED = 5;
 
     public function __construct(
-        private TsoAmfService $amf,
-        private ZoneParserService $parser,
+        private readonly TsoAmfService $amf,
+        private readonly ZoneParserService $parser,
     ) {}
 
     /**

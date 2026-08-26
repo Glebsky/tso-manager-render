@@ -8,24 +8,25 @@ use App\Models\Account;
 use App\Services\TsoAmfService;
 use App\Services\TsoAuthService;
 use Exception;
+use RuntimeException;
 
 /**
  * Service responsible for fetching raw AMF market data and executing Python parser.
  */
-class MarketOfferFetcher
+readonly class MarketOfferFetcher
 {
     public function __construct(
-        private readonly TsoAuthService $authService,
-        private readonly TsoAmfService $amfService,
+        private TsoAuthService $authService,
+        private TsoAmfService $amfService,
     ) {}
 
     /**
      * @return array<string, mixed>
+     *
+     * @throws Exception
      */
-    public function fetch(Account $account, string $serverId, callable $logCallback): array
+    public function fetch(Account $account, callable $logCallback): array
     {
-        $action = 'Market sync';
-
         if (! $this->authService->isAuthenticated($account)) {
             $this->authService->login($account);
             $account->refresh();
@@ -44,15 +45,16 @@ class MarketOfferFetcher
 
                 $scriptPath = storage_path('app/parse_market.py');
                 if (! file_exists($scriptPath)) {
-                    throw new Exception('parse_market.py not found in storage/app/');
+                    throw new RuntimeException('parse_market.py not found in storage/app/');
                 }
 
-                $tmpFile = storage_path('app/temp_market_'.uniqid('',true).'.amf');
+                $tmpFile = storage_path('app/temp_market_'.uniqid('', true).'.amf');
                 file_put_contents($tmpFile, $rawAmf);
 
                 try {
                     $pythonBin = $this->findPython();
                     $command = escapeshellarg($pythonBin).' -W ignore '.escapeshellarg($scriptPath).' '.escapeshellarg($tmpFile);
+
                     $output = [];
                     $exitCode = 0;
 
@@ -60,10 +62,10 @@ class MarketOfferFetcher
                     $outputStr = trim(implode("\n", $output));
 
                     if ($exitCode !== 0) {
-                        throw new Exception("parse_market.py failed: {$outputStr}");
+                        throw new RuntimeException("parse_market.py failed: {$outputStr}");
                     }
 
-                    $parsed = json_decode($outputStr, true);
+                    $parsed = json_decode($outputStr, true, 512, JSON_THROW_ON_ERROR);
                     if (json_last_error() !== JSON_ERROR_NONE) {
                         $firstBrace = strpos($outputStr, '{');
                         $firstBracket = strpos($outputStr, '[');
@@ -83,13 +85,13 @@ class MarketOfferFetcher
 
                             if ($end > $start) {
                                 $jsonSub = substr($outputStr, $start, $end - $start + 1);
-                                $parsed = json_decode($jsonSub, true);
+                                $parsed = json_decode($jsonSub, true, 512, JSON_THROW_ON_ERROR);
                             }
                         }
                     }
 
                     if (! is_array($parsed)) {
-                        throw new Exception('Failed to decode JSON from parser: '.json_last_error_msg().'. Raw output: '.substr($outputStr, 0, 500));
+                        throw new RuntimeException('Failed to decode JSON from parser: '.json_last_error_msg().'. Raw output: '.substr($outputStr, 0, 500));
                     }
                 } finally {
                     @unlink($tmpFile);
@@ -99,7 +101,7 @@ class MarketOfferFetcher
 
                 if ($errorCode === 1012) {
                     if ($hasResetSession) {
-                        throw new Exception(__('ui.sync.session_intercepted_market', ['code' => $errorCode]));
+                        throw new RuntimeException(__('ui.sync.session_intercepted_market', ['code' => $errorCode]));
                     }
 
                     if ($attempt === 1) {
@@ -112,8 +114,8 @@ class MarketOfferFetcher
                     $logCallback('WARNING', __('logs.market.session_expired_retry', ['code' => $errorCode]));
                     $this->authService->resetSession($account);
                     $this->authService->login($account);
-                    $this->amfService->invalidateSession((int) $account->id);
-                    $this->amfService->resetClient((int) $account->id);
+                    $this->amfService->invalidateSession($account->id);
+                    $this->amfService->resetClient($account->id);
                     $account->refresh();
                     $hasResetSession = true;
                     sleep(2);
@@ -123,13 +125,13 @@ class MarketOfferFetcher
 
                 if ($errorCode === 1005) {
                     if ($hasResetSession) {
-                        throw new Exception(__('ui.sync.session_intercepted_market', ['code' => $errorCode]));
+                        throw new RuntimeException(__('ui.sync.session_intercepted_market', ['code' => $errorCode]));
                     }
                     $logCallback('WARNING', __('logs.market.session_expired_retry', ['code' => $errorCode]));
                     $this->authService->resetSession($account);
                     $this->authService->login($account);
-                    $this->amfService->invalidateSession((int) $account->id);
-                    $this->amfService->resetClient((int) $account->id);
+                    $this->amfService->invalidateSession($account->id);
+                    $this->amfService->resetClient($account->id);
                     $account->refresh();
                     $hasResetSession = true;
                     sleep(2);
@@ -148,16 +150,18 @@ class MarketOfferFetcher
         }
 
         if ($errorCode !== 0) {
-            throw new Exception("Server returned error code {$errorCode} during market sync.");
+            throw new RuntimeException("Server returned error code {$errorCode} during market sync.");
         }
 
         return is_array($parsed) ? $parsed : [];
     }
 
+    /**
+     * @throws Exception
+     */
     private function findPython(): string
     {
-        $candidates = ['python', 'python3', 'py'];
-        foreach ($candidates as $bin) {
+        foreach (['python', 'python3', 'py'] as $bin) {
             $out = [];
             $code = 0;
             exec(escapeshellarg($bin).' --version 2>&1', $out, $code);
@@ -165,6 +169,6 @@ class MarketOfferFetcher
                 return $bin;
             }
         }
-        throw new Exception('Python not found in system PATH.');
+        throw new RuntimeException('Python not found in system PATH.');
     }
 }

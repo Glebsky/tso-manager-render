@@ -18,6 +18,11 @@ final readonly class AmfZoneSnapshotProvider implements ZoneSnapshotProviderInte
         private ZoneParserService $zones,
     ) {}
 
+    /**
+     * @throws GameServerErrorException
+     * @throws \Exception
+     * @throws \Exception
+     */
     public function forAccount(Account $account): ZoneSnapshot
     {
         $zoneAmf = $this->amf->getZone($account);

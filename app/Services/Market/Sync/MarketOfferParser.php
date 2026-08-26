@@ -5,23 +5,23 @@ declare(strict_types=1);
 namespace App\Services\Market\Sync;
 
 use App\Services\Lang\GameTranslationResolver;
-use Illuminate\Support\Carbon;
+use Carbon\CarbonInterface;
 
 /**
  * Service responsible for parsing raw market offer strings into structured data.
  */
-class MarketOfferParser
+readonly class MarketOfferParser
 {
     public function __construct(
-        private readonly GameTranslationResolver $gameTranslations,
-        private readonly int $offerLifetimeHours = 6,
+        private GameTranslationResolver $gameTranslations,
+        private int $offerLifetimeHours = 6,
     ) {}
 
     /**
      * @param  array<int, array<string, mixed>>  $rawOffers
      * @return array{offers: list<array<string, mixed>>, history: list<array<string, mixed>>}
      */
-    public function parse(array $rawOffers, string $serverId, Carbon $collectedAt): array
+    public function parse(array $rawOffers, string $serverId, CarbonInterface $collectedAt): array
     {
         $offersToInsert = [];
         $historyToInsert = [];

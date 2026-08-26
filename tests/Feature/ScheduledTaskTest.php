@@ -304,11 +304,14 @@ class ScheduledTaskTest extends TestCase
 
         $task->refresh();
         $this->assertEquals('failed', $task->status->value);
+        $this->assertIsArray($task->payload);
         $this->assertArrayHasKey('step_results', $task->payload);
-        $this->assertEquals('failed', $task->payload['step_results'][0]['status']);
-        $this->assertStringContainsString('Building not found on grid 101', $task->payload['step_results'][0]['error']);
-        $this->assertEquals('completed', $task->payload['step_results'][1]['status']);
-        $this->assertNull($task->payload['step_results'][1]['error']);
+        $stepResults = $task->payload['step_results'];
+        $this->assertIsArray($stepResults);
+        $this->assertEquals('failed', $stepResults[0]['status']);
+        $this->assertStringContainsString('Building not found on grid 101', (string) $stepResults[0]['error']);
+        $this->assertEquals('completed', $stepResults[1]['status']);
+        $this->assertNull($stepResults[1]['error']);
     }
 
     public function test_invalid_non_numeric_task_parameter_returns_404(): void

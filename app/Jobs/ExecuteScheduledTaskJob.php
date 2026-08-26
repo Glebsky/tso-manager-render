@@ -36,13 +36,13 @@ class ExecuteScheduledTaskJob implements ShouldQueue
      * Seconds of work budget per job invocation. Kept short so the inline
      * cron worker (queue:work --max-time=50) is not blocked by one job.
      */
-    private const TIME_BUDGET_SECONDS = 45;
+    private const int TIME_BUDGET_SECONDS = 45;
 
     /**
      * Safety margin for a single step's own duration when deciding whether
      * to continue in-process or hand off to a delayed job.
      */
-    private const STEP_MARGIN_SECONDS = 10;
+    private const int STEP_MARGIN_SECONDS = 10;
 
     public int $taskId;
 
@@ -68,6 +68,8 @@ class ExecuteScheduledTaskJob implements ShouldQueue
 
     /**
      * Execute the job.
+     *
+     * @throws Throwable
      */
     public function handle(TaskExecutionService $executionService): void
     {
@@ -174,7 +176,7 @@ class ExecuteScheduledTaskJob implements ShouldQueue
             $task->schedule_type->value,
             $task->execution_token ?? 'null',
             $this->executionToken,
-            (string) $task->completed_steps,
+            $task->completed_steps,
             $task->queued_at?->toDateTimeString() ?? 'null',
             $task->last_run_at?->toDateTimeString() ?? 'null',
             $task->updated_at?->toDateTimeString() ?? 'null'

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Exceptions\GameServerErrorException;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UpgradableMineResource;
 use App\Models\Account;
@@ -17,6 +18,9 @@ class UpgradableMineController extends Controller
         private readonly MineTargetListService $service,
     ) {}
 
+    /**
+     * @throws GameServerErrorException
+     */
     public function index(Request $request): AnonymousResourceCollection
     {
         $validated = $request->validate([

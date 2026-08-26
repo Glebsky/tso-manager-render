@@ -5,9 +5,18 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\LogLevel;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int $account_id
+ * @property LogLevel $level
+ * @property string $message
+ * @property ?Carbon $created_at
+ * @property ?Account $account
+ */
 class BotLog extends Model
 {
     public $timestamps = false;

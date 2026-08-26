@@ -21,7 +21,7 @@ final class TaskActivityLogger
 {
     public function scheduled(ScheduledTask $task): void
     {
-        $this->log($task->account_id, (int) $task->id, __('logs.task.scheduled', [
+        $this->log($task->account_id, $task->id, __('logs.task.scheduled', [
             'id' => $task->id,
             'type' => $task->task_type->value,
             'schedule' => $task->schedule_type->value,
@@ -30,7 +30,7 @@ final class TaskActivityLogger
 
     public function updated(ScheduledTask $task): void
     {
-        $this->log($task->account_id, (int) $task->id, __('logs.task.updated', [
+        $this->log($task->account_id, $task->id, __('logs.task.updated', [
             'id' => $task->id,
             'type' => $task->task_type->value,
         ]));
@@ -40,7 +40,7 @@ final class TaskActivityLogger
     {
         $key = $task->is_active ? 'logs.task.enabled' : 'logs.task.disabled';
 
-        $this->log($task->account_id, (int) $task->id, __($key, [
+        $this->log($task->account_id, $task->id, __($key, [
             'id' => $task->id,
             'type' => $task->task_type->value,
         ]));

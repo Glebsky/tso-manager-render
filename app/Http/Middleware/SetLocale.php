@@ -26,16 +26,14 @@ class SetLocale
         }
 
         // 3. Set the application locale
-        if ($locale && in_array($locale, $supported, true)) {
-            app()->setLocale($locale);
-        } else {
-            $locale = config('app.locale', 'en');
-            app()->setLocale($locale);
+        if (! $locale || ! in_array($locale, $supported, true)) {
+            $locale = (string) config('app.locale', 'en');
         }
+        app()->setLocale($locale);
 
         // 4. Queue the cookie if it's missing or different from request
         if ($request->cookie('app_locale') !== $locale) {
-            cookie()->queue('app_locale', $locale, now()->addYear(), '/', null, false, false);
+            cookie()->queue('app_locale', $locale, 525600, '/', null, false, false);
         }
 
         return $next($request);

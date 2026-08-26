@@ -32,7 +32,7 @@ final class Amf3Encoder
             $this->out .= chr(0x06);
             $this->writeString($data);
         } elseif (is_array($data)) {
-            if (array_keys($data) !== range(0, count($data) - 1)) {
+            if (! array_is_list($data)) {
                 // Associative array -> dynamic object
                 $this->out .= chr(0x0A);
                 $this->out .= chr(0x0B);
@@ -56,10 +56,8 @@ final class Amf3Encoder
             $className = get_class($data);
             if ($className === 'stdClass') {
                 $className = '';
-            } else {
-                if (str_contains($className, '\\')) {
-                    $className = substr($className, strrpos($className, '\\') + 1);
-                }
+            } elseif (str_contains($className, '\\')) {
+                $className = substr($className, strrpos($className, '\\') + 1);
             }
 
             if (str_starts_with($className, 'defaultGame_') || str_starts_with($className, 'Communication_') || str_starts_with($className, 'flex_messaging_')) {
@@ -83,7 +81,7 @@ final class Amf3Encoder
 
     private function writeU29(int $value): void
     {
-        $value = $value & 0x1FFFFFFF;
+        $value &= 0x1FFFFFFF;
         if ($value < 0x80) {
             $this->out .= chr($value);
         } elseif ($value < 0x4000) {

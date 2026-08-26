@@ -6,26 +6,30 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Translation\Translator;
+use JsonException;
 
 class LangFrontendExportCommand extends Command
 {
     /**
      * Locales bundled into the SPA.
      */
-    private const LOCALES = ['en', 'ru', 'uk'];
+    private const array LOCALES = ['en', 'ru', 'uk'];
 
     /**
      * Game sections actually consumed by the frontend bundle.
      * Extend this list (and re-run the command) when the SPA starts using
      * translations from another section.
      */
-    private const FRONTEND_GAME_SECTIONS = ['BUI', 'LAB', 'RES', 'SPE'];
+    private const array FRONTEND_GAME_SECTIONS = ['BUI', 'LAB', 'RES', 'SPE'];
 
     protected $signature = 'tso:lang:export-frontend
         {--output-dir= : Override the output directory (used by tests)}';
 
     protected $description = 'Export UI + game translations to resources/js/lang/generated/<locale>.json for the SPA bundle';
 
+    /**
+     * @throws JsonException
+     */
     public function handle(Translator $translator): int
     {
         $outputDirectory = (string) ($this->option('output-dir') ?: resource_path('js/lang/generated'));

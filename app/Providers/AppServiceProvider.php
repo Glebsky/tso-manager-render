@@ -25,7 +25,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         RateLimiter::for('public-market', static function (Request $request): Limit {
-            return Limit::perMinute(120)->by((string) ($request->ip() ?: 'global'));
+            return Limit::perMinute(120)->by($request->ip() ?: 'global');
         });
 
         RateLimiter::for('api-actions', static function (Request $request): Limit {

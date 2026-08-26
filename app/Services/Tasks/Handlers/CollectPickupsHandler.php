@@ -11,6 +11,7 @@ use App\Services\GameErrorResolver;
 use App\Services\Tasks\Contracts\TaskActionHandlerInterface;
 use App\Services\TsoAmfService;
 use App\Services\ZoneParserService;
+use Exception;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -53,6 +54,10 @@ final class CollectPickupsHandler implements TaskActionHandlerInterface
 
     /**
      * @param  array<string, mixed>  $payload
+     *
+     * @throws GameServerErrorException
+     * @throws PickupsUnavailableException
+     * @throws Exception
      */
     public function handle(Account $account, array $payload): string
     {
@@ -75,7 +80,7 @@ final class CollectPickupsHandler implements TaskActionHandlerInterface
             $account->id,
             count($normalized),
             count($pickups),
-            (string) ($payload['pickup_type'] ?? 'all'),
+            $payload['pickup_type'] ?? 'all',
             is_array($payload['resources'] ?? null) && $payload['resources'] !== []
                 ? implode('|', array_map('strval', $payload['resources']))
                 : 'any',
@@ -170,11 +175,9 @@ final class CollectPickupsHandler implements TaskActionHandlerInterface
         $normalized = [];
 
         foreach ($rawPickups as $raw) {
-            if (! is_array($raw)) {
-                continue;
-            }
-
-            $uid = is_array($raw['uniqueID'] ?? null) ? $raw['uniqueID'] : (is_array($raw['uniqueId'] ?? null) ? $raw['uniqueId'] : []);
+            $uid = is_array($raw['uniqueID'] ?? null)
+                ? $raw['uniqueID']
+                : (array) ($raw['uniqueId'] ?? []);
 
             $uid1 = (int) ($raw['unique_id1'] ?? $raw['uniqueID1'] ?? $raw['uniqueId1'] ?? $uid['uniqueID1'] ?? $uid['uniqueId1'] ?? 0);
             $uid2 = (int) ($raw['unique_id2'] ?? $raw['uniqueID2'] ?? $raw['uniqueId2'] ?? $uid['uniqueID2'] ?? $uid['uniqueId2'] ?? 0);

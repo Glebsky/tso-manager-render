@@ -11,9 +11,9 @@ use App\Models\ScheduledTask;
 use App\Services\Tasks\TaskActivityLogger;
 use Illuminate\Support\Facades\Log;
 
-final class TaskStateWriter
+final readonly class TaskStateWriter
 {
-    public function __construct(private readonly TaskActivityLogger $activityLogger) {}
+    public function __construct(private TaskActivityLogger $activityLogger) {}
 
     /**
      * @param  array<string, mixed>|null  $payload
