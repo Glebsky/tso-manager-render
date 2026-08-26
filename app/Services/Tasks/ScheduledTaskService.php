@@ -22,7 +22,7 @@ use Illuminate\Support\Str;
  */
 final class ScheduledTaskService
 {
-    private const ACCOUNT_COLUMNS = 'account:id,username,nickname,region,status';
+    private const string ACCOUNT_COLUMNS = 'account:id,username,nickname,region,status';
 
     public function __construct(private readonly TaskActivityLogger $logger) {}
 
@@ -31,7 +31,12 @@ final class ScheduledTaskService
      */
     public function tasks(): Collection
     {
-        return ScheduledTask::with(self::ACCOUNT_COLUMNS)->orderBy('id', 'desc')->get();
+        return ScheduledTask::with(self::ACCOUNT_COLUMNS)->orderByDesc('id')->get();
+    }
+
+    public function find(int $id): ?ScheduledTask
+    {
+        return ScheduledTask::with(self::ACCOUNT_COLUMNS)->find($id);
     }
 
     /**
@@ -39,44 +44,47 @@ final class ScheduledTaskService
      */
     public function accounts(): Collection
     {
-        return Account::orderBy('username')->get();
+        return Account::query()
+            ->select(['id', 'username', 'nickname', 'region', 'status'])
+            ->orderBy('username')
+            ->get();
     }
 
     /**
-     * @param  array<string, mixed>  $attributes
+     * @param  array<string, mixed>  $data
      */
-    public function create(array $attributes): ScheduledTask
+    public function create(array $data): ScheduledTask
     {
-        if (isset($attributes['payload']) && is_array($attributes['payload'])) {
-            $attributes['payload'] = $this->enrichPayloadBuildingNames((int) ($attributes['account_id'] ?? 0), $attributes['payload']);
-        }
+        $accountId = (int) ($data['account_id'] ?? 0);
+        $payload = is_array($data['payload'] ?? null) ? $data['payload'] : [];
 
-        $task = ScheduledTask::create($attributes);
+        $data['payload'] = $this->enrichPayloadBuildingNames($accountId, $payload);
 
+        $task = ScheduledTask::create($data);
         $this->logger->scheduled($task);
 
-        return $task;
+        return $task->fresh() ?? $task;
     }
 
     /**
-     * @param  array<string, mixed>  $attributes
+     * @param  array<string, mixed>  $data
      */
-    public function update(ScheduledTask $task, array $attributes): ScheduledTask
+    public function update(ScheduledTask $task, array $data): ScheduledTask
     {
-        if (isset($attributes['payload']) && is_array($attributes['payload'])) {
-            $accountId = (int) ($attributes['account_id'] ?? $task->account_id);
-            $attributes['payload'] = $this->enrichPayloadBuildingNames($accountId, $attributes['payload']);
-        }
+        $accountId = (int) ($data['account_id'] ?? $task->account_id);
+        $payload = is_array($data['payload'] ?? null) ? $data['payload'] : $task->payload ?? [];
 
-        $task->update($attributes);
+        $data['payload'] = $this->enrichPayloadBuildingNames($accountId, $payload);
 
+        $task->update($data);
         $this->logger->updated($task);
 
         return $task->fresh() ?? $task;
     }
 
     /**
-     * Auto-enrich building names in task payloads when target grid is present.
+     * Auto-enrich payload with human-readable building name(s) from account's cached zone_data.
+     * Preserves existing building_name / target_building_name if already set by user.
      *
      * @param  array<string, mixed>  $payload
      * @return array<string, mixed>
@@ -92,7 +100,7 @@ final class ScheduledTaskService
             return $payload;
         }
 
-        $zoneData = $account->zone_data ?? [];
+        $zoneData = $account->zone_data;
         $buildings = $zoneData['buildings'] ?? [];
         if (! is_array($buildings) || $buildings === []) {
             return $payload;
@@ -170,7 +178,7 @@ final class ScheduledTaskService
 
     public function delete(ScheduledTask $task): void
     {
-        $taskId = (int) $task->id;
+        $taskId = $task->id;
         $taskType = $task->task_type;
         $accountId = $task->account_id;
 

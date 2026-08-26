@@ -7,9 +7,34 @@ namespace App\Models;
 use App\Casts\SafeEncrypted;
 use App\Casts\ZoneDataCast;
 use App\Support\Zone\ZoneSnapshot;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property int $id
+ * @property string $username
+ * @property string $password
+ * @property string $region
+ * @property string $nickname
+ * @property ?string $dso_auth_user
+ * @property ?string $dso_auth_token
+ * @property ?string $bb_url
+ * @property string $status
+ * @property ?array<string, mixed> $zone_data
+ * @property ?Carbon $last_sync_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property ?string $server_name
+ * @property ?int $avatar_id
+ * @property ?int $building_count
+ * @property bool $is_market_connected
+ * @property Collection<int, MarketServerConnection> $marketServerConnections
+ * @property Collection<int, ScheduledTask> $scheduledTasks
+ * @property Collection<int, BotLog> $botLogs
+ */
 class Account extends Model
 {
     private ?ZoneSnapshot $snapshotInstance = null;
@@ -46,9 +71,39 @@ class Account extends Model
         'zone_data',
     ];
 
+    /**
+     * Scope a query to only select lightweight columns excluding heavy zone_data.
+     *
+     * @param  Builder<Account>  $query
+     * @return Builder<Account>
+     */
+    public function scopeLite(Builder $query): Builder
+    {
+        return $query->select([
+            'id',
+            'username',
+            'nickname',
+            'region',
+            'status',
+            'dso_auth_user',
+            'bb_url',
+            'last_sync_at',
+            'created_at',
+            'updated_at',
+        ]);
+    }
+
     public function snapshot(): ZoneSnapshot
     {
-        return $this->snapshotInstance ??= ZoneSnapshot::fromData($this->zone_data);
+        if ($this->snapshotInstance !== null) {
+            return $this->snapshotInstance;
+        }
+
+        if (! array_key_exists('zone_data', $this->attributes) || $this->attributes['zone_data'] === null) {
+            return $this->snapshotInstance = ZoneSnapshot::fromData([]);
+        }
+
+        return $this->snapshotInstance = ZoneSnapshot::fromData($this->zone_data);
     }
 
     public function getAvatarIdAttribute(): ?int

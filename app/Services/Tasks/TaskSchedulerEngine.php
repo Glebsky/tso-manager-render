@@ -21,17 +21,19 @@ use Illuminate\Contracts\Cache\Repository as CacheRepository;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Psr\SimpleCache\InvalidArgumentException;
+use Throwable;
 
 /**
  * Domain engine responsible for task scheduling, atomic reservation, stale recovery, and account sync orchestration.
  */
-class TaskSchedulerEngine
+readonly class TaskSchedulerEngine
 {
     public function __construct(
-        private readonly TaskExecutionService $taskExecutionService,
-        private readonly AccountSyncService $accountSyncService,
-        private readonly SystemLogCleanupService $systemLogCleanupService,
-        private readonly CacheRepository $cache,
+        private TaskExecutionService $taskExecutionService,
+        private AccountSyncService $accountSyncService,
+        private SystemLogCleanupService $systemLogCleanupService,
+        private CacheRepository $cache,
     ) {}
 
     /**
@@ -84,7 +86,7 @@ class TaskSchedulerEngine
         $hours = (int) $timeParts[0];
         $minutes = (int) ($timeParts[1] ?? 0);
 
-        $targetToday = $now->copy()->setTime($hours, $minutes, 0);
+        $targetToday = $now->copy()->setTime($hours, $minutes);
 
         if ($now->greaterThanOrEqualTo($targetToday)) {
             return is_null($task->last_run_at) || $task->last_run_at->lt($targetToday);
@@ -102,7 +104,7 @@ class TaskSchedulerEngine
         if ($intervalTotalMinutes > 0) {
             $baseline = $task->last_run_at ?? $task->created_at;
             if ($baseline) {
-                return abs((int) $now->diffInMinutes($baseline, false)) >= $intervalTotalMinutes;
+                return abs((int) $now->diffInMinutes($baseline)) >= $intervalTotalMinutes;
             }
         }
 
@@ -111,6 +113,8 @@ class TaskSchedulerEngine
 
     /**
      * Perform atomic reservation and dispatch a task.
+     *
+     * @throws Throwable
      */
     public function reserveAndDispatchTask(ScheduledTask $task, string $mode = 'queue'): bool
     {
@@ -129,7 +133,7 @@ class TaskSchedulerEngine
                 'payload' => $payload,
             ]);
 
-        if ($reserved === 0) {
+        if (! $reserved) {
             return false;
         }
 
@@ -141,7 +145,7 @@ class TaskSchedulerEngine
                 Log::error("Sync execution failed for task #{$task->id}: {$e->getMessage()}");
             }
         } else {
-            DB::afterCommit(function () use ($task, $token) {
+            DB::afterCommit(static function () use ($task, $token) {
                 Log::info(sprintf(
                     '[Scheduler] Task #%d [%s] reserved and dispatched (schedule=%s, token=%s, queued_at=%s)',
                     $task->id,
@@ -160,21 +164,21 @@ class TaskSchedulerEngine
 
     /**
      * Evaluate due tasks and perform atomic reservation before dispatching.
+     *
+     * @throws Throwable
      */
     public function processDueTasks(Carbon $now, string $mode = 'queue'): int
     {
         $activeTasks = ScheduledTask::where('is_active', true)
             ->whereIn('status', [TaskStatus::Pending, TaskStatus::Completed, TaskStatus::Failed])
-            ->with('account')
+            ->with('account:id,username,nickname,region,status')
             ->get();
 
         $count = 0;
 
         foreach ($activeTasks as $task) {
-            if ($this->isTaskDue($task, $now)) {
-                if ($this->reserveAndDispatchTask($task, $mode)) {
-                    $count++;
-                }
+            if ($this->isTaskDue($task, $now) && $this->reserveAndDispatchTask($task, $mode)) {
+                $count++;
             }
         }
 
@@ -183,6 +187,8 @@ class TaskSchedulerEngine
 
     /**
      * Evaluate Account Sync and dispatch atomically.
+     *
+     * @throws InvalidArgumentException
      */
     public function processAccountSync(Carbon $now, string $mode = 'queue'): int
     {
@@ -192,7 +198,7 @@ class TaskSchedulerEngine
             return 0;
         }
 
-        $accounts = Account::all();
+        $accounts = Account::query()->select(['id', 'username', 'nickname', 'region', 'status', 'last_sync_at'])->get();
         $count = 0;
 
         foreach ($accounts as $account) {
@@ -201,16 +207,14 @@ class TaskSchedulerEngine
             }
 
             if ($account->last_sync_at) {
-                $elapsedMinutes = (int) $now->diffInMinutes($account->last_sync_at, false);
+                $elapsedMinutes = (int) $now->diffInMinutes($account->last_sync_at);
                 if (abs($elapsedMinutes) < $syncInterval) {
                     continue;
                 }
             }
 
             $lockKey = "account_sync_lock:{$account->id}";
-            $acquired = $this->cache->add($lockKey, true, 300);
-
-            if (! $acquired) {
+            if (! $this->cache->add($lockKey, true, 300)) {
                 continue;
             }
 
