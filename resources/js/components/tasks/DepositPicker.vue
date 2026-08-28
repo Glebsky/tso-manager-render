@@ -17,7 +17,7 @@
                     <button type="button" @click="$emit('close')" class="btn-primary btn-sm text-xs py-1 px-3">
                         {{ t('tasks.modal.done') }}
                     </button>
-                    <button type="button" @click="$emit('close')" class="text-white/40 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/5 ml-1">
+                    <button type="button" @click="$emit('close')" aria-label="Close" class="text-white/40 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/5 ml-1">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
                         </svg>
@@ -28,7 +28,7 @@
             <!-- Поиск -->
             <div class="p-4 border-b border-white/5 bg-white/[0.01] flex flex-col gap-3">
                 <div class="relative">
-                    <input :value="depositSearch" @input="$emit('update:depositSearch', $event.target.value)" type="text" :placeholder="t('tasks.modal.search_deposit')" class="glass-input w-full text-xs py-2 pl-4">
+                    <input :value="depositSearch" @input="$emit('update:depositSearch', $event.target.value)" type="text" :placeholder="t('tasks.modal.search_deposit')" :aria-label="t('tasks.modal.search_deposit')" class="glass-input w-full text-xs py-2 pl-4">
                 </div>
             </div>
 

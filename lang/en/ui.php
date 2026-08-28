@@ -620,7 +620,7 @@ return [
     'tasks.status.active' => 'Active',
     'tasks.status.completed' => 'Completed',
     'tasks.status.launching' => 'Starting...',
-    'tasks.status.pause_short' => 'Paused',
+    'tasks.status.pause_short' => 'Pause',
     'tasks.status.paused' => 'Paused',
     'tasks.status.resume_short' => 'Resume',
     'tasks.status.running' => 'Running...',

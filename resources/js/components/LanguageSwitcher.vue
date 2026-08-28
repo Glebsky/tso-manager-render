@@ -5,6 +5,7 @@
             @click="isOpen = !isOpen"
             class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs font-semibold text-white/80 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all duration-200 shadow-sm"
             :aria-expanded="isOpen"
+            aria-label="Switch Language / Сменить язык / Змінити мову"
             title="Switch Language / Сменить язык / Змінити мову"
         >
             <span class="text-sm leading-none">{{ currentLangInfo.flag }}</span>

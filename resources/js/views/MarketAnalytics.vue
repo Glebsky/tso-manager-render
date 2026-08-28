@@ -51,7 +51,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
                     </svg>
                 </div>
-                <h3 class="text-lg font-semibold text-white">{{ t('market.no_servers_title') }}</h3>
+                <h2 class="text-lg font-semibold text-white">{{ t('market.no_servers_title') }}</h2>
                 <p class="text-xs text-white/50 max-w-md mx-auto">
                     {{ t('market.no_servers_text') }}
                 </p>
@@ -302,13 +302,13 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 15.75V18m-3-3v3m-3-3v3M9 3h12a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 21 21H9a2.25 2.25 0 0 1-2.25-2.25V5.25A2.25 2.25 0 0 1 9 3Zm2.25 3h7.5a.75.75 0 0 0 .75-.75V4.5a.75.75 0 0 0-.75-.75h-7.5a.75.75 0 0 0-.75.75v.75a.75.75 0 0 0 .75.75Z" />
                                 </svg>
                             </div>
-                            <h3 class="text-sm font-semibold text-white">{{ t('market.cost_calculator') }}</h3>
+                            <h2 class="text-sm font-semibold text-white">{{ t('market.cost_calculator') }}</h2>
                         </div>
 
                         <div class="space-y-5">
                             <div>
-                                <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('market.amount_of', { item: selectedItemName }) }}</label>
-                                <input type="number" v-model.number="calcAmount" min="1" class="glass-input w-full font-mono text-white text-lg"/>
+                                <label for="admin-calc-amount-input" class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('market.amount_of', { item: selectedItemName }) }}</label>
+                                <input id="admin-calc-amount-input" type="number" v-model.number="calcAmount" min="1" :aria-label="t('market.amount_of', { item: selectedItemName })" class="glass-input w-full font-mono text-white text-lg"/>
                             </div>
 
                             <!-- Direct estimated revenue -->
@@ -338,7 +338,7 @@
 
                     <!-- Selected pair market details -->
                     <div class="glass-card p-6">
-                        <h3 class="text-sm font-semibold text-white mb-4">{{ t('market.info') }}</h3>
+                        <h2 class="text-sm font-semibold text-white mb-4">{{ t('market.info') }}</h2>
                         <div class="space-y-3 text-xs">
                             <div class="flex justify-between py-2 border-b border-white/5">
                                 <span class="text-white/40">{{ t('market.total_volume') }}</span>
@@ -579,10 +579,10 @@
                                             {{ offer.price }}
                                         </td>
                                         <td class="py-3 px-4 text-right text-blue-400 font-mono">{{ offer.lots_remaining }}</td>
-                                        <td class="py-3 px-4 text-right font-mono text-xs" :class="offer.time_left > 0 ? 'text-amber-400' : 'text-red-500'">
-                                            {{ formatTimeLeft(offer.time_left) }}
+                                        <td class="py-3 px-4 text-right font-mono text-xs" :class="getOfferTimeLeft(offer) > 0 ? 'text-amber-400' : 'text-red-500'">
+                                            {{ formatTimeLeft(getOfferTimeLeft(offer)) }}
                                         </td>
-                                        <td class="py-3 px-4 text-right text-[10px] text-white/30 font-mono">{{ offer.created_at }}</td>
+                                        <td class="py-3 px-4 text-right text-[10px] text-white/30 font-mono">{{ formatDateTime(offer.created_at) }}</td>
                                     </tr>
                                     <tr v-if="activeOffers.length === 0">
                                         <td colspan="7" class="py-8 text-center text-white/20">
@@ -726,9 +726,9 @@
                 <form @submit.prevent="saveSettings">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div>
-                            <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('market.sync_interval') }}</label>
+                            <label for="market-settings-sync-interval" class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('market.sync_interval') }}</label>
                             <div class="relative">
-                                <select v-model="settingsForm.sync_interval" class="glass-select w-full">
+                                <select id="market-settings-sync-interval" v-model="settingsForm.sync_interval" :aria-label="t('market.sync_interval')" class="glass-select w-full">
                                     <option value="5" class="bg-dark-900">5 minutes</option>
                                     <option value="15" class="bg-dark-900">15 minutes</option>
                                     <option value="30" class="bg-dark-900">30 minutes</option>
@@ -739,8 +739,8 @@
                         </div>
 
                         <div v-if="settingsForm.sync_interval === 'custom'">
-                            <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('market.custom_interval') }}</label>
-                            <input type="number" v-model.number="settingsForm.custom_interval_minutes" min="1" class="glass-input w-full font-mono text-white"/>
+                            <label for="market-settings-custom-interval" class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('market.custom_interval') }}</label>
+                            <input id="market-settings-custom-interval" type="number" v-model.number="settingsForm.custom_interval_minutes" min="1" :aria-label="t('market.custom_interval')" class="glass-input w-full font-mono text-white"/>
                         </div>
                     </div>
 
@@ -838,9 +838,9 @@
         <div v-if="showServerModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
             <div class="glass-card max-w-lg w-full p-6 space-y-6 border border-white/10 shadow-2xl">
                 <div class="flex items-center justify-between border-b border-white/10 pb-4">
-                    <h3 class="text-lg font-bold text-white">
+                    <h2 class="text-lg font-bold text-white">
                         {{ editingServer ? t('market.edit_server_connection') : t('market.add_server_connection') }}
-                    </h3>
+                    </h2>
                     <button @click="closeServerModal" class="text-white/40 hover:text-white">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -855,8 +855,8 @@
 
                 <form @submit.prevent="saveServerModal" class="space-y-4">
                     <div>
-                        <label class="block text-xs font-medium text-white/40 mb-1.5 uppercase">{{ t('market.sync_account') }}</label>
-                        <select v-model="serverForm.account_id" required class="glass-select w-full">
+                        <label for="market-server-account" class="block text-xs font-medium text-white/40 mb-1.5 uppercase">{{ t('market.sync_account') }}</label>
+                        <select id="market-server-account" v-model="serverForm.account_id" required :aria-label="t('market.sync_account')" class="glass-select w-full">
                             <option :value="null" disabled class="bg-dark-900 text-white/50">{{ t('market.choose_account') }}</option>
                             <option v-for="acc in accounts" :key="acc.id" :value="acc.id" class="bg-dark-900 text-white">
                                 {{ acc.username }} ({{ acc.nickname || t('market.no_nick') }}) [{{ t('market.region_label') }}: {{ acc.region || '?' }}{{ acc.server_name ? ` | ${acc.server_name}` : '' }}]
@@ -1007,21 +1007,20 @@ const router = useRouter();
         const hasMoreActiveOffers = ref(false);
         const loadingMore = ref(false);
 
+        const nowSec = ref(Math.floor(Date.now() / 1000));
+        const getOfferTimeLeft = (offer) => {
+            if (offer && offer._expiresTimestamp) {
+                return Math.max(0, offer._expiresTimestamp - nowSec.value);
+            }
+            return Math.max(0, Number(offer?.time_left) || 0);
+        };
+
         let countdownInterval = null;
         const startCountdown = () => {
             if (countdownInterval) clearInterval(countdownInterval);
             countdownInterval = setInterval(() => {
-                const nextOffers = [];
-                activeOffers.value.forEach(offer => {
-                    if (offer.time_left > 1) {
-                        nextOffers.push({ ...offer, time_left: offer.time_left - 1 });
-                    }
-                });
-                if (nextOffers.length !== activeOffers.value.length) {
-                    const removed = activeOffers.value.length - nextOffers.length;
-                    totalActiveCount.value = Math.max(0, totalActiveCount.value - removed);
-                }
-                activeOffers.value = nextOffers;
+                if (typeof document !== 'undefined' && document.hidden) return;
+                nowSec.value = Math.floor(Date.now() / 1000);
             }, 1000);
         };
 
@@ -1324,22 +1323,29 @@ const router = useRouter();
             if (!selectedServerId.value) return;
             loading.value = true;
             try {
+                const mapOffers = (rawOffers) => {
+                    const now = Math.floor(Date.now() / 1000);
+                    return (rawOffers || [])
+                        .filter(offer => offer && typeof offer === 'object')
+                        .map(offer => {
+                            const expiresAt = offer.expires_at ? new Date(offer.expires_at).getTime() : 0;
+                            const expSec = expiresAt > 0 ? Math.floor(expiresAt / 1000) : (now + (Number(offer.time_left) || 0));
+                            return {
+                                ...offer,
+                                _expiresTimestamp: expSec,
+                                time_left: Math.max(0, expSec - now)
+                            };
+                        });
+                };
+
                 const applyBulkData = (data) => {
+                    if (!data) return;
                     goods.value = data.goods || [];
                     const rawPopular = (data.popular && data.popular['1d']) || [];
                     const unwrappedPopular = Array.isArray(rawPopular) ? rawPopular : (rawPopular?.data || []);
                     popular.value = unwrappedPopular.filter(item => item && typeof item === 'object' && item.item_id);
-                    activeOffers.value = (data.active_offers || [])
-                        .map(offer => {
-                            if (offer && offer.expires_at) {
-                                const expiresAt = new Date(offer.expires_at).getTime();
-                                const timeLeft = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
-                                return { ...offer, time_left: timeLeft };
-                            }
-                            return offer;
-                        })
-                        .filter(offer => offer.time_left > 0);
-                    totalActiveCount.value = activeOffers.value.length;
+                    activeOffers.value = mapOffers(data.active_offers);
+                    totalActiveCount.value = data.total_active_count !== undefined ? data.total_active_count : activeOffers.value.length;
                     activeOffersPage.value = 1;
                     hasMoreActiveOffers.value = false;
                     arbitrageLoops.value = data.arbitrage || [];
@@ -1355,29 +1361,27 @@ const router = useRouter();
                     });
                     applyBulkData(bulkData);
                 } else {
+                    const onRevalidateOverview = (freshAnalytics) => {
+                        if (freshAnalytics) {
+                            activeOffers.value = mapOffers(freshAnalytics.active_offers);
+                            totalActiveCount.value = freshAnalytics.total_active_count !== undefined ? freshAnalytics.total_active_count : activeOffers.value.length;
+                        }
+                    };
+
                     // Individual mode: fetch individual granular endpoints separately
                     const [goodsRes, popularRes, arbitrageRes, analyticsRes] = await Promise.all([
                         cachedGet('/api/market/goods', { params: { server_id: selectedServerId.value }, ...options }),
                         cachedGet('/api/market/popular', { params: { server_id: selectedServerId.value, period: '1d' }, ...options }),
                         cachedGet('/api/market/arbitrage', { params: { server_id: selectedServerId.value }, ...options }),
-                        cachedGet('/api/market/analytics', { params: { server_id: selectedServerId.value }, ...options }),
+                        cachedGet('/api/market/analytics', { params: { server_id: selectedServerId.value }, onRevalidate: onRevalidateOverview, ...options }),
                     ]);
                     goods.value = goodsRes || [];
                     const unwrappedPopular = Array.isArray(popularRes) ? popularRes : (popularRes?.data || []);
                     popular.value = unwrappedPopular.filter(item => item && typeof item === 'object' && item.item_id);
                     arbitrageLoops.value = arbitrageRes || [];
                     if (analyticsRes) {
-                        activeOffers.value = (analyticsRes.active_offers || [])
-                            .map(offer => {
-                                if (offer && offer.expires_at) {
-                                    const expiresAt = new Date(offer.expires_at).getTime();
-                                    const timeLeft = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
-                                    return { ...offer, time_left: timeLeft };
-                                }
-                                return offer;
-                            })
-                            .filter(offer => offer.time_left > 0);
-                        totalActiveCount.value = activeOffers.value.length;
+                        activeOffers.value = mapOffers(analyticsRes.active_offers);
+                        totalActiveCount.value = analyticsRes.total_active_count !== undefined ? analyticsRes.total_active_count : activeOffers.value.length;
                     }
                 }
 

@@ -24,7 +24,7 @@
             <div class="px-6 py-6 border-b border-white/5 flex items-center justify-between">
                 <router-link to="/admin" @click="mobileMenuOpen = false" class="flex items-center gap-3 group">
                     <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 p-0.5 shadow-lg shadow-emerald-500/25 group-hover:shadow-emerald-500/40 transition-all duration-300 overflow-hidden flex items-center justify-center">
-                        <img :src="'/android-chrome-512x512.png'" alt="TSO Manager" class="w-full h-full object-cover rounded-[10px]" />
+                        <img :src="'/logo-40.webp'" width="40" height="40" alt="TSO Manager Logo" class="w-full h-full object-cover rounded-[10px]" />
                     </div>
                     <div>
                         <h1 class="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors">TSO Manager</h1>
@@ -33,7 +33,9 @@
                 </router-link>
 
                 <!-- Mobile drawer close button -->
-                <button @click="mobileMenuOpen = false" class="lg:hidden p-1.5 text-white/40 hover:text-white rounded-lg hover:bg-white/5 transition-colors">
+                <button @click="mobileMenuOpen = false"
+                        class="lg:hidden p-1.5 text-white/40 hover:text-white rounded-lg hover:bg-white/5 transition-colors"
+                        aria-label="Close navigation menu">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -119,6 +121,7 @@
                     </div>
                     <button type="button" @click="logout" :disabled="loggingOut"
                             class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-white/30 transition hover:bg-red-500/10 hover:text-red-400 disabled:opacity-50"
+                            :aria-label="t('nav.logout') || 'Logout'"
                             :title="t('nav.logout')">
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6A2.25 2.25 0 0 0 5.25 5.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3-3H9m0 0 3-3m-3 3 3 3" />
@@ -241,7 +244,11 @@ const isAuthenticated = computed(() => {
 });
 
 const showSidebar = computed(() => {
-    return !!(authenticatedUser.value.id && route.path.startsWith('/admin') && !route.meta.guest && !route.meta.publicLayout && !route.meta.hideSidebar);
+    const path = route.matched.length > 0 ? route.path : (typeof window !== 'undefined' ? window.location.pathname : '');
+    const isGuest = route.matched.length > 0 ? !!route.meta.guest : false;
+    const isPublic = route.matched.length > 0 ? !!route.meta.publicLayout : false;
+    const hideSidebar = route.matched.length > 0 ? !!route.meta.hideSidebar : false;
+    return !!(authenticatedUser.value.id && path.startsWith('/admin') && !isGuest && !isPublic && !hideSidebar);
 });
 
 const logout = async () => {
@@ -312,16 +319,36 @@ const syncServerTime = async () => {
     }
 };
 
-onMounted(async () => {
-    if (isAuthenticated.value && route.path.startsWith('/admin')) {
-        await syncServerTime();
-    }
+const startClockTimer = () => {
+    if (timer) return;
     updateClocks();
     timer = setInterval(updateClocks, 1000);
-});
+};
+
+const stopClockTimer = () => {
+    if (timer) {
+        clearInterval(timer);
+        timer = null;
+    }
+};
+
+watch(
+    () => route.path,
+    async (path) => {
+        if (isAuthenticated.value && path.startsWith('/admin')) {
+            if (serverOffset.value === 0) {
+                await syncServerTime();
+            }
+            startClockTimer();
+        } else {
+            stopClockTimer();
+        }
+    },
+    { immediate: true }
+);
 
 onUnmounted(() => {
-    if (timer) clearInterval(timer);
+    stopClockTimer();
 });
 </script>
 
@@ -352,14 +379,10 @@ onUnmounted(() => {
 /* Page Transition Animations */
 .page-enter-active,
 .page-leave-active {
-    transition: opacity 0.2s ease, transform 0.2s ease;
+    transition: opacity 0.15s ease;
 }
-.page-enter-from {
-    opacity: 0;
-    transform: translateY(8px);
-}
+.page-enter-from,
 .page-leave-to {
     opacity: 0;
-    transform: translateY(-8px);
 }
 </style>

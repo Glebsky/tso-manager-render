@@ -140,7 +140,7 @@
         <!-- Tab Content -->
         <div class="glass-card p-6">
             <!-- Buildings Tab -->
-            <div v-show="activeTab === 'buildings'">
+            <div v-if="activeTab === 'buildings'">
                 <!-- Search & Filters -->
                 <div class="flex flex-col sm:flex-row gap-4 mb-6">
                     <div class="flex gap-2 flex-wrap">
@@ -158,7 +158,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                             </svg>
                         </div>
-                        <input v-model="buildingSearch" type="text" :placeholder="t('account.search_buildings')" class="glass-input w-full pl-11">
+                        <input v-model="buildingSearch" type="text" :placeholder="t('account.search_buildings')" :aria-label="t('account.search_buildings')" class="glass-input w-full pl-11">
                     </div>
                 </div>
 
@@ -167,7 +167,7 @@
                     <div v-for="b in filteredBuildings" :key="b.buildingGrid" class="glass-card p-4 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 flex flex-col justify-between">
                         <div class="flex items-start gap-3">
                             <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-dark-900/50 border border-white/5">
-                                <img v-if="getBuildingIcon(b)" :src="getBuildingIcon(b)" :alt="getBuildingName(b)" class="w-8 h-8 object-contain" @error="handleBuildingIconError($event, b)">
+                                <img v-if="getBuildingIcon(b)" :src="getBuildingIcon(b)" :alt="getBuildingName(b)" width="32" height="32" loading="lazy" decoding="async" class="w-8 h-8 object-contain" @error="handleBuildingIconError($event, b)">
                                 <svg v-else class="w-6 h-6 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />
                                 </svg>
@@ -208,7 +208,7 @@
                                 <span v-for="(bf, idx) in b.buffs" :key="idx"
                                       class="inline-flex items-center gap-1 bg-amber-500/10 text-amber-300 text-[10px] font-medium px-2 py-0.5 rounded-md border border-amber-500/20 truncate"
                                       :title="'ID: ' + (bf.buffID || bf.buffId || '?')">
-                                    <img alt="{{ getBuffName(bf) }}" v-if="getBuffIcon(bf)" :src="getBuffIcon(bf)" class="w-3.5 h-3.5 object-contain" @error="handleBuffIconError($event, bf)">
+                                    <img alt="{{ getBuffName(bf) }}" v-if="getBuffIcon(bf)" :src="getBuffIcon(bf)" width="14" height="14" loading="lazy" decoding="async" class="w-3.5 h-3.5 object-contain" @error="handleBuffIconError($event, bf)">
                                     <span class="truncate">{{ getBuffName(bf) }}</span>
                                 </span>
                             </div>
@@ -221,7 +221,7 @@
             </div>
 
             <!-- Specialists Tab -->
-            <div v-show="activeTab === 'specialists'">
+            <div v-if="activeTab === 'specialists'">
                 <!-- Search & Filters -->
                 <div class="flex flex-col sm:flex-row gap-4 mb-6">
                     <div class="flex gap-2 flex-wrap">
@@ -242,7 +242,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                             </svg>
                         </div>
-                        <input v-model="specialistSearch" type="text" :placeholder="t('account.search_specialists')" class="glass-input w-full pl-11">
+                        <input v-model="specialistSearch" type="text" :placeholder="t('account.search_specialists')" :aria-label="t('account.search_specialists')" class="glass-input w-full pl-11">
                     </div>
                 </div>
 
@@ -259,7 +259,7 @@
                             <!-- Icon -->
                             <div class="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg overflow-hidden bg-white/5"
                                  :class="getSpecialistCategory(s.type) === 'General' ? 'text-rose-400 shadow-rose-500/5' : getSpecialistCategory(s.type) === 'Explorer' ? 'text-teal-400 shadow-teal-500/5' : 'text-amber-400 shadow-amber-500/5'">
-                                <img alt="{{ getSpecialistCategory(s.type) }}" :src="getSpecialistIcon(s.type)" @error="handleSpecialistIconError($event, s.type)" class="w-full h-full object-contain p-1" v-if="!hasSpecialistIconError(s.type) && getSpecialistIcon(s.type)" />
+                                <img alt="{{ getSpecialistCategory(s.type) }}" :src="getSpecialistIcon(s.type)" @error="handleSpecialistIconError($event, s.type)" loading="lazy" decoding="async" class="w-full h-full object-contain p-1" v-if="!hasSpecialistIconError(s.type) && getSpecialistIcon(s.type)" />
                                 <span v-else-if="getSpecialistCategory(s.type) === 'General'" class="text-xl">🎖️</span>
                                 <span v-else-if="getSpecialistCategory(s.type) === 'Explorer'" class="text-xl">🧭</span>
                                 <span v-else class="text-xl">🔨</span>
@@ -314,7 +314,7 @@
             </div>
 
             <!-- Buffs Tab -->
-            <div v-show="activeTab === 'buffs'">
+            <div v-if="activeTab === 'buffs'">
                 <!-- Star Menu Buffs -->
                 <div class="mb-8">
                     <h3 class="text-sm font-semibold text-white/50 uppercase tracking-wider mb-4 flex items-center gap-2">
@@ -325,7 +325,7 @@
                         <div v-for="(b, idx) in availableBuffs" :key="idx" class="glass-card p-4 hover:border-white/20 hover:scale-[1.02] transition-all duration-300">
                             <div class="flex items-start gap-3">
                                 <div class="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                                    <img :src="getBuffIcon(b)" :alt="getStarBuffName(b)" class="w-7 h-7 object-contain" @error="handleBuffIconError($event, b)">
+                                    <img :src="getBuffIcon(b)" :alt="getStarBuffName(b)" width="28" height="28" loading="lazy" decoding="async" class="w-7 h-7 object-contain" @error="handleBuffIconError($event, b)">
                                     <span class="text-xl" style="display: none;">
                                         {{ b.buffName_string === 'AddResource' ? '📥' : b.buffName_string === 'Adventure' ? '🗺️' : b.buffName_string === 'BuildBuilding' ? '🏗️' : '✨' }}
                                     </span>
@@ -354,7 +354,7 @@
             </div>
 
             <!-- Resources Tab -->
-            <div v-show="activeTab === 'resources'">
+            <div v-if="activeTab === 'resources'">
                 <!-- Storage limit info -->
                 <div v-if="resourceLimit" class="glass-card p-4 mb-6 flex justify-between items-center">
                     <div>
@@ -377,7 +377,7 @@
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2.5">
                             <div v-for="r in basicResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
-                                    <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
+                                    <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" width="24" height="24" loading="lazy" decoding="async" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
                                 </div>
                                 <div class="flex-1 min-w-0">
@@ -397,7 +397,7 @@
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2.5">
                             <div v-for="r in improvedResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
-                                    <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
+                                    <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" width="24" height="24" loading="lazy" decoding="async" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
                                 </div>
                                 <div class="flex-1 min-w-0">
@@ -417,7 +417,7 @@
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2.5">
                             <div v-for="r in advancedResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
-                                    <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
+                                    <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" width="24" height="24" loading="lazy" decoding="async" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
                                 </div>
                                 <div class="flex-1 min-w-0">
@@ -437,7 +437,7 @@
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2.5">
                             <div v-for="r in masterResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
-                                    <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
+                                    <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" width="24" height="24" loading="lazy" decoding="async" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
                                 </div>
                                 <div class="flex-1 min-w-0">
@@ -457,7 +457,7 @@
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2.5">
                             <div v-for="r in eliteResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
-                                    <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
+                                    <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" width="24" height="24" loading="lazy" decoding="async" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
                                 </div>
                                 <div class="flex-1 min-w-0">
@@ -477,7 +477,7 @@
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2.5">
                             <div v-for="r in eventResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
-                                    <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
+                                    <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" width="24" height="24" loading="lazy" decoding="async" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
                                 </div>
                                 <div class="flex-1 min-w-0">
@@ -497,7 +497,7 @@
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2.5">
                             <div v-for="r in collectibleResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
-                                    <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
+                                    <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" width="24" height="24" loading="lazy" decoding="async" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
                                 </div>
                                 <div class="flex-1 min-w-0">
@@ -517,7 +517,7 @@
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2.5">
                             <div v-for="r in militaryResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
-                                    <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
+                                    <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" width="24" height="24" loading="lazy" decoding="async" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
                                 </div>
                                 <div class="flex-1 min-w-0">
@@ -537,7 +537,7 @@
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2.5">
                             <div v-for="r in otherResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
-                                    <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
+                                    <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" width="24" height="24" loading="lazy" decoding="async" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
                                 </div>
                                 <div class="flex-1 min-w-0">
@@ -554,11 +554,11 @@
             </div>
 
             <!-- Friends Tab -->
-            <div v-show="activeTab === 'friends'">
+            <div v-if="activeTab === 'friends'">
                 <div v-if="parsedFriends.length > 0" class="space-y-2">
                     <div v-for="f in parsedFriends" :key="f.username" class="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] hover:bg-white/5 border border-transparent hover:border-white/5 transition-all duration-300">
                         <div class="w-10 h-10 rounded-xl overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
-                            <img v-if="getFriendAvatar(f)" :src="getFriendAvatar(f)" :alt="f.username" class="w-full h-full object-cover" @error="$event.target.style.display='none'">
+                            <img v-if="getFriendAvatar(f)" :src="getFriendAvatar(f)" :alt="f.username" loading="lazy" decoding="async" class="w-full h-full object-cover" @error="$event.target.style.display='none'">
                             <span v-else class="text-sm font-bold text-white">{{ (f.username || '?').substring(0, 2).toUpperCase() }}</span>
                         </div>
                         <div class="flex-1 min-w-0">
@@ -573,7 +573,7 @@
             </div>
 
             <!-- Session Tab -->
-            <div v-show="activeTab === 'session'">
+            <div v-if="activeTab === 'session'">
                 <div class="max-w-2xl mx-auto">
                     <div class="flex items-center gap-3 mb-5">
                         <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
@@ -598,19 +598,19 @@
 
                     <form @submit.prevent="saveSession" class="space-y-4">
                         <div>
-                            <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">DSO Auth Token</label>
-                            <input type="text" required v-model="sessionForm.dso_auth_token" :placeholder="t('account.token_placeholder')" class="glass-input w-full font-mono text-sm">
+                            <label for="session-dso-token" class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">DSO Auth Token</label>
+                            <input id="session-dso-token" type="text" required v-model="sessionForm.dso_auth_token" :placeholder="t('account.token_placeholder')" :aria-label="t('account.token_placeholder')" class="glass-input w-full font-mono text-sm">
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">DSO Auth User ID</label>
-                                <input type="text" required v-model="sessionForm.dso_auth_user" :placeholder="t('account.user_id_placeholder')" class="glass-input w-full font-mono text-sm">
+                                <label for="session-dso-user-id" class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">DSO Auth User ID</label>
+                                <input id="session-dso-user-id" type="text" required v-model="sessionForm.dso_auth_user" :placeholder="t('account.user_id_placeholder')" :aria-label="t('account.user_id_placeholder')" class="glass-input w-full font-mono text-sm">
                             </div>
 
                             <div>
-                                <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('account.bb_url_label') }}</label>
-                                <select required v-model="sessionForm.bb_url" class="glass-select w-full text-sm">
+                                <label for="session-bb-url" class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('account.bb_url_label') }}</label>
+                                <select id="session-bb-url" required v-model="sessionForm.bb_url" :aria-label="t('account.bb_url_label')" class="glass-select w-full text-sm">
                                     <option value="https://r02-ls.thesettlersonline.ru/">RU (https://r02-ls.thesettlersonline.ru/)</option>
                                     <option value="https://r01-ls.thesettlersonline.com/">EN/US (https://r01-ls.thesettlersonline.com/)</option>
                                     <option value="https://r01-ls.diesiedleronline.de/">DE (https://r01-ls.diesiedleronline.de/)</option>
@@ -686,6 +686,43 @@ const advancedResourceNames = ['Sword', 'Cannon', 'Musket'];
 
 // Building stop-words (non-stoppable buildings to hide)
 const stopWords = ['Bandit', 'DestroyableMountain', 'Mountain', 'Ruins', 'Camp', 'Loot'];
+
+// Map building name to categories (CL1 to CL5)
+const BUILDING_MAP = {
+    // Basic
+    'mayorhouse': 'Basic', 'storehouse': 'Basic', 'woodcutter': 'Basic', 'forester': 'Basic',
+    'sawmill': 'Basic', 'stonecutter': 'Basic', 'stonemason': 'Basic', 'fishfarm': 'Basic',
+    'fisher': 'Basic', 'farm': 'Basic', 'well': 'Basic', 'provisionhouse': 'Basic',
+    'tavern': 'Basic', 'barracks': 'Basic',
+
+    // Improved
+    'cokingplant': 'Improved', 'copperore': 'Improved', 'coppermine': 'Improved',
+    'bronzesmelter': 'Improved', 'bronzeweaponsmith': 'Improved', 'toolmaker': 'Improved',
+    'improvedstorehouse': 'Improved', 'improvedfarm': 'Improved', 'improvedwell': 'Improved',
+    'silo': 'Improved', 'improvedsilo': 'Improved', 'mill': 'Improved', 'bakery': 'Improved',
+    'brewery': 'Improved',
+
+    // Advanced
+    'ironore': 'Advanced', 'ironmine': 'Advanced', 'ironsmelter': 'Advanced',
+    'steelsmelter': 'Advanced', 'ironweaponsmith': 'Advanced', 'steelweaponsmith': 'Advanced',
+    'stable': 'Advanced', 'bowmaker': 'Advanced', 'longbowmaker': 'Advanced',
+    'hunter': 'Advanced', 'deerstalkerhut': 'Advanced', 'butcher': 'Advanced',
+    'marblecutter': 'Advanced', 'marblemason': 'Advanced',
+
+    // Elite
+    'coalmine': 'Elite', 'goldore': 'Elite', 'goldmine': 'Elite', 'goldsmelter': 'Elite',
+    'coinage': 'Elite', 'titaniummine': 'Elite', 'titaniumsmelter': 'Elite',
+    'titaniumweaponsmith': 'Elite', 'crossbowmaker': 'Elite', 'gunpowderforge': 'Elite',
+    'cannonforge': 'Elite', 'eliteresidence': 'Elite', 'spaciousstorehouse': 'Elite',
+    'floatingstorehouse': 'Elite', 'granite_pit': 'Elite', 'grout_factory': 'Elite',
+
+    // Decorations / Specials (CL5)
+    'residence': 'Decorations', 'nobleresidence': 'Decorations', 'floatingresidence': 'Decorations',
+    'magnificentresidence': 'Decorations', 'witchtower': 'Decorations', 'darkcastle': 'Decorations',
+    'bonechurch': 'Decorations', 'frozenmanor': 'Decorations', 'watercastle': 'Decorations',
+    'goldtower': 'Decorations', 'recyclingmanufactory': 'Decorations', 'university2020': 'Decorations',
+    'village_school01': 'Decorations'
+};
 
 const LEVEL_XP_TABLE = {
     1: 0, 2: 100, 3: 200, 4: 300, 5: 400, 6: 500, 7: 600, 8: 700, 9: 800, 10: 900,
@@ -972,43 +1009,6 @@ const account = ref(null);
                     return name.includes(search);
                 });
             }
-
-            // Map building name to categories (CL1 to CL5)
-            const BUILDING_MAP = {
-                // Basic
-                'mayorhouse': 'Basic', 'storehouse': 'Basic', 'woodcutter': 'Basic', 'forester': 'Basic',
-                'sawmill': 'Basic', 'stonecutter': 'Basic', 'stonemason': 'Basic', 'fishfarm': 'Basic',
-                'fisher': 'Basic', 'farm': 'Basic', 'well': 'Basic', 'provisionhouse': 'Basic',
-                'tavern': 'Basic', 'barracks': 'Basic',
-
-                // Improved
-                'cokingplant': 'Improved', 'copperore': 'Improved', 'coppermine': 'Improved',
-                'bronzesmelter': 'Improved', 'bronzeweaponsmith': 'Improved', 'toolmaker': 'Improved',
-                'improvedstorehouse': 'Improved', 'improvedfarm': 'Improved', 'improvedwell': 'Improved',
-                'silo': 'Improved', 'improvedsilo': 'Improved', 'mill': 'Improved', 'bakery': 'Improved',
-                'brewery': 'Improved',
-
-                // Advanced
-                'ironore': 'Advanced', 'ironmine': 'Advanced', 'ironsmelter': 'Advanced',
-                'steelsmelter': 'Advanced', 'ironweaponsmith': 'Advanced', 'steelweaponsmith': 'Advanced',
-                'stable': 'Advanced', 'bowmaker': 'Advanced', 'longbowmaker': 'Advanced',
-                'hunter': 'Advanced', 'deerstalkerhut': 'Advanced', 'butcher': 'Advanced',
-                'marblecutter': 'Advanced', 'marblemason': 'Advanced',
-
-                // Elite
-                'coalmine': 'Elite', 'goldore': 'Elite', 'goldmine': 'Elite', 'goldsmelter': 'Elite',
-                'coinage': 'Elite', 'titaniummine': 'Elite', 'titaniumsmelter': 'Elite',
-                'titaniumweaponsmith': 'Elite', 'crossbowmaker': 'Elite', 'gunpowderforge': 'Elite',
-                'cannonforge': 'Elite', 'eliteresidence': 'Elite', 'spaciousstorehouse': 'Elite',
-                'floatingstorehouse': 'Elite', 'granite_pit': 'Elite', 'grout_factory': 'Elite',
-
-                // Decorations / Specials (CL5)
-                'residence': 'Decorations', 'nobleresidence': 'Decorations', 'floatingresidence': 'Decorations',
-                'magnificentresidence': 'Decorations', 'witchtower': 'Decorations', 'darkcastle': 'Decorations',
-                'bonechurch': 'Decorations', 'frozenmanor': 'Decorations', 'watercastle': 'Decorations',
-                'goldtower': 'Decorations', 'recyclingmanufactory': 'Decorations', 'university2020': 'Decorations',
-                'village_school01': 'Decorations'
-            };
 
             const getBuildingCategory = (b) => {
                 const name = (b.buildingName_string || b.buildingName || '').toLowerCase();

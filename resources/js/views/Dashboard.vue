@@ -203,7 +203,7 @@ import { dashboardApi } from '../services/api/dashboard';
 import AccountCard from '../components/AccountCard.vue';
 import LogEntry from '../components/LogEntry.vue';
 
-const loading = ref(false);
+const loading = ref(true);
 const accounts = ref([]);
 const logs = ref([]);
 const stats = ref({

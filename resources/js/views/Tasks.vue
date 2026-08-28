@@ -36,8 +36,8 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                     <!-- Название серии -->
                     <div>
-                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('tasks.series_name') }}</label>
-                        <input type="text" v-model="taskName" :placeholder="t('tasks.series_name_placeholder')" class="glass-input w-full text-left  py-2.5">
+                        <label for="task-series-name" class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('tasks.series_name') }}</label>
+                        <input id="task-series-name" type="text" v-model="taskName" :placeholder="t('tasks.series_name_placeholder')" :aria-label="t('tasks.series_name')" class="glass-input w-full text-left  py-2.5">
                     </div>
 
                     <!-- Выбор аккаунта -->
@@ -50,8 +50,8 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                                 </svg>
                             </button>
-                            <div v-if="activeDropdown === 'account'" class="absolute z-50 mt-1.5 w-full glass-card border border-white/10 shadow-2xl rounded-xl py-1 max-h-60 overflow-y-auto">
-                                <button v-for="acc in accounts" :key="acc.id" type="button" @click="selectedAccountId = acc.id; onAccountChange(); activeDropdown = null" class="w-full px-4 py-2 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">
+                            <div v-if="activeDropdown === 'account'" class="absolute z-50 mt-1.5 w-full bg-dark-900 border border-white/15 shadow-2xl rounded-xl py-1.5 max-h-60 overflow-y-auto backdrop-blur-xl">
+                                <button v-for="acc in accounts" :key="acc.id" type="button" @click="selectedAccountId = acc.id; onAccountChange(); activeDropdown = null" class="w-full px-4 py-2 text-left text-xs text-white/90 hover:bg-emerald-500/20 hover:text-white transition-colors">
                                     {{ acc.nickname || acc.username }} ({{ (acc.region || '').toUpperCase() }})
                                 </button>
                             </div>
@@ -118,6 +118,7 @@
                                             <span class="inline-flex items-center gap-1 text-emerald-400 font-semibold">
                                                 <img v-if="getBuildingInfo(null, act).icon"
                                                      :src="getBuildingInfo(null, act).icon"
+                                                     loading="lazy" decoding="async"
                                                      class="w-4 h-4 object-contain rounded flex-shrink-0"
                                                      @error="handleBuildingIconError($event, getBuildingInfo(null, act).raw || act.meta?.building)" />
                                                 <span v-else class="text-xs flex-shrink-0">🏭</span>
@@ -131,6 +132,7 @@
                                             <span class="inline-flex items-center gap-1 text-amber-300 font-medium">
                                                 <img v-if="getBuffInfo(null, act).icon"
                                                      :src="getBuffInfo(null, act).icon"
+                                                     loading="lazy" decoding="async"
                                                      class="w-4 h-4 object-contain rounded flex-shrink-0"
                                                      @error="handleBuffIconError($event, getBuffInfo(null, act).raw || act.meta?.buff)" />
                                                 <span v-else class="text-xs flex-shrink-0">✨</span>
@@ -148,6 +150,7 @@
                                             <span class="inline-flex items-center gap-1 text-emerald-400 font-semibold">
                                                 • <img v-if="getBuildingInfo(null, act).icon"
                                                      :src="getBuildingInfo(null, act).icon"
+                                                     loading="lazy" decoding="async"
                                                      class="w-4 h-4 object-contain rounded flex-shrink-0"
                                                      @error="handleBuildingIconError($event, getBuildingInfo(null, act).raw || act.meta?.building)" />
                                                 <span v-else class="text-xs flex-shrink-0">🏭</span>
@@ -161,6 +164,7 @@
                                             <span class="inline-flex items-center gap-1 text-emerald-300 font-medium">
                                                 <img v-if="getSpecialistInfo(null, act).icon"
                                                      :src="getSpecialistInfo(null, act).icon"
+                                                     loading="lazy" decoding="async"
                                                      class="w-4 h-4 object-contain rounded flex-shrink-0"
                                                      @error="handleSpecialistIconError($event)" />
                                                 <span v-else class="text-xs flex-shrink-0">🎖️</span>
@@ -179,6 +183,7 @@
                                             <span class="inline-flex items-center gap-1 text-emerald-400 font-semibold">
                                                 <img v-if="getBuildingInfo(null, act).icon"
                                                      :src="getBuildingInfo(null, act).icon"
+                                                     loading="lazy" decoding="async"
                                                      class="w-4 h-4 object-contain rounded flex-shrink-0"
                                                      @error="handleBuildingIconError($event, getBuildingInfo(null, act).raw || act.payload?.mine_name)" />
                                                 <span v-else class="text-xs flex-shrink-0">⛏️</span>
@@ -192,6 +197,7 @@
                                             <span class="inline-flex items-center gap-1 text-emerald-400 font-semibold">
                                                 <img v-if="getBuildingInfo(null, act).icon"
                                                      :src="getBuildingInfo(null, act).icon"
+                                                     loading="lazy" decoding="async"
                                                      class="w-4 h-4 object-contain rounded flex-shrink-0"
                                                      @error="handleBuildingIconError($event, getBuildingInfo(null, act).raw || act.payload?.building_name)" />
                                                 <span v-else class="text-xs flex-shrink-0">🏭</span>
@@ -251,16 +257,16 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                                         </svg>
                                     </button>
-                                    <div v-if="selectedAccountId && activeDropdown === 'stepActionType'" class="absolute z-50 mt-1.5 w-full glass-card border border-white/10 shadow-2xl rounded-xl py-1 max-h-60 overflow-y-auto">
-                                        <button type="button" @click="stepActionType = 'stop_production'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">🛑 {{ t('tasks.action.stop_production') }}</button>
-                                        <button type="button" @click="stepActionType = 'start_production'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">▶️ {{ t('tasks.action.start_production') }}</button>
-                                        <button type="button" @click="stepActionType = 'collect_building'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">🎁 {{ t('tasks.action.collect_building') }}</button>
-                                        <button type="button" @click="stepActionType = 'build_mine'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">🏗️ {{ t('tasks.action.build_mine') }}</button>
-                                        <button type="button" @click="stepActionType = 'upgrade_mine'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">⬆️ {{ t('tasks.action.upgrade_mine') }}</button>
-                                        <button type="button" @click="stepActionType = 'apply_buff'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">⚡ {{ t('tasks.action.apply_buff') }}</button>
-                                        <button type="button" @click="stepActionType = 'send_geologist'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">⛏️ {{ t('tasks.action.send_geologist') }}</button>
-                                        <button type="button" @click="stepActionType = 'send_explorer'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">🧭 {{ t('tasks.action.send_explorer') }}</button>
-                                        <button type="button" @click="stepActionType = 'collect_pickups'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">🧺 {{ t('tasks.action.collect_pickups') }}</button>
+                                    <div v-if="selectedAccountId && activeDropdown === 'stepActionType'" class="absolute z-50 mt-1.5 w-full bg-dark-900 border border-white/15 shadow-2xl rounded-xl py-1.5 max-h-60 overflow-y-auto backdrop-blur-xl divide-y divide-white/5">
+                                        <button type="button" @click="stepActionType = 'stop_production'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-2 text-left text-xs text-white/90 hover:bg-emerald-500/20 hover:text-white transition-colors flex items-center gap-2">🛑 {{ t('tasks.action.stop_production') }}</button>
+                                        <button type="button" @click="stepActionType = 'start_production'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-2 text-left text-xs text-white/90 hover:bg-emerald-500/20 hover:text-white transition-colors flex items-center gap-2">▶️ {{ t('tasks.action.start_production') }}</button>
+                                        <button type="button" @click="stepActionType = 'collect_building'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-2 text-left text-xs text-white/90 hover:bg-emerald-500/20 hover:text-white transition-colors flex items-center gap-2">🎁 {{ t('tasks.action.collect_building') }}</button>
+                                        <button type="button" @click="stepActionType = 'build_mine'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-2 text-left text-xs text-white/90 hover:bg-emerald-500/20 hover:text-white transition-colors flex items-center gap-2">🏗️ {{ t('tasks.action.build_mine') }}</button>
+                                        <button type="button" @click="stepActionType = 'upgrade_mine'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-2 text-left text-xs text-white/90 hover:bg-emerald-500/20 hover:text-white transition-colors flex items-center gap-2">⬆️ {{ t('tasks.action.upgrade_mine') }}</button>
+                                        <button type="button" @click="stepActionType = 'apply_buff'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-2 text-left text-xs text-white/90 hover:bg-emerald-500/20 hover:text-white transition-colors flex items-center gap-2">⚡ {{ t('tasks.action.apply_buff') }}</button>
+                                        <button type="button" @click="stepActionType = 'send_geologist'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-2 text-left text-xs text-white/90 hover:bg-emerald-500/20 hover:text-white transition-colors flex items-center gap-2">⛏️ {{ t('tasks.action.send_geologist') }}</button>
+                                        <button type="button" @click="stepActionType = 'send_explorer'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-2 text-left text-xs text-white/90 hover:bg-emerald-500/20 hover:text-white transition-colors flex items-center gap-2">🧭 {{ t('tasks.action.send_explorer') }}</button>
+                                        <button type="button" @click="stepActionType = 'collect_pickups'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-2 text-left text-xs text-white/90 hover:bg-emerald-500/20 hover:text-white transition-colors flex items-center gap-2">🧺 {{ t('tasks.action.collect_pickups') }}</button>
                                     </div>
                                 </div>
                             </div>
@@ -303,11 +309,11 @@
                                                         <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                                                     </svg>
                                                 </button>
-                                                <div v-if="activeDropdown === 'friendList'" class="absolute z-50 mt-1.5 w-full glass-card border border-white/10 shadow-2xl rounded-xl py-1 max-h-60 overflow-y-auto">
-                                                    <button v-for="friend in friendsList" :key="friend.id" type="button" @click="selectFriend(friend); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors flex justify-between items-center">
+                                                <div v-if="activeDropdown === 'friendList'" class="absolute z-50 mt-1.5 w-full bg-dark-900 border border-white/15 shadow-2xl rounded-xl py-1.5 max-h-60 overflow-y-auto backdrop-blur-xl divide-y divide-white/5">
+                                                    <button v-for="friend in friendsList" :key="friend.id" type="button" @click="selectFriend(friend); activeDropdown = null" class="w-full px-3 py-2 text-left text-xs text-white/90 hover:bg-emerald-500/20 hover:text-white transition-colors flex justify-between items-center">
                                                         <span>👤 {{ friend.nickname || friend.username }} ({{ t('tasks.level') }} {{ friend.playerLevel }})</span>
                                                     </button>
-                                                    <div v-if="friendsList.length === 0" class="px-3 py-1.5 text-xs text-white/40">
+                                                    <div v-if="friendsList.length === 0" class="px-3 py-2 text-xs text-white/40">
                                                         {{ t('tasks.friends_empty') }}
                                                     </div>
                                                 </div>
@@ -321,7 +327,7 @@
                                                     class="glass-select w-full flex items-center justify-between text-left text-xs py-2 bg-dark-900/40 transition-all duration-300"
                                                     :class="{ 'border-amber-500/40 bg-amber-500/5': !selectedBuff }">
                                                 <span v-if="selectedBuff" class="flex items-center gap-2 min-w-0">
-                                                    <img alt="" v-if="getBuffIcon(selectedBuff)" :src="getBuffIcon(selectedBuff)" class="w-5 h-5 object-contain flex-shrink-0" @error="handleBuffIconError($event, selectedBuff)" />
+                                                    <img alt="" v-if="getBuffIcon(selectedBuff)" :src="getBuffIcon(selectedBuff)" loading="lazy" decoding="async" class="w-5 h-5 object-contain flex-shrink-0" @error="handleBuffIconError($event, selectedBuff)" />
                                                     <span class="truncate">{{ getStarBuffName(selectedBuff) }} ({{ selectedBuff.amount }})</span>
                                                     <span v-if="buffDurationLabel(selectedBuff)" class="badge badge-emerald text-[9px] flex-shrink-0">⏱ {{ buffDurationLabel(selectedBuff) }}</span>
                                                 </span>
@@ -352,7 +358,7 @@
                                                           :class="bTarget.scope === 'friend' ? 'bg-amber-500/20 text-amber-300' : 'bg-emerald-500/20 text-emerald-300'">
                                                         {{ bTarget.scope === 'friend' ? ('👤 ' + (bTarget.friend?.nickname || bTarget.friend?.username || t('tasks.friend'))) : '🏡 ' + t('tasks.my_city') }}
                                                     </span>
-                                                    <img alt="" v-if="getBuildingIcon(bTarget.building)" :src="getBuildingIcon(bTarget.building)" class="w-4 h-4 object-contain flex-shrink-0" @error="handleBuildingIconError($event, bTarget.building)" />
+                                                    <img alt="" v-if="getBuildingIcon(bTarget.building)" :src="getBuildingIcon(bTarget.building)" loading="lazy" decoding="async" class="w-4 h-4 object-contain flex-shrink-0" @error="handleBuildingIconError($event, bTarget.building)" />
                                                     <span class="text-white/90 font-medium truncate text-xs">{{ getBuildingName(bTarget.building) }} (Grid #{{ bTarget.buildingGrid }})</span>
                                                     <button type="button" @click="removeSelectedBuilding(bIdx)" class="text-white/40 hover:text-red-400 transition-colors ml-1 font-bold flex-shrink-0">✕</button>
                                                 </div>
@@ -400,7 +406,7 @@
                                             <div v-if="selectedSpecialists.length > 0" class="flex flex-wrap gap-2 mb-2 max-h-40 overflow-y-auto p-2 bg-dark-900/40 rounded-xl border border-white/5">
                                                 <div v-for="(spec, sIdx) in selectedSpecialists" :key="getSpecialistId(spec)"
                                                      class="glass-card px-2.5 py-1.5 flex items-center gap-2 text-xs border border-emerald-500/30 bg-emerald-500/10 rounded-lg max-w-full">
-                                                    <img alt="" v-if="getSpecialistIcon(spec.type)" :src="getSpecialistIcon(spec.type)" class="w-5 h-5 object-contain flex-shrink-0" @error="handleSpecialistIconError($event, spec.type)" />
+                                                    <img alt="" v-if="getSpecialistIcon(spec.type)" :src="getSpecialistIcon(spec.type)" loading="lazy" decoding="async" class="w-5 h-5 object-contain flex-shrink-0" @error="handleSpecialistIconError($event, spec.type)" />
                                                     <span class="text-white/90 font-medium truncate text-xs">{{ spec.name || getSpecialistTypeName(spec.type) }}</span>
                                                     <button type="button" @click="removeSelectedSpecialist(sIdx)" class="text-white/40 hover:text-red-400 transition-colors ml-1 font-bold flex-shrink-0">✕</button>
                                                 </div>
@@ -434,7 +440,7 @@
                                             <div v-if="selectedDeposits.length > 0" class="flex flex-wrap gap-2 mb-2 max-h-40 overflow-y-auto p-2 bg-dark-900/40 rounded-xl border border-white/5">
                                                 <div v-for="(dep, dIdx) in selectedDeposits" :key="dep.grid"
                                                      class="glass-card px-2.5 py-1.5 flex items-center gap-2 text-xs border border-emerald-500/30 bg-emerald-500/10 rounded-lg max-w-full">
-                                                    <img alt="" v-if="getBuildingIcon(dep.mine_name)" :src="getBuildingIcon(dep.mine_name)" class="w-4 h-4 object-contain flex-shrink-0" @error="handleBuildingIconError($event, dep.mine_name)" />
+                                                    <img alt="" v-if="getBuildingIcon(dep.mine_name)" :src="getBuildingIcon(dep.mine_name)" loading="lazy" decoding="async" class="w-4 h-4 object-contain flex-shrink-0" @error="handleBuildingIconError($event, dep.mine_name)" />
                                                     <span v-else class="text-xs">⛏️</span>
                                                     <span class="text-white/90 font-medium truncate text-xs">{{ getBuildingName(dep.mine_name) }} (Grid #{{ dep.grid }})</span>
                                                     <button type="button" @click="removeSelectedDeposit(dIdx)" class="text-white/40 hover:text-red-400 transition-colors ml-1 font-bold flex-shrink-0">✕</button>
@@ -469,7 +475,7 @@
                                             <div v-if="selectedMines.length > 0" class="flex flex-wrap gap-2 mb-2 max-h-40 overflow-y-auto p-2 bg-dark-900/40 rounded-xl border border-white/5">
                                                 <div v-for="(mine, mIdx) in selectedMines" :key="mine.grid"
                                                      class="glass-card px-2.5 py-1.5 flex items-center gap-2 text-xs border border-emerald-500/30 bg-emerald-500/10 rounded-lg max-w-full">
-                                                    <img alt="" v-if="getBuildingIcon(mine.building_name)" :src="getBuildingIcon(mine.building_name)" class="w-4 h-4 object-contain flex-shrink-0" @error="handleBuildingIconError($event, mine.building_name)" />
+                                                    <img alt="" v-if="getBuildingIcon(mine.building_name)" :src="getBuildingIcon(mine.building_name)" loading="lazy" decoding="async" class="w-4 h-4 object-contain flex-shrink-0" @error="handleBuildingIconError($event, mine.building_name)" />
                                                     <span v-else class="text-xs">🏭</span>
                                                     <span class="text-white/90 font-medium truncate text-xs">{{ getBuildingName(mine.building_name) }} (Grid #{{ mine.grid }})</span>
                                                     <button type="button" @click="removeSelectedMine(mIdx)" class="text-white/40 hover:text-red-400 transition-colors ml-1 font-bold flex-shrink-0">✕</button>
@@ -500,11 +506,11 @@
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                                                 </svg>
                                             </button>
-                                            <div v-if="activeDropdown === 'searchType'" class="absolute z-50 mt-1.5 w-full glass-card border border-white/10 shadow-2xl rounded-xl py-1 max-h-60 overflow-y-auto">
-                                                <button v-if="stepActionType === 'send_geologist'" type="button" @click="payload.task_type = 0; onSearchTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">{{ t('tasks.search_deposits') }}</button>
+                                            <div v-if="activeDropdown === 'searchType'" class="absolute z-50 mt-1.5 w-full bg-dark-900 border border-white/15 shadow-2xl rounded-xl py-1.5 max-h-60 overflow-y-auto backdrop-blur-xl divide-y divide-white/5">
+                                                <button v-if="stepActionType === 'send_geologist'" type="button" @click="payload.task_type = 0; onSearchTypeChange(); activeDropdown = null" class="w-full px-3 py-2 text-left text-xs text-white/90 hover:bg-emerald-500/20 hover:text-white transition-colors">{{ t('tasks.search_deposits') }}</button>
                                                 <template v-if="stepActionType === 'send_explorer'">
-                                                    <button type="button" @click="payload.task_type = 1; onSearchTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">{{ t('tasks.search_treasure') }}</button>
-                                                    <button type="button" @click="payload.task_type = 2; onSearchTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">{{ t('tasks.search_adventure') }}</button>
+                                                    <button type="button" @click="payload.task_type = 1; onSearchTypeChange(); activeDropdown = null" class="w-full px-3 py-2 text-left text-xs text-white/90 hover:bg-emerald-500/20 hover:text-white transition-colors">{{ t('tasks.search_treasure') }}</button>
+                                                    <button type="button" @click="payload.task_type = 2; onSearchTypeChange(); activeDropdown = null" class="w-full px-3 py-2 text-left text-xs text-white/90 hover:bg-emerald-500/20 hover:text-white transition-colors">{{ t('tasks.search_adventure') }}</button>
                                                 </template>
                                             </div>
                                         </div>
@@ -519,8 +525,8 @@
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                                                 </svg>
                                             </button>
-                                            <div v-if="activeDropdown === 'subTask'" class="absolute z-50 mt-1.5 w-full glass-card border border-white/10 shadow-2xl rounded-xl py-1 max-h-60 overflow-y-auto">
-                                                <button v-for="st in availableSubTasks" :key="st.id" type="button" @click="payload.sub_task_id = st.id; activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">
+                                            <div v-if="activeDropdown === 'subTask'" class="absolute z-50 mt-1.5 w-full bg-dark-900 border border-white/15 shadow-2xl rounded-xl py-1.5 max-h-60 overflow-y-auto backdrop-blur-xl divide-y divide-white/5">
+                                                <button v-for="st in availableSubTasks" :key="st.id" type="button" @click="payload.sub_task_id = st.id; activeDropdown = null" class="w-full px-3 py-2 text-left text-xs text-white/90 hover:bg-emerald-500/20 hover:text-white transition-colors">
                                                     {{ st.name }}
                                                 </button>
                                             </div>
@@ -531,10 +537,10 @@
 
                             <!-- Задержка после шага -->
                             <div>
-                                <label class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">{{ t('tasks.step_delay') }}</label>
+                                <label for="task-step-delay" class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">{{ t('tasks.step_delay') }}</label>
                                 <div class="flex items-center gap-2">
-                                    <input type="number" min="0" required v-model.number="stepDelay" class="glass-input w-full text-xs py-1.5">
-                                    <span class="text-[10px] text-white/40 font-semibold uppercase">{{ t('tasks.seconds_unit') }}</span>
+                                    <input id="task-step-delay" type="number" min="0" required v-model.number="stepDelay" :aria-label="t('tasks.step_delay')" class="glass-input w-full text-xs py-1.5">
+                                    <label for="task-step-delay" class="text-[10px] text-white/40 font-semibold uppercase cursor-pointer">{{ t('tasks.seconds_unit') }}</label>
                                 </div>
                             </div>
                         </div>

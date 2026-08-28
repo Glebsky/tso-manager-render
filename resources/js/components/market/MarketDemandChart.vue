@@ -2,7 +2,7 @@
     <div class="glass-card p-4 sm:p-6 transition-all duration-300">
         <!-- Header + legend -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
-            <h3 class="text-[13px] sm:text-sm font-semibold text-white wrap-anywhere">{{ title }}</h3>
+            <h2 class="text-[13px] sm:text-sm font-semibold text-white wrap-anywhere">{{ title }}</h2>
             <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-white/40">
                 <div class="flex items-center gap-1.5 whitespace-nowrap">
                     <span class="w-2.5 h-2.5 bg-blue-500/20 border border-blue-500 rounded-sm inline-block"></span>
@@ -86,20 +86,29 @@ const chartBox = ref(null);
 const boxWidth = ref(VB_W);
 
 let observer = null;
+let rafId = null;
 onMounted(() => {
     if (!chartBox.value) return;
-    const measure = () => {
-        boxWidth.value = chartBox.value?.clientWidth || VB_W;
-    };
-    measure();
     if (typeof ResizeObserver !== 'undefined') {
-        observer = new ResizeObserver(measure);
+        observer = new ResizeObserver((entries) => {
+            if (rafId) cancelAnimationFrame(rafId);
+            rafId = requestAnimationFrame(() => {
+                const width = entries[0]?.contentRect?.width;
+                if (width && Math.abs(width - boxWidth.value) > 2) {
+                    boxWidth.value = width;
+                }
+            });
+        });
         observer.observe(chartBox.value);
     } else {
+        const measure = () => {
+            boxWidth.value = chartBox.value?.clientWidth || VB_W;
+        };
         window.addEventListener('resize', measure);
     }
 });
 onBeforeUnmount(() => {
+    if (rafId) cancelAnimationFrame(rafId);
     if (observer) observer.disconnect();
 });
 

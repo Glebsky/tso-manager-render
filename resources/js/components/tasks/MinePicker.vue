@@ -17,7 +17,7 @@
                     <button type="button" @click="$emit('close')" class="btn-primary btn-sm text-xs py-1 px-3">
                         {{ t('tasks.modal.done') }}
                     </button>
-                    <button type="button" @click="$emit('close')" class="text-white/40 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/5 ml-1">
+                    <button type="button" @click="$emit('close')" aria-label="Close" class="text-white/40 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/5 ml-1">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
                         </svg>
@@ -29,11 +29,11 @@
             <div class="p-4 border-b border-white/5 bg-white/[0.01] flex flex-col gap-3">
                 <div class="flex items-center justify-between gap-3 flex-wrap">
                     <div class="relative flex-1 min-w-[200px]">
-                        <input :value="mineSearch" @input="$emit('update:mineSearch', $event.target.value)" type="text" :placeholder="t('tasks.modal.search_mine')" class="glass-input w-full text-xs py-2 pl-4">
+                        <input :value="mineSearch" @input="$emit('update:mineSearch', $event.target.value)" type="text" :placeholder="t('tasks.modal.search_mine')" :aria-label="t('tasks.modal.search_mine')" class="glass-input w-full text-xs py-2 pl-4">
                     </div>
                     <div class="flex items-center gap-2">
-                        <label class="text-xs text-white/60 whitespace-nowrap">{{ t('tasks.max_level_target') }}:</label>
-                        <select :value="maxLevel" @change="$emit('update:maxLevel', Number($event.target.value))" class="glass-select text-xs py-1.5 px-3 bg-dark-900/60">
+                        <label for="mine-max-level" class="text-xs text-white/60 whitespace-nowrap">{{ t('tasks.max_level_target') }}:</label>
+                        <select id="mine-max-level" :value="maxLevel" @change="$emit('update:maxLevel', Number($event.target.value))" :aria-label="t('tasks.max_level_target')" class="glass-select text-xs py-1.5 px-3 bg-dark-900/60">
                             <option v-for="lvl in [2,3,4,5,6,7]" :key="lvl" :value="lvl">{{ lvl }}</option>
                         </select>
                     </div>

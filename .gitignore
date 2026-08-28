@@ -27,6 +27,6 @@ yarn-error.log
 /docker/nginx/certs/*.key
 /docker/nginx/certs/*.crt
 docker/nginx/certs/
-
-/.osp/
+# OpenServer 6
+/.osp/backup/
 /docs/references/

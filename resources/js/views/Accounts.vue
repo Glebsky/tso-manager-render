@@ -22,21 +22,21 @@
             <form @submit.prevent="addAccount" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
                 <!-- Username -->
                 <div>
-                    <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('accounts.username_label') }}</label>
-                    <input type="email" required v-model="form.username" placeholder="email@domain.com" class="glass-input w-full">
+                    <label for="acc-username" class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('accounts.username_label') }}</label>
+                    <input id="acc-username" type="email" required v-model="form.username" placeholder="email@domain.com" :aria-label="t('accounts.username_label')" class="glass-input w-full">
                 </div>
 
                 <!-- Password -->
                 <div>
-                    <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('accounts.password') }}</label>
-                    <input type="password" required v-model="form.password" placeholder="••••••••" class="glass-input w-full">
+                    <label for="acc-password" class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('accounts.password') }}</label>
+                    <input id="acc-password" type="password" required v-model="form.password" placeholder="••••••••" :aria-label="t('accounts.password')" class="glass-input w-full">
                 </div>
 
                 <!-- Region & Submit -->
                 <div class="flex flex-col sm:flex-row gap-3 items-end sm:col-span-2 lg:col-span-1">
                     <div class="flex-1 relative w-full">
-                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('accounts.region') }}</label>
-                        <select required v-model="form.region" class="glass-select w-full">
+                        <label for="acc-region" class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('accounts.region') }}</label>
+                        <select id="acc-region" required v-model="form.region" :aria-label="t('accounts.region')" class="glass-select w-full">
                             <option value="ru" class="bg-dark-900">RU (Realm 2)</option>
                             <option value="en" class="bg-dark-900">EN (US/UK)</option>
                             <option value="de" class="bg-dark-900">DE (Germany)</option>

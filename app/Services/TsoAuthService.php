@@ -187,13 +187,14 @@ class TsoAuthService
             'password' => $account->password,
         ], $cookieFile);
 
-        Log::info('[TsoAuth] Legacy (CipMigrated) login response: '.CredentialRedactor::redact(substr($loginRes, 0, 500), $account));
+        Log::info('[TsoAuth] Legacy (CipMigrated) login response: '.CredentialRedactor::redact(substr($this->formatAuthResponse($loginRes), 0, 500), $account));
 
         if (! str_contains($loginRes, 'OKAY')) {
             if (stripos($loginRes, 'captcha') !== false) {
                 throw new RuntimeException((string) __('ui.auth.captcha_required'));
             }
-            throw new RuntimeException('Login failed: '.CredentialRedactor::redact($loginRes, $account));
+            $formattedError = $this->formatAuthResponse($loginRes);
+            throw new RuntimeException('Login failed: '.CredentialRedactor::redact($formattedError, $account));
         }
 
         $mainUrl = $server['domain'].$server['main'];
@@ -322,7 +323,7 @@ class TsoAuthService
         $oauthTokenData = json_decode($oauthTokenRes, true, 512, JSON_THROW_ON_ERROR);
         $accessToken = is_array($oauthTokenData) ? ($oauthTokenData['accessToken'] ?? null) : null;
         if (! is_string($accessToken) || $accessToken === '') {
-            throw new RuntimeException('Ubisoft login failed (could not get oauthToken): '.$oauthTokenRes);
+            throw new RuntimeException('Ubisoft login failed (could not get oauthToken): '.$this->formatAuthResponse($oauthTokenRes));
         }
 
         $authTokenUrl = 'https://api.partners.ubisoft.com/v1/profiles/authentication/token';
@@ -343,7 +344,7 @@ class TsoAuthService
 
         $token = is_array($authTokenData) ? ($authTokenData['token'] ?? null) : null;
         if (! is_string($token) || $token === '') {
-            throw new RuntimeException('Ubisoft authentication failed (could not get token): '.$authTokenRes);
+            throw new RuntimeException('Ubisoft authentication failed (could not get token): '.$this->formatAuthResponse($authTokenRes));
         }
 
         $redirectUrlOpts['token'] = $token;
@@ -536,6 +537,41 @@ class TsoAuthService
             }
 
             return $response;
+        }
+
+        return $response;
+    }
+
+    /**
+     * Decode and format authentication error response into a human-readable string.
+     */
+    private function formatAuthResponse(string $response): string
+    {
+        $decoded = json_decode($response, true);
+        if (is_array($decoded)) {
+            if (isset($decoded['data']) && is_array($decoded['data'])) {
+                $title = isset($decoded['data']['title']) && is_string($decoded['data']['title'])
+                    ? trim(strip_tags($decoded['data']['title']))
+                    : '';
+                $text = isset($decoded['data']['text']) && is_string($decoded['data']['text'])
+                    ? trim(strip_tags(str_replace(['<br>', '<br/>', '<br />', "\r\n", "\r", "\n"], ' ', $decoded['data']['text'])))
+                    : '';
+
+                if ($title !== '' && $text !== '') {
+                    return "{$title}: {$text}";
+                }
+                if ($text !== '') {
+                    return $text;
+                }
+                if ($title !== '') {
+                    return $title;
+                }
+            }
+
+            $unescaped = json_encode($decoded, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            if (is_string($unescaped)) {
+                return $unescaped;
+            }
         }
 
         return $response;

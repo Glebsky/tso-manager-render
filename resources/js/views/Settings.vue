@@ -35,9 +35,9 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
                     <!-- Sync Interval -->
                     <div>
-                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('settings.sync_interval') }}</label>
+                        <label for="settings-sync-interval" class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('settings.sync_interval') }}</label>
                         <div class="relative">
-                            <select v-model.number="form.sync_interval" class="glass-select w-full">
+                            <select id="settings-sync-interval" v-model.number="form.sync_interval" :aria-label="t('settings.sync_interval')" class="glass-select w-full">
                                 <option :value="0" class="bg-dark-900">{{ t('settings.manual_sync') }}</option>
                                 <option :value="5" class="bg-dark-900">{{ t('settings.every_5') }}</option>
                                 <option :value="15" class="bg-dark-900">{{ t('settings.every_15') }}</option>
@@ -54,9 +54,9 @@
 
                     <!-- Log Retention -->
                     <div>
-                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('settings.log_retention') }}</label>
+                        <label for="settings-log-retention" class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('settings.log_retention') }}</label>
                         <div class="relative">
-                            <select v-model.number="form.log_retention_days" class="glass-select w-full">
+                            <select id="settings-log-retention" v-model.number="form.log_retention_days" :aria-label="t('settings.log_retention')" class="glass-select w-full">
                                 <option :value="0" class="bg-dark-900">{{ t('settings.keep_forever') }}</option>
                                 <option :value="7" class="bg-dark-900">{{ t('settings.older_7') }}</option>
                                 <option :value="14" class="bg-dark-900">{{ t('settings.older_14') }}</option>

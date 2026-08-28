@@ -21,7 +21,7 @@
                         <!-- Статус активности -->
                         <span class="badge text-[10px] font-semibold uppercase px-2 py-0.5"
                               :class="task.is_active ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'">
-                            {{ task.is_active ? '● ' + t('tasks.status.active') : '○ ' + t('tasks.status.pause_short') }}
+                            {{ task.is_active ? '● ' + t('tasks.status.active') : '○ ' + t('tasks.status.paused') }}
                         </span>
 
                         <!-- Тип расписания -->
@@ -47,6 +47,7 @@
                                 <span class="inline-flex items-center gap-1 text-emerald-300 font-medium">
                                     <img v-if="getBuildingInfo(task, { task_type: task.task_type, payload: task.payload }).icon"
                                          :src="getBuildingInfo(task, { task_type: task.task_type, payload: task.payload }).icon"
+                                         loading="lazy" decoding="async"
                                          class="w-4 h-4 object-contain rounded flex-shrink-0"
                                          @error="handleBuildingIconError($event, getBuildingInfo(task, { task_type: task.task_type, payload: task.payload }).raw)" />
                                     <span v-else class="text-xs">🏭</span>
@@ -62,6 +63,7 @@
                                 <span class="inline-flex items-center gap-1 text-amber-300 font-medium">
                                     <img v-if="getBuffInfo(task, { task_type: task.task_type, payload: task.payload }).icon"
                                          :src="getBuffInfo(task, { task_type: task.task_type, payload: task.payload }).icon"
+                                         loading="lazy" decoding="async"
                                          class="w-4 h-4 object-contain rounded flex-shrink-0"
                                          @error="handleBuffIconError($event, getBuffInfo(task, { task_type: task.task_type, payload: task.payload }).raw)" />
                                     <span v-else class="text-xs">✨</span>
@@ -74,6 +76,7 @@
                                 <span class="inline-flex items-center gap-1 text-emerald-300 font-medium">
                                     • <img v-if="getBuildingInfo(task, { task_type: task.task_type, payload: task.payload }).icon"
                                          :src="getBuildingInfo(task, { task_type: task.task_type, payload: task.payload }).icon"
+                                         loading="lazy" decoding="async"
                                          class="w-4 h-4 object-contain rounded flex-shrink-0"
                                          @error="handleBuildingIconError($event, getBuildingInfo(task, { task_type: task.task_type, payload: task.payload }).raw)" />
                                     <span v-else class="text-xs">🏭</span>
@@ -89,6 +92,7 @@
                                 <span class="inline-flex items-center gap-1 text-emerald-300 font-medium">
                                     <img v-if="getSpecialistInfo(task, { task_type: task.task_type, payload: task.payload }).icon"
                                          :src="getSpecialistInfo(task, { task_type: task.task_type, payload: task.payload }).icon"
+                                         loading="lazy" decoding="async"
                                          class="w-4 h-4 object-contain rounded flex-shrink-0"
                                          @error="handleSpecialistIconError($event)" />
                                     <span v-else class="text-xs">🎖️</span>
@@ -115,7 +119,7 @@
                     <div class="text-right">
                         <div v-if="!task.is_active" class="flex items-center justify-end gap-1.5 text-xs text-amber-400 font-semibold">
                             <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-                            <span>{{ t('tasks.status.pause_short') }}</span>
+                            <span>{{ t('tasks.status.paused') }}</span>
                         </div>
                         <div v-else-if="task.schedule_type === 'once' && task.last_run_at" class="flex items-center justify-end gap-1.5 text-xs text-white/40 font-medium">
                             <span>{{ t('tasks.status.completed') }}</span>
@@ -179,12 +183,14 @@
 
                     <button type="button" @click="$emit('edit', task)"
                             class="btn-secondary btn-sm text-xs py-1.5 px-2 text-white/60 hover:text-white border-white/10 hover:border-white/20"
+                            :aria-label="t('tasks.edit_task') || 'Edit task'"
                             :title="t('tasks.edit_task')">
                         ✏️
                     </button>
 
                     <button type="button" @click="$emit('delete', task.id)"
                             class="btn-secondary btn-sm text-xs py-1.5 px-2 text-red-400 hover:text-red-300 border-red-500/20 hover:border-red-500/40"
+                            :aria-label="t('tasks.delete_task') || 'Delete task'"
                             :title="t('tasks.delete_task')">
                         🗑
                     </button>
@@ -215,6 +221,7 @@
                         <span class="inline-flex items-center gap-1.5 text-amber-300 font-medium max-w-full truncate bg-amber-400/10 px-2 py-0.5 rounded-md border border-amber-400/20 text-[10px]">
                             <img v-if="getBuffInfo(task, act).icon"
                                  :src="getBuffInfo(task, act).icon"
+                                 loading="lazy" decoding="async"
                                  class="w-4 h-4 object-contain rounded flex-shrink-0"
                                  @error="handleBuffIconError($event, getBuffInfo(task, act).raw || act.meta?.buff)" />
                             <span v-else class="text-[10px]">✨</span>
@@ -229,6 +236,7 @@
                         <span class="inline-flex items-center gap-1 text-emerald-300 font-medium max-w-full truncate text-[10px]">
                             <img v-if="getBuildingInfo(task, act).icon"
                                  :src="getBuildingInfo(task, act).icon"
+                                 loading="lazy" decoding="async"
                                  class="w-4 h-4 object-contain rounded flex-shrink-0"
                                  @error="handleBuildingIconError($event, getBuildingInfo(task, act).raw || act.meta?.building)" />
                             <span v-else class="text-[10px]">🏭</span>
@@ -245,6 +253,7 @@
                         <span class="inline-flex items-center gap-1 text-emerald-300 font-medium max-w-full truncate text-[10px]">
                             <img v-if="getBuildingInfo(task, act).icon"
                                  :src="getBuildingInfo(task, act).icon"
+                                 loading="lazy" decoding="async"
                                  class="w-4 h-4 object-contain rounded flex-shrink-0"
                                  @error="handleBuildingIconError($event, getBuildingInfo(task, act).raw || act.meta?.building)" />
                             <span v-else class="text-[10px]">🏭</span>
@@ -261,6 +270,7 @@
                         <span class="inline-flex items-center gap-1.5 text-emerald-300 font-medium max-w-full truncate bg-emerald-400/10 px-2 py-0.5 rounded-md border border-emerald-400/20 text-[10px]">
                             <img v-if="getSpecialistInfo(task, act).icon"
                                  :src="getSpecialistInfo(task, act).icon"
+                                 loading="lazy" decoding="async"
                                  class="w-4 h-4 object-contain rounded flex-shrink-0"
                                  @error="handleSpecialistIconError($event)" />
                             <span v-else class="text-[10px]">🎖️</span>
@@ -284,6 +294,7 @@
                         <span class="inline-flex items-center gap-1 text-emerald-300 font-medium max-w-full truncate text-[10px]">
                             <img v-if="getBuildingInfo(task, act).icon"
                                  :src="getBuildingInfo(task, act).icon"
+                                 loading="lazy" decoding="async"
                                  class="w-4 h-4 object-contain rounded flex-shrink-0"
                                  @error="handleBuildingIconError($event, getBuildingInfo(task, act).raw || act.payload?.mine_name)" />
                             <span v-else class="text-[10px]">⛏️</span>
@@ -299,6 +310,7 @@
                         <span class="inline-flex items-center gap-1 text-emerald-300 font-medium max-w-full truncate text-[10px]">
                             <img v-if="getBuildingInfo(task, act).icon"
                                  :src="getBuildingInfo(task, act).icon"
+                                 loading="lazy" decoding="async"
                                  class="w-4 h-4 object-contain rounded flex-shrink-0"
                                  @error="handleBuildingIconError($event, getBuildingInfo(task, act).raw || act.payload?.building_name)" />
                             <span v-else class="text-[10px]">🏭</span>

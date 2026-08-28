@@ -18,9 +18,9 @@
         <div class="glass-card p-4 mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
             <!-- Account Selector -->
             <div>
-                <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('logs.filter_account') }}</label>
+                <label for="logs-filter-account" class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('logs.filter_account') }}</label>
                 <div class="relative">
-                    <select v-model="filter.accountId" @change="onFilterChange" class="glass-select w-full">
+                    <select id="logs-filter-account" v-model="filter.accountId" @change="onFilterChange" :aria-label="t('logs.filter_account')" class="glass-select w-full">
                         <option value="" class="bg-dark-900">{{ t('logs.all_accounts') }}</option>
                         <option v-for="acc in accounts" :key="acc.id" :value="acc.id" class="bg-dark-900">
                             {{ acc.nickname || acc.username }}
@@ -36,9 +36,9 @@
 
             <!-- Log Level -->
             <div>
-                <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('logs.filter_severity') }}</label>
+                <label for="logs-filter-severity" class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('logs.filter_severity') }}</label>
                 <div class="relative">
-                    <select v-model="filter.level" @change="onFilterChange" class="glass-select w-full">
+                    <select id="logs-filter-severity" v-model="filter.level" @change="onFilterChange" :aria-label="t('logs.filter_severity')" class="glass-select w-full">
                         <option value="" class="bg-dark-900">{{ t('logs.all_severities') }}</option>
                         <option value="info" class="bg-dark-900">{{ t('logs.level_info') }}</option>
                         <option value="success" class="bg-dark-900">{{ t('logs.level_success') }}</option>

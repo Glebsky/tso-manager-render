@@ -11,11 +11,11 @@
             <div class="flex items-center gap-2 flex-wrap">
                 <div class="relative">
                     <input type="text" :value="searchQuery" @input="$emit('update:searchQuery', $event.target.value)"
-                           :placeholder="t('tasks.search_tasks')" class="glass-input text-xs py-1.5 px-3 w-44 sm:w-56">
+                           :placeholder="t('tasks.search_tasks')" :aria-label="t('tasks.search_tasks')" class="glass-input text-xs py-1.5 px-3 w-44 sm:w-56">
                 </div>
 
                 <select :value="accountFilter" @change="$emit('update:accountFilter', $event.target.value)"
-                        class="glass-select text-xs py-1.5 px-3">
+                        :aria-label="t('tasks.all_accounts')" class="glass-select text-xs py-1.5 px-3">
                     <option value="" class="bg-dark-900 text-white">{{ t('tasks.all_accounts') }}</option>
                     <option v-for="acc in accounts" :key="acc.id" :value="acc.id" class="bg-dark-900 text-white">
                         {{ acc.nickname || acc.username }}
@@ -23,10 +23,10 @@
                 </select>
 
                 <select :value="statusFilter" @change="$emit('update:statusFilter', $event.target.value)"
-                        class="glass-select text-xs py-1.5 px-3">
+                        :aria-label="t('tasks.all_statuses')" class="glass-select text-xs py-1.5 px-3">
                     <option value="" class="bg-dark-900 text-white">{{ t('tasks.all_statuses') }}</option>
                     <option value="active" class="bg-dark-900 text-white">{{ t('tasks.status.active') }}</option>
-                    <option value="paused" class="bg-dark-900 text-white">{{ t('tasks.status.pause_short') }}</option>
+                    <option value="paused" class="bg-dark-900 text-white">{{ t('tasks.status.paused') }}</option>
                 </select>
             </div>
         </div>

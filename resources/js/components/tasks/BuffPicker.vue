@@ -3,14 +3,14 @@
         <div class="glass-card max-w-2xl w-full flex flex-col max-h-[80vh] shadow-2xl border border-white/10">
             <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between">
                 <h3 class="text-base font-semibold text-white">{{ t('tasks.modal.select_buff') }}</h3>
-                <button type="button" @click="$emit('close')" class="text-white/40 hover:text-white transition-colors">
+                <button type="button" @click="$emit('close')" aria-label="Close" class="text-white/40 hover:text-white transition-colors">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
                     </svg>
                 </button>
             </div>
             <div class="p-4 border-b border-white/5 bg-white/[0.01]">
-                <input :value="buffSearch" @input="$emit('update:buffSearch', $event.target.value)" type="text" :placeholder="t('tasks.modal.search_buff')" class="glass-input w-full text-xs py-2 pl-4">
+                <input :value="buffSearch" @input="$emit('update:buffSearch', $event.target.value)" type="text" :placeholder="t('tasks.modal.search_buff')" :aria-label="t('tasks.modal.search_buff')" class="glass-input w-full text-xs py-2 pl-4">
             </div>
             <div class="p-6 overflow-y-auto flex-1 bg-dark-950/20">
                 <div v-if="filteredBuffsModal.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
