@@ -1,24 +1,24 @@
 <template>
-    <div v-if="showModal" @click.self="$emit('close')" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-        <div class="glass-card max-w-2xl w-full flex flex-col max-h-[85vh] shadow-2xl border border-white/10">
+    <div v-if="showModal" @click.self="$emit('close')" class="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+        <div class="glass-card max-w-2xl w-full flex flex-col max-h-[90vh] sm:max-h-[85vh] shadow-2xl border border-white/10">
             <!-- Шапка модального окна -->
-            <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between flex-wrap gap-2">
-                <div class="flex items-center gap-3">
-                    <h3 class="text-base font-semibold text-white">{{ t('tasks.modal.select_deposit') }}</h3>
-                    <span class="badge badge-emerald text-xs font-mono">{{ t('tasks.modal.selected_count', { count: selectedDeposits.length }) }}</span>
+            <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-white/5 flex items-center justify-between flex-wrap gap-2">
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <h3 class="text-sm sm:text-base font-semibold text-white">{{ t('tasks.modal.select_deposit') }}</h3>
+                    <span class="badge badge-emerald text-[10px] sm:text-xs font-mono">{{ t('tasks.modal.selected_count', { count: selectedDeposits.length }) }}</span>
                 </div>
-                <div class="flex items-center gap-2">
-                    <button type="button" @click="$emit('select-all')" class="btn-secondary btn-sm text-[11px] py-1 px-2.5">
+                <div class="flex items-center gap-1.5 sm:gap-2">
+                    <button type="button" @click="$emit('select-all')" class="btn-secondary btn-sm text-[10px] sm:text-[11px] py-1 px-2 sm:px-2.5">
                         {{ t('tasks.modal.select_all') }}
                     </button>
-                    <button type="button" @click="$emit('clear')" class="btn-secondary btn-sm text-[11px] py-1 px-2.5 text-red-400 hover:text-red-300 border-red-500/20">
+                    <button type="button" @click="$emit('clear')" class="btn-secondary btn-sm text-[10px] sm:text-[11px] py-1 px-2 sm:px-2.5 text-red-400 hover:text-red-300 border-red-500/20">
                         {{ t('tasks.modal.clear_selection') }}
                     </button>
-                    <button type="button" @click="$emit('close')" class="btn-primary btn-sm text-xs py-1 px-3">
+                    <button type="button" @click="$emit('close')" class="btn-primary btn-sm text-xs py-1 px-2.5 sm:px-3">
                         {{ t('tasks.modal.done') }}
                     </button>
-                    <button type="button" @click="$emit('close')" aria-label="Close" class="text-white/40 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/5 ml-1">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <button type="button" @click="$emit('close')" aria-label="Close" class="text-white/40 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/5 ml-0.5">
+                        <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
                         </svg>
                     </button>
@@ -26,14 +26,14 @@
             </div>
 
             <!-- Поиск -->
-            <div class="p-4 border-b border-white/5 bg-white/[0.01] flex flex-col gap-3">
+            <div class="p-3 sm:p-4 border-b border-white/5 bg-white/[0.01] flex flex-col gap-3">
                 <div class="relative">
-                    <input :value="depositSearch" @input="$emit('update:depositSearch', $event.target.value)" type="text" :placeholder="t('tasks.modal.search_deposit')" :aria-label="t('tasks.modal.search_deposit')" class="glass-input w-full text-xs py-2 pl-4">
+                    <input :value="depositSearch" @input="$emit('update:depositSearch', $event.target.value)" type="text" :placeholder="t('tasks.modal.search_deposit')" :aria-label="t('tasks.modal.search_deposit')" class="glass-input w-full text-xs py-1.5 sm:py-2 pl-3 sm:pl-4">
                 </div>
             </div>
 
             <!-- Список залежей -->
-            <div class="p-6 overflow-y-auto flex-1 bg-dark-950/20">
+            <div class="p-3 sm:p-6 overflow-y-auto flex-1 bg-dark-950/20">
                 <div v-if="loading" class="text-center py-8 text-emerald-400 text-xs flex items-center justify-center gap-2">
                     <svg class="animate-spin h-4 w-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -41,7 +41,7 @@
                     </svg>
                     <span>{{ t('common.loading') }}</span>
                 </div>
-                <div v-else-if="filteredDeposits.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div v-else-if="filteredDeposits.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
                     <div v-for="d in filteredDeposits" :key="d.grid"
                          @click="$emit('toggle-deposit', d)"
                          class="glass-card p-3 cursor-pointer hover:border-emerald-500/40 transition-all duration-200 flex items-center justify-between gap-3"

@@ -1,8 +1,8 @@
 <template>
-    <div class="flex flex-col sm:flex-row items-start gap-2 sm:gap-4 p-3 sm:p-4 hover:bg-white/[0.01] transition-all duration-200">
+    <div class="flex flex-col sm:flex-row items-start gap-1.5 sm:gap-4 p-3 sm:p-4 hover:bg-white/[0.01] transition-all duration-200">
         <!-- Level Badge -->
         <div class="flex-shrink-0 sm:mt-0.5">
-            <span class="badge" :class="badgeClass">
+            <span class="badge text-[10px] sm:text-xs py-0.5 px-2 font-semibold uppercase" :class="badgeClass">
                 {{ levelLabel }}
             </span>
         </div>

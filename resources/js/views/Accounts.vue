@@ -1,16 +1,16 @@
 <template>
     <div>
         <!-- Page Header -->
-        <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center justify-between mb-5 sm:mb-8">
             <div>
-                <h1 class="text-3xl font-bold text-white">{{ t('accounts.title') }}</h1>
-                <p class="text-white/40 mt-1">{{ t('accounts.subtitle') }}</p>
+                <h1 class="text-xl sm:text-3xl font-bold text-white">{{ t('accounts.title') }}</h1>
+                <p class="text-xs sm:text-sm text-white/40 mt-0.5 sm:mt-1">{{ t('accounts.subtitle') }}</p>
             </div>
         </div>
 
         <!-- Add Account Form -->
-        <div class="glass-card p-4 sm:p-6 mb-8">
-            <div class="flex items-center gap-3 mb-5">
+        <div class="glass-card p-4 sm:p-6 mb-6 sm:mb-8">
+            <div class="flex items-center gap-3 mb-4 sm:mb-5">
                 <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shrink-0">
                     <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -19,24 +19,24 @@
                 <h2 class="text-base sm:text-lg font-semibold text-white">{{ t('accounts.add_new') }}</h2>
             </div>
 
-            <form @submit.prevent="addAccount" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
+            <form @submit.prevent="addAccount" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4 items-end">
                 <!-- Username -->
                 <div>
-                    <label for="acc-username" class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('accounts.username_label') }}</label>
-                    <input id="acc-username" type="email" required v-model="form.username" placeholder="email@domain.com" :aria-label="t('accounts.username_label')" class="glass-input w-full">
+                    <label for="acc-username" class="block text-xs font-medium text-white/40 mb-1.5 sm:mb-2 uppercase tracking-wider">{{ t('accounts.username_label') }}</label>
+                    <input id="acc-username" type="email" required v-model="form.username" placeholder="email@domain.com" :aria-label="t('accounts.username_label')" class="glass-input w-full text-xs sm:text-sm">
                 </div>
 
                 <!-- Password -->
                 <div>
-                    <label for="acc-password" class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('accounts.password') }}</label>
-                    <input id="acc-password" type="password" required v-model="form.password" placeholder="••••••••" :aria-label="t('accounts.password')" class="glass-input w-full">
+                    <label for="acc-password" class="block text-xs font-medium text-white/40 mb-1.5 sm:mb-2 uppercase tracking-wider">{{ t('accounts.password') }}</label>
+                    <input id="acc-password" type="password" required v-model="form.password" placeholder="••••••••" :aria-label="t('accounts.password')" class="glass-input w-full text-xs sm:text-sm">
                 </div>
 
                 <!-- Region & Submit -->
-                <div class="flex flex-col sm:flex-row gap-3 items-end sm:col-span-2 lg:col-span-1">
+                <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end sm:col-span-2 lg:col-span-1">
                     <div class="flex-1 relative w-full">
-                        <label for="acc-region" class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('accounts.region') }}</label>
-                        <select id="acc-region" required v-model="form.region" :aria-label="t('accounts.region')" class="glass-select w-full">
+                        <label for="acc-region" class="block text-xs font-medium text-white/40 mb-1.5 sm:mb-2 uppercase tracking-wider">{{ t('accounts.region') }}</label>
+                        <select id="acc-region" required v-model="form.region" :aria-label="t('accounts.region')" class="glass-select w-full text-xs sm:text-sm">
                             <option value="ru" class="bg-dark-900">RU (Realm 2)</option>
                             <option value="en" class="bg-dark-900">EN (US/UK)</option>
                             <option value="de" class="bg-dark-900">DE (Germany)</option>
@@ -52,14 +52,14 @@
                             <option value="gr" class="bg-dark-900">GR (Greece)</option>
                             <option value="tr" class="bg-dark-900">TR (Turkey)</option>
                         </select>
-                        <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none mt-6">
+                        <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none mt-5 sm:mt-6">
                             <svg class="w-4 h-4 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                             </svg>
                         </div>
                     </div>
 
-                    <button type="submit" :disabled="submitting" class="btn-primary w-full sm:w-auto px-6 h-[46px] flex items-center justify-center gap-2 shrink-0">
+                    <button type="submit" :disabled="submitting" class="btn-primary w-full sm:w-auto px-5 sm:px-6 h-[42px] sm:h-[46px] text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 shrink-0">
                         <svg v-if="!submitting" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                         </svg>
@@ -74,21 +74,21 @@
 
         <!-- Accounts Listing -->
         <div>
-            <h2 class="text-base sm:text-lg font-semibold text-white flex items-center gap-2 mb-5">
-                <svg class="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <h2 class="text-base sm:text-lg font-semibold text-white flex items-center gap-2 mb-4 sm:mb-5">
+                <svg class="w-5 h-5 text-emerald-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
                 </svg>
-                <span>{{ t('accounts.registered') }}</span>
+                <span class="truncate">{{ t('accounts.registered') }}</span>
                 <span class="badge badge-neutral text-[10px]">{{ accounts.length }}</span>
             </h2>
 
             <!-- Skeleton placeholders while accounts are loading -->
-            <div v-if="loading && accounts.length === 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+            <div v-if="loading && accounts.length === 0" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3.5 sm:gap-6">
                 <div v-for="i in 3" :key="'acc-skeleton-' + i" class="glass-card overflow-hidden">
                     <div class="h-[3px] skeleton"></div>
-                    <div class="p-5">
+                    <div class="p-4 sm:p-5">
                         <div class="flex items-center gap-3 mb-4">
-                            <div class="w-10 h-10 rounded-xl skeleton flex-shrink-0"></div>
+                            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl skeleton flex-shrink-0"></div>
                             <div class="flex-1 min-w-0">
                                 <div class="w-24 h-4 rounded skeleton mb-2"></div>
                                 <div class="w-32 h-3 rounded skeleton"></div>
@@ -106,11 +106,11 @@
                     </div>
                 </div>
             </div>
-            <div v-else-if="accounts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+            <div v-else-if="accounts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3.5 sm:gap-6">
                 <account-card v-for="acc in accounts" :key="acc.id" :account="acc"
                               @sync-success="loadAccounts" @delete-success="loadAccounts" @action-success="loadAccounts" />
             </div>
-            <div v-else class="glass-card p-8 sm:p-12 text-center">
+            <div v-else class="glass-card p-6 sm:p-12 text-center">
                 <p class="text-white/30 text-xs sm:text-sm">{{ t('accounts.empty') }}</p>
             </div>
         </div>

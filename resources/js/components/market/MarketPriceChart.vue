@@ -4,9 +4,9 @@
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-4">
             <h2 class="text-[13px] sm:text-sm font-semibold text-white wrap-anywhere">{{ title }}</h2>
 
-            <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <div class="flex flex-wrap items-center gap-x-3 sm:gap-x-4 gap-y-2">
                 <!-- Period Selection Buttons -->
-                <div class="flex items-center bg-white/5 border border-white/10 p-0.5 rounded-lg text-[10px] font-semibold shrink-0">
+                <div class="flex items-center bg-white/5 border border-white/10 p-0.5 rounded-lg text-[10px] font-semibold shrink-0 max-w-full overflow-x-auto scrollbar-none">
                     <button v-for="p in periods" :key="p.value" type="button" @click="$emit('change-period', p.value)"
                             class="px-2 sm:px-2.5 py-1 rounded transition-all duration-300 uppercase tracking-wider whitespace-nowrap"
                             :class="selectedPeriod === p.value ? 'bg-emerald-500 text-white shadow' : 'text-white/40 hover:text-white'">

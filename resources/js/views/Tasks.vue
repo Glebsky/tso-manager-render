@@ -1,18 +1,18 @@
 <template>
     <div>
         <!-- Заголовок страницы -->
-        <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center justify-between mb-5 sm:mb-8">
             <div>
-                <h1 class="text-3xl font-bold text-white">{{ t('tasks.title') }}</h1>
-                <p class="text-white/40 mt-1">{{ t('tasks.subtitle') }}</p>
+                <h1 class="text-xl sm:text-3xl font-bold text-white">{{ t('tasks.title') }}</h1>
+                <p class="text-xs sm:text-sm text-white/40 mt-0.5 sm:mt-1">{{ t('tasks.subtitle') }}</p>
             </div>
         </div>
 
         <!-- Форма добавления/редактирования задачи -->
-        <div id="task-form-card" class="glass-card p-6 mb-8 transition-all duration-300" :class="{ 'border-amber-500/30 bg-amber-500/[0.02]': editingTaskId }">
-            <div class="flex items-center justify-between mb-5 flex-wrap gap-2">
-                <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br flex items-center justify-center transition-all duration-300"
+        <div id="task-form-card" class="glass-card p-4 sm:p-6 mb-6 sm:mb-8 transition-all duration-300" :class="{ 'border-amber-500/30 bg-amber-500/[0.02]': editingTaskId }">
+            <div class="flex items-center justify-between mb-4 sm:mb-5 flex-wrap gap-2">
+                <div class="flex items-center gap-2.5 sm:gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br flex items-center justify-center transition-all duration-300 shrink-0"
                          :class="editingTaskId ? 'from-amber-500 to-orange-600 shadow-lg shadow-amber-500/20' : 'from-emerald-500 to-teal-600 shadow-lg shadow-emerald-500/20'">
                         <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                             <path v-if="editingTaskId" stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
@@ -20,10 +20,10 @@
                         </svg>
                     </div>
                     <div>
-                        <h2 class="text-lg font-semibold text-white">
+                        <h2 class="text-base sm:text-lg font-semibold text-white">
                             {{ editingTaskId ? t('tasks.editing_task', { id: editingTaskId }) : t('tasks.schedule_new') }}
                         </h2>
-                        <p v-if="editingTaskId" class="text-xs text-amber-400 font-medium">{{ t('tasks.editing_hint') }}</p>
+                        <p v-if="editingTaskId" class="text-[11px] sm:text-xs text-amber-400 font-medium">{{ t('tasks.editing_hint') }}</p>
                     </div>
                 </div>
 
@@ -33,20 +33,20 @@
             </div>
 
             <form @submit.prevent="scheduleTask">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4 mb-4">
                     <!-- Название серии -->
                     <div>
-                        <label for="task-series-name" class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('tasks.series_name') }}</label>
-                        <input id="task-series-name" type="text" v-model="taskName" :placeholder="t('tasks.series_name_placeholder')" :aria-label="t('tasks.series_name')" class="glass-input w-full text-left  py-2.5">
+                        <label for="task-series-name" class="block text-xs font-medium text-white/40 mb-1.5 sm:mb-2 uppercase tracking-wider">{{ t('tasks.series_name') }}</label>
+                        <input id="task-series-name" type="text" v-model="taskName" :placeholder="t('tasks.series_name_placeholder')" :aria-label="t('tasks.series_name')" class="glass-input w-full text-left py-2 sm:py-2.5 text-xs sm:text-sm">
                     </div>
 
                     <!-- Выбор аккаунта -->
                     <div>
-                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('tasks.game_account') }}</label>
+                        <label class="block text-xs font-medium text-white/40 mb-1.5 sm:mb-2 uppercase tracking-wider">{{ t('tasks.game_account') }}</label>
                         <div class="relative">
-                            <button type="button" @click.stop="activeDropdown = activeDropdown === 'account' ? null : 'account'" class="glass-select w-full flex items-center justify-between text-left">
-                                <span>{{ selectedAccountLabel }}</span>
-                                <svg class="w-4 h-4 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <button type="button" @click.stop="activeDropdown = activeDropdown === 'account' ? null : 'account'" class="glass-select w-full flex items-center justify-between text-left text-xs sm:text-sm py-2 sm:py-2.5">
+                                <span class="truncate">{{ selectedAccountLabel }}</span>
+                                <svg class="w-4 h-4 text-white/30 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                                 </svg>
                             </button>
@@ -60,20 +60,20 @@
 
                     <!-- Режим запуска (Тип планирования) -->
                     <div>
-                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('tasks.planning_type') }}</label>
-                        <div class="grid grid-cols-1 xs:grid-cols-3 gap-2">
+                        <label class="block text-xs font-medium text-white/40 mb-1.5 sm:mb-2 uppercase tracking-wider">{{ t('tasks.planning_type') }}</label>
+                        <div class="grid grid-cols-3 gap-1.5 sm:gap-2">
                             <button type="button" @click="scheduleType = 'daily'"
-                                    class="px-3 py-2 rounded-lg text-xs font-semibold border transition-all duration-300"
+                                    class="px-2 sm:px-3 py-2 rounded-lg text-xs font-semibold border transition-all duration-300 text-center"
                                     :class="scheduleType === 'daily' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
                                 {{ t('tasks.daily') }}
                             </button>
                             <button type="button" @click="scheduleType = 'once'"
-                                    class="px-3 py-2 rounded-lg text-xs font-semibold border transition-all duration-300"
+                                    class="px-2 sm:px-3 py-2 rounded-lg text-xs font-semibold border transition-all duration-300 text-center"
                                     :class="scheduleType === 'once' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
                                 {{ t('tasks.once') }}
                             </button>
                             <button type="button" @click="scheduleType = 'interval'"
-                                    class="px-3 py-2 rounded-lg text-xs font-semibold border transition-all duration-300"
+                                    class="px-2 sm:px-3 py-2 rounded-lg text-xs font-semibold border transition-all duration-300 text-center"
                                     :class="scheduleType === 'interval' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
                                 {{ t('tasks.interval') }}
                             </button>
@@ -89,10 +89,10 @@
                                 :scheduleType="scheduleType" />
 
                 <!-- Панель конструктора серии действий -->
-                <div class="border-t border-white/5 pt-5 mb-5">
+                <div class="border-t border-white/5 pt-4 sm:pt-5 mb-4 sm:mb-5">
                     <!-- Текущие шаги серии -->
-                    <div class="flex items-center justify-between mb-3">
-                        <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+                    <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+                        <h3 class="text-xs sm:text-sm font-semibold text-white flex items-center gap-2">
                             <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
                             </svg>
@@ -107,8 +107,8 @@
                     </div>
 
                     <div v-if="sequenceActions.length > 0" class="space-y-2 mb-4 max-h-72 sm:max-h-60 overflow-y-auto pr-1 sm:pr-2">
-                        <div v-for="(act, idx) in sequenceActions" :key="idx" class="glass-card p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 border border-white/5 hover:border-white/20 hover:bg-white/[0.04] transition-all duration-200">
-                            <div class="flex items-start gap-3 min-w-0 w-full">
+                        <div v-for="(act, idx) in sequenceActions" :key="idx" class="glass-card p-2.5 sm:p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 border border-white/5 hover:border-white/20 hover:bg-white/[0.04] transition-all duration-200">
+                            <div class="flex items-start gap-2.5 sm:gap-3 min-w-0 w-full">
                                 <span class="w-5 h-5 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-[10px] font-bold font-mono flex-shrink-0">{{ idx + 1 }}</span>
                                 <span class="text-lg flex-shrink-0">{{ typeIcons[act.task_type] }}</span>
                                 <div class="text-xs min-w-0 flex-1">
@@ -546,7 +546,7 @@
                         </div>
 
                         <div class="flex justify-end">
-                            <button type="button" @click="addStepToSequence" class="px-4 py-2 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 transition-all duration-300 flex items-center gap-1.5">
+                            <button type="button" @click="addStepToSequence" class="w-full sm:w-auto justify-center px-4 py-2 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 transition-all duration-300 flex items-center gap-1.5">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                                 </svg>
@@ -556,7 +556,7 @@
                     </div>
                 </div>
 
-                <button type="submit" :disabled="scheduling" class="btn-primary flex items-center gap-2 disabled:opacity-50"
+                <button type="submit" :disabled="scheduling" class="btn-primary flex items-center justify-center gap-2 disabled:opacity-50 w-full sm:w-auto px-5 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm"
                         :class="{ 'bg-gradient-to-r from-amber-500 to-orange-600 border-amber-500/30': editingTaskId }">
                     <spinner v-if="scheduling" size="sm" />
                     <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -569,11 +569,11 @@
 
         <!-- Список запланированных задач -->
         <div>
-            <h2 class="text-lg font-semibold text-white flex items-center gap-2 mb-5">
+            <h2 class="text-base sm:text-lg font-semibold text-white flex items-center gap-2 mb-4 sm:mb-5">
                 <svg class="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                 </svg>
-                {{ t('tasks.scheduled_tasks') }}
+                <span>{{ t('tasks.scheduled_tasks') }}</span>
                 <span class="badge badge-neutral text-[10px]">{{ tasks.length }}</span>
             </h2>
 
@@ -604,17 +604,17 @@
                       v-model:accountFilter="taskAccountFilter"
                       v-model:statusFilter="taskStatusFilter">
                 <div v-for="(groupTasks, accountName) in groupedTasks" :key="accountName" class="glass-card overflow-hidden">
-                    <div class="px-5 py-3 border-b border-white/5 bg-white/[0.02]">
-                        <h3 class="font-medium text-white/60 flex items-center gap-2">
-                            <svg class="w-4 h-4 text-emerald-400/60" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <div class="px-3.5 sm:px-5 py-2.5 sm:py-3 border-b border-white/5 bg-white/[0.02]">
+                        <h3 class="font-medium text-white/60 flex items-center gap-2 text-xs sm:text-sm">
+                            <svg class="w-4 h-4 text-emerald-400/60 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                             </svg>
-                            {{ accountName }}
-                            <span class="badge badge-neutral text-[10px]">{{ groupTasks.length }} {{ t('tasks.tasks_word') }}</span>
+                            <span class="truncate">{{ accountName }}</span>
+                            <span class="badge badge-neutral text-[10px] flex-shrink-0">{{ groupTasks.length }} {{ t('tasks.tasks_word') }}</span>
                         </h3>
                     </div>
 
-                    <div class="p-4 sm:p-5 space-y-4">
+                    <div class="p-2.5 sm:p-5 space-y-3 sm:space-y-4">
                         <TaskCard v-for="task in groupTasks" :key="task.id"
                                   :task="task"
                                   :typeIcons="typeIcons"

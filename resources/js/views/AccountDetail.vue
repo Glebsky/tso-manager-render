@@ -11,7 +11,7 @@
 
         <div v-else-if="account" key="content">
             <!-- Back Button -->
-            <router-link to="/admin/accounts" class="inline-flex items-center gap-2 text-white/40 hover:text-white mb-6 transition-colors font-medium text-xs sm:text-sm">
+            <router-link to="/admin/accounts" class="inline-flex items-center gap-1.5 text-white/40 hover:text-white mb-4 sm:mb-6 transition-colors font-medium text-xs sm:text-sm">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
                 </svg>
@@ -19,26 +19,26 @@
             </router-link>
 
         <!-- Profile Header -->
-        <div class="glass-card overflow-hidden mb-8">
+        <div class="glass-card overflow-hidden mb-6 sm:mb-8">
             <div class="h-2 bg-gradient-to-r relative overflow-hidden animate-glow"
                  :class="statusClass.gradient"
                  :style="{ '--glow': statusClass.glow }">
                 <div class="absolute inset-0 animate-shimmer opacity-60"></div>
             </div>
-            <div class="p-6">
+            <div class="p-4 sm:p-6">
                 <!-- Main Info Section -->
                 <div class="flex flex-row items-start gap-3 sm:gap-6">
                     <!-- Avatar -->
-                    <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden bg-gradient-to-br flex items-center justify-center shadow-lg flex-shrink-0"
+                    <div class="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl overflow-hidden bg-gradient-to-br flex items-center justify-center shadow-lg flex-shrink-0"
                          :class="statusClass.gradient">
                         <img v-if="avatarUrl" :src="avatarUrl" :alt="playerNickname" class="w-full h-full object-cover" @error="avatarError = true">
-                        <span v-else class="text-xl sm:text-2xl font-bold text-white">{{ avatarLetters }}</span>
+                        <span v-else class="text-lg sm:text-2xl font-bold text-white">{{ avatarLetters }}</span>
                     </div>
 
                     <!-- Details -->
                     <div class="flex-1 min-w-0 w-full">
-                        <h1 class="text-lg sm:text-2xl font-bold text-white mb-1 wrap-anywhere leading-tight">{{ playerNickname || account.username }}</h1>
-                        <div class="flex items-center flex-wrap gap-2.5 sm:gap-4 text-xs sm:text-sm text-white/40">
+                        <h1 class="text-base sm:text-2xl font-bold text-white mb-1 wrap-anywhere leading-tight">{{ playerNickname || account.username }}</h1>
+                        <div class="flex items-center flex-wrap gap-2 sm:gap-4 text-xs sm:text-sm text-white/40">
                             <span class="flex items-center gap-1 text-white/80 whitespace-nowrap">
                                 <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 0 0-2.455 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
@@ -48,12 +48,12 @@
                             <span v-if="pvpLevel" class="flex items-center gap-1 text-rose-400 whitespace-nowrap">
                                 ⚔️ PvP {{ pvpLevel }}
                             </span>
-                            <span v-if="account.is_market_connected" class="badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5 text-[11px] py-0.5 px-2.5 whitespace-nowrap" title="Connected to Market Analysis">
+                            <span v-if="account.is_market_connected" class="badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5 text-[10px] sm:text-[11px] py-0.5 px-2 sm:px-2.5 whitespace-nowrap" title="Connected to Market Analysis">
                                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                                 <span class="font-medium">{{ t('card.market_connected') }}</span>
                             </span>
 
-                            <span v-if="serverName" class="badge badge-success bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[11px] flex items-center gap-1 py-0.5 px-2.5 whitespace-nowrap">
+                            <span v-if="serverName" class="badge badge-success bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] sm:text-[11px] flex items-center gap-1 py-0.5 px-2 sm:px-2.5 whitespace-nowrap">
                                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 0 1-3-3V3.75a3 3 0 0 1 3-3h13.5a3 3 0 0 1 3 3v7.5a3 3 0 0 1-3 3m-13.5 0a3 3 0 0 0-3 3v3.75a3 3 0 0 0 3 3h13.5a3 3 0 0 0 3-3V17.25a3 3 0 0 0-3-3" />
                                 </svg>
@@ -62,7 +62,7 @@
                             <span v-if="currentMaximumBuildingsCountAll" class="flex items-center gap-1 text-white/50 text-xs whitespace-nowrap">
                                 🏰 {{ t('account.max_buildings') }}: {{ currentMaximumBuildingsCountAll }}
                             </span>
-                            <span v-if="account.last_sync_at" class="flex items-center gap-1 whitespace-nowrap">
+                            <span v-if="account.last_sync_at" class="flex items-center gap-1 whitespace-nowrap text-xs">
                                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                 </svg>
@@ -71,7 +71,7 @@
                         </div>
 
                         <!-- Specialists overview -->
-                        <div class="flex flex-wrap gap-x-4 gap-y-1.5 mt-3 text-xs text-white/50 border-t border-white/5 pt-3">
+                        <div class="flex flex-wrap gap-x-3 sm:gap-x-4 gap-y-1.5 mt-2.5 sm:mt-3 text-xs text-white/50 border-t border-white/5 pt-2.5 sm:pt-3">
                             <span :title="t('account.generals')" class="whitespace-nowrap">🎖️ {{ t('account.generals') }}: <strong class="text-white">{{ generalsAmount || 0 }}</strong></span>
                             <span :title="t('account.explorers')" class="whitespace-nowrap">🧭 {{ t('account.explorers') }}: <strong class="text-white">{{ explorersAmount || 0 }}</strong></span>
                             <span :title="t('account.geologists')" class="whitespace-nowrap">🔨 {{ t('account.geologists') }}: <strong class="text-white">{{ geologistsAmount || 0 }}</strong></span>
@@ -80,7 +80,7 @@
                 </div>
 
                     <!-- XP Progress Bar -->
-                    <div v-if="xp !== null" class="mt-5">
+                    <div v-if="xp !== null" class="mt-4 sm:mt-5">
                         <div class="flex items-center justify-between text-xs text-white/30 mb-1">
                             <span>{{ t('account.xp') }}: <strong class="text-white/70">{{ formatNumber(xp) }} XP</strong></span>
                             <span v-if="level && level >= 80">{{ t('account.max_level') }}</span>
@@ -93,13 +93,13 @@
                     </div>
 
                 <!-- Right Side: Visitors and Sync Button -->
-                <div class="flex items-center justify-end gap-4 mt-6 pt-4 border-t border-white/5 flex-wrap">
+                <div class="flex flex-col xs:flex-row items-stretch xs:items-center justify-between sm:justify-end gap-3 sm:gap-4 mt-5 sm:mt-6 pt-3.5 sm:pt-4 border-t border-white/5 flex-wrap">
                     <!-- Visitors list -->
-                    <div v-if="visitors.length > 0" class="flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-2.5 rounded-2xl">
+                    <div v-if="visitors.length > 0" class="flex items-center gap-3 bg-white/5 border border-white/10 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl w-full xs:w-auto justify-center xs:justify-start">
                         <span class="text-xs text-white/40 font-medium">{{ t('account.guests') }}:</span>
                         <div class="flex -space-x-2">
                             <div v-for="visitor in visitors" :key="visitor.nickname" class="relative group">
-                                <div class="w-8 h-8 rounded-full border-2 border-dark-900 overflow-hidden bg-gradient-to-br from-indigo-500/80 to-purple-600/80 flex items-center justify-center cursor-help">
+                                <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-dark-900 overflow-hidden bg-gradient-to-br from-indigo-500/80 to-purple-600/80 flex items-center justify-center cursor-help">
                                     <img v-if="getAvatarById(visitor.avatarId)" :src="getAvatarById(visitor.avatarId)" :alt="visitor.nickname" class="w-full h-full object-cover">
                                     <span v-else class="text-[10px] font-bold text-white">{{ visitor.nickname.substring(0, 2).toUpperCase() }}</span>
                                 </div>
@@ -114,7 +114,7 @@
 
                     <!-- Sync button -->
                     <button @click="syncAccount" :disabled="syncing"
-                            class="btn-primary flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-50">
+                            class="btn-primary flex items-center justify-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold disabled:opacity-50 w-full xs:w-auto">
                         <svg class="w-4 h-4" :class="{ 'animate-spin': syncing }" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
                         </svg>
@@ -125,9 +125,9 @@
         </div>
 
         <!-- Tabs Navigation -->
-        <div class="flex items-center gap-2.5 mb-6 overflow-x-auto pb-2">
+        <div class="flex items-center gap-1.5 sm:gap-2.5 mb-5 sm:mb-6 overflow-x-auto pb-2 scrollbar-none">
             <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id"
-                    class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 whitespace-nowrap"
+                    class="flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all duration-300 whitespace-nowrap shrink-0"
                     :class="activeTab === tab.id
                         ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/10 text-emerald-400 border border-emerald-500/30'
                         : 'text-white/40 hover:text-white hover:bg-white/5 border border-transparent'">
@@ -138,14 +138,14 @@
         </div>
 
         <!-- Tab Content -->
-        <div class="glass-card p-6">
+        <div class="glass-card p-4 sm:p-6">
             <!-- Buildings Tab -->
             <div v-if="activeTab === 'buildings'">
                 <!-- Search & Filters -->
-                <div class="flex flex-col sm:flex-row gap-4 mb-6">
-                    <div class="flex gap-2 flex-wrap">
+                <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-5 sm:mb-6">
+                    <div class="flex gap-1.5 sm:gap-2 flex-wrap">
                         <button v-for="cat in buildingCategories" :key="cat" @click="buildingFilter = cat"
-                                class="px-5 py-2.5 rounded-lg text-xs font-medium transition-all duration-300"
+                                class="px-3 sm:px-5 py-1.5 sm:py-2.5 rounded-lg text-xs font-medium transition-all duration-300"
                                 :class="buildingFilter === cat
                                     ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                                     : 'bg-white/5 text-white/40 border border-transparent hover:bg-white/10'">
@@ -158,16 +158,16 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                             </svg>
                         </div>
-                        <input v-model="buildingSearch" type="text" :placeholder="t('account.search_buildings')" :aria-label="t('account.search_buildings')" class="glass-input w-full pl-11">
+                        <input v-model="buildingSearch" type="text" :placeholder="t('account.search_buildings')" :aria-label="t('account.search_buildings')" class="glass-input w-full pl-11 text-xs sm:text-sm">
                     </div>
                 </div>
 
                 <!-- Buildings Grid -->
-                <div v-if="filteredBuildings.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                    <div v-for="b in filteredBuildings" :key="b.buildingGrid" class="glass-card p-4 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 flex flex-col justify-between">
-                        <div class="flex items-start gap-3">
-                            <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-dark-900/50 border border-white/5">
-                                <img v-if="getBuildingIcon(b)" :src="getBuildingIcon(b)" :alt="getBuildingName(b)" width="32" height="32" loading="lazy" decoding="async" class="w-8 h-8 object-contain" @error="handleBuildingIconError($event, b)">
+                <div v-if="filteredBuildings.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+                    <div v-for="b in filteredBuildings" :key="b.buildingGrid" class="glass-card p-3.5 sm:p-4 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 flex flex-col justify-between">
+                        <div class="flex items-start gap-2.5 sm:gap-3">
+                            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-dark-900/50 border border-white/5">
+                                <img v-if="getBuildingIcon(b)" :src="getBuildingIcon(b)" :alt="getBuildingName(b)" width="32" height="32" loading="lazy" decoding="async" class="w-7 h-7 sm:w-8 sm:h-8 object-contain" @error="handleBuildingIconError($event, b)">
                                 <svg v-else class="w-6 h-6 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />
                                 </svg>
@@ -223,10 +223,10 @@
             <!-- Specialists Tab -->
             <div v-if="activeTab === 'specialists'">
                 <!-- Search & Filters -->
-                <div class="flex flex-col sm:flex-row gap-4 mb-6">
-                    <div class="flex gap-2 flex-wrap">
+                <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-5 sm:mb-6">
+                    <div class="flex gap-1.5 sm:gap-2 flex-wrap">
                         <button v-for="cat in ['All', 'General', 'Explorer', 'Geologist']" :key="cat" @click="specialistFilter = cat"
-                                class="px-5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-300 border"
+                                class="px-3 sm:px-5 py-1.5 sm:py-2.5 rounded-xl text-xs font-semibold transition-all duration-300 border"
                                 :class="specialistFilter === cat
                                     ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/10 text-emerald-400 border-emerald-500/30'
                                     : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
@@ -242,22 +242,22 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                             </svg>
                         </div>
-                        <input v-model="specialistSearch" type="text" :placeholder="t('account.search_specialists')" :aria-label="t('account.search_specialists')" class="glass-input w-full pl-11">
+                        <input v-model="specialistSearch" type="text" :placeholder="t('account.search_specialists')" :aria-label="t('account.search_specialists')" class="glass-input w-full pl-11 text-xs sm:text-sm">
                     </div>
                 </div>
 
                 <!-- Grid -->
-                <div v-if="filteredSpecialists.length > 0" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                <div v-if="filteredSpecialists.length > 0" class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
                     <div v-for="s in filteredSpecialists" :key="s.uniqueId || s.uniqueId1"
-                         class="glass-card p-4 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 relative overflow-hidden group">
+                         class="glass-card p-3.5 sm:p-4 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 relative overflow-hidden group">
                         <!-- Background Glow on Hover -->
                         <div class="absolute inset-0 bg-gradient-to-br transition-all duration-500 opacity-0 group-hover:opacity-10 pointer-events-none"
                              :class="getSpecialistCategory(s.type) === 'General' ? 'from-rose-500 to-red-500' : getSpecialistCategory(s.type) === 'Explorer' ? 'from-teal-500 to-emerald-500' : 'from-amber-500 to-orange-500'">
                         </div>
 
-                        <div class="flex items-center gap-3 relative z-10">
+                        <div class="flex items-center gap-2.5 sm:gap-3 relative z-10">
                             <!-- Icon -->
-                            <div class="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg overflow-hidden bg-white/5"
+                            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg overflow-hidden bg-white/5"
                                  :class="getSpecialistCategory(s.type) === 'General' ? 'text-rose-400 shadow-rose-500/5' : getSpecialistCategory(s.type) === 'Explorer' ? 'text-teal-400 shadow-teal-500/5' : 'text-amber-400 shadow-amber-500/5'">
                                 <img alt="{{ getSpecialistCategory(s.type) }}" :src="getSpecialistIcon(s.type)" @error="handleSpecialistIconError($event, s.type)" loading="lazy" decoding="async" class="w-full h-full object-contain p-1" v-if="!hasSpecialistIconError(s.type) && getSpecialistIcon(s.type)" />
                                 <span v-else-if="getSpecialistCategory(s.type) === 'General'" class="text-xl">🎖️</span>
@@ -267,11 +267,11 @@
 
                             <!-- Names -->
                             <div class="flex-1 min-w-0">
-                                <h4 class="text-sm font-bold text-white group-hover:text-emerald-400 transition-colors duration-300 truncate" :title="s.name || getSpecialistTypeName(s.type)">
+                                <h4 class="text-xs sm:text-sm font-bold text-white group-hover:text-emerald-400 transition-colors duration-300 truncate" :title="s.name || getSpecialistTypeName(s.type)">
                                     {{ s.name || getSpecialistTypeName(s.type) }}
                                 </h4>
-                                <div class="flex items-center flex-wrap gap-2 mt-1">
-                                    <span v-if="s.name" class="text-[10px] text-white/40 truncate block max-w-[140px]" :title="getSpecialistTypeName(s.type)">
+                                <div class="flex items-center flex-wrap gap-1.5 sm:gap-2 mt-1">
+                                    <span v-if="s.name" class="text-[10px] text-white/40 truncate block max-w-[110px] xs:max-w-[140px]" :title="getSpecialistTypeName(s.type)">
                                         {{ getSpecialistTypeName(s.type) }}
                                     </span>
                                     <span class="text-[9px] text-white/30 font-mono">
@@ -286,15 +286,15 @@
                         </div>
 
                         <!-- Current Task details -->
-                        <div class="mt-4 pt-3 border-t border-white/5 relative z-10">
+                        <div class="mt-3 sm:mt-4 pt-2.5 sm:pt-3 border-t border-white/5 relative z-10">
                             <div v-if="s.taskType || s.taskSubType" class="flex flex-col gap-1.5">
                                 <div class="flex items-center justify-between text-[10px]">
                                     <span class="text-white/40">{{ t('account.current_task') }}:</span>
                                     <span class="badge badge-warning text-[9px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">{{ t('account.on_the_way') }}</span>
                                 </div>
-                                <p class="text-xs font-medium text-white/80 flex items-center gap-1.5">
+                                <p class="text-xs font-medium text-white/80 flex items-center gap-1.5 truncate">
                                     <span>🚶‍♂️</span>
-                                    {{ getTaskName(s.taskType, s.taskSubType, getSpecialistCategory(s.type)) }}
+                                    <span class="truncate">{{ getTaskName(s.taskType, s.taskSubType, getSpecialistCategory(s.type)) }}</span>
                                 </p>
                             </div>
                             <div v-else class="flex items-center justify-between text-xs">
@@ -316,28 +316,28 @@
             <!-- Buffs Tab -->
             <div v-if="activeTab === 'buffs'">
                 <!-- Star Menu Buffs -->
-                <div class="mb-8">
-                    <h3 class="text-sm font-semibold text-white/50 uppercase tracking-wider mb-4 flex items-center gap-2">
+                <div class="mb-6 sm:mb-8">
+                    <h3 class="text-xs sm:text-sm font-semibold text-white/50 uppercase tracking-wider mb-3 sm:mb-4 flex items-center gap-2">
                         <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
                         {{ t('account.star_menu') }}
                     </h3>
-                    <div v-if="availableBuffs.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                        <div v-for="(b, idx) in availableBuffs" :key="idx" class="glass-card p-4 hover:border-white/20 hover:scale-[1.02] transition-all duration-300">
-                            <div class="flex items-start gap-3">
-                                <div class="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                                    <img :src="getBuffIcon(b)" :alt="getStarBuffName(b)" width="28" height="28" loading="lazy" decoding="async" class="w-7 h-7 object-contain" @error="handleBuffIconError($event, b)">
+                    <div v-if="availableBuffs.length > 0" class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+                        <div v-for="(b, idx) in availableBuffs" :key="idx" class="glass-card p-3.5 sm:p-4 hover:border-white/20 hover:scale-[1.02] transition-all duration-300">
+                            <div class="flex items-start gap-2.5 sm:gap-3">
+                                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-500/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                                    <img :src="getBuffIcon(b)" :alt="getStarBuffName(b)" width="28" height="28" loading="lazy" decoding="async" class="w-6 h-6 sm:w-7 sm:h-7 object-contain" @error="handleBuffIconError($event, b)">
                                     <span class="text-xl" style="display: none;">
                                         {{ b.buffName_string === 'AddResource' ? '📥' : b.buffName_string === 'Adventure' ? '🗺️' : b.buffName_string === 'BuildBuilding' ? '🏗️' : '✨' }}
                                     </span>
                                 </div>
                                 <div class="flex-1 min-w-0">
-                                    <p class="text-[13px] sm:text-sm font-medium text-white/80 wrap-anywhere leading-snug" :title="getStarBuffName(b)">
+                                    <p class="text-xs sm:text-sm font-medium text-white/80 wrap-anywhere leading-snug" :title="getStarBuffName(b)">
                                         {{ getStarBuffName(b) }}
                                     </p>
                                     <p class="text-[10px] text-white/30">ID: {{ b.uniqueId1 || 'N/A' }}</p>
                                 </div>
                                 <div class="text-right flex-shrink-0">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold whitespace-nowrap"
+                                    <span class="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded text-xs font-semibold whitespace-nowrap"
                                           :class="b.buffName_string === 'AddResource' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'">
                                         {{ b.buffName_string === 'AddResource' ? '+' + formatNumber(b.amount) : 'x' + b.amount }}
                                     </span>
@@ -349,20 +349,18 @@
                         <p class="text-white/30 text-sm">{{ t('account.no_star_buffs') }}</p>
                     </div>
                 </div>
-
-
             </div>
 
             <!-- Resources Tab -->
             <div v-if="activeTab === 'resources'">
                 <!-- Storage limit info -->
-                <div v-if="resourceLimit" class="glass-card p-4 mb-6 flex justify-between items-center">
+                <div v-if="resourceLimit" class="glass-card p-3.5 sm:p-4 mb-5 sm:mb-6 flex flex-col xs:flex-row justify-between items-start xs:items-center gap-2 sm:gap-4">
                     <div>
                         <h3 class="text-sm font-semibold text-white/80">{{ t('account.warehouse_capacity') }}</h3>
                         <p class="text-xs text-white/40 mt-0.5">{{ t('account.warehouse_capacity_hint') }}</p>
                     </div>
-                    <div class="px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
-                        <span class="text-lg font-bold text-emerald-400">{{ formatNumber(resourceLimit) }}</span>
+                    <div class="px-3.5 sm:px-4 py-1.5 sm:py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+                        <span class="text-base sm:text-lg font-bold text-emerald-400 font-mono">{{ formatNumber(resourceLimit) }}</span>
                     </div>
                 </div>
 

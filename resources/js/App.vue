@@ -169,7 +169,7 @@
                 </div>
             </header>
 
-            <div :class="[showSidebar ? 'p-4 sm:p-6 lg:p-8' : ($route.meta.guest ? 'p-0' : 'p-4 md:p-8'), 'flex-1 overflow-y-auto w-full min-w-0']">
+            <div :class="[showSidebar ? 'p-3 sm:p-6 lg:p-8' : ($route.meta.guest ? 'p-3 sm:p-6 lg:p-8' : 'p-3 sm:p-6 md:p-8'), 'flex-1 overflow-y-auto w-full min-w-0']">
                 <router-view v-slot="{ Component }">
                     <transition name="page" mode="out-in">
                         <component :is="Component" />

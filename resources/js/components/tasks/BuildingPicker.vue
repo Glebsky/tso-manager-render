@@ -1,24 +1,24 @@
 <template>
-    <div v-if="showModal" @click.self="$emit('close')" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-        <div class="glass-card max-w-2xl w-full flex flex-col max-h-[85vh] shadow-2xl border border-white/10">
+    <div v-if="showModal" @click.self="$emit('close')" class="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+        <div class="glass-card max-w-2xl w-full flex flex-col max-h-[90vh] sm:max-h-[85vh] shadow-2xl border border-white/10">
             <!-- Шапка модального окна -->
-            <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between flex-wrap gap-2">
-                <div class="flex items-center gap-3">
-                    <h3 class="text-base font-semibold text-white">{{ t('tasks.modal.select_building') }}</h3>
-                    <span class="badge badge-emerald text-xs font-mono">{{ t('tasks.modal.selected_count', { count: selectedBuildings.length }) }}</span>
+            <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-white/5 flex items-center justify-between flex-wrap gap-2">
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <h3 class="text-sm sm:text-base font-semibold text-white">{{ t('tasks.modal.select_building') }}</h3>
+                    <span class="badge badge-emerald text-[10px] sm:text-xs font-mono">{{ t('tasks.modal.selected_count', { count: selectedBuildings.length }) }}</span>
                 </div>
-                <div class="flex items-center gap-2">
-                    <button type="button" @click="$emit('select-all')" class="btn-secondary btn-sm text-[11px] py-1 px-2.5">
+                <div class="flex items-center gap-1.5 sm:gap-2">
+                    <button type="button" @click="$emit('select-all')" class="btn-secondary btn-sm text-[10px] sm:text-[11px] py-1 px-2 sm:px-2.5">
                         {{ t('tasks.modal.select_all') }}
                     </button>
-                    <button type="button" @click="$emit('clear')" class="btn-secondary btn-sm text-[11px] py-1 px-2.5 text-red-400 hover:text-red-300 border-red-500/20">
+                    <button type="button" @click="$emit('clear')" class="btn-secondary btn-sm text-[10px] sm:text-[11px] py-1 px-2 sm:px-2.5 text-red-400 hover:text-red-300 border-red-500/20">
                         {{ t('tasks.modal.clear_selection') }}
                     </button>
-                    <button type="button" @click="$emit('close')" class="btn-primary btn-sm text-xs py-1 px-3">
+                    <button type="button" @click="$emit('close')" class="btn-primary btn-sm text-xs py-1 px-2.5 sm:px-3">
                         {{ t('tasks.modal.done') }}
                     </button>
-                    <button type="button" @click="$emit('close')" aria-label="Close" class="text-white/40 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/5 ml-1">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <button type="button" @click="$emit('close')" aria-label="Close" class="text-white/40 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/5 ml-0.5">
+                        <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
                         </svg>
                     </button>
@@ -26,35 +26,35 @@
             </div>
 
             <!-- Вкладки и Поиск -->
-            <div class="p-4 border-b border-white/5 bg-white/[0.01] flex flex-col gap-3">
+            <div class="p-3 sm:p-4 border-b border-white/5 bg-white/[0.01] flex flex-col gap-2.5 sm:gap-3">
                 <div class="flex items-center justify-between gap-2 flex-wrap">
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-1.5 sm:gap-2">
                         <button type="button" @click="$emit('update:tab', 'self')"
-                                class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all"
+                                class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all"
                                 :class="tab === 'self' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
                             {{ t('tasks.target.self_island') }}
                         </button>
                         <button type="button" @click="$emit('update:tab', 'friend')"
-                                class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all"
+                                class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all"
                                 :class="tab === 'friend' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
                             {{ t('tasks.target.friend_island') }}
                         </button>
                     </div>
                     <!-- Чекбокс «Только доступные» -->
-                    <label v-if="tab === 'self' && isCollectBuildingAction" class="flex items-center gap-2 text-xs text-white/70 hover:text-white cursor-pointer select-none">
+                    <label v-if="tab === 'self' && isCollectBuildingAction" class="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs text-white/70 hover:text-white cursor-pointer select-none">
                         <input type="checkbox" :checked="onlyAvailable" @change="$emit('update:onlyAvailable', $event.target.checked)" class="rounded border-white/20 bg-white/5 text-emerald-500 focus:ring-emerald-400 cursor-pointer">
                         <span>{{ t('tasks.modal.only_available') }}</span>
                     </label>
                 </div>
                 <div class="relative">
-                    <input v-if="tab === 'self'" :value="buildingSearch" @input="$emit('update:buildingSearch', $event.target.value)" type="text" :placeholder="t('tasks.modal.search_building')" :aria-label="t('tasks.modal.search_building')" class="glass-input w-full text-xs py-2 pl-4">
-                    <input v-else :value="friendBuildingSearch" @input="$emit('update:friendBuildingSearch', $event.target.value)" type="text" :placeholder="t('tasks.modal.search_building')" :aria-label="t('tasks.modal.search_building')" class="glass-input w-full text-xs py-2 pl-4">
+                    <input v-if="tab === 'self'" :value="buildingSearch" @input="$emit('update:buildingSearch', $event.target.value)" type="text" :placeholder="t('tasks.modal.search_building')" :aria-label="t('tasks.modal.search_building')" class="glass-input w-full text-xs py-1.5 sm:py-2 pl-3 sm:pl-4">
+                    <input v-else :value="friendBuildingSearch" @input="$emit('update:friendBuildingSearch', $event.target.value)" type="text" :placeholder="t('tasks.modal.search_building')" :aria-label="t('tasks.modal.search_building')" class="glass-input w-full text-xs py-1.5 sm:py-2 pl-3 sm:pl-4">
                 </div>
             </div>
 
             <!-- Список зданий self -->
-            <div v-if="tab === 'self'" class="p-6 overflow-y-auto flex-1 bg-dark-950/20">
-                <div v-if="filteredBuildings.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div v-if="tab === 'self'" class="p-3 sm:p-6 overflow-y-auto flex-1 bg-dark-950/20">
+                <div v-if="filteredBuildings.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
                     <div v-for="b in filteredBuildings" :key="b.buildingGrid"
                          @click="$emit('toggle-building', b, 'self')"
                          class="glass-card p-3 cursor-pointer hover:border-emerald-500/40 transition-all duration-200 flex items-center justify-between gap-3"
