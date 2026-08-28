@@ -30,3 +30,4 @@ docker/nginx/certs/
 # OpenServer 6
 /.osp/backup/
 /docs/references/
+*.zip
