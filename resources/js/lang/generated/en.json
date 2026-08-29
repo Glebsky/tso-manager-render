@@ -6427,6 +6427,7 @@
         "market.range_all": "All",
         "market.region_label": "Region",
         "market.reset_selection": "Reset Selection",
+        "market.reverse_calc_btn": "Reverse calculation",
         "market.save": "Save",
         "market.save_schedule": "Save schedule",
         "market.save_settings_failed": "Failed to save settings.",

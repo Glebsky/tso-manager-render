@@ -240,6 +240,7 @@ return [
     'market.price_history' => 'История цен (1 {item} = X {target})',
     'market.not_enough_history' => 'Недостаточно исторических данных для отображения графика',
     'market.amount_of' => 'Количество {item}',
+    'market.reverse_calc_btn' => 'Обратный расчет',
     'market.formula_direct' => 'Формула: {amount} * {price} средняя цена',
     'market.formula_mirrored' => 'Формула: {amount} / {price} средняя цена',
     'market.no_mirrored_trades' => 'Не найдено зеркальных сделок ({target} ➔ {item}) для расчёта стоимости.',

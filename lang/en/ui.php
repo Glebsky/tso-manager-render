@@ -240,6 +240,7 @@ return [
     'market.price_history' => 'Price History (1 {item} = X {target})',
     'market.not_enough_history' => 'Not enough historical data to display the chart',
     'market.amount_of' => 'Amount of {item}',
+    'market.reverse_calc_btn' => 'Reverse calculation',
     'market.formula_direct' => 'Formula: {amount} * {price} average price',
     'market.formula_mirrored' => 'Formula: {amount} / {price} average price',
     'market.no_mirrored_trades' => 'No mirrored trades ({target} ➔ {item}) found to calculate mirrored cost.',

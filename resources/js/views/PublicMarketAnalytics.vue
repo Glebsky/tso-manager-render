@@ -145,21 +145,21 @@
                 <!-- Mode 2: Visual Browser Selection -->
                 <div v-else key="visual" class="space-y-4 sm:space-y-6">
                     <!-- Tab Navigation for Visual steps -->
-                    <div class="grid grid-cols-2 gap-2 border-b border-white/10 pb-0 sm:flex sm:items-center sm:gap-4">
+                    <div class="grid grid-cols-2 gap-2 border-b border-white/10 pb-0 sm:flex sm:items-center sm:gap-6">
                         <button @click="visualTab = 1"
-                                class="flex flex-col sm:flex-row items-center sm:items-baseline justify-center sm:justify-start pb-2 sm:pb-3 text-[11px] sm:text-xs font-bold uppercase tracking-tight sm:tracking-wider transition-all duration-300 border-b-2 min-w-0 w-full"
+                                class="flex flex-col sm:flex-row items-center justify-center sm:justify-start pb-2 sm:pb-3 text-[11px] sm:text-xs font-bold uppercase tracking-tight sm:tracking-wider transition-all duration-300 border-b-2 min-w-0 w-full sm:w-auto"
                                 :class="visualTab === 1 ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-white/40 hover:text-white'">
-                            <span class="truncate w-full text-center sm:text-left">{{ t('market.sell_resource') }}</span>
-                            <span v-if="selectedItem" class="text-[10px] text-emerald-500 font-mono font-medium truncate max-w-full sm:ml-1 sm:max-w-[150px]">
+                            <span class="truncate max-w-full sm:max-w-none whitespace-nowrap">{{ t('market.sell_resource') }}</span>
+                            <span v-if="selectedItem" class="text-[10px] sm:text-xs text-emerald-500 font-mono font-medium truncate max-w-full sm:max-w-none sm:ml-1.5">
                                 ({{ selectedItemName }})
                             </span>
                         </button>
                         <button @click="visualTab = 2"
                                 :disabled="!selectedItem"
-                                class="flex flex-col sm:flex-row items-center sm:items-baseline justify-center sm:justify-start pb-2 sm:pb-3 text-[11px] sm:text-xs font-bold uppercase tracking-tight sm:tracking-wider transition-all duration-300 border-b-2 disabled:opacity-30 disabled:cursor-not-allowed min-w-0 w-full"
+                                class="flex flex-col sm:flex-row items-center justify-center sm:justify-start pb-2 sm:pb-3 text-[11px] sm:text-xs font-bold uppercase tracking-tight sm:tracking-wider transition-all duration-300 border-b-2 disabled:opacity-30 disabled:cursor-not-allowed min-w-0 w-full sm:w-auto"
                                 :class="visualTab === 2 ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-white/40 hover:text-white'">
-                            <span class="truncate w-full text-center sm:text-left">{{ t('market.buy_resource') }}</span>
-                            <span v-if="selectedTarget" class="text-[10px] text-emerald-500 font-mono font-medium truncate max-w-full sm:ml-1 sm:max-w-[150px]">
+                            <span class="truncate max-w-full sm:max-w-none whitespace-nowrap">{{ t('market.buy_resource') }}</span>
+                            <span v-if="selectedTarget" class="text-[10px] sm:text-xs text-emerald-500 font-mono font-medium truncate max-w-full sm:max-w-none sm:ml-1.5">
                                 ({{ selectedTargetName }})
                             </span>
                         </button>
@@ -297,8 +297,23 @@
 
                         <div class="space-y-4 sm:space-y-5">
                             <div>
-                                <label for="public-calc-amount-input" class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('market.amount_of', { item: selectedItemName }) }}</label>
-                                <input id="public-calc-amount-input" type="number" v-model.number="calcAmount" min="1" :aria-label="t('market.amount_of', { item: selectedItemName })" class="glass-input w-full font-mono text-white text-base sm:text-lg transition-all duration-300"/>
+                                <div class="flex items-center justify-between gap-2 mb-2">
+                                    <label for="public-calc-amount-input" class="block text-xs font-medium text-white/40 uppercase tracking-wider truncate">{{ t('market.amount_of', { item: isReversedCalc ? selectedTargetName : selectedItemName }) }}</label>
+                                    <button 
+                                        type="button"
+                                        @click="isReversedCalc = !isReversedCalc"
+                                        :title="t('market.reverse_calc_btn')"
+                                        :aria-label="t('market.reverse_calc_btn')"
+                                        class="flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[11px] font-medium transition-all duration-200 border shrink-0 cursor-pointer"
+                                        :class="isReversedCalc ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-sm shadow-emerald-500/10' : 'bg-white/5 text-white/50 border-white/10 hover:text-white hover:bg-white/10'"
+                                    >
+                                        <svg class="w-3.5 h-3.5 transition-transform duration-300" :class="{ 'rotate-180 text-emerald-400': isReversedCalc }" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+                                        </svg>
+                                        <span class="text-[10px]">{{ isReversedCalc ? selectedTargetName : selectedItemName }}</span>
+                                    </button>
+                                </div>
+                                <input id="public-calc-amount-input" type="number" v-model.number="calcAmount" min="1" :aria-label="t('market.amount_of', { item: isReversedCalc ? selectedTargetName : selectedItemName })" class="glass-input w-full font-mono text-white text-base sm:text-lg transition-all duration-300"/>
                             </div>
 
                             <!-- Direct estimated revenue -->
@@ -306,19 +321,29 @@
                                 <span class="text-[10px] font-semibold text-emerald-400/70 uppercase tracking-wider block">{{ t('market.estimated_revenue') }}</span>
                                 <div class="flex items-baseline gap-2 mt-1 flex-wrap">
                                     <span class="text-xl sm:text-2xl font-bold text-emerald-400 font-mono">{{ calculatedCost }}</span>
-                                    <span class="text-xs text-white/40">{{ selectedTargetName }}</span>
+                                    <span class="text-xs text-white/40">{{ isReversedCalc ? selectedItemName : selectedTargetName }}</span>
                                 </div>
-                                <span class="text-[9px] text-white/20 block mt-2">{{ t('market.formula_direct', { amount: calcAmount || 0, price: stats.average }) }}</span>
+                                <span class="text-[9px] text-white/20 block mt-2">
+                                    {{ isReversedCalc 
+                                        ? t('market.formula_mirrored', { amount: calcAmount || 0, price: effectivePrice }) 
+                                        : t('market.formula_direct', { amount: calcAmount || 0, price: effectivePrice }) 
+                                    }}
+                                </span>
                             </div>
 
                             <!-- Mirrored estimated cost -->
-                            <div v-if="mirroredStats" class="p-3.5 sm:p-4 rounded-xl border border-blue-500/10 bg-blue-500/[0.02] transition-all duration-300">
+                            <div v-if="mirroredStats && effectiveMirroredPrice > 0" class="p-3.5 sm:p-4 rounded-xl border border-blue-500/10 bg-blue-500/[0.02] transition-all duration-300">
                                 <span class="text-[10px] font-semibold text-blue-400/70 uppercase tracking-wider block">{{ t('market.estimated_cost') }}</span>
                                 <div class="flex items-baseline gap-2 mt-1 flex-wrap">
                                     <span class="text-xl sm:text-2xl font-bold text-blue-400 font-mono">{{ calculatedMirroredCost }}</span>
-                                    <span class="text-xs text-white/40">{{ selectedTargetName }}</span>
+                                    <span class="text-xs text-white/40">{{ isReversedCalc ? selectedItemName : selectedTargetName }}</span>
                                 </div>
-                                <span class="text-[9px] text-white/20 block mt-2">{{ t('market.formula_mirrored', { amount: calcAmount || 0, price: mirroredStats.average }) }}</span>
+                                <span class="text-[9px] text-white/20 block mt-2">
+                                    {{ isReversedCalc 
+                                        ? t('market.formula_direct', { amount: calcAmount || 0, price: effectiveMirroredPrice }) 
+                                        : t('market.formula_mirrored', { amount: calcAmount || 0, price: effectiveMirroredPrice }) 
+                                    }}
+                                </span>
                             </div>
                             <div v-else class="p-3.5 sm:p-4 rounded-xl border border-white/5 bg-white/[0.01] text-center text-xs text-white/30">
                                 {{ t('market.no_mirrored_trades', { target: selectedTargetName, item: selectedItemName }) }}
@@ -833,6 +858,7 @@ const router = useRouter();
         const selectedItem = ref('');
         const selectedTarget = ref('');
         const calcAmount = ref(100);
+        const isReversedCalc = ref(false);
 
         // Single source of truth for market item names (shared with admin):
         // see resources/js/lang/gameNames.js -> marketItemName().
@@ -852,16 +878,34 @@ const router = useRouter();
         });
 
         // Calculator costs
+        const effectivePrice = computed(() => {
+            if (!stats.value) return 0;
+            return (stats.value.average && stats.value.average > 0) ? stats.value.average : (stats.value.current || 0);
+        });
+
+        const effectiveMirroredPrice = computed(() => {
+            if (!mirroredStats.value) return 0;
+            return (mirroredStats.value.average && mirroredStats.value.average > 0) ? mirroredStats.value.average : (mirroredStats.value.current || 0);
+        });
+
         const calculatedCost = computed(() => {
-            if (!stats.value || !stats.value.average) return 0;
+            const price = effectivePrice.value;
+            if (!price || price === 0) return 0;
             const amt = parseFloat(calcAmount.value) || 0;
-            return Math.round(amt * stats.value.average * 100) / 100;
+            if (isReversedCalc.value) {
+                return Math.round((amt / price) * 100) / 100;
+            }
+            return Math.round(amt * price * 100) / 100;
         });
 
         const calculatedMirroredCost = computed(() => {
-            if (!mirroredStats.value || !mirroredStats.value.average) return 0;
+            const price = effectiveMirroredPrice.value;
+            if (!price || price === 0) return 0;
             const amt = parseFloat(calcAmount.value) || 0;
-            return Math.round((amt / mirroredStats.value.average) * 100) / 100;
+            if (isReversedCalc.value) {
+                return Math.round(amt * price * 100) / 100;
+            }
+            return Math.round((amt / price) * 100) / 100;
         });
 
         // Market detail helpers

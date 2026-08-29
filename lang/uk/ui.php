@@ -350,6 +350,7 @@ return [
     'market.price_history' => 'Історія цін (1 {item} = X {target})',
     'market.not_enough_history' => 'Недостатньо історичних даних для відображення графіка',
     'market.amount_of' => 'Кількість {item}',
+    'market.reverse_calc_btn' => 'Зворотний розрахунок',
     'market.formula_direct' => 'Формула: {amount} * {price} середня ціна',
     'market.formula_mirrored' => 'Формула: {amount} / {price} середня ціна',
     'market.no_mirrored_trades' => 'Не знайдено дзеркальних угод ({target} ➔ {item}) для розрахунку вартості.',
