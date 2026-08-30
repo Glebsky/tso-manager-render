@@ -10,6 +10,7 @@ use App\Services\Amf\Vo\defaultGame_Communication_VO_dGetFriendsVO;
 use App\Services\Amf\Vo\defaultGame_Communication_VO_dServerAction;
 use App\Services\Amf\Vo\defaultGame_Communication_VO_dServerCall;
 use App\Services\Amf\Vo\defaultGame_Communication_VO_dStartSpecialistTaskVO;
+use App\Services\Amf\Vo\defaultGame_Communication_VO_dTimedProductionVO;
 use App\Services\Amf\Vo\defaultGame_Communication_VO_dUniqueID;
 use Exception;
 use Illuminate\Support\Facades\Cache;
@@ -22,6 +23,8 @@ class TsoAmfService
     public const int CMD_UPGRADE = 60;
 
     public const int CMD_APPLY_BUFF = 61;
+
+    public const int CMD_START_TIMED_PRODUCTION = 91;
 
     public const int CMD_SET_TASK = 95;
 
@@ -226,7 +229,7 @@ class TsoAmfService
     public function getFriendList(Account $account): string
     {
         $getFriends = new defaultGame_Communication_VO_dGetFriendsVO;
-        $getFriends->version = '2305b91e272216f38df3197e3bf6601f12717639';
+        $getFriends->version = '3c2374c967d4223b5ccb643c0305c8d9eeb0a943';
 
         return $this->sendServerCall(
             $account,
@@ -390,5 +393,31 @@ class TsoAmfService
         $action = $this->buildServerAction($taskType, 0, 0, $taskVo);
 
         return $this->sendServerCall($account, self::CMD_SET_TASK, $action);
+    }
+
+    /**
+     * Places an order into a building's production queue.
+     *
+     * In contrast to other commands, payload is the dTimedProductionVO itself without dServerAction.
+     * Source: client_scripts.txt:307959-307965, protocol-evidence.md §2.
+     *
+     * @throws Exception
+     */
+    public function queueTimedProduction(
+        Account $account,
+        int $grid,
+        int $productionType,
+        string $typeString,
+        int $amount = 1,
+        int $stacks = 1,
+    ): string {
+        $vo = new defaultGame_Communication_VO_dTimedProductionVO;
+        $vo->productionType = $productionType;
+        $vo->type_string = $typeString;
+        $vo->amount = $amount;
+        $vo->stacks = $stacks;
+        $vo->buildingGrid = $grid;
+
+        return $this->sendServerCall($account, self::CMD_START_TIMED_PRODUCTION, $vo);
     }
 }
