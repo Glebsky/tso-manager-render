@@ -1,0 +1,174 @@
+/* Inter font is loaded asynchronously from the Blade layouts (see resources/views/app.blade.php
+   and resources/views/layouts/app.blade.php) to avoid render-blocking the first paint. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom glassmorphism utilities */
+@layer components {
+  .glass-card {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl;
+  }
+  .glass-sidebar {
+    @apply bg-dark-950/80 backdrop-blur-2xl border-r border-white/5;
+  }
+  .glass-input {
+    @apply bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all duration-300;
+  }
+  .glass-select {
+    @apply bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all duration-300 appearance-none;
+  }
+  .glass-select option {
+    @apply bg-dark-900 text-white;
+  }
+  .btn-primary {
+    @apply bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-semibold px-6 py-3 rounded-xl shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all duration-300 transform hover:scale-[1.02];
+  }
+  .btn-secondary {
+    @apply bg-white/5 border border-white/10 hover:bg-white/10 text-white font-medium px-4 py-2 rounded-xl transition-all duration-300;
+  }
+  .btn-danger {
+    @apply bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-400 hover:to-rose-500 text-white font-semibold px-4 py-2 rounded-xl shadow-lg shadow-red-500/25 hover:shadow-red-500/40 transition-all duration-300;
+  }
+  .btn-sm {
+    @apply text-sm px-3 py-1.5 rounded-lg;
+  }
+  .status-online {
+    @apply bg-emerald-500 shadow-lg shadow-emerald-500/50;
+  }
+  .status-syncing {
+    @apply bg-amber-500 shadow-lg shadow-amber-500/50 animate-pulse;
+  }
+  .status-error {
+    @apply bg-red-500 shadow-lg shadow-red-500/50;
+  }
+  .status-offline {
+    @apply bg-gray-500 shadow-lg shadow-gray-500/50;
+  }
+  .nav-link {
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-white/50 hover:text-white hover:bg-white/5 border border-transparent transition-all duration-1000;
+  }
+  .nav-link svg {
+    @apply transition-colors duration-1000;
+  }
+  .nav-link.active {
+    @apply text-white bg-gradient-to-r from-emerald-500/20 to-teal-500/10 border border-emerald-500/20;
+  }
+  .nav-link.active svg {
+    @apply text-emerald-400;
+  }
+  .badge {
+    @apply inline-flex items-center whitespace-nowrap px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  /* Row of pills: pills stay on a single line each, and wrap as whole units. */
+  .pill-row {
+    @apply flex flex-wrap items-center gap-2 min-w-0;
+  }
+  /* Long strings (log messages, buff names) that must wrap instead of scrolling. */
+  .wrap-anywhere {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  .badge-success {
+    @apply bg-emerald-500/20 text-emerald-400 border border-emerald-500/30;
+  }
+  .badge-warning {
+    @apply bg-amber-500/20 text-amber-400 border border-amber-500/30;
+  }
+  .badge-danger {
+    @apply bg-red-500/20 text-red-400 border border-red-500/30;
+  }
+  .badge-info {
+    @apply bg-blue-500/20 text-blue-400 border border-blue-500/30;
+  }
+  .badge-neutral {
+    @apply bg-white/10 text-white/60 border border-white/10;
+  }
+  .loading-overlay {
+    @apply absolute inset-0 z-30 flex items-center justify-center rounded-2xl bg-dark-950/40 backdrop-blur-[2px];
+  }
+}
+
+/* Custom scrollbar */
+@layer base {
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes glow {
+    0%,100% {
+        box-shadow: 0px 0px 20px 3px var(--glow);
+    }
+    50% {
+        box-shadow: 0px 0px 30px 5px var(--glow);
+    }
+}
+
+@keyframes borderGlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent 0%, rgb(255 255 255 / 50%) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 20s ease-in-out infinite;
+}
+
+.animate-glow {
+    animation: glow 10s ease-in-out infinite;
+}
+
+.animate-border-glow {
+  background-size: 200% 200%;
+  animation: borderGlow 3s ease infinite;
+}
+
+.skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 0.75rem;
+}
+
+/* Global fade transition (used by LoadingOverlay and content swaps) */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.25s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}

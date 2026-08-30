@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<oasis>
+  <translations count="8" language="en_uk">
+    <s name="RES">
+      <t id="Water" text="Water" />
+      <t id="BronzeOre" text="Copper Ore" />
+      <t id="AddResource" text="Add Resource: {0} {1,RES}" />
+      <t id="Water" text="Water" />
+      <t id="" text="Orphan text" />
+      <t id="EmptyText" text="" />
+      <t id="Christmas2015" text="Merry {Christmas}!" />
+    </s>
+    <s name="SPE">
+      <t id="General" text="General" />
+    </s>
+  </translations>
+</oasis>
