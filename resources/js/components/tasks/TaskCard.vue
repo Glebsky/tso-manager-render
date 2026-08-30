@@ -111,6 +111,25 @@
                                 </span>
                             </span>
 
+                            <!-- Single buff production task -->
+                            <span v-else-if="task.task_type === 'produce_buff'" class="inline-flex items-center gap-1.5 flex-wrap">
+                                <span class="inline-flex items-center gap-1 text-emerald-300 font-medium">
+                                    <img v-if="getBuffInfo(task, { task_type: task.task_type, payload: task.payload }).icon"
+                                         :src="getBuffInfo(task, { task_type: task.task_type, payload: task.payload }).icon"
+                                         loading="lazy" decoding="async"
+                                         class="w-4 h-4 object-contain rounded flex-shrink-0"
+                                         @error="handleBuffIconError($event, task.payload?.recipe_name)" />
+                                    <span v-else class="text-xs">🧪</span>
+                                    <span>{{ getBuffInfo(task, { task_type: task.task_type, payload: task.payload }).name || task.payload?.recipe_name }} (x{{ task.payload?.amount || 1 }})</span>
+                                </span>
+                                <span v-if="task.payload?.stacks && task.payload.stacks > 1" class="text-white/60 text-[10px]">
+                                    • {{ task.payload.stacks }} {{ t('tasks.produce_stacks').toLowerCase() }}
+                                </span>
+                                <span v-if="task.payload?.grid" class="font-mono bg-white/5 px-1.5 sm:px-2 py-0.5 rounded text-white/60 text-[10px]">
+                                    {{ t('tasks.grid_number', { id: task.payload.grid }) }}
+                                </span>
+                            </span>
+
                             <span v-else-if="task.payload && task.payload.grid" class="font-mono bg-white/5 px-2 py-0.5 rounded text-white/60">
                                 {{ t('tasks.grid_number', { id: task.payload.grid }) }}
                             </span>
@@ -323,6 +342,25 @@
                         </span>
                         <span v-if="act.payload?.max_level" class="badge badge-emerald text-[9px] whitespace-nowrap">
                             Lvl ≤ {{ act.payload.max_level }}
+                        </span>
+                    </template>
+
+                    <!-- Produce Buff Details -->
+                    <template v-else-if="act.task_type === 'produce_buff'">
+                        <span class="inline-flex items-center gap-1 text-emerald-300 font-medium max-w-full truncate text-[10px]">
+                            <img v-if="getBuffInfo(task, act).icon"
+                                 :src="getBuffInfo(task, act).icon"
+                                 loading="lazy" decoding="async"
+                                 class="w-4 h-4 object-contain rounded flex-shrink-0"
+                                 @error="handleBuffIconError($event, act.payload?.recipe_name)" />
+                            <span v-else class="text-[10px]">🧪</span>
+                            <span class="truncate">{{ getBuffInfo(task, act).name || act.payload?.recipe_name }} (x{{ act.payload?.amount || 1 }})</span>
+                        </span>
+                        <span v-if="act.payload?.stacks && act.payload.stacks > 1" class="text-white/60 text-[10px]">
+                            {{ act.payload.stacks }} {{ t('tasks.produce_stacks').toLowerCase() }}
+                        </span>
+                        <span v-if="act.payload?.grid" class="font-mono text-[10px] text-white/50 bg-white/5 px-1.5 py-0.5 rounded whitespace-nowrap">
+                            Grid #{{ act.payload.grid }}
                         </span>
                     </template>
                 </div>

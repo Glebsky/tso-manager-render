@@ -23,14 +23,29 @@ final readonly class AmfZoneSnapshotProvider implements ZoneSnapshotProviderInte
      * @throws \Exception
      * @throws \Exception
      */
-    public function forAccount(Account $account): ZoneSnapshot
+    public function forAccount(Account $account, bool $forceRefresh = false): ZoneSnapshot
     {
-        $zoneAmf = $this->amf->getZone($account);
-        $zone = $this->zones->parse($zoneAmf);
+        $zone = null;
+        if (! $forceRefresh && ! empty($account->zone_data) && ! empty($account->zone_data['buildings'])) {
+            $zone = $account->zone_data;
+        }
 
-        $errorCode = (int) ($zone['errorCode'] ?? 0);
-        if ($errorCode !== 0) {
-            throw new GameServerErrorException($errorCode, GameErrorResolver::getMessage($errorCode));
+        if ($zone === null) {
+            $zoneAmf = $this->amf->getZone($account);
+            $zone = $this->zones->parse($zoneAmf);
+
+            $errorCode = (int) ($zone['errorCode'] ?? 0);
+            if ($errorCode !== 0) {
+                throw new GameServerErrorException($errorCode, GameErrorResolver::getMessage($errorCode));
+            }
+
+            if ($account->exists) {
+                $account->update([
+                    'zone_data' => json_encode($zone, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE),
+                    'last_sync_at' => now(),
+                    'status' => 'online',
+                ]);
+            }
         }
 
         $depositsByGrid = [];

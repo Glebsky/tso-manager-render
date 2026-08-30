@@ -53,7 +53,7 @@ final readonly class MineTargetListService
             return $cached;
         }
 
-        $zone = $this->zones->forAccount($account);
+        $zone = $skipCache ? $this->zones->forAccount($account, true) : $this->zones->forAccount($account);
         $result = [];
 
         foreach ($zone->deposits() as $deposit) {
@@ -96,7 +96,7 @@ final readonly class MineTargetListService
             return $cached;
         }
 
-        $zone = $this->zones->forAccount($account);
+        $zone = $skipCache ? $this->zones->forAccount($account, true) : $this->zones->forAccount($account);
         $result = [];
 
         foreach ($zone->buildings() as $building) {

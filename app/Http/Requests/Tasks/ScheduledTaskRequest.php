@@ -35,6 +35,7 @@ abstract class ScheduledTaskRequest extends FormRequest
             $this->isSpecialistTask() ? $this->specialistRules() : [],
             $this->buffRules(),
             $this->pickupRules(),
+            $this->produceBuffRules(),
         );
     }
 
@@ -261,6 +262,60 @@ abstract class ScheduledTaskRequest extends FormRequest
             }
             if ($taskType === TaskType::ApplyBuff->value) {
                 $prefixes["payload.actions.{$index}.payload."] = "payload.actions.{$index}.payload";
+            }
+        }
+
+        return $prefixes;
+    }
+
+    /**
+     * Shape rules for every produce_buff payload, direct or inside a sequence.
+     *
+     * @return array<string, mixed>
+     */
+    private function produceBuffRules(): array
+    {
+        $rules = [];
+
+        foreach ($this->produceBuffPrefixes() as $prefix) {
+            $rules += [
+                $prefix.'grid' => 'required|integer|min:1',
+                $prefix.'production_type' => 'required|integer|min:0',
+                $prefix.'recipe_name' => 'required|string|max:255',
+                $prefix.'amount' => 'required|integer|min:1|max:25',
+                $prefix.'stacks' => 'nullable|integer|min:1|max:200',
+                $prefix.'building_name' => 'nullable|string|max:255',
+                $prefix.'name' => 'nullable|string|max:255',
+            ];
+        }
+
+        return $rules;
+    }
+
+    /**
+     * Payload prefixes that must be validated as a produce_buff payload.
+     *
+     * @return array<int, string>
+     */
+    private function produceBuffPrefixes(): array
+    {
+        if ($this->taskTypeString() === TaskType::ProduceBuff->value) {
+            return ['payload.'];
+        }
+
+        if (! $this->isSequence()) {
+            return [];
+        }
+
+        $prefixes = [];
+
+        foreach ((array) $this->input('payload.actions', []) as $index => $action) {
+            $taskType = $action['task_type'] ?? '';
+            if ($taskType instanceof TaskType) {
+                $taskType = $taskType->value;
+            }
+            if ($taskType === TaskType::ProduceBuff->value) {
+                $prefixes[] = "payload.actions.{$index}.payload.";
             }
         }
 

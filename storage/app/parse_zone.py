@@ -181,6 +181,72 @@ def extract_pickups(zone_obj):
     return pickups
 
 
+def extract_production_queues(zone_obj):
+    """Extract dZoneVO.timedProductions_vector as a list of non-empty queue state dicts.
+
+    Returns:
+        None if timedProductions_vector is missing from zone_obj (unparseable / old snapshot).
+        [] if timedProductions_vector is present but contains no orders across all queues.
+        list of { 'production_type': int, 'orders': list[dict] } for queues with orders.
+    """
+    tp_container = _attr(zone_obj, 'timedProductions_vector', 'timedProductions')
+    if tp_container is None:
+        return None
+
+    collections = _as_items(tp_container)
+    queues = []
+
+    for col in collections:
+        orders_raw = _as_items(col)
+        if not orders_raw:
+            continue
+
+        orders = []
+        production_type = None
+
+        for item in orders_raw:
+            if item is None:
+                continue
+
+            ptype = _attr(item, 'productionType')
+            if production_type is None and ptype is not None:
+                try:
+                    production_type = int(ptype)
+                except (TypeError, ValueError):
+                    pass
+
+            t_str = str(_attr(item, 'type_string', 'typeString', 'type', default='') or '')
+
+            def _to_int(val, default=0):
+                try:
+                    return int(val)
+                except (TypeError, ValueError):
+                    return default
+
+            def _to_float(val, default=0.0):
+                try:
+                    return float(val)
+                except (TypeError, ValueError):
+                    return default
+
+            orders.append({
+                'type_string': t_str,
+                'amount': _to_int(_attr(item, 'amount'), 1),
+                'produced_items': _to_int(_attr(item, 'producedItems', 'produced_items'), 0),
+                'collected_time': _to_float(_attr(item, 'collectedTime', 'collected_time'), 0.0),
+                'stacks': _to_int(_attr(item, 'stacks'), 1),
+                'index': _to_int(_attr(item, 'index'), 0),
+            })
+
+        if production_type is not None and orders:
+            queues.append({
+                'production_type': production_type,
+                'orders': orders,
+            })
+
+    return queues
+
+
 def recursive_extract(obj, buildings, specialists, buffs, resources, friends, players, zone_info, deposits, build_queue, visited=None):
     """Recursively walk the decoded AMF object tree and extract VOs."""
     if visited is None:
@@ -595,6 +661,11 @@ def recursive_extract(obj, buildings, specialists, buffs, resources, friends, pl
                         seen.add(key)
                         existing.append(entry)
 
+            # Extract production queues from zone
+            p_queues = extract_production_queues(obj)
+            if p_queues is not None or 'production_queues' not in zone_info:
+                zone_info['production_queues'] = p_queues
+
             # Extract friends list from zone
             for attr in ['friends', 'friendList', 'friendVOs']:
                 friends_list = None
@@ -878,7 +949,8 @@ def main():
         'build_queue': {
             'used': int(build_queue.get('used', 0)),
             'total': int(build_queue.get('total', 0)),
-        } if build_queue else None
+        } if build_queue else None,
+        'production_queues': make_serializable(zone_info['production_queues']) if zone_info.get('production_queues') is not None else None
     }
 
     print(json.dumps(result, ensure_ascii=False, indent=2))
