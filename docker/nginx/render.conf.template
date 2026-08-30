@@ -1,0 +1,142 @@
+# =====================================================================
+# nginx для Render. Рендерится entrypoint'ом через envsubst.
+# ${PORT} подставляет Render (по умолчанию 10000).
+#
+# Отличия от версии в старом архиве:
+#   * Добавлен отдельный блок `location ^~ /build/` для ассетов Vite.
+#     Это важно именно для новой версии фронтенда: vite.config.js теперь
+#     режет бандл на чанки (lang-ru, lang-en, lang-uk, vendor-vue, vendor),
+#     и ниже в этом файле есть запрет на отдачу *.json. Префикс ^~
+#     имеет приоритет над regex-локациями, поэтому любой файл сборки
+#     отдаётся, даже если у него "запрещённое" расширение.
+#   * fastcgi_buffering on: воркер php-fpm освобождается сразу.
+#   * /healthz отдаёт сам nginx, без запуска PHP и обращений к базе.
+# =====================================================================
+
+server {
+    listen ${PORT} default_server;
+    server_name _;
+    root /var/www/html/public;
+    index index.php index.html;
+
+    client_max_body_size 64M;
+    client_body_timeout 30s;
+    send_timeout 30s;
+    keepalive_timeout 20s;
+
+    # Render терминирует TLS у себя и проксирует по HTTP.
+    port_in_redirect off;
+
+    charset utf-8;
+    server_tokens off;
+
+    # --- gzip ---
+    gzip on;
+    gzip_vary on;
+    gzip_comp_level 5;
+    gzip_min_length 1024;
+    gzip_proxied any;
+    gzip_types
+        text/plain
+        text/css
+        text/javascript
+        application/javascript
+        application/json
+        application/xml
+        image/svg+xml
+        font/woff
+        font/woff2;
+
+    # Кэш открытых файловых дескрипторов: меньше syscall'ов на статике.
+    open_file_cache max=2000 inactive=60s;
+    open_file_cache_valid 60s;
+    open_file_cache_min_uses 2;
+    open_file_cache_errors off;
+
+    # -----------------------------------------------------------------
+    # HEALTH CHECK
+    # Отвечает nginx напрямую: 0 обращений к PHP, 0 запросов к Supabase.
+    # Это же значение указано в render.yaml -> healthCheckPath: /healthz
+    # -----------------------------------------------------------------
+    location = /healthz {
+        access_log off;
+        add_header Content-Type text/plain always;
+        return 200 "ok\n";
+    }
+
+    # Глубокая проверка через PHP (руками, не для Render health check).
+    location = /healthz/deep {
+        access_log off;
+        try_files $uri /index.php?$query_string;
+    }
+
+    # fpm-status и fpm-ping только изнутри контейнера (Render Shell).
+    location ~ ^/(fpm-status|fpm-ping)$ {
+        allow 127.0.0.1;
+        deny all;
+        access_log off;
+        fastcgi_pass 127.0.0.1:9000;
+        fastcgi_param SCRIPT_FILENAME $fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    # -----------------------------------------------------------------
+    # Сборка Vite. ^~ выигрывает у regex-локаций ниже, поэтому запрет
+    # на *.json/*.lock не может случайно перехватить файл из /build/.
+    # -----------------------------------------------------------------
+    location ^~ /build/ {
+        expires 1y;
+        access_log off;
+        add_header Cache-Control "public, immutable";
+        try_files $uri =404;
+    }
+
+    # --- Прочая статика: отдаём мимо PHP, с длинным кэшем ---
+    location ~* \.(css|js|mjs|jpg|jpeg|png|gif|ico|webp|avif|svg|woff|woff2|ttf|eot|map)$ {
+        expires 1y;
+        access_log off;
+        add_header Cache-Control "public, immutable";
+        try_files $uri =404;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        try_files $uri =404;
+        fastcgi_pass 127.0.0.1:9000;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        fastcgi_param DOCUMENT_ROOT $realpath_root;
+        include fastcgi_params;
+
+        # Буферизация включена: воркер освобождается сразу, как отдал
+        # ответ в буфер nginx, и не ждёт медленного клиента.
+        fastcgi_buffering on;
+        fastcgi_buffers 16 16k;
+        fastcgi_buffer_size 32k;
+        fastcgi_busy_buffers_size 64k;
+
+        # Согласовано с request_terminate_timeout=60s в www.conf
+        # и max_execution_time=30 в php.ini.
+        fastcgi_read_timeout 60s;
+        fastcgi_connect_timeout 5s;
+    }
+
+    # --- Безопасность ---
+    location ~ /\. {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
+
+    location ~* \.(env|log|sql|sqlite|yml|yaml|lock|json)$ {
+        deny all;
+        access_log off;
+    }
+
+    # Не логируем шум от сканеров.
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location = /robots.txt  { access_log off; log_not_found off; }
+}

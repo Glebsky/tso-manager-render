@@ -1,0 +1,88 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'error' => [
+        'task_inactive' => 'Завдання #:id неактивне або призупинене.',
+        'token_mismatch' => 'Невідповідність токена виконання для завдання #:id. Очікувався: :expected, знайдено: :found',
+        'account_not_found' => 'Акаунт для завдання #:id не знайдено.',
+        'friend_not_found' => 'Крок пропущено: гравець більше не перебуває у списку друзів',
+        'friend_zone_failed' => 'Не вдалося завантажити зону друга (код помилки сервера :err: :errMsg)',
+        'friend_building_not_found' => 'Крок не виконано: будівлю Grid #:grid не знайдено в зоні :friendName',
+        'server_error' => 'Код помилки сервера :errorCode: :errorMsg',
+        'unknown_action_type' => 'Невідомий тип дії: :taskType',
+        'pickups_unavailable' => 'Відповідь зони не містить списку колекцій. Оновіть storage/app/parse_zone.py, щоб він повертав ключ pickups.',
+        'insufficient_buffs' => 'Недостатньо бафів у зоряному меню (доступно: :available, потрібно: :required).',
+        'buff_not_found' => 'Вказаний баф не знайдено в інвентарі зоряного меню.',
+        'invalid_friend_id' => 'Некоректний ID друга.',
+        'friend_not_in_list' => 'Гравець відсутній у вашому списку друзів.',
+        'friend_building_not_found_grid' => 'Будівлю з сіткою #:grid не знайдено в зоні друга.',
+        'friend_zone_not_cached' => 'Зону друга не завантажено або закінчився термін кешу. Будь ласка, оновіть її в інтерфейсі.',
+        'building_not_clickable' => 'Будівлю :name не можна зібрати кліком',
+    ],
+    'step' => [
+        'skipped' => 'Крок :step [:type]: пропущено (вже виконано)',
+        'ok' => 'Крок :step [:type]: OK (:bytes байт)',
+        'error' => 'Крок :step [:type]: ПОМИЛКА - :error',
+        'ok_short' => 'Крок :step: OK',
+        'error_short' => 'Крок :step: ПОМИЛКА - :error',
+    ],
+    'pickups' => [
+        'summary' => 'Колекції: зібрано :collected/:total',
+        'skipped' => 'пропущено :skipped (:details)',
+        'none_available' => 'Колекції: немає чого збирати',
+    ],
+    'building_collect' => [
+        'collected' => 'Будівля: зібрано :name (grid :grid)',
+        'gift_received' => 'Будівля: подарунок отримано :name (grid :grid)',
+        'not_found' => 'Будівля: на сітці :grid нічого збирати',
+        'nothing_to_collect' => 'Будівля: нагорода поки недоступна :name',
+    ],
+    'build_mine' => [
+        'built' => 'Шахта: побудовано :name (грід :grid)',
+        'unknown_outcome' => 'Шахта: результат побудови на гріді :grid невідомий, перевірте вручну',
+        'game_error' => 'Шахта: помилка побудови (:message)',
+        'rejected' => [
+            'no_deposit_at_grid' => 'Шахта: пропуск, поклади на гріді :grid не знайдено',
+            'unknown_deposit_type' => 'Шахта: пропуск, тип покладів :name не підтримується',
+            'deposit_empty' => 'Шахта: пропуск, поклади на гріді :grid вичерпано',
+            'grid_occupied' => 'Шахта: пропуск, грід :grid зайнятий будівлею',
+            'deposit_not_accessible' => 'Шахта: пропуск, поклади на гріді :grid недоступні',
+            'build_queue_full' => 'Шахта: пропуск, немає вільних слотів черги будівництва',
+        ],
+    ],
+    'upgrade_mine' => [
+        'upgraded' => 'Шахта: покращення :name до рівня :level (грід :grid)',
+        'unknown_outcome' => 'Шахта: результат покращення на гріді :grid невідомий, перевірте вручну',
+        'game_error' => 'Шахта: помилка покращення (:message)',
+        'rejected' => [
+            'no_building_at_grid' => 'Шахта: пропуск, будівлю на гріді :grid не знайдено',
+            'not_a_mine' => 'Шахта: пропуск, будівля :name не є шахтою',
+            'max_level_reached' => 'Шахта: пропуск, :name вже рівня :level',
+            'upgrade_already_in_progress' => 'Шахта: пропуск, покращення на гріді :grid вже триває',
+            'production_inactive' => 'Шахта: пропуск, виробництво на гріді :grid зупинено',
+            'build_queue_full' => 'Шахта: пропуск, немає вільних слотів черги будівництва',
+        ],
+    ],
+    'produce_buff' => [
+        'queued' => 'Виробництво: додано в чергу :amount x :recipe (грід :grid)',
+        'unknown_outcome' => 'Виробництво: результат черги на гріді :grid (:recipe) невідомий, перевірте вручну',
+        'game_error' => 'Виробництво: помилка (:message)',
+        'rejected' => [
+            'building_not_found' => 'Виробництво: пропуск, будівлю на гріді :grid не знайдено',
+            'not_a_producer' => 'Виробництво: пропуск, будівля на гріді :grid не виробляє предмети',
+            'production_type_unsupported' => 'Виробництво: пропуск, тип виробництва будівлі ще не підтримується',
+            'production_type_mismatch' => 'Виробництво: пропуск, тип виробництва будівлі не збігається із замовленням',
+            'recipe_unknown' => 'Виробництво: пропуск, рецепт :recipe невідомий для цієї будівлі',
+            'amount_exceeds_recipe_limit' => 'Виробництво: пропуск, зазначена кількість перевищує ліміт рецепта',
+            'stacks_exceeds_recipe_limit' => 'Виробництво: пропуск, зазначена кількість стеків перевищує ліміт рецепта',
+            'recipe_level_locked' => 'Виробництво: пропуск, рецепт :recipe вимагає вищого рівня будівлі',
+            'recipe_requires_inactive_event' => 'Виробництво: пропуск, рецепт вимагає неактивної ігрової події',
+            'building_upgrading' => 'Виробництво: пропуск, будівля на гріді :grid наразі покращується',
+            'queue_data_unavailable' => 'Виробництво: пропуск, дані черги недоступні у знімку зони',
+            'queue_full' => 'Виробництво: пропуск, черга виробництва заповнена',
+            'insufficient_resources' => 'Виробництво: пропуск, недостатньо ресурсів для створення :recipe',
+        ],
+    ],
+];

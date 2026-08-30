@@ -1,0 +1,120 @@
+# =====================================================================
+# Render Blueprint для TSO Manager (Free plan)
+# Версия кода: Laravel 12 / PHP 8.5 (обновлено из original.zip)
+#
+# КЛЮЧЕВЫЕ ОТЛИЧИЯ ОТ ДЕФОЛТНЫХ НАСТРОЕК ПРОЕКТА:
+#   * CACHE_DRIVER  database -> file
+#   * SESSION_DRIVER database -> file
+#     Это главный выигрыш. Иначе КАЖДЫЙ HTTP-запрос делает 4-6 лишних
+#     round-trip'ов в Supabase (чтение/запись сессии, кэш версии данных
+#     в MarketCacheService и т.д.). При RTT 50-150 мс это целые секунды
+#     ожидания на пустом месте.
+#     У вас ОДИН контейнер, шардирования нет - файловые сессии безопасны.
+#     Минус: при рестарте контейнера пользователи разлогиниваются
+#     (диск на Free эфемерный). Для админки это приемлемый размен.
+#   * QUEUE_CONNECTION остаётся database - очередь должна переживать рестарт.
+#   * RUN_MIGRATIONS - чтобы рестарт не ждал миграций.
+#   * DB_CONNECT_TIMEOUT - быстрая ошибка вместо виснувшего воркера.
+#
+# ДОБАВЛЕНО В ЭТОЙ ВЕРСИИ (новые конфиги из original.zip):
+#   * CACHE_STORE - дубль CACHE_DRIVER на случай переезда config/cache.php
+#     на стандартный ключ Laravel 11/12.
+#   * MARKET_* - появился config/market.php (мультисерверный рынок).
+#   * FILESYSTEM_DISK - явно local, чтобы storage:link и куки-файлы
+#     аккаунтов писались в storage/app.
+# =====================================================================
+services:
+  - type: web
+    name: tso-manager
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile.render
+
+    # /healthz отдаёт сам nginx (см. docker/nginx/render.conf.template),
+    # без запуска PHP и без обращений к базе.
+    healthCheckPath: /healthz
+    autoDeploy: true
+
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_NAME
+        value: TSO Manager
+
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: LOG_LEVEL
+        value: warning
+      - key: LOG_DEPRECATIONS_CHANNEL
+        value: "null"
+
+      # ---------------- База данных ----------------
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_DATABASE
+        value: postgres
+      # Работает только потому, что в config/database.php снят хардкод
+      # sslmode => 'prefer' (см. комментарий в том файле).
+      - key: DB_SSLMODE
+        value: require
+      - key: DB_CONNECT_TIMEOUT
+        value: "5"
+
+      # ВАЖНО: DB_PORT для Supabase pooler = 6543 (transaction mode).
+      # Задайте его в дашборде вместе с DB_HOST и DB_USERNAME:
+      #   DB_HOST     = aws-0-<region>.pooler.supabase.com
+      #   DB_PORT     = 6543
+      #   DB_USERNAME = postgres.<project-ref>
+      # Прямой хост db.<ref>.supabase.co работает только по IPv6,
+      # которого у Render нет.
+      - key: DB_PORT
+        sync: false
+
+      # ---------------- Драйверы ----------------
+      - key: CACHE_DRIVER
+        value: file
+      - key: CACHE_STORE
+        value: file
+      - key: SESSION_DRIVER
+        value: file
+      - key: SESSION_LIFETIME
+        value: "120"
+      - key: QUEUE_CONNECTION
+        value: database
+      - key: FILESYSTEM_DISK
+        value: local
+
+      # ---------------- Приложение ----------------
+      - key: TSO_SCHEDULER_MODE
+        value: cron
+      - key: TSO_STALE_TASK_TIMEOUT
+        value: "10"
+
+      # config/market.php - мультисерверная аналитика рынка.
+      # bulk-стратегия дешевле по запросам к БД, что на Free важнее всего.
+      - key: MARKET_CACHE_STRATEGY
+        value: bulk
+      - key: MARKET_OFFER_LIFETIME_HOURS
+        value: "6"
+
+      # Перед ПЕРВЫМ деплоем этой версии должно быть true:
+      # есть новая миграция encrypt_account_credentials.
+      # После первого успешного деплоя поставьте false в дашборде.
+      - key: RUN_MIGRATIONS
+        value: "true"
+
+      # ---------------- Секреты (только через дашборд) ----------------
+      # APP_KEY НЕЛЬЗЯ менять после прогона миграции
+      # encrypt_account_credentials: пароли аккаунтов зашифрованы им.
+      - key: APP_KEY
+        sync: false
+      - key: APP_URL
+        sync: false
+      - key: DB_HOST
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false

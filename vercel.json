@@ -1,0 +1,55 @@
+{
+    "version": 2,
+    "functions": {
+        "api/server.php": {
+            "runtime": "vercel-php@0.9.0"
+        }
+    },
+    "env": {
+        "APP_ENV": "production",
+        "APP_DEBUG": "true",
+        "DB_CONNECTION": "pgsql",
+        "DB_HOST": "aws-0-eu-west-1.pooler.supabase.com",
+        "DB_PORT": "5432",
+        "CACHE_STORE": "array",
+        "CACHE_DRIVER": "array",
+        "DB_DATABASE": "postgres",
+        "DB_USERNAME": "postgres.sibqukjvhwlzxgzhfxil",
+        "DB_PASSWORD": "wonettehartin148_tx",
+        "LOG_CHANNEL": "stderr",
+        "SESSION_DRIVER": "cookie",
+        "APP_STORAGE": "/tmp/storage",
+        "APP_CONFIG_CACHE": "/tmp/config.php",
+        "APP_EVENTS_CACHE": "/tmp/events.php",
+        "APP_PACKAGES_CACHE": "/tmp/packages.php",
+        "APP_ROUTES_CACHE": "/tmp/routes.php",
+        "APP_SERVICES_CACHE": "/tmp/services.php",
+        "VIEW_COMPILED_PATH": "/tmp/views"
+    },
+    "routes": [
+        {
+            "src": "/build/(.*)",
+            "dest": "/public/build/$1"
+        },
+        {
+            "src": "/images/(.*)",
+            "dest": "/public/images/$1"
+        },
+        {
+            "src": "/assets/(.*)",
+            "dest": "/public/assets/$1"
+        },
+        {
+            "src": "/favicon.ico",
+            "dest": "/public/favicon.ico"
+        },
+        {
+            "src": "/robots.txt",
+            "dest": "/public/robots.txt"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "api/server.php"
+        }
+    ]
+}

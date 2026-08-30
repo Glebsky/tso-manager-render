@@ -1,0 +1,442 @@
+[
+  {
+    "name": "RedNoseCollection",
+    "out_buff_name": "AddResource_RedNoseCollection",
+    "out_buff_resource_name": null,
+    "out_buff_resource_amount": null,
+    "production_time": 20,
+    "instant_build_costs": 1,
+    "min_level": "16",
+    "max_level": null,
+    "requires_event": "RedNose_EventRunning",
+    "requires_quest": null,
+    "costs": [
+      {
+        "resource": "CollectibleHerbs",
+        "count": 8
+      },
+      {
+        "resource": "CollectibleScarecrow",
+        "count": 8
+      }
+    ]
+  },
+  {
+    "name": "ChristmasResourceCollection",
+    "out_buff_name": "AddResource_ChristmasResourceCollection",
+    "out_buff_resource_name": "ChristmasResource",
+    "out_buff_resource_amount": null,
+    "production_time": 3600,
+    "instant_build_costs": 30,
+    "min_level": "16",
+    "max_level": null,
+    "requires_event": "XMAS2017plus_Content",
+    "requires_quest": null,
+    "costs": [
+      {
+        "resource": "CollectibleChristmasBells",
+        "count": 25
+      },
+      {
+        "resource": "CollectibleChristmasCandy",
+        "count": 25
+      },
+      {
+        "resource": "CollectibleChristmasGingerbread",
+        "count": 25
+      }
+    ]
+  },
+  {
+    "name": "EasterResourceCollection",
+    "out_buff_name": "AddResource_EasterEggResourceCollection",
+    "out_buff_resource_name": null,
+    "out_buff_resource_amount": null,
+    "production_time": 3600,
+    "instant_build_costs": 30,
+    "min_level": "17",
+    "max_level": null,
+    "requires_event": "Easter2015_EventRunning",
+    "requires_quest": null,
+    "costs": [
+      {
+        "resource": "CollectibleEggpaint",
+        "count": 25
+      },
+      {
+        "resource": "CollectiblePlainEgg",
+        "count": 25
+      },
+      {
+        "resource": "CollectibleWickerBasket",
+        "count": 25
+      }
+    ]
+  },
+  {
+    "name": "EasterEggHuntCollection",
+    "out_buff_name": "EasterEggHunt",
+    "out_buff_resource_name": null,
+    "out_buff_resource_amount": null,
+    "production_time": 3600,
+    "instant_build_costs": 30,
+    "min_level": "26",
+    "max_level": null,
+    "requires_event": "Easter2015_EventRunning",
+    "requires_quest": null,
+    "costs": [
+      {
+        "resource": "CollectibleEggpaint",
+        "count": 25
+      },
+      {
+        "resource": "CollectiblePlainEgg",
+        "count": 25
+      },
+      {
+        "resource": "CollectibleWickerBasket",
+        "count": 25
+      }
+    ]
+  },
+  {
+    "name": "BansheeScream",
+    "out_buff_name": "ProductivityBuffLvl107",
+    "out_buff_resource_name": null,
+    "out_buff_resource_amount": null,
+    "production_time": 600,
+    "instant_build_costs": 30,
+    "min_level": "22",
+    "max_level": null,
+    "requires_event": "HW2017plus_Content",
+    "requires_quest": null,
+    "costs": [
+      {
+        "resource": "CollectibleScarecrow",
+        "count": 10
+      },
+      {
+        "resource": "CollectibleBanner",
+        "count": 5
+      },
+      {
+        "resource": "CollectibleFurs",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "name": "WarewolfHowl",
+    "out_buff_name": "ProductivityBuffLvl108",
+    "out_buff_resource_name": null,
+    "out_buff_resource_amount": null,
+    "production_time": 600,
+    "instant_build_costs": 30,
+    "min_level": "22",
+    "max_level": null,
+    "requires_event": "HW2017plus_Content",
+    "requires_quest": null,
+    "costs": [
+      {
+        "resource": "CollectibleWineBarrel",
+        "count": 20
+      },
+      {
+        "resource": "CollectibleGrainSacks",
+        "count": 10
+      },
+      {
+        "resource": "CollectibleFurs",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "name": "CountrySaying",
+    "out_buff_name": "FillDeposit_Wheat_01",
+    "out_buff_resource_name": null,
+    "out_buff_resource_amount": null,
+    "production_time": 300,
+    "instant_build_costs": 15,
+    "min_level": "16",
+    "max_level": null,
+    "requires_event": null,
+    "requires_quest": null,
+    "costs": [
+      {
+        "resource": "CollectibleHerbs",
+        "count": 25
+      },
+      {
+        "resource": "CollectibleScarecrow",
+        "count": 20
+      }
+    ]
+  },
+  {
+    "name": "HarvestRitual",
+    "out_buff_name": "ProductivityBuffLvl100",
+    "out_buff_resource_name": null,
+    "out_buff_resource_amount": null,
+    "production_time": 600,
+    "instant_build_costs": 30,
+    "min_level": "18",
+    "max_level": null,
+    "requires_event": null,
+    "requires_quest": null,
+    "costs": [
+      {
+        "resource": "CollectibleHerbs",
+        "count": 20
+      },
+      {
+        "resource": "CollectibleFoodCart",
+        "count": 12
+      }
+    ]
+  },
+  {
+    "name": "FurFestival",
+    "out_buff_name": "ProductivityBuffLvl105",
+    "out_buff_resource_name": null,
+    "out_buff_resource_amount": null,
+    "production_time": 600,
+    "instant_build_costs": 30,
+    "min_level": "22",
+    "max_level": null,
+    "requires_event": null,
+    "requires_quest": null,
+    "costs": [
+      {
+        "resource": "CollectibleWineBarrel",
+        "count": 20
+      },
+      {
+        "resource": "CollectibleBanner",
+        "count": 10
+      },
+      {
+        "resource": "CollectibleGrainSacks",
+        "count": 4
+      },
+      {
+        "resource": "CollectibleFurs",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "name": "MiracleBait",
+    "out_buff_name": "ProductivityBuffLvl106",
+    "out_buff_resource_name": null,
+    "out_buff_resource_amount": null,
+    "production_time": 600,
+    "instant_build_costs": 30,
+    "min_level": "22",
+    "max_level": null,
+    "requires_event": null,
+    "requires_quest": null,
+    "costs": [
+      {
+        "resource": "CollectibleWineBarrel",
+        "count": 20
+      },
+      {
+        "resource": "CollectibleKettle",
+        "count": 10
+      },
+      {
+        "resource": "CollectibleGrainSacks",
+        "count": 4
+      },
+      {
+        "resource": "CollectibleFurs",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "name": "WhipsCarrots",
+    "out_buff_name": "ProductivityBuffLvl101",
+    "out_buff_resource_name": null,
+    "out_buff_resource_amount": null,
+    "production_time": 600,
+    "instant_build_costs": 30,
+    "min_level": "23",
+    "max_level": null,
+    "requires_event": null,
+    "requires_quest": null,
+    "costs": [
+      {
+        "resource": "CollectibleHerbs",
+        "count": 25
+      },
+      {
+        "resource": "CollectibleScarecrow",
+        "count": 15
+      },
+      {
+        "resource": "CollectibleKettle",
+        "count": 10
+      },
+      {
+        "resource": "CollectibleBanner",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "name": "DrillSergeantSkunck",
+    "out_buff_name": "RecruitingBuffLvl100",
+    "out_buff_resource_name": null,
+    "out_buff_resource_amount": null,
+    "production_time": 1200,
+    "instant_build_costs": 60,
+    "min_level": "23",
+    "max_level": null,
+    "requires_event": null,
+    "requires_quest": null,
+    "costs": [
+      {
+        "resource": "CollectibleScarecrow",
+        "count": 25
+      },
+      {
+        "resource": "CollectibleFoodCart",
+        "count": 6
+      },
+      {
+        "resource": "CollectibleKettle",
+        "count": 6
+      },
+      {
+        "resource": "CollectibleBanner",
+        "count": 15
+      }
+    ]
+  },
+  {
+    "name": "GoldenRibon",
+    "out_buff_name": "ProductivityBuffLvl104",
+    "out_buff_resource_name": null,
+    "out_buff_resource_amount": null,
+    "production_time": 600,
+    "instant_build_costs": 30,
+    "min_level": "24",
+    "max_level": null,
+    "requires_event": null,
+    "requires_quest": null,
+    "costs": [
+      {
+        "resource": "CollectibleScarecrow",
+        "count": 25
+      },
+      {
+        "resource": "CollectibleGrainSacks",
+        "count": 15
+      },
+      {
+        "resource": "CollectibleFurs",
+        "count": 2
+      },
+      {
+        "resource": "CollectibleBronzeCauldron",
+        "count": 2
+      },
+      {
+        "resource": "CollectibleAdamantium",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "name": "ASipFromTheKettle",
+    "out_buff_name": "SpeedUpPopulationGrowth100",
+    "out_buff_resource_name": null,
+    "out_buff_resource_amount": null,
+    "production_time": 1800,
+    "instant_build_costs": 90,
+    "min_level": "24",
+    "max_level": null,
+    "requires_event": null,
+    "requires_quest": null,
+    "costs": [
+      {
+        "resource": "CollectibleScarecrow",
+        "count": 15
+      },
+      {
+        "resource": "CollectibleFoodCart",
+        "count": 10
+      },
+      {
+        "resource": "CollectibleKettle",
+        "count": 14
+      },
+      {
+        "resource": "CollectibleBanner",
+        "count": 8
+      }
+    ]
+  },
+  {
+    "name": "PotionOfEndlessEnergy",
+    "out_buff_name": "ProductivityBuffLvl102",
+    "out_buff_resource_name": null,
+    "out_buff_resource_amount": null,
+    "production_time": 1800,
+    "instant_build_costs": 90,
+    "min_level": "26",
+    "max_level": null,
+    "requires_event": null,
+    "requires_quest": null,
+    "costs": [
+      {
+        "resource": "CollectibleHerbs",
+        "count": 40
+      },
+      {
+        "resource": "CollectibleScarecrow",
+        "count": 10
+      },
+      {
+        "resource": "CollectibleFoodCart",
+        "count": 12
+      },
+      {
+        "resource": "CollectibleBronzeCauldron",
+        "count": 6
+      }
+    ]
+  },
+  {
+    "name": "MasterToolkit",
+    "out_buff_name": "ProductivityBuffCollectibleEW",
+    "out_buff_resource_name": null,
+    "out_buff_resource_amount": null,
+    "production_time": 3600,
+    "instant_build_costs": 180,
+    "min_level": "48",
+    "max_level": null,
+    "requires_event": null,
+    "requires_quest": null,
+    "costs": [
+      {
+        "resource": "CollectibleWineBarrel",
+        "count": 50
+      },
+      {
+        "resource": "CollectibleBanner",
+        "count": 4
+      },
+      {
+        "resource": "CollectibleGrainSacks",
+        "count": 10
+      },
+      {
+        "resource": "CollectibleAdamantium",
+        "count": 6
+      }
+    ]
+  }
+]

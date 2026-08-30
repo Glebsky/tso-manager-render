@@ -1,0 +1,228 @@
+# =====================================================================
+# Render.com single-container image: nginx + php-fpm + supercronic
+# Render setting:  Dockerfile Path = ./Dockerfile.render
+#
+# ---------------------------------------------------------------------
+# ИСТОРИЯ ДВУХ ПАДЕНИЙ СБОРКИ И ЧТО С НИМИ СДЕЛАНО
+#
+# Падение 1: один огромный RUN (apk add && docker-php-ext-install && pip3),
+#   в логе только "exit code: 2" без указания виновника.
+#   -> Разбито на шаги 1/8 ... 8/8 с set -eux.
+#
+# Падение 2: разбиение сразу показало виновника - шаг 3/8,
+#   docker-php-ext-install. Код 2 - это код make, то есть падала
+#   компиляция расширения, а не apk и не pip. Сравнение с рабочим
+#   Dockerfile из render.zip: там был тот же список расширений, но
+#   PHP 8.3. Значит дело не в списке, а в базовом образе.
+#   -> Шаг 3/8 переписан адаптивно (см. комментарий перед ним).
+#
+# ---------------------------------------------------------------------
+# О ВЕРСИИ PHP - ВАЖНО, ПРЕДЫДУЩИЙ СОВЕТ БЫЛ НЕВЕРНЫЙ
+#
+# Вернуться на PHP 8.3 (как в старом render.zip) НЕЛЬЗЯ. В новом
+# composer.lock из original.zip есть компоненты Symfony 8 с жёстким
+# требованием "php": ">=8.4":
+#   symfony/clock, symfony/css-selector, symfony/event-dispatcher,
+#   symfony/string, symfony/translation
+# Сборка на 8.3 бы прошла (platform.php=8.5.0 и platform-check=false
+# подавляют проверки), но приложение упало бы в рантайме на
+# синтаксисе 8.4 внутри vendor/symfony. Это была бы тихая поломка,
+# хуже честного падения сборки.
+#
+# Допустимые версии: 8.4 и 8.5. Ни один пакет из lock НЕ требует 8.5,
+# поэтому по умолчанию стоит 8.4: более обкатанный образ, Alpine и
+# Python в нём ближе к тому, на чём у вас всё собиралось.
+# Попробовать 8.5 можно без правки файла:
+#   Render -> Settings -> Docker Build Arguments -> PHP_VERSION=8.5
+# ---------------------------------------------------------------------
+
+# Глобальные ARG обязаны стоять ДО первого FROM, иначе в FROM они
+# разворачиваются в пустую строку -> "php:-fpm-alpine" -> invalid reference format.
+ARG PHP_VERSION=8.4
+ARG NODE_VERSION=22
+
+# ---------- stage 1: frontend assets ----------
+FROM node:${NODE_VERSION}-alpine AS node-build
+WORKDIR /app
+COPY package.json package-lock.json* ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+# ---------- stage 2: runtime ----------
+FROM mirror.gcr.io/library/php:${PHP_VERSION}-fpm-alpine
+
+# --- шаг 1/8: системные пакеты ---
+# Пакет с заголовками libpq в разных версиях Alpine называется по-разному.
+RUN set -eux; \
+    apk add --no-cache \
+        nginx \
+        supervisor \
+        gettext \
+        curl \
+        unzip \
+        zip \
+        pkgconfig \
+        linux-headers \
+        libzip-dev \
+        sqlite-dev \
+        python3 \
+        py3-pip; \
+    (apk add --no-cache libpq-dev || apk add --no-cache postgresql-dev)
+
+# --- шаг 2/8: зависимости только на время сборки ---
+# python3-dev нужен для C-расширения Py3AMF, остальное - для phpize.
+RUN set -eux; \
+    apk add --no-cache --virtual .build-deps \
+        $PHPIZE_DEPS \
+        python3-dev \
+        py3-setuptools \
+        py3-wheel
+
+# --- шаг 3/8: PHP-расширения ---
+# Именно здесь было второе падение. Теперь каждое расширение
+# обрабатывается отдельно и по трёхступенчатой стратегии:
+#   1) уже вкомпилировано в базовый образ  -> ничего не делаем;
+#   2) готовый .so лежит в образе       -> docker-php-ext-enable, без сборки;
+#   3) иначе                              -> docker-php-ext-install -j1.
+#
+# Почему это чинит падение:
+#   * pdo и pdo_sqlite В ОФИЦИАЛЬНОМ ОБРАЗЕ php УЖЕ ЕСТЬ. Их повторная
+#     сборка была лишней работой и лишним шансом упасть.
+#   * opcache в образе обычно лежит готовым .so - его надо включить,
+#     а не пересобирать. В PHP 8.4+ JIT переписан на IR-фреймворк,
+#     и сборка opcache из исходников - самый хрупкий пункт списка.
+#   * -j"$(nproc)" убран. Параллельный make на сборщике Render может
+#     получить OOM-kill, и это выглядит ровно как загадочный exit code 2.
+#
+# Обязательны только pdo_pgsql (боевая БД) и pcntl (queue:work --max-time).
+# opcache и zip помечены необязательными: ни одна зависимость из
+# composer.lock не требует ext-zip, а ZipArchive в коде проекта не
+# встречается ни разу (composer распакует пакеты бинарём unzip с шага 1/8).
+# Без opcache сайт работает, просто медленнее; неизвестные opcache.*
+# директивы в php.ini PHP просто игнорирует.
+RUN set -eux; \
+    php -v; \
+    echo '=== расширения базового образа ==='; php -m; \
+    has_ext() { php -m 2>/dev/null | tr 'A-Z' 'a-z' | sed 's/^zend opcache$/opcache/' | grep -qx "$1"; }; \
+    add_ext() { \
+        if has_ext "$1"; then echo "--- $1: уже в образе, пропускаем"; return 0; fi; \
+        if docker-php-ext-enable "$1" >/dev/null 2>&1 && has_ext "$1"; then echo "--- $1: включён готовый .so"; return 0; fi; \
+        echo "--- $1: компилируем из исходников"; \
+        docker-php-ext-install -j1 "$1"; \
+    }; \
+    add_ext pdo; \
+    add_ext pdo_sqlite; \
+    add_ext pcntl; \
+    add_ext pdo_pgsql || { \
+        echo '--- pdo_pgsql: повтор с явным путём к libpq'; \
+        docker-php-ext-configure pdo_pgsql --with-pdo-pgsql=/usr; \
+        docker-php-ext-install -j1 pdo_pgsql; \
+    }; \
+    add_ext opcache || echo '!!! opcache недоступен -> идём дальше без него (только скорость)'; \
+    add_ext zip || echo '!!! zip недоступен -> идём дальше без него (проект ZipArchive не использует)'; \
+    echo '=== итог ==='; php -m; \
+    has_ext pdo_pgsql; \
+    has_ext pcntl
+
+# --- шаг 4/8: Py3AMF (нужен storage/app/parse_zone.py и parse_market.py) ---
+# Порядок попыток важен: флаг --break-system-packages появился в pip 23.0.1,
+# на более старом pip он сам даёт ошибку разбора аргументов.
+RUN set -eux; \
+    pip3 install --no-cache-dir Py3AMF \
+      || pip3 install --no-cache-dir --break-system-packages Py3AMF; \
+    python3 -c "import pyamf; print('pyamf import OK')"
+
+# --- шаг 5/8: чистка сборочных зависимостей ---
+# Удаляем только .build-deps. Пакеты libpq-dev / libzip-dev / sqlite-dev
+# НЕ трогаем: вместе с ними уехали бы рантайм-библиотеки, и php-fpm
+# упал бы с "Error relocating ... libpq.so.5". Повторная проверка php -m
+# ловит сломанную линковку на сборке, а не на бою.
+RUN set -eux; \
+    apk del .build-deps; \
+    rm -f /etc/nginx/http.d/default.conf; \
+    rm -rf /var/cache/apk/* /tmp/*; \
+    php -m | grep -q '^pdo_pgsql$'
+
+# --- шаг 6/8: supercronic (cron, пригодный для контейнеров) ---
+ENV SUPERCRONIC_URL=https://github.com/aptible/supercronic/releases/download/v0.2.29/supercronic-linux-amd64
+RUN set -eux; \
+    curl -fsSLo /usr/local/bin/supercronic "$SUPERCRONIC_URL"; \
+    chmod +x /usr/local/bin/supercronic
+
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www/html
+
+# --- шаг 7/8: конфиги (меняются редко -> хорошо кэшируются) ---
+# php.ini уже содержит error_log = /dev/stderr,
+# www.conf уже содержит listen = 127.0.0.1:9000 - sed-патчей нет.
+COPY docker/php/php.ini /usr/local/etc/php/conf.d/custom.ini
+COPY docker/php/www.conf /usr/local/etc/php-fpm.d/www.conf
+COPY docker/nginx/render.conf.template /etc/nginx/templates/default.conf.template
+COPY docker/supervisord.conf /etc/supervisor/supervisord.conf
+COPY docker/crontab.render /etc/crontab.app
+COPY docker/entrypoint.render.sh /usr/local/bin/entrypoint.render.sh
+RUN chmod +x /usr/local/bin/entrypoint.render.sh
+
+# PHP-зависимости отдельным слоем: пересобираются только при правке composer.*
+COPY composer.json composer.lock ./
+
+# ПОЧЕМУ ЗДЕСЬ --ignore-platform-req=php
+#
+# Сборка падала так:
+#   Root composer.json requires php ^8.5 but your php version (8.4.0;
+#   overridden via config.platform, actual: 8.4.24) does not satisfy that
+#   requirement.
+#
+# В корневом composer.json из original.zip стоит "php": "^8.5".
+# Но НИ ОДИН пакет из composer.lock 8.5 не требует: самый высокий
+# потолок во всех 77 prod-зависимостях - Symfony 8 с ">=8.4".
+# То есть ^8.5 - это декларация автора, а не реальное требование кода.
+#
+# Флаг снимает проверку ТОЛЬКО для самого php. Проверки расширений
+# (ext-*) остаются в силе - если чего-то не хватит, сборка честно упадёт.
+# Это намеренно сделано в Dockerfile, а не правкой composer.json:
+# composer.json приезжает из original.zip и перезапишется при следующем
+# обновлении, а Dockerfile.render - файл Render-обвязки и переживёт мерж.
+# На PHP_VERSION=8.5 флаг просто ничего не делает.
+#
+# Отдельно: composer.json и composer.lock в original.zip рассинхронизированы
+# (content-hash не сходится, Composer печатает Warning). Сборке это не
+# мешает, но локально стоит один раз выполнить `composer update`.
+RUN set -eux; \
+    composer --version; \
+    echo '=== config.platform из composer.json ==='; \
+    (grep -A4 '"platform"' composer.json || echo '(не задана)'); \
+    echo '=== платформенные требования lock-файла (справочно) ==='; \
+    composer check-platform-reqs --no-dev --lock || true; \
+    echo '=== установка ==='; \
+    composer install \
+        --no-dev \
+        --no-scripts \
+        --no-autoloader \
+        --prefer-dist \
+        --no-interaction \
+        --no-progress \
+        --ignore-platform-req=php; \
+    composer clear-cache
+
+# --- шаг 8/8: исходники (меняются чаще всего -> самый нижний слой) ---
+COPY . .
+RUN composer dump-autoload --optimize --classmap-authoritative --no-dev --no-scripts
+
+COPY --from=node-build /app/public/build /var/www/html/public/build
+
+RUN set -eux; \
+    mkdir -p storage/framework/cache/data \
+             storage/framework/sessions \
+             storage/framework/views \
+             storage/framework/testing \
+             storage/logs \
+             bootstrap/cache \
+             /run/nginx; \
+    chown -R www-data:www-data storage bootstrap/cache; \
+    chmod -R 775 storage bootstrap/cache
+
+# CMD нет намеренно: entrypoint сам запускает supervisord.
+ENTRYPOINT ["/usr/local/bin/entrypoint.render.sh"]
