@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\Api\BuffProducerController;
 use App\Http\Controllers\Api\BuildableDepositController;
 use App\Http\Controllers\Api\ClickableBuildingController;
 use App\Http\Controllers\Api\UpgradableMineController;
@@ -66,6 +67,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/game/clickable-buildings', [ClickableBuildingController::class, 'index']);
     Route::get('/game/buildable-deposits', [BuildableDepositController::class, 'index']);
     Route::get('/game/upgradable-mines', [UpgradableMineController::class, 'index']);
+    Route::get('/game/buff-producers', [BuffProducerController::class, 'index']);
     Route::post('/tasks/{task}/toggle', [ScheduledTaskController::class, 'toggle'])->whereNumber('task');
     Route::post('/tasks/{task}/execute', [ScheduledTaskController::class, 'execute'])
         ->whereNumber('task')
