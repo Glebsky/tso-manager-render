@@ -65,4 +65,20 @@ return [
             'build_queue_full' => 'Mine: skipped, build queue is full',
         ],
     ],
+    'produce_buff' => [
+        'queued' => 'Production: queued :amount x :recipe (grid :grid)',
+        'unknown_outcome' => 'Production: queue outcome unknown on grid :grid (:recipe), check manually',
+        'game_error' => 'Production: failed (:message)',
+        'rejected' => [
+            'building_not_found' => 'Production: skipped, building not found at grid :grid',
+            'not_a_producer' => 'Production: skipped, building at grid :grid cannot produce items',
+            'production_type_mismatch' => 'Production: skipped, building production type does not match order',
+            'queue_data_unavailable' => 'Production: skipped, production queue data unavailable in zone snapshot',
+            'queue_full' => 'Production: skipped, production queue is full',
+            'recipe_unknown' => 'Production: skipped, recipe :recipe is unknown for this building',
+            'recipe_level_locked' => 'Production: skipped, recipe :recipe requires higher building level',
+            'building_upgrading' => 'Production: skipped, building at grid :grid is currently upgrading',
+            'insufficient_resources' => 'Production: skipped, insufficient resources for :recipe',
+        ],
+    ],
 ];
