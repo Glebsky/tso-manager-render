@@ -13,5 +13,5 @@ interface ZoneSnapshotProviderInterface
     /**
      * @throws GameServerErrorException если зона вернула errorCode != 0
      */
-    public function forAccount(Account $account): ZoneSnapshot;
+    public function forAccount(Account $account, bool $forceRefresh = false): ZoneSnapshot;
 }
