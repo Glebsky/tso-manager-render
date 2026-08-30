@@ -114,6 +114,7 @@ RUN set -eux; \
     add_ext pdo; \
     add_ext pdo_sqlite; \
     add_ext pcntl; \
+    add_ext bcmath; \
     add_ext pdo_pgsql || { \
         echo '--- pdo_pgsql: повтор с явным путём к libpq'; \
         docker-php-ext-configure pdo_pgsql --with-pdo-pgsql=/usr; \
@@ -123,7 +124,8 @@ RUN set -eux; \
     add_ext zip || echo '!!! zip недоступен -> идём дальше без него (проект ZipArchive не использует)'; \
     echo '=== итог ==='; php -m; \
     has_ext pdo_pgsql; \
-    has_ext pcntl
+    has_ext pcntl; \
+    has_ext bcmath
 
 # --- шаг 4/8: Py3AMF (нужен storage/app/parse_zone.py и parse_market.py) ---
 # Порядок попыток важен: флаг --break-system-packages появился в pip 23.0.1,
