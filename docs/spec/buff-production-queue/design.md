@@ -248,55 +248,155 @@ interface ProductionCatalogInterface
 
 ## 4. Снапшот зоны
 
-### 4.1. Новые ключи (аддитивно, ADR-13)
+> Весь раздел основан на живом снапшоте (595 147 байт, `references/amf/call03_response.bin`).
+> Подробности и доказательства — `zone-snapshot-evidence.md`.
+> Гипотетические имена ключей версии 1.0 (`production_queues`,
+> `production_type` в AMF) были НЕВЕРНЫ и удалены.
+
+### 4.1. Фактическая структура AMF-ответа
+
+Путь до зоны в декодированном пакете:
+
+```
+bodies[0].value.body            → dServerResponse { type, zoneID, data }
+                    .data       → dServerActionResult { clientTime, errorCode, data }
+                         .data  → dZoneVO   (82 поля)
+```
+
+Интересуют два поля `dZoneVO`:
+
+| Поле | Тип в AMF | Содержание |
+| --- | --- | --- |
+| `timedProductions_vector` | `Array` из `flex.messaging.io.ArrayCollection` | все очереди производства |
+| `buildings` | `ArrayCollection` из `dBuildingVO` | 312 зданий в тестовой зоне |
+
+**`ArrayCollection` — externalizable** (P-23): после traits идёт одно вложенное
+значение — сам массив. Его обязательно читать, иначе парсер не падает, а
+тихо сдвигает все последующие поля.
+
+### 4.2. Заказ в очереди: `dTimedProductionVO`
+
+Те же 14 полей, что и в команде 91 (ADR-3-R). Из них для чтения очереди
+нужны: `productionType`, `type_string`, `amount`, `producedItems`,
+`collectedTime`, `stacks`, `index`.
+
+**Ловушки, подтверждённые трафиком:**
+
+- `buildingGrid` у заказа в снапшоте равен **0**, даже если заказ был создан с
+  конкретного грида (P-24). Фильтровать заказы по зданию НЕВОЗМОЖНО.
+- `index` наблюдался равным 1 при единственном заказе в очереди (P-25).
+  Не считать `index` позицией с нуля и не строить на нём сортировку без
+  проверки; для подсчёта занятости использовать `count(orders)`.
+- `producedItems == amount` означает «готово, ждёт забора» (для зданий с
+  `waitForPickup="true"`). Семантика `collectedTime` — OQ-5, нам не нужна.
+
+### 4.3. Как сопоставить очередь с `productionType` — ОБЯЗАТЕЛЬНЫЙ алгоритм
+
+Индекс элемента в `timedProductions_vector` — **НЕ** `productionType`
+(в дампе: тип 2 лежит под индексом 3). У пустой коллекции метаданных нет
+вообще. Единственный корректный способ (P-26):
+
+```php
+/** @param list<list<array>> $collections сырые коллекции timedProductions_vector */
+foreach ($collections as $orders) {
+    if ($orders !== [] && $orders[0]['productionType'] === $productionType) {
+        return new ProductionQueueState($productionType, $orders);
+    }
+}
+
+// Не найдено среди непустых ⇒ заказов этого типа нет. Это НЕ ошибка.
+return ProductionQueueState::empty($productionType);
+```
+
+Алгоритм корректен без знания правила индексации: нас интересует только
+число занятых слотов, а ненайденная очередь тождественна пустой.
+**Никогда не писать `$collections[$productionType]`.**
+
+### 4.4. Здание: `dBuildingVO`, 32 поля
+
+Поля, нужные фиче (точные имена из трафика):
+
+| Поле AMF | Зачем |
+| --- | --- |
+| `buildingName_string` | ключ для поиска `productionType` в каталоге |
+| `buildingGrid` | идентификатор здания для команды 91 |
+| `upgradeLevel` | фильтр рецептов по уровню (ветка C, `oq-resolutions.md`) |
+| `upgradeIsInProgress` | причина отказа `BuildingUpgrading` |
+| `isProductionActive` | здание не остановлено тумблером (команда 107) |
+| `minProductionLevel` | дополнительное ограничение, в дампе везде 0 |
+| `uniqueId` | `dUniqueID { uniqueID1, uniqueID2 }`, для логов |
+
+**Поля `productionType` у здания В СНАПШОТЕ НЕТ.** Тип берётся только из
+статичного каталога по `buildingName_string`. Также отсутствует
+`stackingBuffs_vector`, поэтому в UI v1 `stacks` жёстко 1 (F-4).
+
+### 4.5. Новые ключи в нашем нормализованном снапшоте (аддитивно, ADR-13)
+
+Это наши внутренние имена (`ZoneSnapshot::toArray()`), не имена из AMF.
 
 В каждом элементе `buildings[]`:
 
 ```
-production_type   int|null
-upgrade_level     int|null
+production_type       int|null   ← из каталога, НЕ из AMF
+upgrade_level         int|null   ← AMF upgradeLevel
+upgrade_in_progress   bool       ← AMF upgradeIsInProgress
+production_active     bool       ← AMF isProductionActive
 ```
 
 На верхнем уровне снапшота:
 
 ```
-production_queues  array<int, array{ orders: list<array{
-    type_string: string,
-    amount: int,
-    collected_time: float|null,
-    ready_for_deliver: bool|null
-}> }> | null
+production_queues  list<array{
+    production_type: int,          // взят из orders[0].productionType
+    orders: list<array{
+        type_string: string,
+        amount: int,
+        produced_items: int,
+        collected_time: float,
+        stacks: int,
+        index: int
+    }>
+}> | null
 ```
 
-Ключ внешнего массива — `productionType` (INV-5).
-Значение `null` у `production_queues` означает «разобрать не удалось» и
-ведёт к `QueueDataUnavailable` (INV-4). Пустой массив означает «очередей нет» —
-это валидное состояние. Различать эти два случая обязательно.
+Важно: это **список**, а не карта `productionType => очередь`, именно потому
+что тип пустой очереди неизвестен. Пустые коллекции НЕ попадают в
+`production_queues` вообще — они не несут информации.
 
-### 4.2. Методы `ZoneSnapshot`
+Три различимых состояния (INV-4), сливать запрещено:
+
+| Значение | Смысл | Реакция политики |
+| --- | --- | --- |
+| `null` | секция не найдена / не разобралась | `QueueDataUnavailable` |
+| `[]` | секция есть, заказов ни по одному типу нет | разрешить |
+| непустой список | есть занятые очереди | разрешить + показать занятость |
+
+### 4.6. Методы `ZoneSnapshot`
 
 ```php
-/** @return array<int, ProductionQueueState>|null */
+/** @return list<ProductionQueueState>|null null = разобрать не удалось */
 public function productionQueues(): ?array;
 
-/** @return list<array{grid:int, building_name:string, production_type:int, upgrade_level:int|null}> */
+/** @return list<array{grid:int, building_name:string, production_type:int, upgrade_level:int|null, upgrade_in_progress:bool, production_active:bool}> */
 public function producerBuildings(): array;
 
+/**
+ * Поиск по orders[0].productionType (§4.3), НЕ по индексу.
+ * Возвращает пустое состояние, если очереди этого типа нет.
+ * Возвращает null ТОЛЬКО если productionQueues() === null.
+ */
 public function productionQueueFor(int $productionType): ?ProductionQueueState;
 ```
 
-### 4.3. Источник данных в AMF-ответе
+### 4.7. Фикстура для тестов
 
-Согласно `client_scripts.txt:60136–60142`, в player VO есть
-`timedProductions_vector[TIMED_PRODUCTION_TYPE.BUFF]`, сериализуемый как
-`BuffProduction_vector` (рядом — `MilitaryUnitRecruitments_vector`,
-`EliteUnitRecruitments_vector`).
-
-**Задача этапа 2:** найти эти ключи в реальном AMF-ответе зоны и зафиксировать
-точные имена в `data-sources.md`. Пока имена не подтверждены фикстурой —
-не писать парсер по догадке.
+`references/amf/call03_response.bin` — реальный ответ сервера с непустой
+очередью (заказ `Tome`, `productionType = 2`). Кладётся в
+`tests/Fixtures/Amf/zone_snapshot_1002.bin`. Догадки в парсере больше не нужны
+— есть эталон.
 
 ---
+
 
 ## 5. Политика
 
@@ -334,12 +434,13 @@ final readonly class ProductionOrderPolicy
 Порядок проверок (важен, от дешёвых к дорогим и от более конкретных причин):
 
 1. Здание с таким `grid` есть в снапшоте? → `BuildingNotFound`
-2. У него `production_type !== null && >= 0`? → `NotAProducer`
+2. Имя здания есть в каталоге производителей (`production_type !== null && >= 0`)? → `NotAProducer`
 3. `production_type === $expectedProductionType`? → `ProductionTypeMismatch`
-4. Здание не в апгрейде? → `BuildingUpgrading`
+4. `upgrade_in_progress === false`? → `BuildingUpgrading`
 5. Рецепт есть в каталоге? → `RecipeUnknown`
 6. `upgrade_level` в диапазоне рецепта? → `RecipeLevelLocked`
-7. `production_queues !== null`? → `QueueDataUnavailable`
+7. `productionQueues() !== null`? → `QueueDataUnavailable`
+   (пустой список — ВАЛИДНО, это не отказ; см. §4.5)
 8. Иначе → `allow()`
 
 **`QueueFull` здесь НЕ выставляется** — см. OQ-2: лимит очереди неизвестен,
