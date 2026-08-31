@@ -126,7 +126,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { t } from '../lang';
 import { logsApi } from '../services/api/logs';
 import LogEntry from '../components/LogEntry.vue';
@@ -144,66 +144,9 @@ const pagination = ref({
     current_page: 1,
     last_page: 1
 });
-let eventSource = null;
 
-const initEventSource = () => {
-    if (eventSource) {
-        eventSource.close();
-        eventSource = null;
-    }
-
-    if (pagination.value.current_page !== 1) {
-        return;
-    }
-
-    const params = new URLSearchParams();
-    if (filter.value.accountId) {
-        params.set('account_id', filter.value.accountId);
-    }
-    if (filter.value.level) {
-        params.set('level', filter.value.level);
-    }
-    if (logs.value.length > 0 && logs.value[0]?.id) {
-        params.set('after_id', String(logs.value[0].id));
-    }
-
-    const queryStr = params.toString();
-    const url = '/api/logs/stream' + (queryStr ? `?${queryStr}` : '');
-
-    eventSource = new EventSource(url);
-
-    eventSource.addEventListener('log', (event) => {
-        try {
-            const newLog = JSON.parse(event.data);
-            if (!newLog || !newLog.id) return;
-
-            if (logs.value.some(l => l.id === newLog.id)) {
-                return;
-            }
-
-            if (filter.value.accountId && String(newLog.account_id) !== String(filter.value.accountId)) {
-                return;
-            }
-            if (filter.value.level && String(newLog.level) !== String(filter.value.level)) {
-                return;
-            }
-
-            logs.value.unshift(newLog);
-            if (logs.value.length > 100) {
-                logs.value.pop();
-            }
-        } catch (e) {
-            console.error('Failed to parse SSE log:', e);
-        }
-    });
-
-    eventSource.onerror = () => {
-        // Native EventSource automatically retries connection
-    };
-};
-
-const loadLogs = async (page = 1, background = false) => {
-    if (!background) loading.value = true;
+const loadLogs = async (page = 1) => {
+    loading.value = true;
     try {
         const res = await logsApi.fetchLogs({
             page,
@@ -217,17 +160,10 @@ const loadLogs = async (page = 1, background = false) => {
             current_page: res.meta?.current_page || res.current_page || 1,
             last_page: res.meta?.last_page || res.last_page || 1
         };
-
-        if (page === 1) {
-            initEventSource();
-        } else if (eventSource) {
-            eventSource.close();
-            eventSource = null;
-        }
     } catch {
-        if (!background) showToast(t('logs.load_failed'), 'error');
+        showToast(t('logs.load_failed'), 'error');
     } finally {
-        if (!background) loading.value = false;
+        loading.value = false;
     }
 };
 
@@ -237,12 +173,5 @@ const onFilterChange = () => {
 
 onMounted(() => {
     loadLogs(1);
-});
-
-onUnmounted(() => {
-    if (eventSource) {
-        eventSource.close();
-        eventSource = null;
-    }
 });
 </script>

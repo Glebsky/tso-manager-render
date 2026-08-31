@@ -76,7 +76,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Logs
     Route::get('/logs', [LogController::class, 'index']);
-    Route::get('/logs/stream', [LogController::class, 'stream']);
 
     // Settings
     Route::get('/settings', [SettingsController::class, 'index']);
