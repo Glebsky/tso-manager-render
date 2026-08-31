@@ -54,12 +54,16 @@ readonly class AccountSyncFetcher
                 if ($errorCode === 1012) {
                     if ($reloginCount < 2) {
                         Log::info("[AccountSync] Zone locked/superseded (error 1012) for account #{$account->id}; re-authenticating to take over session (relogin #".($reloginCount + 1).')');
-                        $this->authService->resetSession($account);
-                        $this->authService->login($account);
-                        $this->amfService->invalidateSession($account->id);
-                        $account->refresh();
+                        try {
+                            $this->authService->resetSession($account);
+                            $this->authService->login($account);
+                            $this->amfService->invalidateSession($account->id);
+                            $account->refresh();
+                        } catch (Exception $reloginEx) {
+                            Log::warning("[AccountSync] Background re-login for account #{$account->id} encountered: {$reloginEx->getMessage()}; proceeding to retry zone fetch");
+                        }
                         $reloginCount++;
-                        sleep(2);
+                        sleep(3);
 
                         continue;
                     }
@@ -72,10 +76,14 @@ readonly class AccountSyncFetcher
                 if ($errorCode === 1005) {
                     if ($reloginCount < 2) {
                         Log::info("[AccountSync] Session expired (error {$errorCode}) for account #{$account->id}; re-authenticating (relogin #".($reloginCount + 1).')');
-                        $this->authService->resetSession($account);
-                        $this->authService->login($account);
-                        $this->amfService->invalidateSession($account->id);
-                        $account->refresh();
+                        try {
+                            $this->authService->resetSession($account);
+                            $this->authService->login($account);
+                            $this->amfService->invalidateSession($account->id);
+                            $account->refresh();
+                        } catch (Exception $reloginEx) {
+                            Log::warning("[AccountSync] Background re-login for account #{$account->id} encountered: {$reloginEx->getMessage()}; proceeding to retry zone fetch");
+                        }
                         $reloginCount++;
                         sleep(2);
 

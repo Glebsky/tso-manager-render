@@ -126,6 +126,9 @@ readonly class AccountService
             'status' => 'online',
         ]);
 
+        $this->cache->forget("account_login_cooldown:{$account->id}");
+        $this->cache->forget("tso:login_lock:{$account->id}");
+        $this->amfService->invalidateSession($account->id);
         $this->amfService->resetClient();
 
         BotLog::create([
