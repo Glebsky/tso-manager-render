@@ -34,7 +34,7 @@ class MarketCacheService
     /**
      * @var array<string, string>
      */
-    private array $resolvedServerIds = [];
+    private static array $resolvedServerIds = [];
 
     /**
      * Resolve target server_id from string input or fallback to first available.
@@ -42,8 +42,8 @@ class MarketCacheService
     public function resolveServerId(?string $serverId = null): string
     {
         $cacheKey = $serverId ?? '__default__';
-        if (isset($this->resolvedServerIds[$cacheKey])) {
-            return $this->resolvedServerIds[$cacheKey];
+        if (isset(self::$resolvedServerIds[$cacheKey])) {
+            return self::$resolvedServerIds[$cacheKey];
         }
 
         if (! empty($serverId)) {
@@ -51,7 +51,7 @@ class MarketCacheService
                 ->value('server_id');
 
             if ($connectionServerId) {
-                return $this->resolvedServerIds[$cacheKey] = $connectionServerId;
+                return self::$resolvedServerIds[$cacheKey] = $connectionServerId;
             }
 
             // Fallback for short region code if exact connection not found (e.g. 'ru' -> 'ru_tandriya')
@@ -59,13 +59,13 @@ class MarketCacheService
                 ->value('server_id');
 
             if ($fallbackServerId) {
-                return $this->resolvedServerIds[$cacheKey] = $fallbackServerId;
+                return self::$resolvedServerIds[$cacheKey] = $fallbackServerId;
             }
 
-            return $this->resolvedServerIds[$cacheKey] = $serverId;
+            return self::$resolvedServerIds[$cacheKey] = $serverId;
         }
 
-        return $this->resolvedServerIds[$cacheKey] = (string) (MarketServerConnection::whereNotNull('account_id')->value('server_id')
+        return self::$resolvedServerIds[$cacheKey] = (string) (MarketServerConnection::whereNotNull('account_id')->value('server_id')
             ?? MarketServerConnection::value('server_id')
             ?? 'ru');
     }
@@ -139,9 +139,10 @@ class MarketCacheService
      *
      * @template TCacheValue
      *
-     * @param  array<string, mixed>  $params
-     * @param  Closure(): TCacheValue  $callback
+     * @param array<string, mixed>   $params
+     * @param Closure(): TCacheValue $callback
      * @return TCacheValue
+     * @throws \JsonException
      */
     public function remember(string $serverId, string $endpoint, array $params, int $ttlSeconds, Closure $callback): mixed
     {
@@ -158,7 +159,8 @@ class MarketCacheService
      * coarse time bucket. The bucket guarantees that time-dependent
      * responses are revalidated at least once per bucket even between syncs.
      *
-     * @param  array<string, mixed>  $params
+     * @param array<string, mixed> $params
+     * @throws \JsonException
      */
     public function generateETag(string $serverId, string $endpoint, array $params): string
     {

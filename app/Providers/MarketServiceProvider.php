@@ -13,6 +13,7 @@ use App\Services\Market\Support\TimeBucket\MySqlTimeBucketExpression;
 use App\Services\Market\Support\TimeBucket\PostgresTimeBucketExpression;
 use App\Services\Market\Support\TimeBucket\SqliteTimeBucketExpression;
 use App\Services\Market\Support\TimeBucket\TimeBucketExpressionFactory;
+use App\Services\MarketCacheService;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 
@@ -29,6 +30,7 @@ final class MarketServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->singleton(MarketCacheService::class);
         $this->app->bind(ResourceNameResolver::class, GameResourceNameResolver::class);
 
         $this->app->singleton(TimeBucketExpressionFactory::class, static function (): TimeBucketExpressionFactory {
