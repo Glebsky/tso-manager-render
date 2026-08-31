@@ -42,12 +42,71 @@ final class MarketHistoryAggregator
      */
     public function span(string $serverId, string $itemId, string $targetItemId, MarketPeriod $period): array
     {
-        $min = $this->pairQuery($serverId, $itemId, $targetItemId, $period)->min('collected_at');
-        $max = $this->pairQuery($serverId, $itemId, $targetItemId, $period)->max('collected_at');
+        /** @var object{min_at?: mixed, max_at?: mixed}|null $span */
+        $span = $this->pairQuery($serverId, $itemId, $targetItemId, $period)
+            ->toBase()
+            ->selectRaw('min(collected_at) as min_at, max(collected_at) as max_at')
+            ->first();
 
         return [
-            'min' => $min !== null ? Carbon::parse($min) : null,
-            'max' => $max !== null ? Carbon::parse($max) : null,
+            'min' => isset($span->min_at) ? Carbon::parse((string) $span->min_at) : null,
+            'max' => isset($span->max_at) ? Carbon::parse((string) $span->max_at) : null,
+        ];
+    }
+
+    /**
+     * Combines priceStats and periodInfo into a single aggregate query.
+     *
+     * @return array{
+     *     stats: array{average: float, minimum: float, maximum: float, current: float},
+     *     period_info: array{volume: int, offers_count: int, sellers_count: int}
+     * }
+     */
+    public function statsAndPeriodInfo(string $serverId, string $itemId, string $targetItemId, MarketPeriod $period): array
+    {
+        /** @var object{average_price?: mixed, min_price?: mixed, max_price?: mixed, total_volume?: mixed, offers_count?: mixed, sellers_count?: mixed}|null $aggregates */
+        $aggregates = $this->pairQuery($serverId, $itemId, $targetItemId, $period)
+            ->toBase()
+            ->selectRaw('avg(price) as average_price, min(price) as min_price, max(price) as max_price, sum(volume) as total_volume, count(*) as offers_count, count(distinct player_id) as sellers_count')
+            ->first();
+
+        return [
+            'stats' => [
+                'average' => round((float) ($aggregates->average_price ?? 0), 2),
+                'minimum' => round((float) ($aggregates->min_price ?? 0), 2),
+                'maximum' => round((float) ($aggregates->max_price ?? 0), 2),
+                'current' => round((float) ($this->currentPrice($serverId, $itemId, $targetItemId) ?? 0), 2),
+            ],
+            'period_info' => [
+                'volume' => (int) ($aggregates->total_volume ?? 0),
+                'offers_count' => (int) ($aggregates->offers_count ?? 0),
+                'sellers_count' => (int) ($aggregates->sellers_count ?? 0),
+            ],
+        ];
+    }
+
+    /**
+     * Calculates mirrored price stats without separate exists query.
+     *
+     * @return array{average: float, minimum: float, maximum: float, current: float}|null
+     */
+    public function mirroredStats(string $serverId, string $itemId, string $targetItemId, MarketPeriod $period): ?array
+    {
+        /** @var object{average_price?: mixed, min_price?: mixed, max_price?: mixed, price_count?: mixed}|null $stats */
+        $stats = $this->pairQuery($serverId, $itemId, $targetItemId, $period)
+            ->toBase()
+            ->selectRaw('avg(price) as average_price, min(price) as min_price, max(price) as max_price, count(price) as price_count')
+            ->first();
+
+        if (! $stats || (int) ($stats->price_count ?? 0) === 0) {
+            return null;
+        }
+
+        return [
+            'average' => round((float) ($stats->average_price ?? 0), 2),
+            'minimum' => round((float) ($stats->min_price ?? 0), 2),
+            'maximum' => round((float) ($stats->max_price ?? 0), 2),
+            'current' => round((float) ($this->currentPrice($serverId, $itemId, $targetItemId) ?? 0), 2),
         ];
     }
 
@@ -56,16 +115,7 @@ final class MarketHistoryAggregator
      */
     public function priceStats(string $serverId, string $itemId, string $targetItemId, MarketPeriod $period): array
     {
-        $stats = $this->pairQuery($serverId, $itemId, $targetItemId, $period)
-            ->selectRaw('avg(price) as average_price, min(price) as min_price, max(price) as max_price')
-            ->first();
-
-        return [
-            'average' => round((float) ($stats->average_price ?? 0), 2),
-            'minimum' => round((float) ($stats->min_price ?? 0), 2),
-            'maximum' => round((float) ($stats->max_price ?? 0), 2),
-            'current' => round((float) ($this->currentPrice($serverId, $itemId, $targetItemId) ?? 0), 2),
-        ];
+        return $this->statsAndPeriodInfo($serverId, $itemId, $targetItemId, $period)['stats'];
     }
 
     public function hasPrices(string $serverId, string $itemId, string $targetItemId, MarketPeriod $period): bool
@@ -90,15 +140,7 @@ final class MarketHistoryAggregator
      */
     public function periodInfo(string $serverId, string $itemId, string $targetItemId, MarketPeriod $period): array
     {
-        $summary = $this->pairQuery($serverId, $itemId, $targetItemId, $period)
-            ->selectRaw('sum(volume) as total_volume, count(*) as offers_count, count(distinct player_id) as sellers_count')
-            ->first();
-
-        return [
-            'volume' => (int) ($summary->total_volume ?? 0),
-            'offers_count' => (int) ($summary->offers_count ?? 0),
-            'sellers_count' => (int) ($summary->sellers_count ?? 0),
-        ];
+        return $this->statsAndPeriodInfo($serverId, $itemId, $targetItemId, $period)['period_info'];
     }
 
     /**

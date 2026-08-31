@@ -139,9 +139,10 @@ class MarketCacheService
      *
      * @template TCacheValue
      *
-     * @param array<string, mixed>   $params
-     * @param Closure(): TCacheValue $callback
+     * @param  array<string, mixed>  $params
+     * @param  Closure(): TCacheValue  $callback
      * @return TCacheValue
+     *
      * @throws \JsonException
      */
     public function remember(string $serverId, string $endpoint, array $params, int $ttlSeconds, Closure $callback): mixed
@@ -159,7 +160,8 @@ class MarketCacheService
      * coarse time bucket. The bucket guarantees that time-dependent
      * responses are revalidated at least once per bucket even between syncs.
      *
-     * @param array<string, mixed> $params
+     * @param  array<string, mixed>  $params
+     *
      * @throws \JsonException
      */
     public function generateETag(string $serverId, string $endpoint, array $params): string

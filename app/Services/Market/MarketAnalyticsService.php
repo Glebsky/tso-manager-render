@@ -89,19 +89,18 @@ final readonly class MarketAnalyticsService
                 $resolved = $this->periods->refineGranularity($period, $span['min'], $span['max']);
 
                 $mirroredHistory = $this->history->series($serverId, $targetItemId, $itemId, $resolved);
-                $mirroredStats = $this->history->hasPrices($serverId, $targetItemId, $itemId, $resolved)
-                    ? $this->history->priceStats($serverId, $targetItemId, $itemId, $resolved)
-                    : null;
+                $mirroredStats = $this->history->mirroredStats($serverId, $targetItemId, $itemId, $resolved);
+                $pairData = $this->history->statsAndPeriodInfo($serverId, $itemId, $targetItemId, $resolved);
 
                 return [
                     'server_id' => $serverId,
                     'popular' => $this->popularItems->popular($serverId, $period),
-                    'stats' => $this->history->priceStats($serverId, $itemId, $targetItemId, $resolved),
+                    'stats' => $pairData['stats'],
                     'history' => $this->history->series($serverId, $itemId, $targetItemId, $resolved),
                     'active_info' => $this->offers->summarize(
                         $this->offers->activeOffersForPair($serverId, $itemId, $targetItemId)
                     ),
-                    'period_info' => $this->history->periodInfo($serverId, $itemId, $targetItemId, $resolved),
+                    'period_info' => $pairData['period_info'],
                     'mirrored_stats' => $mirroredStats,
                     'mirrored_history' => $mirroredHistory === [] ? null : $mirroredHistory,
                 ];
