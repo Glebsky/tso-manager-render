@@ -1758,7 +1758,6 @@ const router = useRouter();
             }
             await loadServers();
             await loadAnalyticsData();
-            await loadSyncLogs(1);
 
             const queryItem = route.query.item || route.query.item_id;
             const queryTarget = route.query.target || route.query.target_item_id;
