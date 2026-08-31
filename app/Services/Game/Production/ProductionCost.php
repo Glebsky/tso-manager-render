@@ -7,12 +7,14 @@ namespace App\Services\Game\Production;
 final readonly class ProductionCost
 {
     /**
-     * @param  array<string, int>  $resources  resource_name => quantity
+     * @param  array<string, int>  $resources  resource_name => quantity (excluding Population)
      */
     public function __construct(
         public array $resources,
         public int $durationSeconds,
         public bool $complete,
+        public int $population = 0,
+        public bool $isLowerBound = false,
     ) {}
 
     public function plus(self $other): self
@@ -27,6 +29,8 @@ final readonly class ProductionCost
             resources: $combinedResources,
             durationSeconds: $this->durationSeconds + $other->durationSeconds,
             complete: $this->complete && $other->complete,
+            population: $this->population + $other->population,
+            isLowerBound: $this->isLowerBound || $other->isLowerBound,
         );
     }
 }

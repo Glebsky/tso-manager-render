@@ -119,6 +119,22 @@ final readonly class ZoneSnapshot
     }
 
     /**
+     * @return list<string>|null list of active event names or null if unavailable
+     */
+    public function activeEvents(): ?array
+    {
+        if (isset($this->raw['active_events']) && is_array($this->raw['active_events'])) {
+            return array_values(array_filter($this->raw['active_events'], 'is_string'));
+        }
+
+        if (isset($this->raw['activeEvents']) && is_array($this->raw['activeEvents'])) {
+            return array_values(array_filter($this->raw['activeEvents'], 'is_string'));
+        }
+
+        return null;
+    }
+
+    /**
      * @return list<ProductionQueueState>|null null = unparseable/unavailable, [] = available but empty
      */
     public function productionQueues(): ?array
@@ -144,10 +160,12 @@ final readonly class ZoneSnapshot
 
             /** @var list<array{type_string: string, amount: int, produced_items: int, collected_time: float, stacks: int, index: int}> $orders */
             $orders = isset($q['orders']) && is_array($q['orders']) ? $q['orders'] : [];
+            $maxCapacity = isset($q['max_capacity']) && is_numeric($q['max_capacity']) ? (int) $q['max_capacity'] : null;
 
             $result[] = new ProductionQueueState(
                 productionType: (int) $q['production_type'],
                 orders: $orders,
+                maxCapacity: $maxCapacity,
             );
         }
 

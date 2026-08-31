@@ -62,12 +62,37 @@ final readonly class ConfigProductionCatalog implements ProductionCatalogInterfa
         return (array) ($this->config['producers'] ?? []);
     }
 
+    public function recipeSourceFor(int $productionType): ?string
+    {
+        $meta = $this->config['metadata'][$productionType] ?? [];
+
+        return isset($meta['recipe_source']) ? (string) $meta['recipe_source'] : null;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function metadataFor(int $productionType): array
+    {
+        return (array) ($this->config['metadata'][$productionType] ?? []);
+    }
+
+    public function isTypeSupported(int $productionType): bool
+    {
+        $source = $this->recipeSourceFor($productionType);
+        if ($source !== null && str_starts_with($source, 'unsupported:')) {
+            return false;
+        }
+
+        return true;
+    }
+
     /**
      * @param  array<string, mixed>  $data
      */
     private function hydrateRecipe(array $data): ProductionRecipe
     {
-        /** @var list<array{resource: string, count: int}> $costs */
+        /** @var list<array{resource: string, count: int, is_population?: bool}> $costs */
         $costs = [];
         if (isset($data['costs']) && is_array($data['costs'])) {
             foreach ($data['costs'] as $cost) {
@@ -75,6 +100,7 @@ final readonly class ConfigProductionCatalog implements ProductionCatalogInterfa
                     $costs[] = [
                         'resource' => (string) $cost['resource'],
                         'count' => (int) $cost['count'],
+                        'is_population' => (bool) ($cost['is_population'] ?? ($cost['resource'] === 'Population')),
                     ];
                 }
             }
@@ -84,6 +110,13 @@ final readonly class ConfigProductionCatalog implements ProductionCatalogInterfa
         $normalizedGroup = is_int($group) || (is_string($group) && ctype_digit($group))
             ? (int) $group
             : (string) $group;
+
+        /** @var list<array{threshold: int, costs: list<array{resource: string, count: int, is_population?: bool}>}>|null $costTiers */
+        $costTiers = null;
+        if (isset($data['cost_tiers']) && is_array($data['cost_tiers'])) {
+            /** @var list<array{threshold: int, costs: list<array{resource: string, count: int, is_population?: bool}>}> $costTiers */
+            $costTiers = array_values($data['cost_tiers']);
+        }
 
         return new ProductionRecipe(
             name: (string) ($data['name'] ?? ''),
@@ -97,6 +130,17 @@ final readonly class ConfigProductionCatalog implements ProductionCatalogInterfa
             costs: $costs,
             costsKnown: (bool) ($data['costs_known'] ?? (count($costs) > 0)),
             label: isset($data['label']) && $data['label'] !== '' ? (string) $data['label'] : null,
+            instantFinishCost: isset($data['instant_finish_cost']) ? (int) $data['instant_finish_cost'] : null,
+            maxAmountPerOrder: (int) ($data['max_amount_per_order'] ?? 25),
+            maxStacksPerOrder: (int) ($data['max_stacks_per_order'] ?? 200),
+            stacksSupported: (bool) ($data['stacks_supported'] ?? true),
+            costIsLowerBound: (bool) ($data['cost_is_lower_bound'] ?? false),
+            costTiers: $costTiers,
+            requiresPlayerLevelMin: isset($data['requires_player_level_min']) ? (int) $data['requires_player_level_min'] : null,
+            outputBuffName: isset($data['output_buff_name']) && $data['output_buff_name'] !== '' ? (string) $data['output_buff_name'] : null,
+            unverifiedProtocol: (bool) ($data['unverified_protocol'] ?? false),
+            tier: isset($data['tier']) ? (int) $data['tier'] : null,
+            unitGroup: isset($data['unit_group']) && $data['unit_group'] !== '' ? (string) $data['unit_group'] : null,
         );
     }
 }

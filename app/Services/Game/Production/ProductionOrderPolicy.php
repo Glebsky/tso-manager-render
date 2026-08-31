@@ -18,9 +18,10 @@ final readonly class ProductionOrderPolicy
         int $grid,
         int $expectedProductionType,
         string $recipeName,
-        int $amount,
+        int $amount = 1,
+        int $stacks = 1,
     ): ProductionDecision {
-        // 1. Building with grid exists in snapshot
+        // Step 1: Building with grid exists in snapshot
         $targetBuilding = null;
         foreach ($snapshot->buildings() as $b) {
             $bGrid = (int) ($b['buildingGrid'] ?? $b['grid'] ?? 0);
@@ -39,30 +40,39 @@ final readonly class ProductionOrderPolicy
             return ProductionDecision::reject(ProductionRejectionReason::NotAProducer);
         }
 
-        // 2. Building is in catalog of producers
+        // Step 2: Building is in catalog of producers
         $actualProductionType = $this->catalog->productionTypeFor($rawName);
         if ($actualProductionType === null || $actualProductionType < 0) {
             return ProductionDecision::reject(ProductionRejectionReason::NotAProducer);
         }
 
-        // 3. productionType matches payload expectation
+        // Step 3: Production type is supported (not unsupported:*)
+        if (! $this->catalog->isTypeSupported($actualProductionType)) {
+            return ProductionDecision::reject(ProductionRejectionReason::ProductionTypeUnsupported);
+        }
+
+        // Step 4: productionType matches payload expectation
         if ($actualProductionType !== $expectedProductionType) {
             return ProductionDecision::reject(ProductionRejectionReason::ProductionTypeMismatch);
         }
 
-        // 4. Building is not currently upgrading
-        $upgradeInProgress = (bool) ($targetBuilding['upgradeIsInProgress'] ?? $targetBuilding['upgrade_in_progress'] ?? false);
-        if ($upgradeInProgress) {
-            return ProductionDecision::reject(ProductionRejectionReason::BuildingUpgrading);
-        }
-
-        // 5. Recipe exists in catalog for this productionType
+        // Step 5: Recipe exists in catalog for this productionType
         $recipe = $this->catalog->findRecipe($actualProductionType, $recipeName);
         if ($recipe === null) {
             return ProductionDecision::reject(ProductionRejectionReason::RecipeUnknown);
         }
 
-        // 6. Level requirements (only for explicit lists / non-type-1 branches per OQ-1 / C-2)
+        // Step 6: Amount within recipe limit
+        if ($amount > $recipe->maxAmountPerOrder || $amount < 1) {
+            return ProductionDecision::reject(ProductionRejectionReason::AmountExceedsRecipeLimit);
+        }
+
+        // Step 7: Stacks within recipe limit
+        if ($stacks > $recipe->maxStacksPerOrder || $stacks < 1) {
+            return ProductionDecision::reject(ProductionRejectionReason::StacksExceedsRecipeLimit);
+        }
+
+        // Step 8: Level requirements (for non-type-1 producers)
         if ($actualProductionType !== 1) {
             $level = isset($targetBuilding['upgradeLevel'])
                 ? (int) $targetBuilding['upgradeLevel']
@@ -75,16 +85,40 @@ final readonly class ProductionOrderPolicy
             }
         }
 
-        // 7. Queue data must be available in snapshot (null = unparseable / unavailable)
+        // Step 9: Event active check
+        if ($recipe->requiresEvent !== null && $recipe->requiresEvent !== '') {
+            $activeEvents = $snapshot->activeEvents();
+            if ($activeEvents !== null && ! in_array($recipe->requiresEvent, $activeEvents, true)) {
+                return ProductionDecision::reject(ProductionRejectionReason::RecipeRequiresInactiveEvent);
+            }
+        }
+
+        // Step 10: Building is not currently upgrading
+        $upgradeInProgress = (bool) ($targetBuilding['upgradeIsInProgress'] ?? $targetBuilding['upgrade_in_progress'] ?? false);
+        if ($upgradeInProgress) {
+            return ProductionDecision::reject(ProductionRejectionReason::BuildingUpgrading);
+        }
+
+        // Step 11: Queue data & resources check
         if ($snapshot->productionQueues() === null) {
             return ProductionDecision::reject(ProductionRejectionReason::QueueDataUnavailable);
         }
 
-        // 8. Resource check (if resources exist in snapshot and recipe has known costs)
+        $queueState = $snapshot->productionQueueFor($actualProductionType);
+        if ($queueState !== null && $queueState->isFull()) {
+            return ProductionDecision::reject(ProductionRejectionReason::QueueFull);
+        }
+
+        // Resource check (ignoring Population)
         $resources = $snapshot->resources();
         if ($resources !== [] && $recipe->costsKnown && $recipe->costs !== []) {
             foreach ($recipe->costs as $cost) {
-                $required = $cost['count'] * $amount;
+                $isPopulation = (bool) ($cost['is_population'] ?? ($cost['resource'] === 'Population'));
+                if ($isPopulation) {
+                    continue;
+                }
+
+                $required = $cost['count'] * $amount * $stacks;
                 $resName = (string) $cost['resource'];
                 $available = $resources[$resName] ?? 0;
                 if ($available < $required) {
@@ -93,7 +127,6 @@ final readonly class ProductionOrderPolicy
             }
         }
 
-        // 9. Allowed
         return ProductionDecision::allow($recipe, $actualProductionType);
     }
 }

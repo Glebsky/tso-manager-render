@@ -71,8 +71,21 @@ final readonly class BuffProducerListService
                     'is_locked' => $isLocked,
                     'costs' => $recipe->costs,
                     'costs_known' => $recipe->costsKnown,
+                    'instant_finish_cost' => $recipe->instantFinishCost,
+                    'max_amount_per_order' => $recipe->maxAmountPerOrder,
+                    'max_stacks_per_order' => $recipe->maxStacksPerOrder,
+                    'stacks_supported' => $recipe->stacksSupported,
+                    'cost_is_lower_bound' => $recipe->costIsLowerBound,
+                    'cost_tiers' => $recipe->costTiers,
+                    'requires_player_level_min' => $recipe->requiresPlayerLevelMin,
+                    'output_buff_name' => $recipe->outputBuffName,
+                    'unverified_protocol' => $recipe->unverifiedProtocol,
+                    'tier' => $recipe->tier,
+                    'unit_group' => $recipe->unitGroup,
                 ];
             }
+
+            $meta = $this->catalog->metadataFor($productionType);
 
             $producers[] = [
                 'grid' => $grid,
@@ -81,6 +94,8 @@ final readonly class BuffProducerListService
                 'upgrade_level' => $upgradeLevel,
                 'upgrade_in_progress' => $upgradeInProgress,
                 'production_active' => $productionActive,
+                'recipe_source' => $this->catalog->recipeSourceFor($productionType),
+                'list_type' => $meta['list_type'] ?? null,
                 'queue' => $queueData,
                 'recipes' => $recipes,
             ];

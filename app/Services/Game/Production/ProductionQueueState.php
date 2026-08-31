@@ -19,6 +19,7 @@ final readonly class ProductionQueueState
     public function __construct(
         public int $productionType,
         public array $orders = [],
+        public ?int $maxCapacity = null,
     ) {}
 
     public static function empty(int $productionType): self
@@ -34,5 +35,14 @@ final readonly class ProductionQueueState
     public function hasOrders(): bool
     {
         return $this->orders !== [];
+    }
+
+    public function isFull(): bool
+    {
+        if ($this->maxCapacity !== null && $this->maxCapacity > 0) {
+            return $this->used() >= $this->maxCapacity;
+        }
+
+        return false;
     }
 }

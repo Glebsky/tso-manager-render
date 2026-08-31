@@ -22,4 +22,19 @@ interface ProductionCatalogInterface
      * @return array<string, int> buildingName => productionType
      */
     public function allProducers(): array;
+
+    /**
+     * @return string|null source identifier, e.g. 'explicit_list', 'buff_pool', 'unsupported:...'
+     */
+    public function recipeSourceFor(int $productionType): ?string;
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function metadataFor(int $productionType): array;
+
+    /**
+     * @return bool false if productionType has source unsupported:*
+     */
+    public function isTypeSupported(int $productionType): bool;
 }
