@@ -56,14 +56,15 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
             }
 
             foreach (Telescope::$entriesQueue as &$entries) {
+                if (! is_iterable($entries)) {
+                    continue;
+                }
                 foreach ($entries as &$entry) {
-                    if ($entry->uuid === $uuid) {
+                    if ($entry instanceof IncomingEntry && $entry->uuid === $uuid) {
                         $content = $entry->content;
-                        if (is_array($content)) {
-                            $content['status'] = 'processed';
-                            $content['exception'] = null;
-                            $entry->content = $content;
-                        }
+                        $content['status'] = 'processed';
+                        $content['exception'] = null;
+                        $entry->content = $content;
                     }
                 }
             }
@@ -94,18 +95,19 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
             }
 
             foreach (Telescope::$entriesQueue as &$entries) {
+                if (! is_iterable($entries)) {
+                    continue;
+                }
                 foreach ($entries as &$entry) {
-                    if ($entry->uuid === $uuid) {
+                    if ($entry instanceof IncomingEntry && $entry->uuid === $uuid) {
                         $content = $entry->content;
-                        if (is_array($content)) {
-                            $content['status'] = 'failed';
-                            $content['exception'] = [
-                                'message' => $event->exception->getMessage(),
-                                'file' => $event->exception->getFile(),
-                                'line' => $event->exception->getLine(),
-                            ];
-                            $entry->content = $content;
-                        }
+                        $content['status'] = 'failed';
+                        $content['exception'] = [
+                            'message' => $event->exception->getMessage(),
+                            'file' => $event->exception->getFile(),
+                            'line' => $event->exception->getLine(),
+                        ];
+                        $entry->content = $content;
                     }
                 }
             }
@@ -140,17 +142,18 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
             }
 
             foreach (Telescope::$entriesQueue as &$entries) {
+                if (! is_iterable($entries)) {
+                    continue;
+                }
                 foreach ($entries as &$entry) {
-                    if ($entry->uuid === $uuid) {
+                    if ($entry instanceof IncomingEntry && $entry->uuid === $uuid) {
                         $content = $entry->content;
-                        if (is_array($content)) {
-                            $content['exception'] = [
-                                'message' => $event->exception->getMessage(),
-                                'file' => $event->exception->getFile(),
-                                'line' => $event->exception->getLine(),
-                            ];
-                            $entry->content = $content;
-                        }
+                        $content['exception'] = [
+                            'message' => $event->exception->getMessage(),
+                            'file' => $event->exception->getFile(),
+                            'line' => $event->exception->getLine(),
+                        ];
+                        $entry->content = $content;
                     }
                 }
             }
