@@ -78,9 +78,9 @@ return [
     */
 
     'queue' => [
-        'connection' => env('TELESCOPE_QUEUE_CONNECTION'),
+        'connection' => env('TELESCOPE_QUEUE_CONNECTION', 'sync'),
         'queue' => env('TELESCOPE_QUEUE'),
-        'delay' => env('TELESCOPE_QUEUE_DELAY', 10),
+        'delay' => env('TELESCOPE_QUEUE_DELAY', 0),
     ],
 
     /*
