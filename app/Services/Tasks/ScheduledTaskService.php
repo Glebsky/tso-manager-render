@@ -251,7 +251,9 @@ final class ScheduledTaskService
 
         ExecuteScheduledTaskJob::dispatch($task->id, $token, true);
 
-        $task->refresh();
+        if (config('queue.default') === 'sync') {
+            $task->refresh();
+        }
         $task->load(['account' => static function ($query): void {
             $query->select('id', 'username', 'nickname', 'region', 'status')->withExists('marketServerConnections');
         }]);
