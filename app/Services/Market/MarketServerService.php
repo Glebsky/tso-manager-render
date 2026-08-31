@@ -77,7 +77,7 @@ final class MarketServerService
     {
         return MarketServerConnection::whereNotNull('account_id')
             ->whereHas('account')
-            ->with(self::ACCOUNT_COLUMNS_WITH_ZONE)
+            ->with(self::ACCOUNT_COLUMNS)
             ->select('id', 'server_id', 'locale', 'display_name', 'sync_status', 'account_id')
             ->orderBy('id')
             ->get();
