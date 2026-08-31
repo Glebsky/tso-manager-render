@@ -6,7 +6,6 @@ use App\Http\Controllers\AccountController;
 use App\Http\Controllers\Api\BuffProducerController;
 use App\Http\Controllers\Api\BuildableDepositController;
 use App\Http\Controllers\Api\ClickableBuildingController;
-use App\Http\Controllers\Api\LogStreamController;
 use App\Http\Controllers\Api\UpgradableMineController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LogController;
@@ -77,7 +76,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Logs
     Route::get('/logs', [LogController::class, 'index']);
-    Route::get('/logs/stream', [LogStreamController::class, 'stream']);
+    Route::get('/logs/stream', [LogController::class, 'stream']);
 
     // Settings
     Route::get('/settings', [SettingsController::class, 'index']);
