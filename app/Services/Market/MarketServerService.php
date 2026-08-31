@@ -324,8 +324,15 @@ final class MarketServerService
 
         $detection = $this->verification->detectServerForAccount($account);
         $detectedServerId = $detection['detected_server_id'] ? strtolower((string) $detection['detected_server_id']) : null;
+        $targetServerId = strtolower((string) $server->server_id);
+        $detectedRegion = strtolower((string) $account->region);
+        $targetRegion = explode('_', $targetServerId, 2)[0];
 
-        if ($detectedServerId && $detectedServerId !== strtolower((string) $server->server_id)) {
+        $isMatch = ($detectedServerId === $targetServerId)
+            || ($targetServerId === $detectedRegion)
+            || ($detectedServerId === $targetRegion);
+
+        if (! $isMatch) {
             throw MarketOperationException::unprocessable(__('ui.market.api.account_wrong_server', [
                 'username' => $account->username,
                 'detected' => $detectedServerId,

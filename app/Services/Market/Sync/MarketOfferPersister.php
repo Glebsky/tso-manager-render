@@ -23,12 +23,38 @@ class MarketOfferPersister
     public function persist(string $serverId, array $offers, array $history): void
     {
         DB::transaction(static function () use ($serverId, $offers, $history) {
-            // Clear active offers for this server ONLY
-            MarketOffer::where('server_id', $serverId)->delete();
+            if (! empty($offers)) {
+                $updateColumns = [
+                    'player_id',
+                    'sender_name',
+                    'item_id',
+                    'item_name',
+                    'amount',
+                    'target_item_id',
+                    'target_item_name',
+                    'target_amount',
+                    'price',
+                    'volume',
+                    'lots_remaining',
+                    'created_at',
+                    'collected_at',
+                ];
 
-            // Chunk inserts to avoid database limits
-            foreach (array_chunk($offers, 200) as $chunk) {
-                MarketOffer::insert($chunk);
+                foreach (array_chunk($offers, 200) as $chunk) {
+                    MarketOffer::upsert($chunk, ['server_id', 'offer_id'], $updateColumns);
+                }
+
+                $collectedAt = $offers[0]['collected_at'] ?? null;
+                if ($collectedAt !== null) {
+                    MarketOffer::where('server_id', $serverId)
+                        ->where(static function ($query) use ($collectedAt) {
+                            $query->where('collected_at', '<', $collectedAt)
+                                ->orWhereNull('collected_at');
+                        })
+                        ->delete();
+                }
+            } else {
+                MarketOffer::where('server_id', $serverId)->delete();
             }
 
             // Filter out history entries that already exist for this server
