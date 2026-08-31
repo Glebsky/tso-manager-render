@@ -32,16 +32,26 @@ class MarketCacheService
     private const int ETAG_TIME_BUCKET_SECONDS = 60;
 
     /**
+     * @var array<string, string>
+     */
+    private array $resolvedServerIds = [];
+
+    /**
      * Resolve target server_id from string input or fallback to first available.
      */
     public function resolveServerId(?string $serverId = null): string
     {
+        $cacheKey = $serverId ?? '__default__';
+        if (isset($this->resolvedServerIds[$cacheKey])) {
+            return $this->resolvedServerIds[$cacheKey];
+        }
+
         if (! empty($serverId)) {
             $connectionServerId = MarketServerConnection::where('server_id', $serverId)
                 ->value('server_id');
 
             if ($connectionServerId) {
-                return $connectionServerId;
+                return $this->resolvedServerIds[$cacheKey] = $connectionServerId;
             }
 
             // Fallback for short region code if exact connection not found (e.g. 'ru' -> 'ru_tandriya')
@@ -49,13 +59,13 @@ class MarketCacheService
                 ->value('server_id');
 
             if ($fallbackServerId) {
-                return $fallbackServerId;
+                return $this->resolvedServerIds[$cacheKey] = $fallbackServerId;
             }
 
-            return $serverId;
+            return $this->resolvedServerIds[$cacheKey] = $serverId;
         }
 
-        return (string) (MarketServerConnection::whereNotNull('account_id')->value('server_id')
+        return $this->resolvedServerIds[$cacheKey] = (string) (MarketServerConnection::whereNotNull('account_id')->value('server_id')
             ?? MarketServerConnection::value('server_id')
             ?? 'ru');
     }
