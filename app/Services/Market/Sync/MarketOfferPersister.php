@@ -40,7 +40,13 @@ class MarketOfferPersister
                     'collected_at',
                 ];
 
-                foreach (array_chunk($offers, 200) as $chunk) {
+                $dedupedOffers = [];
+                foreach ($offers as $offer) {
+                    $key = (string) ($offer['server_id'] ?? $serverId).':'.(string) ($offer['offer_id'] ?? '');
+                    $dedupedOffers[$key] = $offer;
+                }
+
+                foreach (array_chunk(array_values($dedupedOffers), 200) as $chunk) {
                     MarketOffer::upsert($chunk, ['server_id', 'offer_id'], $updateColumns);
                 }
 
