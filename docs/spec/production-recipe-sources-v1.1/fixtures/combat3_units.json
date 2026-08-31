@@ -1,0 +1,102 @@
+{
+  "_source": "settings/game_units.xml",
+  "_root_tag": "GameUnit",
+  "_class_in_client": "cMilitaryUnitData",
+  "_production_type": 7,
+  "_total_unit_nodes": 29,
+  "_producible_count": 7,
+  "_filter": "Property[Type=IsProducible].Value == 1",
+  "_note": "type_string предположительно равен атрибуту Type. Не подтверждено трафиком: unverified_protocol = true.",
+  "units": [
+    {
+      "id": 101,
+      "type_string": "ExpeditionCuirassier",
+      "tier": 3,
+      "unit_group": "AttackUnits",
+      "duration_seconds": 360,
+      "instant_finish_cost": 10,
+      "costs": [
+        { "resource": "Population", "count": 1, "is_population": true },
+        { "resource": "Horse", "count": 5, "is_population": false },
+        { "resource": "Saber", "count": 6, "is_population": false }
+      ]
+    },
+    {
+      "id": 102,
+      "type_string": "ExpeditionArcher",
+      "tier": 3,
+      "unit_group": "AttackUnits",
+      "duration_seconds": 360,
+      "instant_finish_cost": 10,
+      "costs": [
+        { "resource": "Population", "count": 1, "is_population": true },
+        { "resource": "Beer", "count": 10, "is_population": false },
+        { "resource": "CompositeBow", "count": 6, "is_population": false }
+      ]
+    },
+    {
+      "id": 103,
+      "type_string": "ExpeditionPikeman",
+      "tier": 3,
+      "unit_group": "AttackUnits",
+      "duration_seconds": 360,
+      "instant_finish_cost": 2,
+      "costs": [
+        { "resource": "Population", "count": 1, "is_population": true },
+        { "resource": "Beer", "count": 10, "is_population": false },
+        { "resource": "Pike", "count": 6, "is_population": false }
+      ]
+    },
+    {
+      "id": 104,
+      "type_string": "ExpeditionSwordsman",
+      "tier": 3,
+      "unit_group": "TankUnits",
+      "duration_seconds": 360,
+      "instant_finish_cost": 10,
+      "costs": [
+        { "resource": "Population", "count": 1, "is_population": true },
+        { "resource": "Beer", "count": 10, "is_population": false },
+        { "resource": "SpikedMace", "count": 3, "is_population": false }
+      ]
+    },
+    {
+      "id": 105,
+      "type_string": "ExpeditionCrossbowman",
+      "tier": 3,
+      "unit_group": "TankUnits",
+      "duration_seconds": 360,
+      "instant_finish_cost": 10,
+      "costs": [
+        { "resource": "Population", "count": 1, "is_population": true },
+        { "resource": "Beer", "count": 10, "is_population": false },
+        { "resource": "ExpeditionCrossbow", "count": 3, "is_population": false }
+      ]
+    },
+    {
+      "id": 106,
+      "type_string": "ExpeditionKnight",
+      "tier": 3,
+      "unit_group": "TankUnits",
+      "duration_seconds": 360,
+      "instant_finish_cost": 10,
+      "costs": [
+        { "resource": "Population", "count": 1, "is_population": true },
+        { "resource": "Horse", "count": 5, "is_population": false },
+        { "resource": "BattleLance", "count": 3, "is_population": false }
+      ]
+    },
+    {
+      "id": 107,
+      "type_string": "ExpeditionTank",
+      "tier": 3,
+      "unit_group": "EliteUnits",
+      "duration_seconds": 360,
+      "instant_finish_cost": 10,
+      "costs": [
+        { "resource": "Population", "count": 1, "is_population": true },
+        { "resource": "ValorPoint", "count": 4, "is_population": false }
+      ]
+    }
+  ]
+}

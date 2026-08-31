@@ -4,10 +4,23 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Services\Game\Production\GameXmlLocator;
+use App\Services\Game\Production\Normalizers\CostNormalizer;
+use App\Services\Game\Production\Normalizers\DurationNormalizer;
+use App\Services\Game\Production\Normalizers\InstantFinishCostNormalizer;
+use App\Services\Game\Production\Sources\BuffGroupRecipeSource;
+use App\Services\Game\Production\Sources\BuffPoolRecipeSource;
+use App\Services\Game\Production\Sources\CollectionRecipeSource;
+use App\Services\Game\Production\Sources\Combat3UnitRecipeSource;
+use App\Services\Game\Production\Sources\ExplicitListRecipeSource;
+use App\Services\Game\Production\Sources\MilitaryUnitRecipeSource;
+use App\Services\Game\Production\Sources\RecipeSourceInterface;
+use App\Services\Game\Production\Sources\SkillPointRecipeSource;
+use App\Services\Game\Production\Sources\UnsupportedRecipeSource;
 use DOMDocument;
 use DOMElement;
-use DOMNode;
 use Illuminate\Console\Command;
+use RuntimeException;
 use XMLReader;
 
 final class ImportProductionCatalog extends Command
@@ -16,8 +29,12 @@ final class ImportProductionCatalog extends Command
      * @var string
      */
     protected $signature = 'tso:import-production-catalog
-                            {--icons=docs/references/icons.xml : Path to icons.xml}
-                            {--globals=docs/references/globals.xml : Path to globals.xml}
+                            {--base-dir=docs/references/xml : Base directory for XML files}
+                            {--icons= : Path to icons XML file}
+                            {--globals= : Path to globals XML file}
+                            {--skillpoints= : Path to skillpoints XML file}
+                            {--collections= : Path to collections XML file}
+                            {--units= : Path to units XML file}
                             {--output=config/game_production.php : Output config path}
                             {--dry-run : Only parse and report stats without writing file}';
 
@@ -26,82 +43,183 @@ final class ImportProductionCatalog extends Command
      */
     protected $description = 'Import production buildings and recipes catalog from game XML files into config';
 
+    private DurationNormalizer $durationNormalizer;
+
+    private InstantFinishCostNormalizer $instantCostNormalizer;
+
+    private CostNormalizer $costNormalizer;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->durationNormalizer = new DurationNormalizer;
+        $this->instantCostNormalizer = new InstantFinishCostNormalizer;
+        $this->costNormalizer = new CostNormalizer;
+    }
+
     public function handle(): int
     {
-        $iconsPath = (string) $this->option('icons');
-        $globalsPath = (string) $this->option('globals');
+        $baseDir = (string) ($this->option('base-dir') ?: 'docs/references/xml');
         $outputPath = (string) $this->option('output');
         $dryRun = (bool) $this->option('dry-run');
 
-        if (! file_exists($iconsPath)) {
-            $this->error("Icons XML file not found: {$iconsPath}");
+        $explicitPaths = [
+            GameXmlLocator::ROLE_ICONS => $this->option('icons') ? (string) $this->option('icons') : null,
+            GameXmlLocator::ROLE_GLOBALS => $this->option('globals') ? (string) $this->option('globals') : null,
+            GameXmlLocator::ROLE_SKILLPOINTS => $this->option('skillpoints') ? (string) $this->option('skillpoints') : null,
+            GameXmlLocator::ROLE_COLLECTIONS => $this->option('collections') ? (string) $this->option('collections') : null,
+            GameXmlLocator::ROLE_UNITS => $this->option('units') ? (string) $this->option('units') : null,
+        ];
+
+        // Locate XML files
+        $locator = new GameXmlLocator;
+        try {
+            // Fallback for tests passing only --icons and --globals without base-dir or other files
+            if ($explicitPaths[GameXmlLocator::ROLE_ICONS] && $explicitPaths[GameXmlLocator::ROLE_GLOBALS] && ! is_dir($baseDir)) {
+                $locatedFiles = [
+                    GameXmlLocator::ROLE_ICONS => $explicitPaths[GameXmlLocator::ROLE_ICONS],
+                    GameXmlLocator::ROLE_GLOBALS => $explicitPaths[GameXmlLocator::ROLE_GLOBALS],
+                    GameXmlLocator::ROLE_SKILLPOINTS => $explicitPaths[GameXmlLocator::ROLE_SKILLPOINTS] ?? '',
+                    GameXmlLocator::ROLE_COLLECTIONS => $explicitPaths[GameXmlLocator::ROLE_COLLECTIONS] ?? '',
+                    GameXmlLocator::ROLE_UNITS => $explicitPaths[GameXmlLocator::ROLE_UNITS] ?? '',
+                ];
+            } else {
+                $locatedFiles = $locator->locateAll($baseDir, $explicitPaths);
+            }
+        } catch (RuntimeException $e) {
+            $this->error($e->getMessage());
 
             return self::FAILURE;
         }
 
-        if (! file_exists($globalsPath)) {
-            $this->error("Globals XML file not found: {$globalsPath}");
+        $iconsPath = $locatedFiles[GameXmlLocator::ROLE_ICONS] ?? '';
+        $globalsPath = $locatedFiles[GameXmlLocator::ROLE_GLOBALS] ?? '';
+        $skillpointsPath = $locatedFiles[GameXmlLocator::ROLE_SKILLPOINTS] ?? '';
+        $collectionsPath = $locatedFiles[GameXmlLocator::ROLE_COLLECTIONS] ?? '';
+        $unitsPath = $locatedFiles[GameXmlLocator::ROLE_UNITS] ?? '';
 
-            return self::FAILURE;
-        }
-
-        $this->info('Parsing icons.xml for producer buildings...');
+        $this->info("Loading icons from {$iconsPath}...");
         $producers = $this->parseProducers($iconsPath);
         $this->info(sprintf('Found %d producer buildings.', count($producers)));
 
-        $this->info('Parsing globals.xml for buff pool and timed production lists...');
-        [$buffPool, $timedLists] = $this->parseGlobals($globalsPath);
-        $this->info(sprintf('Found %d produceable buffs in dynamic pool.', count($buffPool)));
-        $this->info(sprintf('Found %d timed production lists.', count($timedLists)));
+        $this->info("Loading globals from {$globalsPath}...");
+        [$buffPool, $timedLists, $militaryUnits] = $this->parseGlobals($globalsPath);
+        $this->info(sprintf('Found %d produceable buffs, %d timed lists.', count($buffPool), count($timedLists)));
+
+        $skillpointsXml = $skillpointsPath !== '' && file_exists($skillpointsPath) ? (string) file_get_contents($skillpointsPath) : '';
+        $collectionsXml = $collectionsPath !== '' && file_exists($collectionsPath) ? (string) file_get_contents($collectionsPath) : '';
+        $unitsXml = $unitsPath !== '' && file_exists($unitsPath) ? (string) file_get_contents($unitsPath) : '';
+
+        /** @var array<string, RecipeSourceInterface> $sourcesRegistry */
+        $sourcesRegistry = [
+            'explicit_list' => new ExplicitListRecipeSource($timedLists),
+            'buff_pool' => new BuffPoolRecipeSource($buffPool),
+            'buff_group' => new BuffGroupRecipeSource($buffPool),
+            'military_units' => new MilitaryUnitRecipeSource($militaryUnits),
+            'skillpoints' => new SkillPointRecipeSource($skillpointsXml),
+            'collections' => new CollectionRecipeSource($collectionsXml),
+            'combat3_units' => new Combat3UnitRecipeSource($unitsXml),
+        ];
+
+        // Load configuration map
+        $sourcesConfigFile = config_path('game_production_sources.php');
+        /** @var array{sources: array<int|string, array{source: string, options?: array<string, mixed>}>, stacks?: array<string, mixed>} $sourcesConfig */
+        $sourcesConfig = file_exists($sourcesConfigFile)
+            ? (array) require $sourcesConfigFile
+            : [
+                'sources' => [
+                    0 => ['source' => 'military_units', 'options' => ['elite' => false]],
+                    1 => ['source' => 'buff_pool', 'options' => []],
+                    2 => ['source' => 'skillpoints', 'options' => []],
+                    4 => ['source' => 'collections', 'options' => []],
+                    6 => ['source' => 'buff_group', 'options' => ['group' => 5]],
+                    7 => ['source' => 'combat3_units', 'options' => []],
+                    8 => ['source' => 'military_units', 'options' => ['elite' => true]],
+                    11 => ['source' => 'buff_group', 'options' => ['group' => 11]],
+                    'default' => ['source' => 'explicit_list', 'options' => []],
+                ],
+                'stacks' => [
+                    'max_amount' => 25,
+                    'max_stacks' => 200,
+                    'unsupported_types' => [2 => '', 4 => '', 27 => ''],
+                    'disable_for_list_type' => ['culturebuilding'],
+                ],
+            ];
+
+        $configuredSources = $sourcesConfig['sources'];
+        $stacksConfig = $sourcesConfig['stacks'] ?? [];
+
+        $allProductionTypes = array_unique(array_merge(
+            array_values($producers),
+            array_keys($timedLists),
+            array_filter(array_keys($configuredSources), 'is_int')
+        ));
+        sort($allProductionTypes, SORT_NUMERIC);
 
         $recipesByProductionType = [];
         $metadataByProductionType = [];
 
-        // All distinct production types from producers and timed lists
-        $allProductionTypes = array_unique(array_merge(
-            array_values($producers),
-            array_keys($timedLists)
-        ));
-        sort($allProductionTypes, SORT_NUMERIC);
-
         foreach ($allProductionTypes as $type) {
             $listData = $timedLists[$type] ?? null;
             $listType = $listData['type'] ?? 'hardcoded';
-            $explicitRecipes = $listData['recipes'] ?? [];
 
-            if ($type === 1) {
-                // ProvisionHouse uses dynamic buff pool (Branch B)
-                $recipes = array_values($buffPool);
-                $source = 'buff_pool';
-            } elseif ($explicitRecipes !== []) {
-                $recipes = $explicitRecipes;
-                $source = 'explicit_list';
-            } elseif ($listType === 'culturebuilding' || $type === 12 || $type === 13) {
-                // If explicit list is empty for culture building, fallback to dynamic buff pool (Branch D)
-                $recipes = $explicitRecipes;
-                $source = 'buff_pool';
+            $sourceConfig = $configuredSources[$type] ?? $configuredSources['default'] ?? ['source' => 'explicit_list', 'options' => []];
+            $sourceId = (string) $sourceConfig['source'];
+            $options = (array) ($sourceConfig['options'] ?? []);
+
+            if ($sourceId === 'unsupported') {
+                $reason = (string) ($options['reason'] ?? 'not_supported');
+                $sourceInstance = new UnsupportedRecipeSource($reason);
+            } elseif (isset($sourcesRegistry[$sourceId])) {
+                $sourceInstance = $sourcesRegistry[$sourceId];
             } else {
-                $recipes = $explicitRecipes;
-                $source = 'explicit_list';
+                $this->warn("Unknown recipe source '{$sourceId}' for productionType {$type}");
+                $sourceInstance = $sourcesRegistry['explicit_list'];
             }
 
-            // Sort recipes deterministically by name
-            usort($recipes, static fn (array $a, array $b): int => strcmp((string) $a['name'], (string) $b['name']));
+            $recipes = $sourceInstance->recipesFor($type, $options);
 
-            // Sort costs deterministically inside each recipe
+            // Compute stacks policy
+            $stacksSupported = $this->computeStacksSupported($type, $sourceId, $listType, $stacksConfig);
+            $maxStacks = $stacksSupported ? (int) ($stacksConfig['max_stacks'] ?? 200) : 1;
+            $maxAmount = ($sourceId === 'skillpoints') ? 1 : (int) ($stacksConfig['max_amount'] ?? 25);
+
             foreach ($recipes as &$recipe) {
-                if (isset($recipe['costs']) && is_array($recipe['costs']) && count($recipe['costs']) > 1) {
-                    usort($recipe['costs'], static fn (array $a, array $b): int => strcmp((string) $a['resource'], (string) $b['resource']));
+                $recipe['stacks_supported'] = $stacksSupported;
+                $recipe['max_stacks_per_order'] = $maxStacks;
+                $recipe['max_amount_per_order'] = $maxAmount;
+
+                // Ensure is_population flag exists on all cost items
+                if (isset($recipe['costs']) && is_array($recipe['costs'])) {
+                    foreach ($recipe['costs'] as &$c) {
+                        if (! isset($c['is_population'])) {
+                            $c['is_population'] = ($c['resource'] ?? '') === 'Population';
+                        }
+                    }
+                    unset($c);
+
+                    if (count($recipe['costs']) > 1) {
+                        usort($recipe['costs'], static fn (array $a, array $b): int => strcmp((string) $a['resource'], (string) $b['resource']));
+                    }
                 }
             }
             unset($recipe);
 
-            if ($recipes !== []) {
+            // Sort recipes deterministically by name
+            usort($recipes, static fn (array $a, array $b): int => strcmp((string) $a['name'], (string) $b['name']));
+
+            if ($recipes !== [] || str_starts_with($sourceInstance->id(), 'unsupported:')) {
                 $recipesByProductionType[$type] = $recipes;
                 $metadataByProductionType[$type] = [
-                    'recipe_source' => $source,
+                    'recipe_source' => $sourceInstance->id(),
                     'list_type' => $listType,
                 ];
+            } else {
+                // Check if this empty list is expected
+                $expectedEmptyLists = [0, 1, 2, 3, 4, 6, 7, 8, 11];
+                if (! in_array($type, $expectedEmptyLists, true) && in_array($type, $producers, true)) {
+                    $this->warn("Production type {$type} has a producer building but 0 recipes were found.");
+                }
             }
         }
 
@@ -111,7 +229,12 @@ final class ImportProductionCatalog extends Command
         ksort($metadataByProductionType, SORT_NUMERIC);
 
         $totalRecipes = array_sum(array_map('count', $recipesByProductionType));
-        $this->info(sprintf('Catalog compiled: %d producers, %d production types with %d total recipe entries.', count($producers), count($recipesByProductionType), $totalRecipes));
+        $this->info(sprintf(
+            'Catalog compiled: %d producers, %d production types with %d total recipe entries.',
+            count($producers),
+            count($recipesByProductionType),
+            $totalRecipes
+        ));
 
         if ($dryRun) {
             $this->warn('[Dry Run] Output file was not written.');
@@ -130,6 +253,34 @@ final class ImportProductionCatalog extends Command
         $this->info("Catalog written to {$outputPath}");
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Compute stacks_supported per stacks-policy.md §5:
+     * 1. type in unsupported_types -> false
+     * 2. source is skillpoints or collections -> false
+     * 3. list_type in disable_for_list_type -> false
+     * 4. otherwise -> true
+     *
+     * @param  array<string, mixed>  $stacksConfig
+     */
+    private function computeStacksSupported(int $type, string $sourceId, string $listType, array $stacksConfig): bool
+    {
+        $unsupportedTypes = array_keys((array) ($stacksConfig['unsupported_types'] ?? []));
+        if (in_array($type, $unsupportedTypes, true)) {
+            return false;
+        }
+
+        if ($sourceId === 'skillpoints' || $sourceId === 'collections') {
+            return false;
+        }
+
+        $disabledListTypes = (array) ($stacksConfig['disable_for_list_type'] ?? ['culturebuilding']);
+        if (in_array($listType, $disabledListTypes, true)) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -162,12 +313,17 @@ final class ImportProductionCatalog extends Command
     }
 
     /**
-     * @return array{0: array<string, array<string, mixed>>, 1: array<int, array{type: string, recipes: list<array<string, mixed>>}>}
+     * @return array{
+     *     0: array<string, array<string, mixed>>,
+     *     1: array<int, array{type: string, recipes: list<array<string, mixed>>}>,
+     *     2: list<array{is_elite: bool, recipe: array<string, mixed>}>
+     * }
      */
     private function parseGlobals(string $globalsPath): array
     {
         $buffPool = [];
         $timedLists = [];
+        $militaryUnits = [];
 
         $reader = new XMLReader;
         $reader->open($globalsPath);
@@ -184,6 +340,8 @@ final class ImportProductionCatalog extends Command
                     $groupAttr = $reader->getAttribute('group');
                     $group = is_numeric($groupAttr) ? (int) $groupAttr : (string) $groupAttr;
                     $duration = (int) ($reader->getAttribute('productionTime') ?: 0);
+                    $instantCostAttr = $reader->getAttribute('instantBuildCosts');
+                    $instantCost = $instantCostAttr !== null && $instantCostAttr !== '' ? (int) $instantCostAttr : null;
                     $buffType = (string) ($reader->getAttribute('buffType') ?: 'Timed');
                     $minLvl = $reader->getAttribute('requiresUpgradeLevelMin');
                     $maxLvl = $reader->getAttribute('requiresUpgradeLevelMax');
@@ -204,6 +362,17 @@ final class ImportProductionCatalog extends Command
                         'requires_quest' => $reqQuest ?: null,
                         'costs' => $costs,
                         'costs_known' => count($costs) > 0,
+                        'instant_finish_cost' => $instantCost,
+                        'max_amount_per_order' => 25,
+                        'max_stacks_per_order' => 200,
+                        'stacks_supported' => true,
+                        'cost_is_lower_bound' => false,
+                        'cost_tiers' => null,
+                        'requires_player_level_min' => null,
+                        'output_buff_name' => null,
+                        'unverified_protocol' => false,
+                        'tier' => null,
+                        'unit_group' => null,
                     ];
                 }
             } elseif ($reader->name === 'TimedProductionList') {
@@ -216,16 +385,59 @@ final class ImportProductionCatalog extends Command
                     'type' => $listType,
                     'recipes' => $recipes,
                 ];
+            } elseif ($reader->name === 'MilitaryUnit') {
+                $produceable = $reader->getAttribute('produceable');
+                if ($produceable === 'true' || $produceable === '1') {
+                    $isElite = $reader->getAttribute('isElite') === 'true' || $reader->getAttribute('isElite') === '1';
+                    $unitDoc = new DOMDocument;
+                    @$unitDoc->loadXML($reader->readOuterXml());
+                    $unitEl = $unitDoc->documentElement;
+                    if ($unitEl instanceof DOMElement) {
+                        $name = (string) ($unitEl->getAttribute('type') ?: $unitEl->getAttribute('name'));
+                        if ($name !== '') {
+                            $duration = $this->durationNormalizer->fromElement($unitEl);
+                            $instantCost = $this->instantCostNormalizer->fromElement($unitEl);
+                            $costs = $this->costNormalizer->fromCostsBlock($unitEl);
+
+                            $militaryUnits[] = [
+                                'is_elite' => $isElite,
+                                'recipe' => [
+                                    'name' => $name,
+                                    'group' => 0,
+                                    'duration_seconds' => $duration,
+                                    'buff_type' => 'Timed',
+                                    'requires_upgrade_level_min' => 0,
+                                    'requires_upgrade_level_max' => 99,
+                                    'requires_event' => null,
+                                    'requires_quest' => null,
+                                    'costs' => $costs,
+                                    'costs_known' => count($costs) > 0,
+                                    'instant_finish_cost' => $instantCost,
+                                    'max_amount_per_order' => 25,
+                                    'max_stacks_per_order' => 200,
+                                    'stacks_supported' => true,
+                                    'cost_is_lower_bound' => false,
+                                    'cost_tiers' => null,
+                                    'requires_player_level_min' => null,
+                                    'output_buff_name' => null,
+                                    'unverified_protocol' => false,
+                                    'tier' => null,
+                                    'unit_group' => null,
+                                ],
+                            ];
+                        }
+                    }
+                }
             }
         }
 
         $reader->close();
 
-        return [$buffPool, $timedLists];
+        return [$buffPool, $timedLists, $militaryUnits];
     }
 
     /**
-     * @return list<array{resource: string, count: int}>
+     * @return list<array{resource: string, count: int, is_population: bool}>
      */
     private function extractCostsFromXml(string $xml): array
     {
@@ -235,8 +447,13 @@ final class ImportProductionCatalog extends Command
                 $costs[] = [
                     'resource' => $m[1],
                     'count' => (int) $m[2],
+                    'is_population' => $m[1] === 'Population',
                 ];
             }
+        }
+
+        if (count($costs) > 1) {
+            usort($costs, static fn (array $a, array $b): int => strcmp((string) $a['resource'], (string) $b['resource']));
         }
 
         return $costs;
@@ -260,28 +477,14 @@ final class ImportProductionCatalog extends Command
 
             $groupAttr = $tp->getAttribute('group');
             $group = is_numeric($groupAttr) ? (int) $groupAttr : $groupAttr;
-            $duration = (int) ($tp->getAttribute('duration') ?: $tp->getAttribute('productionTime') ?: 0);
+            $duration = $this->durationNormalizer->fromElement($tp);
+            $instantCost = $this->instantCostNormalizer->fromElement($tp);
             $minLvl = $tp->hasAttribute('requiresUpgradeLevelMin') ? (int) $tp->getAttribute('requiresUpgradeLevelMin') : 0;
             $maxLvl = $tp->hasAttribute('requiresUpgradeLevelMax') ? (int) $tp->getAttribute('requiresUpgradeLevelMax') : 99;
             $reqEvent = $tp->hasAttribute('requiresEvent') ? $tp->getAttribute('requiresEvent') : null;
             $reqQuest = $tp->hasAttribute('requiresQuest') ? $tp->getAttribute('requiresQuest') : null;
 
-            $costs = [];
-            $costsTags = $tp->getElementsByTagName('Costs');
-            if ($costsTags->length > 0) {
-                $firstCostsTag = $costsTags->item(0);
-                if ($firstCostsTag !== null) {
-                    /** @var DOMNode $child */
-                    foreach ($firstCostsTag->childNodes as $child) {
-                        if ($child instanceof DOMElement && strtolower($child->nodeName) === 'cost') {
-                            $costs[] = [
-                                'resource' => $child->getAttribute('name'),
-                                'count' => (int) $child->getAttribute('count'),
-                            ];
-                        }
-                    }
-                }
-            }
+            $costs = $this->costNormalizer->fromCostsBlock($tp);
 
             $recipes[] = [
                 'name' => $name,
@@ -294,6 +497,17 @@ final class ImportProductionCatalog extends Command
                 'requires_quest' => $reqQuest ?: null,
                 'costs' => $costs,
                 'costs_known' => count($costs) > 0,
+                'instant_finish_cost' => $instantCost,
+                'max_amount_per_order' => 25,
+                'max_stacks_per_order' => 200,
+                'stacks_supported' => true,
+                'cost_is_lower_bound' => false,
+                'cost_tiers' => null,
+                'requires_player_level_min' => null,
+                'output_buff_name' => null,
+                'unverified_protocol' => false,
+                'tier' => null,
+                'unit_group' => null,
             ];
         }
 

@@ -1,0 +1,366 @@
+[
+  {
+    "id": 1,
+    "type": "Recruit",
+    "is_elite": false,
+    "production_time_seconds": 180,
+    "instant_build_costs": 2,
+    "costs": [
+      {
+        "resource": "Population",
+        "count": 1
+      },
+      {
+        "resource": "Beer",
+        "count": 5
+      },
+      {
+        "resource": "BronzeSword",
+        "count": 10
+      }
+    ],
+    "target_production_type": 0
+  },
+  {
+    "id": 2,
+    "type": "Militia",
+    "is_elite": false,
+    "production_time_seconds": 480,
+    "instant_build_costs": 4,
+    "costs": [
+      {
+        "resource": "Population",
+        "count": 1
+      },
+      {
+        "resource": "Beer",
+        "count": 10
+      },
+      {
+        "resource": "IronSword",
+        "count": 10
+      }
+    ],
+    "target_production_type": 0
+  },
+  {
+    "id": 3,
+    "type": "Bowman",
+    "is_elite": false,
+    "production_time_seconds": 240,
+    "instant_build_costs": 2,
+    "costs": [
+      {
+        "resource": "Population",
+        "count": 1
+      },
+      {
+        "resource": "Beer",
+        "count": 10
+      },
+      {
+        "resource": "Bow",
+        "count": 10
+      }
+    ],
+    "target_production_type": 0
+  },
+  {
+    "id": 4,
+    "type": "Cavalry",
+    "is_elite": false,
+    "production_time_seconds": 720,
+    "instant_build_costs": 8,
+    "costs": [
+      {
+        "resource": "Population",
+        "count": 1
+      },
+      {
+        "resource": "Beer",
+        "count": 30
+      },
+      {
+        "resource": "Horse",
+        "count": 40
+      }
+    ],
+    "target_production_type": 0
+  },
+  {
+    "id": 5,
+    "type": "Soldier",
+    "is_elite": false,
+    "production_time_seconds": 720,
+    "instant_build_costs": 6,
+    "costs": [
+      {
+        "resource": "Population",
+        "count": 1
+      },
+      {
+        "resource": "Beer",
+        "count": 15
+      },
+      {
+        "resource": "SteelSword",
+        "count": 10
+      }
+    ],
+    "target_production_type": 0
+  },
+  {
+    "id": 6,
+    "type": "Longbowman",
+    "is_elite": false,
+    "production_time_seconds": 480,
+    "instant_build_costs": 4,
+    "costs": [
+      {
+        "resource": "Population",
+        "count": 1
+      },
+      {
+        "resource": "Beer",
+        "count": 20
+      },
+      {
+        "resource": "Longbow",
+        "count": 10
+      }
+    ],
+    "target_production_type": 0
+  },
+  {
+    "id": 7,
+    "type": "EliteSoldier",
+    "is_elite": false,
+    "production_time_seconds": 1200,
+    "instant_build_costs": 10,
+    "costs": [
+      {
+        "resource": "Population",
+        "count": 1
+      },
+      {
+        "resource": "Beer",
+        "count": 50
+      },
+      {
+        "resource": "TitaniumSword",
+        "count": 10
+      }
+    ],
+    "target_production_type": 0
+  },
+  {
+    "id": 8,
+    "type": "Crossbowman",
+    "is_elite": false,
+    "production_time_seconds": 720,
+    "instant_build_costs": 8,
+    "costs": [
+      {
+        "resource": "Population",
+        "count": 1
+      },
+      {
+        "resource": "Beer",
+        "count": 50
+      },
+      {
+        "resource": "Crossbow",
+        "count": 10
+      }
+    ],
+    "target_production_type": 0
+  },
+  {
+    "id": 9,
+    "type": "Cannoneer",
+    "is_elite": false,
+    "production_time_seconds": 1200,
+    "instant_build_costs": 10,
+    "costs": [
+      {
+        "resource": "Population",
+        "count": 1
+      },
+      {
+        "resource": "Beer",
+        "count": 50
+      },
+      {
+        "resource": "Cannon",
+        "count": 10
+      }
+    ],
+    "target_production_type": 0
+  },
+  {
+    "id": 10,
+    "type": "Swordsman",
+    "is_elite": true,
+    "production_time_seconds": 900,
+    "instant_build_costs": 15,
+    "costs": [
+      {
+        "resource": "Population",
+        "count": 1
+      },
+      {
+        "resource": "Beer",
+        "count": 50
+      },
+      {
+        "resource": "PlatinumSword",
+        "count": 1
+      }
+    ],
+    "target_production_type": 8
+  },
+  {
+    "id": 11,
+    "type": "MountedSwordsman",
+    "is_elite": true,
+    "production_time_seconds": 1800,
+    "instant_build_costs": 15,
+    "costs": [
+      {
+        "resource": "Population",
+        "count": 1
+      },
+      {
+        "resource": "Beer",
+        "count": 50
+      },
+      {
+        "resource": "PlatinumSword",
+        "count": 2
+      },
+      {
+        "resource": "BattleHorse",
+        "count": 2
+      }
+    ],
+    "target_production_type": 8
+  },
+  {
+    "id": 12,
+    "type": "Knight",
+    "is_elite": true,
+    "production_time_seconds": 1200,
+    "instant_build_costs": 15,
+    "costs": [
+      {
+        "resource": "Population",
+        "count": 1
+      },
+      {
+        "resource": "Beer",
+        "count": 50
+      },
+      {
+        "resource": "BattleHorse",
+        "count": 1
+      }
+    ],
+    "target_production_type": 8
+  },
+  {
+    "id": 13,
+    "type": "Marksman",
+    "is_elite": true,
+    "production_time_seconds": 900,
+    "instant_build_costs": 15,
+    "costs": [
+      {
+        "resource": "Population",
+        "count": 1
+      },
+      {
+        "resource": "Beer",
+        "count": 50
+      },
+      {
+        "resource": "Archebuse",
+        "count": 1
+      }
+    ],
+    "target_production_type": 8
+  },
+  {
+    "id": 14,
+    "type": "ArmoredMarksman",
+    "is_elite": true,
+    "production_time_seconds": 1800,
+    "instant_build_costs": 15,
+    "costs": [
+      {
+        "resource": "Population",
+        "count": 1
+      },
+      {
+        "resource": "Beer",
+        "count": 50
+      },
+      {
+        "resource": "Archebuse",
+        "count": 1
+      },
+      {
+        "resource": "PlatinumSword",
+        "count": 1
+      }
+    ],
+    "target_production_type": 8
+  },
+  {
+    "id": 15,
+    "type": "MountedMarksman",
+    "is_elite": true,
+    "production_time_seconds": 1800,
+    "instant_build_costs": 15,
+    "costs": [
+      {
+        "resource": "Population",
+        "count": 1
+      },
+      {
+        "resource": "Beer",
+        "count": 50
+      },
+      {
+        "resource": "Archebuse",
+        "count": 2
+      },
+      {
+        "resource": "BattleHorse",
+        "count": 2
+      }
+    ],
+    "target_production_type": 8
+  },
+  {
+    "id": 16,
+    "type": "Besieger",
+    "is_elite": true,
+    "production_time_seconds": 1200,
+    "instant_build_costs": 15,
+    "costs": [
+      {
+        "resource": "Population",
+        "count": 1
+      },
+      {
+        "resource": "Beer",
+        "count": 50
+      },
+      {
+        "resource": "Mortar",
+        "count": 1
+      }
+    ],
+    "target_production_type": 8
+  }
+]
