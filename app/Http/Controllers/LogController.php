@@ -24,7 +24,11 @@ class LogController extends Controller
         $perPage = (int) $request->input('per_page', $request->input('limit', 100));
         $perPage = max(1, min(100, $perPage));
 
-        $query = BotLog::with('account:id,username,nickname')->latest('created_at');
+        $query = BotLog::with([
+            'account' => static function ($query): void {
+                $query->select('id', 'username', 'nickname')->withExists('marketServerConnections');
+            },
+        ])->latest('created_at');
 
         if ($request->filled('account_id')) {
             $query->where('account_id', $request->input('account_id'));
@@ -35,7 +39,10 @@ class LogController extends Controller
         }
 
         $logs = $query->paginate($perPage);
-        $accounts = Account::select('id', 'username', 'nickname')->orderBy('username')->get();
+        $accounts = Account::select('id', 'username', 'nickname')
+            ->withExists('marketServerConnections')
+            ->orderBy('username')
+            ->get();
 
         return BotLogResource::collection($logs)->additional([
             'accounts' => AccountResource::collection($accounts),
