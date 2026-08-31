@@ -1,17 +1,17 @@
 <template>
     <div>
         <!-- Page Header -->
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 sm:mb-8">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 mb-5 sm:mb-8">
             <div>
-                <h1 class="text-2xl sm:text-3xl font-bold text-white">{{ t('market.title') }}</h1>
-                <p class="text-xs sm:text-sm text-white/40 mt-1">{{ t('market.subtitle') }}</p>
+                <h1 class="text-xl sm:text-3xl font-bold text-white">{{ t('market.title') }}</h1>
+                <p class="text-xs sm:text-sm text-white/40 mt-0.5 sm:mt-1">{{ t('market.subtitle') }}</p>
             </div>
 
-            <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
                 <!-- Server Selector -->
                 <div v-if="servers.length > 0" class="flex items-center gap-2 bg-white/5 border border-white/10 p-1.5 rounded-xl w-full sm:w-auto">
                     <span class="text-xs font-semibold text-white/40 uppercase tracking-wider px-2 shrink-0">{{ t('market.server') }}:</span>
-                    <select v-model="selectedServerId" @change="onServerChange" :aria-label="t('market.server')" class="bg-dark-900 text-xs font-bold text-emerald-400 py-1.5 px-3 rounded-lg border border-emerald-500/20 focus:outline-none cursor-pointer w-full sm:max-w-[240px] truncate">
+                    <select v-model="selectedServerId" @change="onServerChange" :aria-label="t('market.server')" class="bg-dark-900 text-xs font-bold text-emerald-400 py-1.5 px-2.5 sm:px-3 rounded-lg border border-emerald-500/20 focus:outline-none cursor-pointer w-full sm:max-w-[240px] truncate">
                         <optgroup v-for="(groupServers, countryCode) in groupedServers" :key="countryCode" :label="`${getLocaleFlag(countryCode)} ${countryCode}`">
                             <option v-for="srv in groupServers" :key="srv.server_id" :value="srv.server_id">
                                 {{ srv.display_name }} ({{ srv.account ? srv.account.username : t('market.no_account') }})
@@ -21,14 +21,14 @@
                 </div>
 
                 <!-- Tab Navigation -->
-                <div class="flex items-center gap-1 bg-white/5 border border-white/10 p-1 rounded-xl shrink-0">
+                <div class="grid grid-cols-2 sm:flex items-center gap-1 bg-white/5 border border-white/10 p-1 rounded-xl shrink-0 w-full sm:w-auto">
                     <button @click="activeTab = 'analytics'"
-                            class="px-3 sm:px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all"
+                            class="px-3 sm:px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all text-center"
                             :class="activeTab === 'analytics' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'text-white/50 hover:text-white'">
                         {{ t('market.tab_analytics') }}
                     </button>
                     <button @click="activeTab = 'settings'"
-                            class="px-3 sm:px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all"
+                            class="px-3 sm:px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all text-center"
                             :class="activeTab === 'settings' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'text-white/50 hover:text-white'">
                         {{ t('market.tab_settings') }}
                     </button>
@@ -37,39 +37,39 @@
         </div>
 
         <!-- TAB 1: ANALYTICS -->
-        <div v-if="activeTab === 'analytics'" class="space-y-6">
+        <div v-if="activeTab === 'analytics'" class="space-y-4 sm:space-y-6">
             <!-- Servers loading placeholder -->
-            <div v-if="loadingServers && servers.length === 0" class="glass-card p-10 flex flex-col items-center justify-center gap-3 text-emerald-400">
+            <div v-if="loadingServers && servers.length === 0" class="glass-card p-8 sm:p-10 flex flex-col items-center justify-center gap-3 text-emerald-400">
                 <spinner size="lg" />
                 <p class="text-xs text-white/40">{{ t('market.loading_servers') }}</p>
             </div>
 
             <!-- Active Server Status Notice / Empty State -->
-            <div v-else-if="servers.length === 0" class="glass-card p-8 text-center space-y-4">
+            <div v-else-if="servers.length === 0" class="glass-card p-6 sm:p-8 text-center space-y-3 sm:space-y-4">
                 <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 mx-auto">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
                     </svg>
                 </div>
-                <h3 class="text-lg font-semibold text-white">{{ t('market.no_servers_title') }}</h3>
+                <h2 class="text-base sm:text-lg font-semibold text-white">{{ t('market.no_servers_title') }}</h2>
                 <p class="text-xs text-white/50 max-w-md mx-auto">
                     {{ t('market.no_servers_text') }}
                 </p>
-                <button @click="activeTab = 'settings'" class="btn-primary py-2 px-6 text-xs inline-flex items-center gap-2">
+                <button @click="activeTab = 'settings'" class="btn-primary py-2 px-6 text-xs inline-flex items-center justify-center gap-2 w-full sm:w-auto">
                     {{ t('market.go_to_settings') }}
                 </button>
             </div>
 
             <div v-else-if="currentServerConnection && (!currentServerConnection.account_id || currentServerConnection.sync_status === 'error' || currentServerConnection.sync_status === 'not_configured')"
-                 class="glass-card p-4 border-l-4"
+                 class="glass-card p-3.5 sm:p-4 border-l-4"
                  :class="currentServerConnection.sync_status === 'error' ? 'border-l-red-500 bg-red-500/5' : 'border-l-amber-500 bg-amber-500/5'">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                    <div class="flex items-center gap-3">
-                        <span class="badge" :class="getSyncBadgeClass(currentServerConnection.sync_status)">
+                    <div class="flex items-center gap-2.5 sm:gap-3">
+                        <span class="badge text-[10px] sm:text-xs" :class="getSyncBadgeClass(currentServerConnection.sync_status)">
                             {{ currentServerConnection.sync_status }}
                         </span>
-                        <div class="space-y-0.5">
-                            <p class="font-semibold text-white">
+                        <div class="space-y-0.5 min-w-0 flex-1">
+                            <p class="font-semibold text-white truncate">
                                 Server {{ currentServerConnection.display_name }} ({{ currentServerConnection.locale }}):
                                 <span v-if="!currentServerConnection.account_id" class="text-amber-400">{{ t('market.no_account_assigned') }}</span>
                                 <span v-else-if="currentServerConnection.last_error" class="text-red-400">{{ currentServerConnection.last_error }}</span>
@@ -77,14 +77,14 @@
                             </p>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2 shrink-0">
-                        <button v-if="currentServerConnection.account_id" @click="syncServerNow(currentServerConnection)" :disabled="syncing" class="btn-secondary py-1.5 px-3 text-xs flex items-center gap-1.5 disabled:opacity-50">
+                    <div class="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+                        <button v-if="currentServerConnection.account_id" @click="syncServerNow(currentServerConnection)" :disabled="syncing" class="btn-secondary py-1.5 px-3 text-xs flex items-center justify-center gap-1.5 disabled:opacity-50 flex-1 sm:flex-initial">
                             <svg class="w-3.5 h-3.5" :class="{ 'animate-spin': syncing }" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182" />
                             </svg>
                             <span>{{ syncing ? t('card.syncing') : t('market.sync_now') }}</span>
                         </button>
-                        <button @click="activeTab = 'settings'" class="btn-secondary py-1.5 px-3 text-xs">
+                        <button @click="activeTab = 'settings'" class="btn-secondary py-1.5 px-3 text-xs flex-1 sm:flex-initial text-center">
                             {{ t('market.manage_server') }}
                         </button>
                     </div>
@@ -92,20 +92,20 @@
             </div>
 
             <!-- Selection Card (Dropdowns or Visual Grid) -->
-            <div class="glass-card p-6 relative">
+            <div class="glass-card p-4 sm:p-6 relative">
                 <loading-overlay :show="loading || loadingPairs" :label="loadingPairs ? t('market.loading_pairs') : t('common.loading_data')" />
                 <!-- Selector Header: Mode Switch & Mirror Button -->
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-white/5 pb-4">
-                    <div class="flex items-center gap-2">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6 border-b border-white/5 pb-3 sm:pb-4">
+                    <div class="flex items-center gap-2 flex-wrap">
                         <span class="text-xs font-semibold text-white/40 uppercase tracking-wider">{{ t('market.selection_mode') }}</span>
                         <div class="flex items-center gap-1 bg-white/5 border border-white/10 p-0.5 rounded-lg">
                             <button @click="selectionMode = 'dropdown'"
-                                    class="px-3 py-1 rounded text-[10px] font-bold uppercase transition-all"
+                                    class="px-2.5 sm:px-3 py-1 rounded text-[10px] font-bold uppercase transition-all"
                                     :class="selectionMode === 'dropdown' ? 'bg-emerald-500 text-white' : 'text-white/50 hover:text-white'">
                                 {{ t('market.dropdowns') }}
                             </button>
                             <button @click="selectionMode = 'visual'"
-                                    class="px-3 py-1 rounded text-[10px] font-bold uppercase transition-all"
+                                    class="px-2.5 sm:px-3 py-1 rounded text-[10px] font-bold uppercase transition-all"
                                     :class="selectionMode === 'visual' ? 'bg-emerald-500 text-white' : 'text-white/50 hover:text-white'">
                                 {{ t('market.visual_browser') }}
                             </button>
@@ -113,30 +113,30 @@
                     </div>
 
                     <!-- Reset Selection / Mirror / Copy Link Button -->
-                    <div class="flex items-center gap-2">
-                        <button v-if="selectedItem || selectedTarget" @click="resetSelection" class="btn-secondary py-1 px-3 text-xs bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition-all">
+                    <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                        <button v-if="selectedItem || selectedTarget" @click="resetSelection" class="btn-secondary py-1 px-2.5 sm:px-3 text-xs bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition-all">
                             {{ t('market.reset_selection') }}
                         </button>
-                        <button v-if="selectedItem && selectedTarget" @click="mirrorSelection" class="btn-secondary py-1 px-3 text-xs bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all flex items-center gap-1">
+                        <button v-if="selectedItem && selectedTarget" @click="mirrorSelection" class="btn-secondary py-1 px-2.5 sm:px-3 text-xs bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all flex items-center gap-1">
                             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
                             </svg>
-                            {{ t('market.mirror_trade') }}
+                            <span>{{ t('market.mirror_trade') }}</span>
                         </button>
-                        <button v-if="selectedItem && selectedTarget" @click="copyPairLink" class="btn-secondary py-1 px-3 text-xs bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all flex items-center gap-1">
+                        <button v-if="selectedItem && selectedTarget" @click="copyPairLink" class="btn-secondary py-1 px-2.5 sm:px-3 text-xs bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all flex items-center gap-1">
                             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
                             </svg>
-                            {{ t('market.copy_link') }}
+                            <span>{{ t('market.copy_link') }}</span>
                         </button>
                     </div>
                 </div>
 
                 <!-- Mode 1: Dropdown Selection -->
-                <div v-if="selectionMode === 'dropdown'" class="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+                <div v-if="selectionMode === 'dropdown'" class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-end">
                     <!-- Selling Item Selection -->
                     <div>
-                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('market.selling_item') }}</label>
+                        <label class="block text-xs font-medium text-white/40 mb-1.5 sm:mb-2 uppercase tracking-wider">{{ t('market.selling_item') }}</label>
                         <div class="relative">
                             <select v-model="selectedItem" @change="onItemChange" :aria-label="t('market.selling_item')" class="glass-select w-full">
                                 <option value="" class="bg-dark-900">{{ t('market.select_selling') }}</option>
@@ -172,34 +172,38 @@
                 </div>
 
                 <!-- Mode 2: Visual Browser Selection -->
-                <div v-else class="space-y-6">
+                <div v-else class="space-y-4 sm:space-y-6">
                     <!-- Tab Navigation for Visual steps -->
-                    <div class="flex items-center border-b border-white/10 gap-4">
+                    <div class="grid grid-cols-2 gap-2 border-b border-white/10 pb-0 sm:flex sm:items-center sm:gap-6">
                         <button @click="visualTab = 1"
-                                class="pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2"
+                                class="flex flex-col sm:flex-row items-center justify-center sm:justify-start pb-2 sm:pb-3 text-[11px] sm:text-xs font-bold uppercase tracking-tight sm:tracking-wider transition-all duration-300 border-b-2 min-w-0 w-full sm:w-auto"
                                 :class="visualTab === 1 ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-white/40 hover:text-white'">
-                            {{ t('market.sell_resource') }}
-                            <span v-if="selectedItem" class="ml-1 text-[10px] text-emerald-500 font-mono font-medium">({{ selectedItemName }})</span>
+                            <span class="truncate max-w-full sm:max-w-none whitespace-nowrap">{{ t('market.sell_resource') }}</span>
+                            <span v-if="selectedItem" class="text-[10px] sm:text-xs text-emerald-500 font-mono font-medium truncate max-w-full sm:max-w-none sm:ml-1.5">
+                                ({{ selectedItemName }})
+                            </span>
                         </button>
                         <button @click="visualTab = 2"
                                 :disabled="!selectedItem"
-                                class="pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 disabled:opacity-30 disabled:cursor-not-allowed"
+                                class="flex flex-col sm:flex-row items-center justify-center sm:justify-start pb-2 sm:pb-3 text-[11px] sm:text-xs font-bold uppercase tracking-tight sm:tracking-wider transition-all duration-300 border-b-2 disabled:opacity-30 disabled:cursor-not-allowed min-w-0 w-full sm:w-auto"
                                 :class="visualTab === 2 ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-white/40 hover:text-white'">
-                            {{ t('market.buy_resource') }}
-                            <span v-if="selectedTarget" class="ml-1 text-[10px] text-emerald-500 font-mono font-medium">({{ selectedTargetName }})</span>
+                            <span class="truncate max-w-full sm:max-w-none whitespace-nowrap">{{ t('market.buy_resource') }}</span>
+                            <span v-if="selectedTarget" class="text-[10px] sm:text-xs text-emerald-500 font-mono font-medium truncate max-w-full sm:max-w-none sm:ml-1.5">
+                                ({{ selectedTargetName }})
+                            </span>
                         </button>
                     </div>
 
                     <!-- Step 1: Selling resource grid -->
-                    <div v-if="visualTab === 1" class="grid grid-cols-3 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-2 max-h-60 overflow-y-auto p-1.5">
+                    <div v-if="visualTab === 1" class="grid grid-cols-3 xs:grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-1.5 sm:gap-2 max-h-60 overflow-y-auto p-1 scrollbar-thin">
                         <div v-for="good in allGoods" :key="good.item_id"
                              @click="selectVisualItem(good.item_id)"
-                             class="flex flex-col items-center justify-center p-1.5 rounded-lg border cursor-pointer hover:border-emerald-500/40 hover:bg-white/[0.05] hover:shadow-md hover:shadow-emerald-500/5 text-center select-none transition-all duration-200"
-                             :class="selectedItem === good.item_id ? 'bg-emerald-500/10 border-emerald-500 shadow shadow-emerald-500/10' : 'bg-white/[0.02] border-white/5 hover:border-white/20 hover:bg-white/[0.04]'"
+                             class="flex flex-col items-center justify-center p-1 sm:p-1.5 rounded-lg border cursor-pointer hover:border-emerald-500/40 hover:bg-white/[0.05] hover:shadow-md hover:shadow-emerald-500/5 text-center select-none transition-all duration-300 ease-out transform hover:-translate-y-0.5"
+                             :class="selectedItem === good.item_id ? 'bg-emerald-500/10 border-emerald-500 shadow shadow-emerald-500/10 scale-[1.02]' : 'bg-white/[0.02] border-white/5 hover:border-white/20 hover:bg-white/[0.04]'"
                              :style="good.no_offers ? 'opacity:0.4' : ''"
                              :title="good.no_offers ? t('market.no_offers') : getItemName(good.item_name, good.item_id)">
-                            <img :alt="getItemName(good.item_name, good.item_id)" :src="getResourceIcon(good.item_id)" @error="handleIconError($event, good.item_id)" class="w-6 h-6 object-contain mb-1 pointer-events-none" />
-                            <span class="text-[9px] font-medium text-white/90 truncate w-full" :title="getItemName(good.item_name, good.item_id)">{{ getItemName(good.item_name, good.item_id) }}</span>
+                            <img :alt="getItemName(good.item_name, good.item_id)" :src="getResourceIcon(good.item_id)" @error="handleIconError($event, good.item_id)" class="w-5 h-5 sm:w-6 sm:h-6 object-contain mb-1 pointer-events-none" />
+                            <span class="text-[8px] sm:text-[9px] font-medium text-white/90 truncate w-full text-center" :title="getItemName(good.item_name, good.item_id)">{{ getItemName(good.item_name, good.item_id) }}</span>
                         </div>
                         <div v-if="allGoods.length === 0 && !loading" class="col-span-full py-8 text-center text-xs text-white/30">
                             {{ t('market.no_resources_for_server', { server: selectedServerId }) }}
@@ -207,13 +211,14 @@
                     </div>
 
                     <!-- Step 2: Buying target resource grid -->
-                    <div v-if="visualTab === 2" class="grid grid-cols-3 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-2 max-h-60 overflow-y-auto p-1.5">
+                    <div v-if="visualTab === 2" class="grid grid-cols-3 xs:grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-1.5 sm:gap-2 max-h-60 overflow-y-auto p-1 scrollbar-thin">
                         <div v-for="target in targets" :key="target.target_item_id"
                              @click="selectVisualTarget(target.target_item_id)"
-                             class="flex flex-col items-center justify-center p-1.5 rounded-lg border cursor-pointer hover:border-emerald-500/40 hover:bg-white/[0.05] hover:shadow-md hover:shadow-emerald-500/5 text-center select-none transition-all duration-200"
-                             :class="selectedTarget === target.target_item_id ? 'bg-emerald-500/10 border-emerald-500 shadow shadow-emerald-500/10' : 'bg-white/[0.02] border-white/5 hover:border-white/20 hover:bg-white/[0.04]'">
-                            <img :alt="getItemName(target.target_item_name, target.target_item_id)" :src="getResourceIcon(target.target_item_id)" @error="handleIconError($event, target.target_item_id)" class="w-6 h-6 object-contain mb-1 pointer-events-none" />
-                            <span class="text-[9px] font-medium text-white/90 truncate w-full" :title="getItemName(target.target_item_name, target.target_item_id)">{{ getItemName(target.target_item_name, target.target_item_id) }}</span>
+                             class="flex flex-col items-center justify-center p-1 sm:p-1.5 rounded-lg border cursor-pointer hover:border-emerald-500/40 hover:bg-white/[0.05] hover:shadow-md hover:shadow-emerald-500/5 text-center select-none transition-all duration-300 ease-out transform hover:-translate-y-0.5"
+                             :class="selectedTarget === target.target_item_id ? 'bg-emerald-500/10 border-emerald-500 shadow shadow-emerald-500/10 scale-[1.02]' : 'bg-white/[0.02] border-white/5 hover:border-white/20 hover:bg-white/[0.04]'"
+                             :title="getItemName(target.target_item_name, target.target_item_id)">
+                            <img :alt="getItemName(target.target_item_name, target.target_item_id)" :src="getResourceIcon(target.target_item_id)" @error="handleIconError($event, target.target_item_id)" class="w-5 h-5 sm:w-6 sm:h-6 object-contain mb-1 pointer-events-none" />
+                            <span class="text-[8px] sm:text-[9px] font-medium text-white/90 truncate w-full text-center" :title="getItemName(target.target_item_name, target.target_item_id)">{{ getItemName(target.target_item_name, target.target_item_id) }}</span>
                         </div>
                         <div v-if="targets.length === 0 && !loadingPairs" class="col-span-full py-8 text-center text-xs text-white/30">
                             Please select a selling item first.
@@ -222,49 +227,53 @@
                 </div>
 
                 <!-- Selection Path Indicator -->
-                <div v-if="selectedItemName && selectedTargetName" class="mt-5 pt-5 border-t border-white/5 flex items-center gap-3 text-lg font-semibold text-emerald-400">
-                    <img :alt="selectedItemName" :src="getResourceIcon(selectedItem)" @error="handleIconError($event, selectedItem)" class="w-6 h-6 object-contain" />
-                    <span>{{ selectedItemName }}</span>
-                    <svg class="w-5 h-5 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <div v-if="selectedItemName && selectedTargetName" class="mt-4 sm:mt-5 pt-4 sm:pt-5 border-t border-white/5 flex flex-wrap items-center gap-2 sm:gap-3 text-base sm:text-lg font-semibold text-emerald-400">
+                    <div class="flex items-center gap-2">
+                        <img :alt="selectedItemName" :src="getResourceIcon(selectedItem)" @error="handleIconError($event, selectedItem)" class="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
+                        <span>{{ selectedItemName }}</span>
+                    </div>
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
                     </svg>
-                    <img :alt="selectedTargetName" :src="getResourceIcon(selectedTarget)" @error="handleIconError($event, selectedTarget)" class="w-6 h-6 object-contain" />
-                    <span>{{ selectedTargetName }}</span>
+                    <div class="flex items-center gap-2">
+                        <img :alt="selectedTargetName" :src="getResourceIcon(selectedTarget)" @error="handleIconError($event, selectedTarget)" class="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
+                        <span>{{ selectedTargetName }}</span>
+                    </div>
                 </div>
             </div>
 
             <!-- Analytics loading placeholder (first fetch for a pair) -->
-            <div v-if="loadingChart && !stats" class="glass-card p-12 flex flex-col items-center justify-center gap-3 text-emerald-400">
+            <div v-if="loadingChart && !stats" class="glass-card p-8 sm:p-12 flex flex-col items-center justify-center gap-3 text-emerald-400">
                 <spinner size="lg" />
                 <p class="text-xs text-white/40">{{ t('market.loading_chart') }}</p>
             </div>
 
             <!-- Analysis Dashboard (Visible if both selected) -->
-            <div v-if="selectedItem && selectedTarget && stats" class="relative grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div v-if="selectedItem && selectedTarget && stats" class="relative grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
                 <loading-overlay :show="loadingChart" :label="t('market.loading_chart')" />
                 <!-- Stats Swarm (Left columns) -->
-                <div class="lg:col-span-2 space-y-6">
+                <div class="lg:col-span-2 space-y-4 sm:space-y-6">
                     <!-- Pricing Stats -->
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                        <div class="glass-card p-4">
-                            <span class="text-[10px] font-semibold text-white/30 uppercase tracking-wider block">{{ t('market.current_price') }}</span>
-                            <span class="text-xl font-bold text-white mt-1 block">{{ stats.current }}</span>
-                            <span class="text-[10px] text-white/40 block mt-0.5">{{ selectedTargetName }}</span>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4">
+                        <div class="glass-card p-3 sm:p-4 transition-all duration-300 hover:scale-[1.02]">
+                            <span class="text-[10px] font-semibold text-white/30 uppercase tracking-wider block truncate">{{ t('market.current_price') }}</span>
+                            <span class="text-lg sm:text-xl font-bold font-mono text-white mt-1 block truncate">{{ stats.current }}</span>
+                            <span class="text-[10px] text-white/40 block mt-0.5 truncate">{{ selectedTargetName }}</span>
                         </div>
-                        <div class="glass-card p-4">
-                            <span class="text-[10px] font-semibold text-white/30 uppercase tracking-wider block">{{ t('market.average_price') }}</span>
-                            <span class="text-xl font-bold text-emerald-400 mt-1 block">{{ stats.average }}</span>
-                            <span class="text-[10px] text-white/40 block mt-0.5">{{ selectedTargetName }}</span>
+                        <div class="glass-card p-3 sm:p-4 transition-all duration-300 hover:scale-[1.02]">
+                            <span class="text-[10px] font-semibold text-white/30 uppercase tracking-wider block truncate">{{ t('market.average_price') }}</span>
+                            <span class="text-lg sm:text-xl font-bold font-mono text-emerald-400 mt-1 block truncate">{{ stats.average }}</span>
+                            <span class="text-[10px] text-white/40 block mt-0.5 truncate">{{ selectedTargetName }}</span>
                         </div>
-                        <div class="glass-card p-4">
-                            <span class="text-[10px] font-semibold text-white/30 uppercase tracking-wider block">{{ t('market.min_price') }}</span>
-                            <span class="text-xl font-bold text-blue-400 mt-1 block">{{ stats.minimum }}</span>
-                            <span class="text-[10px] text-white/40 block mt-0.5">{{ selectedTargetName }}</span>
+                        <div class="glass-card p-3 sm:p-4 transition-all duration-300 hover:scale-[1.02]">
+                            <span class="text-[10px] font-semibold text-white/30 uppercase tracking-wider block truncate">{{ t('market.min_price') }}</span>
+                            <span class="text-lg sm:text-xl font-bold font-mono text-blue-400 mt-1 block truncate">{{ stats.minimum }}</span>
+                            <span class="text-[10px] text-white/40 block mt-0.5 truncate">{{ selectedTargetName }}</span>
                         </div>
-                        <div class="glass-card p-4">
-                            <span class="text-[10px] font-semibold text-white/30 uppercase tracking-wider block">{{ t('market.max_price') }}</span>
-                            <span class="text-xl font-bold text-red-400 mt-1 block">{{ stats.maximum }}</span>
-                            <span class="text-[10px] text-white/40 block mt-0.5">{{ selectedTargetName }}</span>
+                        <div class="glass-card p-3 sm:p-4 transition-all duration-300 hover:scale-[1.02]">
+                            <span class="text-[10px] font-semibold text-white/30 uppercase tracking-wider block truncate">{{ t('market.max_price') }}</span>
+                            <span class="text-lg sm:text-xl font-bold font-mono text-red-400 mt-1 block truncate">{{ stats.maximum }}</span>
+                            <span class="text-[10px] text-white/40 block mt-0.5 truncate">{{ selectedTargetName }}</span>
                         </div>
                     </div>
 
@@ -293,66 +302,91 @@
                 </div>
 
                 <!-- Calculator & Market Details Side Panel (Right columns) -->
-                <div class="space-y-6">
+                <div class="space-y-4 sm:space-y-6">
                     <!-- Calculator Card -->
-                    <div class="glass-card p-6">
-                        <div class="flex items-center gap-3 mb-5 border-b border-white/5 pb-3">
-                            <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+                    <div class="glass-card p-4 sm:p-6">
+                        <div class="flex items-center gap-3 mb-4 sm:mb-5 border-b border-white/5 pb-3">
+                            <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 shrink-0">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 15.75V18m-3-3v3m-3-3v3M9 3h12a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 21 21H9a2.25 2.25 0 0 1-2.25-2.25V5.25A2.25 2.25 0 0 1 9 3Zm2.25 3h7.5a.75.75 0 0 0 .75-.75V4.5a.75.75 0 0 0-.75-.75h-7.5a.75.75 0 0 0-.75.75v.75a.75.75 0 0 0 .75.75Z" />
                                 </svg>
                             </div>
-                            <h3 class="text-sm font-semibold text-white">{{ t('market.cost_calculator') }}</h3>
+                            <h2 class="text-sm font-semibold text-white">{{ t('market.cost_calculator') }}</h2>
                         </div>
 
-                        <div class="space-y-5">
+                        <div class="space-y-4 sm:space-y-5">
                             <div>
-                                <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('market.amount_of', { item: selectedItemName }) }}</label>
-                                <input type="number" v-model.number="calcAmount" min="1" class="glass-input w-full font-mono text-white text-lg"/>
+                                <div class="flex items-center justify-between gap-2 mb-1.5 sm:mb-2">
+                                    <label for="admin-calc-amount-input" class="block text-xs font-medium text-white/40 uppercase tracking-wider truncate">{{ t('market.amount_of', { item: isReversedCalc ? selectedTargetName : selectedItemName }) }}</label>
+                                    <button 
+                                        type="button"
+                                        @click="isReversedCalc = !isReversedCalc"
+                                        :title="t('market.reverse_calc_btn')"
+                                        :aria-label="t('market.reverse_calc_btn')"
+                                        class="flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[11px] font-medium transition-all duration-200 border shrink-0 cursor-pointer"
+                                        :class="isReversedCalc ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-sm shadow-emerald-500/10' : 'bg-white/5 text-white/50 border-white/10 hover:text-white hover:bg-white/10'"
+                                    >
+                                        <svg class="w-3.5 h-3.5 transition-transform duration-300" :class="{ 'rotate-180 text-emerald-400': isReversedCalc }" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+                                        </svg>
+                                        <span class="text-[10px]">{{ isReversedCalc ? selectedTargetName : selectedItemName }}</span>
+                                    </button>
+                                </div>
+                                <input id="admin-calc-amount-input" type="number" v-model.number="calcAmount" min="1" :aria-label="t('market.amount_of', { item: isReversedCalc ? selectedTargetName : selectedItemName })" class="glass-input w-full font-mono text-white text-base sm:text-lg"/>
                             </div>
 
                             <!-- Direct estimated revenue -->
-                            <div class="p-4 rounded-xl border border-emerald-500/10 bg-emerald-500/[0.02]">
+                            <div class="p-3.5 sm:p-4 rounded-xl border border-emerald-500/10 bg-emerald-500/[0.02]">
                                 <span class="text-[10px] font-semibold text-emerald-400/70 uppercase tracking-wider block">{{ t('market.estimated_revenue') }}</span>
                                 <div class="flex items-baseline gap-2 mt-1">
-                                    <span class="text-2xl font-bold text-emerald-400 font-mono">{{ calculatedCost }}</span>
-                                    <span class="text-xs text-white/40">{{ selectedTargetName }}</span>
+                                    <span class="text-xl sm:text-2xl font-bold text-emerald-400 font-mono">{{ calculatedCost }}</span>
+                                    <span class="text-xs text-white/40">{{ isReversedCalc ? selectedItemName : selectedTargetName }}</span>
                                 </div>
-                                <span class="text-[9px] text-white/20 block mt-2">{{ t('market.formula_direct', { amount: calcAmount || 0, price: stats.average }) }}</span>
+                                <span class="text-[9px] text-white/20 block mt-2">
+                                    {{ isReversedCalc 
+                                        ? t('market.formula_mirrored', { amount: calcAmount || 0, price: effectivePrice }) 
+                                        : t('market.formula_direct', { amount: calcAmount || 0, price: effectivePrice }) 
+                                    }}
+                                </span>
                             </div>
 
                             <!-- Mirrored estimated cost -->
-                            <div v-if="mirroredStats" class="p-4 rounded-xl border border-blue-500/10 bg-blue-500/[0.02]">
+                            <div v-if="mirroredStats && effectiveMirroredPrice > 0" class="p-3.5 sm:p-4 rounded-xl border border-blue-500/10 bg-blue-500/[0.02]">
                                 <span class="text-[10px] font-semibold text-blue-400/70 uppercase tracking-wider block">{{ t('market.estimated_cost') }}</span>
                                 <div class="flex items-baseline gap-2 mt-1">
-                                    <span class="text-2xl font-bold text-blue-400 font-mono">{{ calculatedMirroredCost }}</span>
-                                    <span class="text-xs text-white/40">{{ selectedTargetName }}</span>
+                                    <span class="text-xl sm:text-2xl font-bold text-blue-400 font-mono">{{ calculatedMirroredCost }}</span>
+                                    <span class="text-xs text-white/40">{{ isReversedCalc ? selectedItemName : selectedTargetName }}</span>
                                 </div>
-                                <span class="text-[9px] text-white/20 block mt-2">{{ t('market.formula_mirrored', { amount: calcAmount || 0, price: mirroredStats.average }) }}</span>
+                                <span class="text-[9px] text-white/20 block mt-2">
+                                    {{ isReversedCalc 
+                                        ? t('market.formula_direct', { amount: calcAmount || 0, price: effectiveMirroredPrice }) 
+                                        : t('market.formula_mirrored', { amount: calcAmount || 0, price: effectiveMirroredPrice }) 
+                                    }}
+                                </span>
                             </div>
-                            <div v-else class="p-4 rounded-xl border border-white/5 bg-white/[0.01] text-center text-xs text-white/30">
+                            <div v-else class="p-3.5 sm:p-4 rounded-xl border border-white/5 bg-white/[0.01] text-center text-xs text-white/30">
                                 {{ t('market.no_mirrored_trades', { target: selectedTargetName, item: selectedItemName }) }}
                             </div>
                         </div>
                     </div>
 
                     <!-- Selected pair market details -->
-                    <div class="glass-card p-6">
-                        <h3 class="text-sm font-semibold text-white mb-4">{{ t('market.info') }}</h3>
-                        <div class="space-y-3 text-xs">
-                            <div class="flex justify-between py-2 border-b border-white/5">
+                    <div class="glass-card p-4 sm:p-6">
+                        <h2 class="text-sm font-semibold text-white mb-3 sm:mb-4">{{ t('market.info') }}</h2>
+                        <div class="space-y-2.5 sm:space-y-3 text-xs">
+                            <div class="flex justify-between py-1.5 sm:py-2 border-b border-white/5">
                                 <span class="text-white/40">{{ t('market.total_volume') }}</span>
                                 <span class="text-white font-mono font-medium">{{ activeVolume }} {{ selectedItemName }}</span>
                             </div>
-                            <div class="flex justify-between py-2 border-b border-white/5">
+                            <div class="flex justify-between py-1.5 sm:py-2 border-b border-white/5">
                                 <span class="text-white/40">{{ t('market.offers_count') }}</span>
                                 <span class="text-white font-mono font-medium">{{ activeOffersCount }}</span>
                             </div>
-                            <div class="flex justify-between py-2 border-b border-white/5">
+                            <div class="flex justify-between py-1.5 sm:py-2 border-b border-white/5">
                                 <span class="text-white/40">{{ t('market.active_sellers') }}</span>
                                 <span class="text-white font-mono font-medium">{{ activeSellersCount }}</span>
                             </div>
-                            <div class="flex justify-between py-2 last:border-0">
+                            <div class="flex justify-between py-1.5 sm:py-2 last:border-0">
                                 <span class="text-white/40">{{ t('market.trend') }}</span>
                                 <span class="font-semibold" :class="priceTrendClass">{{ priceTrendText }}</span>
                             </div>
@@ -362,18 +396,18 @@
             </div>
 
             <!-- Popular Items & Current Active Market -->
-            <div class="mt-8 space-y-6 relative">
+            <div class="mt-6 sm:mt-8 space-y-4 sm:space-y-6 relative">
                 <loading-overlay :show="loading" :label="t('market.loading_data')" />
                 <!-- Most Popular Items Card -->
-                <div class="glass-card p-6 animate-fade-in-up">
-                    <div class="flex items-center justify-between gap-3 mb-6 border-b border-white/5 pb-3">
+                <div class="glass-card p-4 sm:p-6 animate-fade-in-up">
+                    <div class="flex items-center justify-between gap-3 mb-4 sm:mb-6 border-b border-white/5 pb-3">
                         <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white">
+                            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shrink-0">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18 9 11.25l4.306 4.307a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-3.75-1.002m3.75 1.002-1.002 3.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                 </svg>
                             </div>
-                            <h2 class="text-lg font-semibold text-white">{{ t('market.popular_items') }}</h2>
+                            <h2 class="text-base sm:text-lg font-semibold text-white">{{ t('market.popular_items') }}</h2>
                         </div>
                         <button @click="togglePopularItems" :aria-label="t('market.popular_items')" :aria-expanded="showPopularItems ? 'true' : 'false'" class="text-white/40 hover:text-white transition-colors">
                             <svg v-if="showPopularItems" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -385,56 +419,48 @@
                         </button>
                     </div>
 
-                    <div v-show="showPopularItems" class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="border-b border-white/5 text-[10px] font-semibold text-white/30 uppercase tracking-wider">
-                                    <th class="py-3 px-4">{{ t('market.item_name') }}</th>
-                                    <th class="py-3 px-4">{{ t('market.item_code') }}</th>
-                                    <th class="py-3 px-4 text-right">{{ t('market.active_offers') }}</th>
-                                    <th class="py-3 px-4 text-right">{{ t('market.unique_sellers') }}</th>
-                                    <th class="py-3 px-4 text-right">{{ t('market.active_volume') }}</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-white/5 text-sm text-white/70">
-                                <tr v-for="item in popular" :key="item.item_id" class="hover:bg-white/[0.01] transition-all">
-                                    <td class="py-3 px-4 font-semibold text-white">
-                                        <div class="flex items-center gap-2">
-                                            <img :alt="getItemName(item.item_name, item.item_id)" :src="getResourceIcon(item.item_id)" @error="handleIconError($event, item.item_id)" class="w-5 h-5 object-contain" />
-                                            <span>{{ getItemName(item.item_name, item.item_id) }}</span>
-                                        </div>
-                                    </td>
-                                    <td class="py-3 px-4 font-mono text-xs text-white/35">{{ item.item_id }}</td>
-                                    <td class="py-3 px-4 text-right text-emerald-400 font-mono font-medium">{{ t('market.offers_count_num', { count: item.offers_count }) }}</td>
-                                    <td class="py-3 px-4 text-right text-blue-400 font-mono">{{ t('market.sellers_count_num', { count: item.sellers_count }) }}</td>
-                                    <td class="py-3 px-4 text-right font-mono">{{ formatVolume(item.total_volume) }} {{ t('market.units_short') }}</td>
-                                </tr>
-                                <tr v-if="popular.length === 0">
-                                    <td colspan="5" class="py-8 text-center text-white/20">
-                                        {{ t('market.no_data_for_server', { server: selectedServerId }) }}
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                    <transition name="smooth-accordion">
+                        <div v-show="showPopularItems">
+                            <market-data-table :columns="popularColumns" :rows="popular" :empty-text="t('market.no_data_for_server', { server: selectedServerId })">
+                                <template #cell-item_name="{ row }">
+                                    <div class="flex items-center gap-2 justify-end sm:justify-start">
+                                        <img :alt="getItemName(row.item_name, row.item_id)" :src="getResourceIcon(row.item_id)" @error="handleIconError($event, row.item_id)" class="w-5 h-5 object-contain flex-shrink-0" />
+                                        <span class="font-semibold text-white truncate">{{ getItemName(row.item_name, row.item_id) }}</span>
+                                    </div>
+                                </template>
+                                <template #cell-item_id="{ row }">
+                                    <span class="font-mono text-xs text-white/35">{{ row.item_id }}</span>
+                                </template>
+                                <template #cell-offers_count="{ row }">
+                                    <span class="text-emerald-400 font-mono font-medium">{{ t('market.offers_count_num', { count: row.offers_count }) }}</span>
+                                </template>
+                                <template #cell-sellers_count="{ row }">
+                                    <span class="text-blue-400 font-mono">{{ t('market.sellers_count_num', { count: row.sellers_count }) }}</span>
+                                </template>
+                                <template #cell-total_volume="{ row }">
+                                    <span class="font-mono font-semibold">{{ formatVolume(row.total_volume) }} {{ t('market.units_short') }}</span>
+                                </template>
+                            </market-data-table>
+                        </div>
+                    </transition>
                 </div>
 
                 <!-- Profitable Arbitrage Schemes Card -->
-                <div class="glass-card p-6 animate-fade-in-up">
-                    <div class="flex items-center justify-between mb-6 border-b border-white/5 pb-3">
+                <div class="glass-card p-4 sm:p-6 animate-fade-in-up">
+                    <div class="flex items-center justify-between mb-4 sm:mb-6 border-b border-white/5 pb-3">
                         <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white">
+                            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white shrink-0">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 0 0-3.7-3.7 48.656 48.656 0 0 0-7.324 0 4.006 4.006 0 0 0-3.7 3.7C4.547 9.547 4.5 10.768 4.5 12s.047 2.453.138 3.662a4.006 4.006 0 0 0 3.7 3.7 48.656 48.656 0 0 0 7.324 0 4.006 4.006 0 0 0 3.7-3.7C19.453 14.453 19.5 13.232 19.5 12Zm0 0h.008v.008h-.008V12Zm-3 0h.008v.008h-.008V12c0-1.68-.282-3.297-.802-4.806m-9.396 0A20.732 20.732 0 0 1 12 6.75c1.455 0 2.843.15 4.198.437M12 6.75a20.733 20.733 0 0 0-4.198.437m0 0A20.73 20.73 0 0 0 7 12c0 1.68.282 3.297.802 4.806m9.396 0A20.73 20.73 0 0 1 12 17.25c-1.455 0-2.843-.15-4.198-.437M12 17.25a20.73 20.73 0 0 0 4.198-.437" />
                                 </svg>
                             </div>
                             <div class="flex flex-col">
-                                <h2 class="text-lg font-semibold text-white">{{ t('market.schemes') }}</h2>
+                                <h2 class="text-base sm:text-lg font-semibold text-white">{{ t('market.schemes') }}</h2>
                                 <span class="text-xs text-white/40">{{ t('market.schemes_hint') }}</span>
                             </div>
                         </div>
-                        <div class="flex items-center gap-4">
-                            <span class="badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs py-1 px-3">
+                        <div class="flex items-center gap-2.5 sm:gap-4">
+                            <span class="badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs py-1 px-2.5 sm:px-3">
                                 {{ t('market.schemes_found', { count: arbitrageLoops.length }) }}
                             </span>
                             <button @click="toggleArbitrageSchemes" :aria-label="t('market.schemes')" :aria-expanded="showArbitrageSchemes ? 'true' : 'false'" class="text-white/40 hover:text-white transition-colors">
@@ -448,9 +474,9 @@
                         </div>
                     </div>
 
-                    <div v-show="showArbitrageSchemes" class="space-y-4 max-h-[500px] overflow-y-auto pr-2 scrollbar-thin">
+                    <div v-show="showArbitrageSchemes" class="space-y-4 max-h-[500px] overflow-y-auto pr-1 sm:pr-2 scrollbar-thin">
                         <div v-for="(scheme, idx) in arbitrageLoops" :key="'scheme-'+idx"
-                             class="p-4 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-all flex flex-col gap-4">
+                             class="p-3.5 sm:p-4 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-all flex flex-col gap-3 sm:gap-4">
                             <!-- Card Header (Type & Profit) -->
                             <div class="flex items-center justify-between flex-wrap gap-2 border-b border-white/5 pb-2">
                                 <span class="badge text-[10px] font-semibold tracking-wider uppercase"
@@ -458,9 +484,9 @@
                                     {{ t('market.loop_type', { type: scheme.type }) }}
                                 </span>
 
-                                <div class="flex items-center gap-3">
+                                <div class="flex items-center flex-wrap gap-2 sm:gap-3">
                                     <!-- Leftovers -->
-                                    <div v-if="scheme.leftovers && scheme.leftovers.length" class="flex items-center gap-2 text-xs text-blue-400">
+                                    <div v-if="scheme.leftovers && scheme.leftovers.length" class="flex items-center gap-1.5 sm:gap-2 text-xs text-blue-400">
                                         <span class="text-white/30">{{ t('market.leftovers') }}</span>
                                         <span v-for="leftover in scheme.leftovers" :key="leftover.item_id" class="flex items-center gap-1 text-white/70">
                                             <img alt="" :src="getResourceIcon(leftover.item_id)" @error="handleIconError($event, leftover.item_id)" class="w-3.5 h-3.5 object-contain" />
@@ -468,7 +494,7 @@
                                         </span>
                                     </div>
                                     <!-- Net Profit -->
-                                    <div class="flex items-center gap-2">
+                                    <div class="flex items-center gap-1.5 sm:gap-2">
                                         <span class="text-xs text-white/40">{{ t('market.net_profit') }}</span>
                                         <div class="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg py-1 px-2">
                                             <img :alt="getItemName(scheme.profit.item_name, scheme.profit.item_id)" :src="getResourceIcon(scheme.profit.item_id)" @error="handleIconError($event, scheme.profit.item_id)" class="w-4 h-4 object-contain" />
@@ -480,37 +506,46 @@
                             </div>
 
                             <!-- Steps flowchart -->
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
-                                <div v-for="(step, sIdx) in scheme.steps" :key="sIdx" class="flex items-center gap-3">
-                                    <div class="flex-1 p-3 rounded-lg bg-white/[0.02] border border-white/5 relative">
-                                        <div class="text-[10px] uppercase font-bold text-white/30 mb-2">{{ t('market.step_num', { step: sIdx + 1 }) }}</div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 items-center">
+                                <template v-for="(step, sIdx) in scheme.steps" :key="sIdx">
+                                    <div class="flex items-center gap-3">
+                                        <div class="flex-1 p-3 rounded-lg bg-white/[0.02] border border-white/5 relative">
+                                            <div class="text-[10px] uppercase font-bold text-white/30 mb-2">{{ t('market.step_num', { step: sIdx + 1 }) }}</div>
 
-                                        <div class="flex flex-col gap-1.5">
-                                            <div class="flex items-center gap-1.5 text-xs">
-                                                <span class="text-white/40 w-8">{{ t('market.give') }}</span>
-                                                <img alt="" :src="getResourceIcon(step.give_item)" @error="handleIconError($event, step.give_item)" class="w-4.5 h-4.5 object-contain" />
-                                                <span class="font-mono font-semibold text-white/90">{{ formatVolume(step.give_per_lot) }}</span>
-                                                <span class="text-[10px] text-white/30">(total: {{ formatVolume(step.give_amount) }})</span>
+                                            <div class="flex flex-col gap-1.5">
+                                                <div class="flex items-center gap-1.5 text-xs">
+                                                    <span class="text-white/40 w-8">{{ t('market.give') }}</span>
+                                                    <img alt="" :src="getResourceIcon(step.give_item)" @error="handleIconError($event, step.give_item)" class="w-4.5 h-4.5 object-contain" />
+                                                    <span class="font-mono font-semibold text-white/90">{{ formatVolume(step.give_per_lot) }}</span>
+                                                    <span class="text-[10px] text-white/30">(total: {{ formatVolume(step.give_amount) }})</span>
+                                                </div>
+                                                <div class="flex items-center gap-1.5 text-xs">
+                                                    <span class="text-white/40 w-8">{{ t('market.get') }}</span>
+                                                    <img alt="" :src="getResourceIcon(step.receive_item)" @error="handleIconError($event, step.receive_item)" class="w-4.5 h-4.5 object-contain" />
+                                                    <span class="font-mono font-semibold text-emerald-400">{{ formatVolume(step.receive_per_lot) }}</span>
+                                                    <span class="text-[10px] text-emerald-400/40">(total: {{ formatVolume(step.receive_amount) }})</span>
+                                                </div>
+                                                <div class="text-[10px] text-white/30 mt-1 border-t border-white/5 pt-1 flex justify-between">
+                                                    <span>{{ t('market.lots') }} <strong class="text-white/80">{{ step.lots }}</strong></span>
+                                                    <span class="truncate max-w-[100px]" :title="step.sender">{{ t('market.by') }} <strong class="text-white/85">{{ step.sender }}</strong></span>
+                                                </div>
                                             </div>
-                                            <div class="flex items-center gap-1.5 text-xs">
-                                                <span class="text-white/40 w-8">{{ t('market.get') }}</span>
-                                                <img alt="" :src="getResourceIcon(step.receive_item)" @error="handleIconError($event, step.receive_item)" class="w-4.5 h-4.5 object-contain" />
-                                                <span class="font-mono font-semibold text-emerald-400">{{ formatVolume(step.receive_per_lot) }}</span>
-                                                <span class="text-[10px] text-emerald-400/40">(total: {{ formatVolume(step.receive_amount) }})</span>
-                                            </div>
-                                            <div class="text-[10px] text-white/30 mt-1 border-t border-white/5 pt-1 flex justify-between">
-                                                <span>{{ t('market.lots') }} <strong class="text-white/80">{{ step.lots }}</strong></span>
-                                                <span class="truncate max-w-[100px]" :title="step.sender">{{ t('market.by') }} <strong class="text-white/85">{{ step.sender }}</strong></span>
-                                            </div>
+                                        </div>
+
+                                        <div v-if="sIdx < scheme.steps.length - 1" class="hidden md:flex text-white/20">
+                                            <svg class="w-5 h-5 animate-pulse" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                                            </svg>
                                         </div>
                                     </div>
 
-                                    <div v-if="sIdx < scheme.steps.length - 1" class="hidden md:flex text-white/20">
-                                        <svg class="w-5 h-5 animate-pulse" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                                    <!-- Mobile down arrow between steps -->
+                                    <div v-if="sIdx < scheme.steps.length - 1" class="flex md:hidden justify-center text-white/20 my-0.5">
+                                        <svg class="w-4 h-4 animate-pulse" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                                         </svg>
                                     </div>
-                                </div>
+                                </template>
                             </div>
                         </div>
 
@@ -521,16 +556,16 @@
                 </div>
 
                 <!-- Current Active Market Listings Card -->
-                <div class="glass-card p-6 animate-fade-in-up transition-all duration-500 hover:border-white/20">
-                    <div class="flex items-center justify-between gap-3 mb-6 border-b border-white/5 pb-3">
+                <div class="glass-card p-4 sm:p-6 animate-fade-in-up transition-all duration-500 hover:border-white/20">
+                    <div class="flex items-center justify-between gap-3 mb-4 sm:mb-6 border-b border-white/5 pb-3">
                         <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
+                            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 shrink-0">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
                                 </svg>
                             </div>
                             <div class="flex flex-col">
-                                <h2 class="text-lg font-semibold text-white">{{ t('market.listings') }}</h2>
+                                <h2 class="text-base sm:text-lg font-semibold text-white">{{ t('market.listings') }}</h2>
                                 <span class="text-xs text-white/40">{{ t('market.active_trades_count', { count: totalActiveCount }) }}</span>
                             </div>
                         </div>
@@ -545,52 +580,37 @@
                     </div>
 
                     <transition name="smooth-accordion">
-                        <div v-show="showActiveListings" class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
-                                <thead>
-                                    <tr class="border-b border-white/5 text-[10px] font-semibold text-white/30 uppercase tracking-wider">
-                                        <th class="py-3 px-4">{{ t('market.player') }}</th>
-                                        <th class="py-3 px-4">{{ t('market.selling_resource') }}</th>
-                                        <th class="py-3 px-4">{{ t('market.buying_resource') }}</th>
-                                        <th class="py-3 px-4 text-right">{{ t('market.price') }}</th>
-                                        <th class="py-3 px-4 text-right">{{ t('market.lots_remaining') }}</th>
-                                        <th class="py-3 px-4 text-right">{{ t('market.time_left') }}</th>
-                                        <th class="py-3 px-4 text-right">{{ t('market.sync_time') }}</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-white/5 text-sm text-white/70">
-                                    <tr v-for="offer in activeOffers" :key="offer.offer_id" class="hover:bg-white/[0.03] transition-colors duration-300">
-                                        <td class="py-3 px-4 font-semibold text-white">{{ offer.sender_name }}</td>
-                                        <td class="py-3 px-4">
-                                            <div class="flex items-center gap-2">
-                                                <img :alt="getItemName(offer.item_name, offer.item_id)" :src="getResourceIcon(offer.item_id)" @error="handleIconError($event, offer.item_id)" class="w-5 h-5 object-contain" />
-                                                <span class="font-mono text-white/90">{{ formatVolume(offer.amount) }}</span>
-                                                <span class="text-xs text-white/40 truncate max-w-[100px]">{{ getItemName(offer.item_name, offer.item_id) }}</span>
-                                            </div>
-                                        </td>
-                                        <td class="py-3 px-4">
-                                            <div class="flex items-center gap-2">
-                                                <img :alt="getItemName(offer.target_item_name, offer.target_item_id)" :src="getResourceIcon(offer.target_item_id)" @error="handleIconError($event, offer.target_item_id)" class="w-5 h-5 object-contain" />
-                                                <span class="font-mono text-white/90">{{ formatVolume(offer.target_amount) }}</span>
-                                                <span class="text-xs text-white/40 truncate max-w-[100px]">{{ getItemName(offer.target_item_name, offer.target_item_id) }}</span>
-                                            </div>
-                                        </td>
-                                        <td class="py-3 px-4 text-right text-emerald-400 font-mono font-medium">
-                                            {{ offer.price }}
-                                        </td>
-                                        <td class="py-3 px-4 text-right text-blue-400 font-mono">{{ offer.lots_remaining }}</td>
-                                        <td class="py-3 px-4 text-right font-mono text-xs" :class="offer.time_left > 0 ? 'text-amber-400' : 'text-red-500'">
-                                            {{ formatTimeLeft(offer.time_left) }}
-                                        </td>
-                                        <td class="py-3 px-4 text-right text-[10px] text-white/30 font-mono">{{ offer.created_at }}</td>
-                                    </tr>
-                                    <tr v-if="activeOffers.length === 0">
-                                        <td colspan="7" class="py-8 text-center text-white/20">
-                                            {{ t('market.no_active_listings') }}
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <div v-show="showActiveListings">
+                            <market-data-table :columns="activeOffersColumns" :rows="activeOffers" :empty-text="t('market.no_active_listings')">
+                                <template #cell-sender_name="{ row }">
+                                    <span class="font-semibold text-white truncate">{{ row.sender_name }}</span>
+                                </template>
+                                <template #cell-item_name="{ row }">
+                                    <div class="flex items-center gap-1.5 justify-end sm:justify-start">
+                                        <img :alt="getItemName(row.item_name, row.item_id)" :src="getResourceIcon(row.item_id)" @error="handleIconError($event, row.item_id)" class="w-4.5 h-4.5 sm:w-5 sm:h-5 object-contain flex-shrink-0" />
+                                        <span class="font-mono text-white/90 font-semibold whitespace-nowrap">{{ formatVolume(row.amount) }}</span>
+                                        <span class="text-[11px] sm:text-xs text-white/40 truncate max-w-[75px] xs:max-w-[85px] sm:max-w-[100px]">{{ getItemName(row.item_name, row.item_id) }}</span>
+                                    </div>
+                                </template>
+                                <template #cell-target_item_name="{ row }">
+                                    <div class="flex items-center gap-1.5 justify-end sm:justify-start">
+                                        <img :alt="getItemName(row.target_item_name, row.target_item_id)" :src="getResourceIcon(row.target_item_id)" @error="handleIconError($event, row.target_item_id)" class="w-4.5 h-4.5 sm:w-5 sm:h-5 object-contain flex-shrink-0" />
+                                        <span class="font-mono text-white/90 font-semibold whitespace-nowrap">{{ formatVolume(row.target_amount) }}</span>
+                                        <span class="text-[11px] sm:text-xs text-white/40 truncate max-w-[75px] xs:max-w-[85px] sm:max-w-[100px]">{{ getItemName(row.target_item_name, row.target_item_id) }}</span>
+                                    </div>
+                                </template>
+                                <template #cell-price="{ row }">
+                                    <span class="text-emerald-400 font-mono font-medium">{{ row.price }}</span>
+                                </template>
+                                <template #cell-lots_remaining="{ row }">
+                                    <span class="text-blue-400 font-mono">{{ row.lots_remaining }}</span>
+                                </template>
+                                <template #cell-time_left="{ row }">
+                                    <span class="font-mono text-xs" :class="getOfferTimeLeft(row) > 0 ? 'text-amber-400' : 'text-red-500'">
+                                        {{ formatTimeLeft(getOfferTimeLeft(row)) }}
+                                    </span>
+                                </template>
+                            </market-data-table>
 
                             <!-- Load More Button -->
                             <div v-if="hasMoreActiveOffers" class="flex justify-center mt-4 pt-4 border-t border-white/5">
@@ -610,21 +630,21 @@
         <!-- TAB 2: SETTINGS & SERVERS -->
         <div v-else-if="activeTab === 'settings'" class="space-y-6">
             <!-- Section 1: Server Connections Table -->
-            <div class="glass-card p-6">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-white/5 pb-4">
+            <div class="glass-card p-4 sm:p-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6 border-b border-white/5 pb-3 sm:pb-4">
                     <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white">
+                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shrink-0">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 0 1-3-3m3 3a3 3 0 1 0 0 6h13.5a3 3 0 1 0 0-6m-13.5 0H3m16.5 0a3 3 0 0 0 3-3m-3 3a3 3 0 1 1 0 6M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                             </svg>
                         </div>
                         <div>
-                            <h2 class="text-lg font-semibold text-white">{{ t('market.servers_title') }}</h2>
+                            <h2 class="text-base sm:text-lg font-semibold text-white">{{ t('market.servers_title') }}</h2>
                             <p class="text-xs text-white/40">{{ t('market.servers_subtitle') }}</p>
                         </div>
                     </div>
 
-                    <button @click="openAddServerModal" class="btn-primary py-2 px-4 text-xs flex items-center gap-1.5">
+                    <button @click="openAddServerModal" class="btn-primary py-2 px-4 text-xs flex items-center justify-center gap-1.5 w-full sm:w-auto">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                         </svg>
@@ -632,103 +652,90 @@
                     </button>
                 </div>
 
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="border-b border-white/5 text-[10px] font-semibold text-white/30 uppercase tracking-wider">
-                                <th class="py-3 px-4">{{ t('market.col_server_locale') }}</th>
-                                <th class="py-3 px-4">{{ t('market.col_account') }}</th>
-                                <th class="py-3 px-4">{{ t('market.col_verification') }}</th>
-                                <th class="py-3 px-4">{{ t('market.status') }}</th>
-                                <th class="py-3 px-4">{{ t('market.last_sync') }}</th>
-                                <th class="py-3 px-4 text-right">{{ t('market.col_actions') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-white/5 text-sm text-white/70">
-                            <tr v-for="srv in servers" :key="srv.id" class="hover:bg-white/[0.01] transition-all">
-                                <td class="py-3 px-4 font-semibold text-white">
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-base">{{ getLocaleFlag(srv.locale) }}</span>
-                                        <div>
-                                            <span>{{ srv.display_name }}</span>
-                                            <span class="block text-[10px] text-white/35 font-mono">{{ srv.server_id }} ({{ srv.locale }})</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="py-3 px-4">
-                                    <div v-if="srv.account" class="flex items-center gap-1.5 flex-wrap">
-                                        <span class="w-2 h-2 rounded-full" :class="srv.account.status === 'online' ? 'bg-emerald-500' : 'bg-white/30'"></span>
-                                        <span class="font-medium text-white/90">{{ srv.account.username }}</span>
-                                        <span class="text-xs text-white/40">({{ srv.account.nickname || t('market.no_nick') }})</span>
-                                        <span v-if="srv.account.server_name" class="badge badge-success bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px]">
-                                            {{ srv.account.server_name }}
-                                        </span>
-                                    </div>
-                                    <span v-else class="text-xs text-white/30 italic">{{ t('market.not_assigned') }}</span>
-                                </td>
-                                <td class="py-3 px-4">
-                                    <span class="badge text-[10px]" :class="getVerificationBadgeClass(srv.verification_status)">
-                                        {{ srv.verification_status }}
+                <div>
+                    <market-data-table :columns="serverColumns" :rows="servers" :empty-text="t('market.no_servers_row')">
+                        <template #cell-locale="{ row }">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <span class="text-base flex-shrink-0">{{ getLocaleFlag(row.locale) }}</span>
+                                <div class="min-w-0">
+                                    <span class="font-semibold text-white truncate block">{{ row.display_name }}</span>
+                                    <span class="block text-[10px] text-white/35 font-mono">{{ row.server_id }} ({{ row.locale }})</span>
+                                </div>
+                            </div>
+                        </template>
+                        <template #cell-account="{ row }">
+                            <div v-if="row.account" class="flex flex-col items-end sm:flex-row sm:items-center gap-1 sm:gap-1.5 min-w-0 max-w-full text-right sm:text-left">
+                                <div class="flex items-center gap-1.5 min-w-0 max-w-full">
+                                    <span class="w-2 h-2 rounded-full shrink-0" :class="row.account.status === 'online' ? 'bg-emerald-500' : 'bg-white/30'"></span>
+                                    <span class="font-medium text-white/90 truncate max-w-[140px] xs:max-w-[180px] sm:max-w-none" :title="row.account.username">{{ row.account.username }}</span>
+                                </div>
+                                <div class="flex items-center gap-1.5 flex-wrap justify-end">
+                                    <span class="text-xs text-white/40">({{ row.account.nickname || t('market.no_nick') }})</span>
+                                    <span v-if="row.account.server_name" class="badge badge-success bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px]">
+                                        {{ row.account.server_name }}
                                     </span>
-                                </td>
-                                <td class="py-3 px-4">
-                                    <span class="badge text-[10px]" :class="getSyncBadgeClass(srv.sync_status)">
-                                        {{ srv.sync_status }}
-                                    </span>
-                                </td>
-                                <td class="py-3 px-4 font-mono text-xs text-white/60">
-                                    {{ formatDateTime(srv.last_synced_at) }}
-                                    <span v-if="srv.last_error" class="block text-[10px] text-red-400 truncate max-w-[150px]" :title="srv.last_error">
-                                        {{ srv.last_error }}
-                                    </span>
-                                </td>
-                                <td class="py-3 px-4 text-right">
-                                    <div class="flex items-center justify-end flex-wrap gap-2">
-                                        <button @click="verifyServer(srv)" :disabled="verifyingId === srv.id" class="btn-secondary py-1 px-2.5 text-[11px]" :title="t('market.verify_hint')">
-                                            {{ verifyingId === srv.id ? '...' : t('market.verify') }}
-                                        </button>
-                                        <button @click="syncServerNow(srv)" :disabled="syncing || !srv.account_id" class="btn-secondary py-1 px-2.5 text-[11px] text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/10 inline-flex items-center gap-1.5 disabled:opacity-50">
-                                            <svg v-if="syncingServerId === srv.id" class="animate-spin w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                                            </svg>
-                                            <span>{{ syncingServerId === srv.id ? '...' : t('market.sync_now') }}</span>
-                                        </button>
-                                        <button @click="openEditServerModal(srv)" class="btn-secondary py-1 px-2.5 text-[11px]">
-                                            {{ t('market.edit') }}
-                                        </button>
-                                        <button @click="deleteServer(srv)" class="btn-secondary py-1 px-2.5 text-[11px] text-red-400 hover:bg-red-500/10 border-red-500/20">
-                                            {{ t('market.delete') }}
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr v-if="servers.length === 0">
-                                <td colspan="6" class="py-8 text-center text-white/20">
-                                    {{ t('market.no_servers_row') }}
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                                </div>
+                            </div>
+                            <span v-else class="text-xs text-white/30 italic">{{ t('market.not_assigned') }}</span>
+                        </template>
+                        <template #cell-verification_status="{ row }">
+                            <span class="badge text-[10px]" :class="getVerificationBadgeClass(row.verification_status)">
+                                {{ row.verification_status }}
+                            </span>
+                        </template>
+                        <template #cell-sync_status="{ row }">
+                            <span class="badge text-[10px]" :class="getSyncBadgeClass(row.sync_status)">
+                                {{ row.sync_status }}
+                            </span>
+                        </template>
+                        <template #cell-last_synced_at="{ row }">
+                            <div class="text-right sm:text-left">
+                                <span class="font-mono text-xs text-white/60">{{ formatDateTime(row.last_synced_at) }}</span>
+                                <span v-if="row.last_error" class="block text-[10px] text-red-400 truncate max-w-[150px]" :title="row.last_error">
+                                    {{ row.last_error }}
+                                </span>
+                            </div>
+                        </template>
+                        <template #cell-actions="{ row }">
+                            <div class="flex items-center justify-end flex-wrap gap-1.5 sm:gap-2">
+                                <button @click="verifyServer(row)" :disabled="verifyingId === row.id" class="btn-secondary py-1 px-2.5 text-[11px]" :title="t('market.verify_hint')">
+                                    {{ verifyingId === row.id ? '...' : t('market.verify') }}
+                                </button>
+                                <button @click="syncServerNow(row)" :disabled="syncing || !row.account_id" class="btn-secondary py-1 px-2.5 text-[11px] text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/10 inline-flex items-center gap-1.5 disabled:opacity-50">
+                                    <svg v-if="syncingServerId === row.id" class="animate-spin w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                    </svg>
+                                    <span>{{ syncingServerId === row.id ? '...' : t('market.sync_now') }}</span>
+                                </button>
+                                <button @click="openEditServerModal(row)" class="btn-secondary py-1 px-2.5 text-[11px]">
+                                    {{ t('market.edit') }}
+                                </button>
+                                <button @click="deleteServer(row)" class="btn-secondary py-1 px-2.5 text-[11px] text-red-400 hover:bg-red-500/10 border-red-500/20">
+                                    {{ t('market.delete') }}
+                                </button>
+                            </div>
+                        </template>
+                    </market-data-table>
                 </div>
             </div>
 
             <!-- Section 2: Global Settings -->
-            <div class="glass-card p-6">
-                <div class="flex items-center gap-3 mb-5 border-b border-white/5 pb-3">
-                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white">
+            <div class="glass-card p-4 sm:p-6">
+                <div class="flex items-center gap-3 mb-4 sm:mb-5 border-b border-white/5 pb-3">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shrink-0">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                         </svg>
                     </div>
-                    <h2 class="text-lg font-semibold text-white">{{ t('market.autosync_schedule') }}</h2>
+                    <h2 class="text-base sm:text-lg font-semibold text-white">{{ t('market.autosync_schedule') }}</h2>
                 </div>
 
                 <form @submit.prevent="saveSettings">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
                         <div>
-                            <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('market.sync_interval') }}</label>
+                            <label for="market-settings-sync-interval" class="block text-xs font-medium text-white/40 mb-1.5 sm:mb-2 uppercase tracking-wider">{{ t('market.sync_interval') }}</label>
                             <div class="relative">
-                                <select v-model="settingsForm.sync_interval" class="glass-select w-full">
+                                <select id="market-settings-sync-interval" v-model="settingsForm.sync_interval" :aria-label="t('market.sync_interval')" class="glass-select w-full text-xs sm:text-sm">
                                     <option value="5" class="bg-dark-900">5 minutes</option>
                                     <option value="15" class="bg-dark-900">15 minutes</option>
                                     <option value="30" class="bg-dark-900">30 minutes</option>
@@ -739,27 +746,27 @@
                         </div>
 
                         <div v-if="settingsForm.sync_interval === 'custom'">
-                            <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('market.custom_interval') }}</label>
-                            <input type="number" v-model.number="settingsForm.custom_interval_minutes" min="1" class="glass-input w-full font-mono text-white"/>
+                            <label for="market-settings-custom-interval" class="block text-xs font-medium text-white/40 mb-1.5 sm:mb-2 uppercase tracking-wider">{{ t('market.custom_interval') }}</label>
+                            <input id="market-settings-custom-interval" type="number" v-model.number="settingsForm.custom_interval_minutes" min="1" :aria-label="t('market.custom_interval')" class="glass-input w-full font-mono text-white text-xs sm:text-sm"/>
                         </div>
                     </div>
 
-                    <button type="submit" :disabled="saving" class="btn-primary flex items-center gap-2 text-xs">
+                    <button type="submit" :disabled="saving" class="btn-primary flex items-center justify-center gap-2 text-xs w-full sm:w-auto">
                         {{ t('market.save_schedule') }}
                     </button>
                 </form>
             </div>
 
             <!-- Section 3: Sync Logs -->
-            <div class="glass-card p-6">
-                <div class="flex items-center justify-between mb-6 border-b border-white/5 pb-3">
+            <div class="glass-card p-4 sm:p-6">
+                <div class="flex items-center justify-between gap-3 mb-4 sm:mb-6 border-b border-white/5 pb-3">
                     <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center text-white">
+                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center text-white shrink-0">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 0 1 0 3.75H5.625a1.875 1.875 0 0 1 0-3.75Z" />
                             </svg>
                         </div>
-                        <h2 class="text-lg font-semibold text-white">{{ t('market.sync_log') }}</h2>
+                        <h2 class="text-base sm:text-lg font-semibold text-white">{{ t('market.sync_log') }}</h2>
                     </div>
                     <button @click="loadSyncLogs(logsPagination.current_page || 1)" :disabled="loadingSyncLogs" class="btn-secondary py-1 px-3 text-xs flex items-center gap-1.5 hover:border-emerald-500/30 hover:text-emerald-400 disabled:opacity-50">
                         <svg class="w-3.5 h-3.5" :class="{ 'animate-spin': loadingSyncLogs }" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -769,44 +776,30 @@
                     </button>
                 </div>
 
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="border-b border-white/5 text-[10px] font-semibold text-white/30 uppercase tracking-wider">
-                                <th class="py-3 px-4">{{ t('market.server') }}</th>
-                                <th class="py-3 px-4">{{ t('market.date') }}</th>
-                                <th class="py-3 px-4">{{ t('market.action') }}</th>
-                                <th class="py-3 px-4">{{ t('market.status') }}</th>
-                                <th class="py-3 px-4">{{ t('market.message') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-white/5 text-sm text-white/70">
-                            <tr v-for="(log, idx) in logs" :key="'log-'+idx" class="hover:bg-white/[0.01] transition-all">
-                                <td class="py-3 px-4 font-mono text-xs text-emerald-400 font-bold">{{ log.server_id || '-' }}</td>
-                                <td class="py-3 px-4 font-mono text-xs">{{ formatDateTime(log.date) }}</td>
-                                <td class="py-3 px-4 font-semibold text-white/95">{{ log.action }}</td>
-                                <td class="py-3 px-4">
-                                    <span class="badge text-[10px]" :class="getStatusBadgeClass(log.status)">
-                                        {{ log.status }}
-                                    </span>
-                                </td>
-                                <td class="py-3 px-4 text-xs text-white/50">{{ log.message }}</td>
-                            </tr>
-                            <tr v-if="loadingSyncLogs && logs.length === 0">
-                                <td colspan="5" class="py-8">
-                                    <div class="flex items-center justify-center gap-2 text-xs text-emerald-400">
-                                        <spinner size="sm" />
-                                        <span>{{ t('common.loading_data') }}</span>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr v-else-if="logs.length === 0">
-                                <td colspan="5" class="py-8 text-center text-white/20">
-                                    {{ t('market.no_sync_logs') }}
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div>
+                    <div v-if="loadingSyncLogs && logs.length === 0" class="py-8 text-center text-xs text-emerald-400 flex items-center justify-center gap-2">
+                        <spinner size="sm" />
+                        <span>{{ t('common.loading_data') }}</span>
+                    </div>
+                    <market-data-table v-else :columns="syncLogColumns" :rows="logs" :empty-text="t('market.no_sync_logs')">
+                        <template #cell-server_id="{ row }">
+                            <span class="font-mono text-xs text-emerald-400 font-bold">{{ row.server_id || '-' }}</span>
+                        </template>
+                        <template #cell-date="{ row }">
+                            <span class="font-mono text-xs text-white/70">{{ formatDateTime(row.date) }}</span>
+                        </template>
+                        <template #cell-action="{ row }">
+                            <span class="font-semibold text-white/95">{{ row.action }}</span>
+                        </template>
+                        <template #cell-status="{ row }">
+                            <span class="badge text-[10px]" :class="getStatusBadgeClass(row.status)">
+                                {{ row.status }}
+                            </span>
+                        </template>
+                        <template #cell-message="{ row }">
+                            <span class="text-xs text-white/50 break-words">{{ row.message }}</span>
+                        </template>
+                    </market-data-table>
                 </div>
 
                 <!-- Pagination Controls -->
@@ -835,28 +828,28 @@
         </div>
 
         <!-- Add / Edit Server Connection Modal -->
-        <div v-if="showServerModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
-            <div class="glass-card max-w-lg w-full p-6 space-y-6 border border-white/10 shadow-2xl">
-                <div class="flex items-center justify-between border-b border-white/10 pb-4">
-                    <h3 class="text-lg font-bold text-white">
+        <div v-if="showServerModal" class="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
+            <div class="glass-card max-w-lg w-full p-4 sm:p-6 space-y-4 sm:space-y-6 border border-white/10 shadow-2xl max-h-[90vh] overflow-y-auto">
+                <div class="flex items-center justify-between border-b border-white/10 pb-3 sm:pb-4">
+                    <h2 class="text-base sm:text-lg font-bold text-white">
                         {{ editingServer ? t('market.edit_server_connection') : t('market.add_server_connection') }}
-                    </h3>
-                    <button @click="closeServerModal" class="text-white/40 hover:text-white">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    </h2>
+                    <button @click="closeServerModal" class="text-white/40 hover:text-white p-1 rounded-lg hover:bg-white/5">
+                        <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
 
-                <div v-if="editingServer" class="p-3 rounded-lg bg-white/5 border border-white/10 text-xs text-white/60 space-y-1">
+                <div v-if="editingServer" class="p-2.5 sm:p-3 rounded-lg bg-white/5 border border-white/10 text-xs text-white/60 space-y-1">
                     <div>{{ t('market.server') }}: <span class="font-mono text-white/80">{{ editingServer.server_id }}</span> ({{ editingServer.locale }})</div>
                     <div>{{ editingServer.display_name }}</div>
                 </div>
 
-                <form @submit.prevent="saveServerModal" class="space-y-4">
+                <form @submit.prevent="saveServerModal" class="space-y-3.5 sm:space-y-4">
                     <div>
-                        <label class="block text-xs font-medium text-white/40 mb-1.5 uppercase">{{ t('market.sync_account') }}</label>
-                        <select v-model="serverForm.account_id" required class="glass-select w-full">
+                        <label for="market-server-account" class="block text-xs font-medium text-white/40 mb-1.5 uppercase">{{ t('market.sync_account') }}</label>
+                        <select id="market-server-account" v-model="serverForm.account_id" required :aria-label="t('market.sync_account')" class="glass-select w-full text-xs sm:text-sm">
                             <option :value="null" disabled class="bg-dark-900 text-white/50">{{ t('market.choose_account') }}</option>
                             <option v-for="acc in accounts" :key="acc.id" :value="acc.id" class="bg-dark-900 text-white">
                                 {{ acc.username }} ({{ acc.nickname || t('market.no_nick') }}) [{{ t('market.region_label') }}: {{ acc.region || '?' }}{{ acc.server_name ? ` | ${acc.server_name}` : '' }}]
@@ -888,9 +881,9 @@
                         </template>
                     </div>
 
-                    <div class="flex justify-end gap-3 pt-4 border-t border-white/10">
-                        <button type="button" @click="closeServerModal" class="btn-secondary text-xs py-2 px-4">{{ t('market.cancel') }}</button>
-                        <button type="submit" :disabled="savingServer || !serverForm.account_id || !!(detectedServerInfo && detectedServerInfo.error)" class="btn-primary text-xs py-2 px-4">
+                    <div class="flex justify-end gap-2 sm:gap-3 pt-3 sm:pt-4 border-t border-white/10">
+                        <button type="button" @click="closeServerModal" class="btn-secondary text-xs py-2 px-3 sm:px-4">{{ t('market.cancel') }}</button>
+                        <button type="submit" :disabled="savingServer || !serverForm.account_id || !!(detectedServerInfo && detectedServerInfo.error)" class="btn-primary text-xs py-2 px-3 sm:px-4">
                             {{ savingServer ? t('market.saving') : t('market.save') }}
                         </button>
                     </div>
@@ -900,7 +893,7 @@
     </div>
 </template>
 
-<script>
+<script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { t } from '../lang';
@@ -918,12 +911,8 @@ import MarketPriceChart from '../components/market/MarketPriceChart.vue';
 import MarketDemandChart from '../components/market/MarketDemandChart.vue';
 import MarketDataTable from '../components/market/MarketDataTable.vue';
 
-export default {
-    name: 'MarketAnalytics',
-    components: { Spinner, LoadingOverlay, MarketPriceChart, MarketDemandChart, MarketDataTable },
-    setup() {
-        const route = useRoute();
-        const router = useRouter();
+const route = useRoute();
+const router = useRouter();
 
         const updateQueryParams = () => {
             const query = { ...route.query };
@@ -990,7 +979,7 @@ export default {
         const syncingServerId = ref(null);
         const showPopularItems = ref(true);
         const showArbitrageSchemes = ref(true);
-        const showActiveListings = ref(true);
+        const showActiveListings = ref(typeof window !== 'undefined' ? window.innerWidth >= 640 : false);
 
         const onCacheStrategyChange = (strategy) => {
             cacheStrategy.value = setMarketCacheStrategy(strategy);
@@ -1011,21 +1000,54 @@ export default {
         const hasMoreActiveOffers = ref(false);
         const loadingMore = ref(false);
 
+        const popularColumns = computed(() => [
+            { key: 'item_name', label: t('market.item_name') },
+            { key: 'item_id', label: t('market.item_code') },
+            { key: 'offers_count', label: t('market.active_offers'), align: 'right' },
+            { key: 'sellers_count', label: t('market.unique_sellers'), align: 'right' },
+            { key: 'total_volume', label: t('market.active_volume'), align: 'right' },
+        ]);
+
+        const activeOffersColumns = computed(() => [
+            { key: 'sender_name', label: t('market.player') },
+            { key: 'item_name', label: t('market.selling_resource') },
+            { key: 'target_item_name', label: t('market.buying_resource') },
+            { key: 'price', label: t('market.price'), align: 'right' },
+            { key: 'lots_remaining', label: t('market.lots_remaining'), align: 'right' },
+            { key: 'time_left', label: t('market.time_left'), align: 'right' },
+        ]);
+
+        const serverColumns = computed(() => [
+            { key: 'locale', label: t('market.col_server_locale') },
+            { key: 'account', label: t('market.col_account') },
+            { key: 'verification_status', label: t('market.col_verification') },
+            { key: 'sync_status', label: t('market.status') },
+            { key: 'last_synced_at', label: t('market.last_sync') },
+            { key: 'actions', label: t('market.col_actions'), align: 'right' },
+        ]);
+
+        const syncLogColumns = computed(() => [
+            { key: 'server_id', label: t('market.server') },
+            { key: 'date', label: t('market.date') },
+            { key: 'action', label: t('market.action') },
+            { key: 'status', label: t('market.status') },
+            { key: 'message', label: t('market.message') },
+        ]);
+
+        const nowSec = ref(Math.floor(Date.now() / 1000));
+        const getOfferTimeLeft = (offer) => {
+            if (offer && offer._expiresTimestamp) {
+                return Math.max(0, offer._expiresTimestamp - nowSec.value);
+            }
+            return Math.max(0, Number(offer?.time_left) || 0);
+        };
+
         let countdownInterval = null;
         const startCountdown = () => {
             if (countdownInterval) clearInterval(countdownInterval);
             countdownInterval = setInterval(() => {
-                const nextOffers = [];
-                activeOffers.value.forEach(offer => {
-                    if (offer.time_left > 1) {
-                        nextOffers.push({ ...offer, time_left: offer.time_left - 1 });
-                    }
-                });
-                if (nextOffers.length !== activeOffers.value.length) {
-                    const removed = activeOffers.value.length - nextOffers.length;
-                    totalActiveCount.value = Math.max(0, totalActiveCount.value - removed);
-                }
-                activeOffers.value = nextOffers;
+                if (typeof document !== 'undefined' && document.hidden) return;
+                nowSec.value = Math.floor(Date.now() / 1000);
             }, 1000);
         };
 
@@ -1194,6 +1216,7 @@ export default {
         const selectedItem = ref('');
         const selectedTarget = ref('');
         const calcAmount = ref(100);
+        const isReversedCalc = ref(false);
 
         const settingsForm = ref({
             sync_interval: '15',
@@ -1210,16 +1233,34 @@ export default {
             return item ? getItemName(item.target_item_name, item.target_item_id) : '';
         });
 
+        const effectivePrice = computed(() => {
+            if (!stats.value) return 0;
+            return (stats.value.average && stats.value.average > 0) ? stats.value.average : (stats.value.current || 0);
+        });
+
+        const effectiveMirroredPrice = computed(() => {
+            if (!mirroredStats.value) return 0;
+            return (mirroredStats.value.average && mirroredStats.value.average > 0) ? mirroredStats.value.average : (mirroredStats.value.current || 0);
+        });
+
         const calculatedCost = computed(() => {
-            if (!stats.value || !stats.value.average) return 0;
+            const price = effectivePrice.value;
+            if (!price || price === 0) return 0;
             const amt = parseFloat(calcAmount.value) || 0;
-            return Math.round(amt * stats.value.average * 100) / 100;
+            if (isReversedCalc.value) {
+                return Math.round((amt / price) * 100) / 100;
+            }
+            return Math.round(amt * price * 100) / 100;
         });
 
         const calculatedMirroredCost = computed(() => {
-            if (!mirroredStats.value || !mirroredStats.value.average || mirroredStats.value.average === 0) return 0;
+            const price = effectiveMirroredPrice.value;
+            if (!price || price === 0) return 0;
             const amt = parseFloat(calcAmount.value) || 0;
-            return Math.round((amt / mirroredStats.value.average) * 100) / 100;
+            if (isReversedCalc.value) {
+                return Math.round(amt * price * 100) / 100;
+            }
+            return Math.round((amt / price) * 100) / 100;
         });
 
         const activeVolume = computed(() => formatVolume(activeInfo.value?.volume || 0));
@@ -1328,22 +1369,29 @@ export default {
             if (!selectedServerId.value) return;
             loading.value = true;
             try {
+                const mapOffers = (rawOffers) => {
+                    const now = Math.floor(Date.now() / 1000);
+                    return (rawOffers || [])
+                        .filter(offer => offer && typeof offer === 'object')
+                        .map(offer => {
+                            const expiresAt = offer.expires_at ? new Date(offer.expires_at).getTime() : 0;
+                            const expSec = expiresAt > 0 ? Math.floor(expiresAt / 1000) : (now + (Number(offer.time_left) || 0));
+                            return {
+                                ...offer,
+                                _expiresTimestamp: expSec,
+                                time_left: Math.max(0, expSec - now)
+                            };
+                        });
+                };
+
                 const applyBulkData = (data) => {
+                    if (!data) return;
                     goods.value = data.goods || [];
                     const rawPopular = (data.popular && data.popular['1d']) || [];
                     const unwrappedPopular = Array.isArray(rawPopular) ? rawPopular : (rawPopular?.data || []);
                     popular.value = unwrappedPopular.filter(item => item && typeof item === 'object' && item.item_id);
-                    activeOffers.value = (data.active_offers || [])
-                        .map(offer => {
-                            if (offer && offer.expires_at) {
-                                const expiresAt = new Date(offer.expires_at).getTime();
-                                const timeLeft = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
-                                return { ...offer, time_left: timeLeft };
-                            }
-                            return offer;
-                        })
-                        .filter(offer => offer.time_left > 0);
-                    totalActiveCount.value = activeOffers.value.length;
+                    activeOffers.value = mapOffers(data.active_offers);
+                    totalActiveCount.value = data.total_active_count !== undefined ? data.total_active_count : activeOffers.value.length;
                     activeOffersPage.value = 1;
                     hasMoreActiveOffers.value = false;
                     arbitrageLoops.value = data.arbitrage || [];
@@ -1359,29 +1407,27 @@ export default {
                     });
                     applyBulkData(bulkData);
                 } else {
+                    const onRevalidateOverview = (freshAnalytics) => {
+                        if (freshAnalytics) {
+                            activeOffers.value = mapOffers(freshAnalytics.active_offers);
+                            totalActiveCount.value = freshAnalytics.total_active_count !== undefined ? freshAnalytics.total_active_count : activeOffers.value.length;
+                        }
+                    };
+
                     // Individual mode: fetch individual granular endpoints separately
                     const [goodsRes, popularRes, arbitrageRes, analyticsRes] = await Promise.all([
                         cachedGet('/api/market/goods', { params: { server_id: selectedServerId.value }, ...options }),
                         cachedGet('/api/market/popular', { params: { server_id: selectedServerId.value, period: '1d' }, ...options }),
                         cachedGet('/api/market/arbitrage', { params: { server_id: selectedServerId.value }, ...options }),
-                        cachedGet('/api/market/analytics', { params: { server_id: selectedServerId.value }, ...options }),
+                        cachedGet('/api/market/analytics', { params: { server_id: selectedServerId.value }, onRevalidate: onRevalidateOverview, ...options }),
                     ]);
                     goods.value = goodsRes || [];
                     const unwrappedPopular = Array.isArray(popularRes) ? popularRes : (popularRes?.data || []);
                     popular.value = unwrappedPopular.filter(item => item && typeof item === 'object' && item.item_id);
                     arbitrageLoops.value = arbitrageRes || [];
                     if (analyticsRes) {
-                        activeOffers.value = (analyticsRes.active_offers || [])
-                            .map(offer => {
-                                if (offer && offer.expires_at) {
-                                    const expiresAt = new Date(offer.expires_at).getTime();
-                                    const timeLeft = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
-                                    return { ...offer, time_left: timeLeft };
-                                }
-                                return offer;
-                            })
-                            .filter(offer => offer.time_left > 0);
-                        totalActiveCount.value = activeOffers.value.length;
+                        activeOffers.value = mapOffers(analyticsRes.active_offers);
+                        totalActiveCount.value = analyticsRes.total_active_count !== undefined ? analyticsRes.total_active_count : activeOffers.value.length;
                     }
                 }
 
@@ -1738,97 +1784,4 @@ export default {
         onUnmounted(() => {
             if (countdownInterval) clearInterval(countdownInterval);
         });
-
-        return {
-            activeTab,
-            loading,
-            getItemName,
-            loadingServers,
-            loadingPairs,
-            loadingChart,
-            loadingSyncLogs,
-            saving,
-            syncing,
-            syncingServerId,
-            servers,
-            groupedServers,
-            presets,
-            accounts,
-            selectedServerId,
-            currentServerConnection,
-            verifyingId,
-            showServerModal,
-            editingServer,
-            savingServer,
-            serverForm,
-            detectedServerInfo,
-            getLocaleFlag,
-            getVerificationBadgeClass,
-            getSyncBadgeClass,
-            openAddServerModal,
-            openEditServerModal,
-            closeServerModal,
-            saveServerModal,
-            deleteServer,
-            verifyServer,
-            syncServerNow,
-            onServerChange,
-            goods,
-            allGoods,
-            targets,
-            popular,
-            history,
-            stats,
-            activeOffers,
-            totalActiveCount,
-            hasMoreActiveOffers,
-            loadingMore,
-            loadMoreActiveOffers,
-            formatTimeLeft,
-            logs,
-            logsPagination,
-            loadSyncLogs,
-            selectionMode,
-            cacheStrategy,
-            onCacheStrategyChange,
-            visualTab,
-            selectedPeriod,
-            arbitrageLoops,
-            periods,
-            selectedItem,
-            selectedTarget,
-            calcAmount,
-            settingsForm,
-            selectedItemName,
-            selectedTargetName,
-            calculatedCost,
-            calculatedMirroredCost,
-            activeVolume,
-            activeOffersCount,
-            activeSellersCount,
-            priceTrendText,
-            priceTrendClass,
-            formatVolume,
-            getResourceIcon,
-            handleIconError,
-            getStatusBadgeClass,
-            formatDateTime,
-            showPopularItems,
-            showArbitrageSchemes,
-            showActiveListings,
-            togglePopularItems,
-            toggleArbitrageSchemes,
-            toggleActiveListings,
-            saveSettings,
-            onItemChange,
-            fetchAnalytics,
-            selectVisualItem,
-            selectVisualTarget,
-            resetSelection,
-            mirrorSelection,
-            copyPairLink,
-            changePeriod,
-        };
-    }
-};
 </script>

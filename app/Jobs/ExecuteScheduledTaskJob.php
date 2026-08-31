@@ -27,19 +27,22 @@ class ExecuteScheduledTaskJob implements ShouldQueue
 
     public int $timeout = 120;
 
+    /**
+     * @var list<int>
+     */
     public array $backoff = [30, 120, 300];
 
     /**
      * Seconds of work budget per job invocation. Kept short so the inline
      * cron worker (queue:work --max-time=50) is not blocked by one job.
      */
-    private const TIME_BUDGET_SECONDS = 45;
+    private const int TIME_BUDGET_SECONDS = 45;
 
     /**
      * Safety margin for a single step's own duration when deciding whether
      * to continue in-process or hand off to a delayed job.
      */
-    private const STEP_MARGIN_SECONDS = 10;
+    private const int STEP_MARGIN_SECONDS = 10;
 
     public int $taskId;
 
@@ -65,6 +68,8 @@ class ExecuteScheduledTaskJob implements ShouldQueue
 
     /**
      * Execute the job.
+     *
+     * @throws Throwable
      */
     public function handle(TaskExecutionService $executionService): void
     {
@@ -77,7 +82,7 @@ class ExecuteScheduledTaskJob implements ShouldQueue
         }
 
         if ($task->status !== TaskStatus::Queued && $task->status !== TaskStatus::Running) {
-            Log::info("[TaskJob] Task #{$this->taskId} has status '{$task->status?->value}' instead of 'queued'; skipping");
+            Log::info("[TaskJob] Task #{$this->taskId} has status '{$task->status->value}' instead of 'queued'; skipping");
 
             return;
         }
@@ -167,11 +172,11 @@ class ExecuteScheduledTaskJob implements ShouldQueue
         return sprintf(
             'state: is_active=%s status=%s schedule=%s token=%s job_token=%s completed_steps=%s queued_at=%s last_run_at=%s updated_at=%s',
             $task->is_active ? 'true' : 'false',
-            (string) $task->status?->value,
-            (string) $task->schedule_type?->value,
+            $task->status->value,
+            $task->schedule_type->value,
             $task->execution_token ?? 'null',
             $this->executionToken,
-            (string) $task->completed_steps,
+            $task->completed_steps,
             $task->queued_at?->toDateTimeString() ?? 'null',
             $task->last_run_at?->toDateTimeString() ?? 'null',
             $task->updated_at?->toDateTimeString() ?? 'null'
@@ -197,7 +202,7 @@ class ExecuteScheduledTaskJob implements ShouldQueue
             BotLog::create([
                 'account_id' => $task->account_id,
                 'level' => LogLevel::Error,
-                'message' => "[Task][Task#{$task->id}] ".__('logs.task.job_failed', ['id' => $task->id, 'type' => $task->task_type?->value ?? $task->task_type, 'error' => $exception->getMessage()]),
+                'message' => "[Task][Task#{$task->id}] ".__('logs.task.job_failed', ['id' => $task->id, 'type' => $task->task_type->value, 'error' => $exception->getMessage()]),
             ]);
         }
     }

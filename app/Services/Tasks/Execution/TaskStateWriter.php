@@ -11,10 +11,13 @@ use App\Models\ScheduledTask;
 use App\Services\Tasks\TaskActivityLogger;
 use Illuminate\Support\Facades\Log;
 
-final class TaskStateWriter
+final readonly class TaskStateWriter
 {
-    public function __construct(private readonly TaskActivityLogger $activityLogger) {}
+    public function __construct(private TaskActivityLogger $activityLogger) {}
 
+    /**
+     * @param  array<string, mixed>|null  $payload
+     */
     public function markRunning(ScheduledTask $task, ?array $payload = null): void
     {
         $data = [
@@ -29,6 +32,9 @@ final class TaskStateWriter
         $task->update($data);
     }
 
+    /**
+     * @param  array<string, mixed>  $payload
+     */
     public function markCompleted(ScheduledTask $task, int $accountId, string $resultSummary, array $payload): void
     {
         $updateData = [
@@ -46,7 +52,7 @@ final class TaskStateWriter
 
         $task->update($updateData);
 
-        $taskTypeStr = $task->task_type?->value ?? (string) $task->task_type;
+        $taskTypeStr = $task->task_type->value;
         $this->activityLogger->logTaskEvent(
             $accountId,
             $task->id,
@@ -58,6 +64,9 @@ final class TaskStateWriter
         );
     }
 
+    /**
+     * @param  array<string, mixed>  $payload
+     */
     public function markFailed(ScheduledTask $task, int $accountId, string $errorMsg, array $payload): void
     {
         $updateData = [
@@ -75,7 +84,7 @@ final class TaskStateWriter
 
         $task->update($updateData);
 
-        $taskTypeStr = $task->task_type?->value ?? (string) $task->task_type;
+        $taskTypeStr = $task->task_type->value;
         $this->activityLogger->logTaskEvent(
             $accountId,
             $task->id,
@@ -87,6 +96,9 @@ final class TaskStateWriter
         );
     }
 
+    /**
+     * @param  array<string, mixed>  $payload
+     */
     public function markSequenceFinished(ScheduledTask $task, int $accountId, string $resultSummary, bool $hasError, array $payload): void
     {
         $nextStatus = $hasError ? TaskStatus::Failed : TaskStatus::Completed;
@@ -108,7 +120,7 @@ final class TaskStateWriter
         $task->update($updateData);
 
         $logLevel = $hasError ? LogLevel::Error : LogLevel::Success;
-        $taskTypeStr = $task->task_type?->value ?? (string) $task->task_type;
+        $taskTypeStr = $task->task_type->value;
         $logKey = $hasError ? 'logs.task.completed_with_errors' : 'logs.task.completed';
 
         $this->activityLogger->logTaskEvent(
@@ -122,6 +134,9 @@ final class TaskStateWriter
         );
     }
 
+    /**
+     * @param  array<string, mixed>  $payload
+     */
     public function updateStepProgress(ScheduledTask $task, int $completedSteps, array $payload): void
     {
         $task->update([

@@ -24,7 +24,7 @@
             <div class="px-6 py-6 border-b border-white/5 flex items-center justify-between">
                 <router-link to="/admin" @click="mobileMenuOpen = false" class="flex items-center gap-3 group">
                     <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 p-0.5 shadow-lg shadow-emerald-500/25 group-hover:shadow-emerald-500/40 transition-all duration-300 overflow-hidden flex items-center justify-center">
-                        <img :src="'/android-chrome-512x512.png'" alt="TSO Manager" class="w-full h-full object-cover rounded-[10px]" />
+                        <img :src="'/logo-40.webp'" width="40" height="40" alt="TSO Manager Logo" class="w-full h-full object-cover rounded-[10px]" />
                     </div>
                     <div>
                         <h1 class="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors">TSO Manager</h1>
@@ -33,7 +33,9 @@
                 </router-link>
 
                 <!-- Mobile drawer close button -->
-                <button @click="mobileMenuOpen = false" class="lg:hidden p-1.5 text-white/40 hover:text-white rounded-lg hover:bg-white/5 transition-colors">
+                <button @click="mobileMenuOpen = false"
+                        class="lg:hidden p-1.5 text-white/40 hover:text-white rounded-lg hover:bg-white/5 transition-colors"
+                        aria-label="Close navigation menu">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -119,6 +121,7 @@
                     </div>
                     <button type="button" @click="logout" :disabled="loggingOut"
                             class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-white/30 transition hover:bg-red-500/10 hover:text-red-400 disabled:opacity-50"
+                            :aria-label="t('nav.logout') || 'Logout'"
                             :title="t('nav.logout')">
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6A2.25 2.25 0 0 0 5.25 5.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3-3H9m0 0 3-3m-3 3 3 3" />
@@ -166,7 +169,7 @@
                 </div>
             </header>
 
-            <div :class="[showSidebar ? 'p-4 sm:p-6 lg:p-8' : ($route.meta.guest ? 'p-0' : 'p-4 md:p-8'), 'flex-1 overflow-y-auto w-full min-w-0']">
+            <div :class="[showSidebar ? 'p-3 sm:p-6 lg:p-8' : ($route.meta.guest ? 'p-3 sm:p-6 lg:p-8' : 'p-3 sm:p-6 md:p-8'), 'flex-1 overflow-y-auto w-full min-w-0']">
                 <router-view v-slot="{ Component }">
                     <transition name="page" mode="out-in">
                         <component :is="Component" />
@@ -214,7 +217,7 @@
     </div>
 </template>
 
-<script>
+<script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { toasts } from './toast';
@@ -223,128 +226,130 @@ import { authApi } from './services/api/auth';
 import { settingsApi } from './services/api/settings';
 import LanguageSwitcher from './components/LanguageSwitcher.vue';
 
-export default {
-    name: 'App',
-    components: {
-        LanguageSwitcher
-    },
-    setup() {
-        const route = useRoute();
-        const mobileMenuOpen = ref(false);
-        const localTimeStr = ref('');
-        const serverTimeStr = ref('');
-        const serverOffset = ref(0);
-        const authenticatedUser = ref(window.__AUTH_USER__ || {});
-        const loggingOut = ref(false);
-        let timer = null;
+const route = useRoute();
+const mobileMenuOpen = ref(false);
+const localTimeStr = ref('');
+const serverTimeStr = ref('');
+const serverOffset = ref(0);
+const authenticatedUser = ref(window.__AUTH_USER__ || {});
+const loggingOut = ref(false);
+let timer = null;
 
-        watch(() => route.path, () => {
-            mobileMenuOpen.value = false;
-        });
+watch(() => route.path, () => {
+    mobileMenuOpen.value = false;
+});
 
-        const isAuthenticated = computed(() => {
-            return !!(authenticatedUser.value.id && !route.meta.guest);
-        });
+const isAuthenticated = computed(() => {
+    return !!(authenticatedUser.value.id && !route.meta.guest);
+});
 
-        const showSidebar = computed(() => {
-            return !!(authenticatedUser.value.id && route.path.startsWith('/admin') && !route.meta.guest && !route.meta.publicLayout && !route.meta.hideSidebar);
-        });
+const showSidebar = computed(() => {
+    const path = route.matched.length > 0 ? route.path : (typeof window !== 'undefined' ? window.location.pathname : '');
+    const isGuest = route.matched.length > 0 ? !!route.meta.guest : false;
+    const isPublic = route.matched.length > 0 ? !!route.meta.publicLayout : false;
+    const hideSidebar = route.matched.length > 0 ? !!route.meta.hideSidebar : false;
+    return !!(authenticatedUser.value.id && path.startsWith('/admin') && !isGuest && !isPublic && !hideSidebar);
+});
 
-        const logout = async () => {
-            if (loggingOut.value) return;
+const logout = async () => {
+    if (loggingOut.value) return;
 
-            loggingOut.value = true;
+    loggingOut.value = true;
 
-            try {
-                await authApi.logout();
-            } finally {
-                window.location.assign('/admin/login');
-            }
-        };
-
-        const updateClocks = () => {
-            try {
-                const now = new Date();
-
-                // Local Time Formatting
-                localTimeStr.value = now.toLocaleDateString(intlLocale, {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric'
-                }) + ' ' + now.toLocaleTimeString(intlLocale, {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit'
-                });
-
-                // Server Time Formatting
-                let offset = serverOffset.value;
-                if (typeof offset !== 'number' || isNaN(offset)) {
-                    offset = 0;
-                }
-
-                const serverTime = new Date(now.getTime() + offset);
-
-                if (isNaN(serverTime.getTime())) {
-                    serverTimeStr.value = localTimeStr.value;
-                } else {
-                    serverTimeStr.value = serverTime.toLocaleDateString(intlLocale, {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric'
-                    }) + ' ' + serverTime.toLocaleTimeString(intlLocale, {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        second: '2-digit'
-                    });
-                }
-            } catch (err) {
-                console.error('Clock update error:', err);
-            }
-        };
-
-        const syncServerTime = async () => {
-            try {
-                const res = await settingsApi.fetchSettings();
-                if (res && res.server_time) {
-                    const serverTimeMs = Date.parse(res.server_time);
-                    serverOffset.value = serverTimeMs - Date.now();
-                } else if (res && res.meta && res.meta.server_time) {
-                    const serverTimeMs = Date.parse(res.meta.server_time);
-                    serverOffset.value = serverTimeMs - Date.now();
-                }
-            } catch (e) {
-                console.error('Failed to sync server time:', e);
-            }
-        };
-
-        onMounted(async () => {
-            if (isAuthenticated.value && route.path.startsWith('/admin')) {
-                await syncServerTime();
-            }
-            updateClocks();
-            timer = setInterval(updateClocks, 1000);
-        });
-
-
-        onUnmounted(() => {
-            if (timer) clearInterval(timer);
-        });
-
-        return {
-            t,
-            mobileMenuOpen,
-            toasts,
-            localTimeStr,
-            serverTimeStr,
-            authenticatedUser,
-            loggingOut,
-            logout,
-            isAuthenticated,
-            showSidebar
-        };
+    try {
+        await authApi.logout();
+    } finally {
+        window.location.assign('/admin/login');
     }
 };
+
+const updateClocks = () => {
+    try {
+        const now = new Date();
+
+        // Local Time Formatting
+        localTimeStr.value = now.toLocaleDateString(intlLocale, {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        }) + ' ' + now.toLocaleTimeString(intlLocale, {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
+
+        // Server Time Formatting
+        let offset = serverOffset.value;
+        if (typeof offset !== 'number' || isNaN(offset)) {
+            offset = 0;
+        }
+
+        const serverTime = new Date(now.getTime() + offset);
+
+        if (isNaN(serverTime.getTime())) {
+            serverTimeStr.value = localTimeStr.value;
+        } else {
+            serverTimeStr.value = serverTime.toLocaleDateString(intlLocale, {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            }) + ' ' + serverTime.toLocaleTimeString(intlLocale, {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+    } catch (err) {
+        console.error('Clock update error:', err);
+    }
+};
+
+const syncServerTime = async () => {
+    try {
+        const res = await settingsApi.fetchSettings();
+        if (res && res.server_time) {
+            const serverTimeMs = Date.parse(res.server_time);
+            serverOffset.value = serverTimeMs - Date.now();
+        } else if (res && res.meta && res.meta.server_time) {
+            const serverTimeMs = Date.parse(res.meta.server_time);
+            serverOffset.value = serverTimeMs - Date.now();
+        }
+    } catch (e) {
+        console.error('Failed to sync server time:', e);
+    }
+};
+
+const startClockTimer = () => {
+    if (timer) return;
+    updateClocks();
+    timer = setInterval(updateClocks, 1000);
+};
+
+const stopClockTimer = () => {
+    if (timer) {
+        clearInterval(timer);
+        timer = null;
+    }
+};
+
+watch(
+    () => route.path,
+    async (path) => {
+        if (isAuthenticated.value && path.startsWith('/admin')) {
+            if (serverOffset.value === 0) {
+                await syncServerTime();
+            }
+            startClockTimer();
+        } else {
+            stopClockTimer();
+        }
+    },
+    { immediate: true }
+);
+
+onUnmounted(() => {
+    stopClockTimer();
+});
 </script>
 
 <style>
@@ -374,14 +379,10 @@ export default {
 /* Page Transition Animations */
 .page-enter-active,
 .page-leave-active {
-    transition: opacity 0.2s ease, transform 0.2s ease;
+    transition: opacity 0.15s ease;
 }
-.page-enter-from {
-    opacity: 0;
-    transform: translateY(8px);
-}
+.page-enter-from,
 .page-leave-to {
     opacity: 0;
-    transform: translateY(-8px);
 }
 </style>

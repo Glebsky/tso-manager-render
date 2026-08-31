@@ -11,6 +11,7 @@ use App\Services\Market\Support\TimeBucket\TimeBucketExpressionFactory;
 use App\Services\Market\Support\TimeGranularity;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
+use DateTimeInterface;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -25,9 +26,9 @@ use Illuminate\Support\Collection;
  */
 final class MarketHistoryAggregator
 {
-    private const SERIES_AGGREGATES = 'avg(price) as price, sum(volume) as volume, count(distinct player_id) as sellers_count, count(*) as offers_count, round(avg(amount)) as avg_amount, round(avg(target_amount)) as avg_target_amount';
+    private const string SERIES_AGGREGATES = 'avg(price) as price, sum(volume) as volume, count(distinct player_id) as sellers_count, count(*) as offers_count, round(avg(amount)) as avg_amount, round(avg(target_amount)) as avg_target_amount';
 
-    private const PAIR_AGGREGATES = 'avg(price) as average_price, min(price) as min_price, max(price) as max_price, sum(volume) as total_volume, count(*) as offers_count, count(distinct player_id) as sellers_count';
+    private const string PAIR_AGGREGATES = 'avg(price) as average_price, min(price) as min_price, max(price) as max_price, sum(volume) as total_volume, count(*) as offers_count, count(distinct player_id) as sellers_count';
 
     public function __construct(
         private readonly TimeBucketExpressionFactory $buckets,
@@ -109,19 +110,21 @@ final class MarketHistoryAggregator
     {
         $bucket = $this->bucketExpression($period->granularity);
 
+        /** @var list<array<string, mixed>> */
         return $this->pairQuery($serverId, $itemId, $targetItemId, $period)
             ->selectRaw("{$bucket} as time_bucket, ".self::SERIES_AGGREGATES)
             ->groupBy('time_bucket')
             ->orderBy('time_bucket')
             ->get()
-            ->map(fn ($row): array => $this->formatSeriesRow($row, $period->granularity))
+            ->map(fn (MarketHistory $row): array => $this->formatSeriesRow($row, $period->granularity))
+            ->values()
             ->all();
     }
 
     /**
      * Aggregates for every pair of a server in one query (bulk endpoint).
      *
-     * @return Collection<int, object>
+     * @return Collection<int, MarketHistory>
      */
     public function statsByPair(string $serverId, CarbonInterface $since): Collection
     {
@@ -210,6 +213,9 @@ final class MarketHistoryAggregator
         return $itemId.'|'.$targetItemId;
     }
 
+    /**
+     * @return Builder<MarketHistory>
+     */
     private function pairQuery(string $serverId, string $itemId, string $targetItemId, MarketPeriod $period): Builder
     {
         return MarketHistory::query()
@@ -227,12 +233,13 @@ final class MarketHistoryAggregator
     }
 
     /**
+     * @param  object{time_bucket: mixed, price: mixed, volume: mixed, sellers_count: mixed, offers_count: mixed, avg_amount?: mixed, avg_target_amount?: mixed}  $row
      * @return array<string, mixed>
      */
     private function formatSeriesRow(object $row, TimeGranularity $granularity): array
     {
         $bucket = $row->time_bucket;
-        $date = $bucket instanceof \DateTimeInterface ? Carbon::instance($bucket) : Carbon::parse((string) $bucket);
+        $date = $bucket instanceof DateTimeInterface ? Carbon::instance($bucket) : Carbon::parse((string) $bucket);
 
         return [
             'collected_at' => $date->format($granularity->displayFormat()),

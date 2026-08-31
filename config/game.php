@@ -107,4 +107,28 @@ return [
             ['pattern' => '/^StarfallStarDust.*$/i',    'kind' => 1],
         ],
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Buildings
+    |--------------------------------------------------------------------------
+    |
+    | WARNING. `number` — это игровой номер здания, который уходит в команду 50.
+    | Ошибка в номере = построено не то здание и безвозвратно потрачены ресурсы
+    | игрока. Источник номеров: docs/references/icons.xml (атрибут id).
+    | Источник пар «руда -> шахта»: docs/references/globals.xml
+    | (атрибут restrictPlacingToDeposit).
+    | Процедура сверки описана в docs/spec/build-mine/data-sources.md.
+    |
+    */
+    'buildings' => [
+        'mines' => [
+            'BronzeOre' => ['mine' => 'BronzeMine', 'number' => 36, 'max_level' => 7],
+            'Coal' => ['mine' => 'CoalMine', 'number' => 37, 'max_level' => 7],
+            'GoldOre' => ['mine' => 'GoldMine', 'number' => 46, 'max_level' => 7],
+            'IronOre' => ['mine' => 'IronMine', 'number' => 50, 'max_level' => 7],
+            'Salpeter' => ['mine' => 'SalpeterMine', 'number' => 63, 'max_level' => 7],
+            'TitaniumOre' => ['mine' => 'TitaniumMine', 'number' => 69, 'max_level' => 7],
+        ],
+    ],
 ];

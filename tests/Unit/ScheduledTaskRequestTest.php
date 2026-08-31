@@ -109,4 +109,54 @@ class ScheduledTaskRequestTest extends TestCase
 
         $this->assertFalse($validator->fails());
     }
+
+    public function test_store_request_validates_build_mine_task(): void
+    {
+        $account = Account::create([
+            'username' => 'minetest',
+            'password' => 'secret',
+            'region' => 'ru',
+            'nickname' => 'minetest',
+        ]);
+
+        $data = [
+            'account_id' => $account->id,
+            'task_type' => 'build_mine',
+            'payload' => ['grid' => 6431, 'deposit_name' => 'IronOre'],
+            'schedule_type' => 'daily',
+            'run_at_time' => '10:00',
+        ];
+
+        $request = StoreScheduledTaskRequest::create('/api/tasks', 'POST', $data);
+        $request->setContainer($this->app);
+
+        $validator = Validator::make($data, $request->rules());
+
+        $this->assertFalse($validator->fails());
+    }
+
+    public function test_store_request_validates_upgrade_mine_task(): void
+    {
+        $account = Account::create([
+            'username' => 'upgradetest',
+            'password' => 'secret',
+            'region' => 'ru',
+            'nickname' => 'upgradetest',
+        ]);
+
+        $data = [
+            'account_id' => $account->id,
+            'task_type' => 'upgrade_mine',
+            'payload' => ['grid' => 6431, 'building_name' => 'IronMine', 'max_level' => 5],
+            'schedule_type' => 'daily',
+            'run_at_time' => '10:00',
+        ];
+
+        $request = StoreScheduledTaskRequest::create('/api/tasks', 'POST', $data);
+        $request->setContainer($this->app);
+
+        $validator = Validator::make($data, $request->rules());
+
+        $this->assertFalse($validator->fails());
+    }
 }

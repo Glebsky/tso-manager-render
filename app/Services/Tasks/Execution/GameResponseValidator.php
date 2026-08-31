@@ -8,10 +8,14 @@ use App\Exceptions\GameServerErrorException;
 use App\Services\GameErrorResolver;
 use App\Services\ZoneParserService;
 
-final class GameResponseValidator
+final readonly class GameResponseValidator
 {
-    public function __construct(private readonly ZoneParserService $zoneParser) {}
+    public function __construct(private ZoneParserService $zoneParser) {}
 
+    /**
+     * @throws GameServerErrorException
+     * @throws \Exception
+     */
     public function validateAndParse(string $payload): void
     {
         if (! $this->isAmfPayload($payload)) {

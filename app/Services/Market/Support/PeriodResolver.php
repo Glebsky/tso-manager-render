@@ -15,15 +15,15 @@ use Carbon\CarbonInterface;
  */
 final class PeriodResolver
 {
-    public const DEFAULT_PERIOD = 'all';
+    public const string DEFAULT_PERIOD = 'all';
 
     /** @var list<string> */
-    public const SUPPORTED_PERIODS = ['all', '1d', '7d', '30d', '1y'];
+    public const array SUPPORTED_PERIODS = ['all', '1d', '7d', '30d', '1y'];
 
     public function resolve(?string $period, ?CarbonInterface $now = null): MarketPeriod
     {
-        $key = in_array($period, self::SUPPORTED_PERIODS, true) ? (string) $period : self::DEFAULT_PERIOD;
-        $reference = $now instanceof CarbonInterface ? $now->copy() : Carbon::now();
+        $key = in_array($period, self::SUPPORTED_PERIODS, true) ? $period : self::DEFAULT_PERIOD;
+        $reference = $now !== null ? $now->copy() : Carbon::now();
 
         $since = match ($key) {
             '1d' => $reference->copy()->subDay(),

@@ -12,16 +12,18 @@ final class TaskResultSummary
     {
         $prefix = $isSuccess ? TaskResultPrefix::Ok : TaskResultPrefix::Error;
         $maxLen = (int) config('game.tasks.max_result_length', 150);
-        $truncated = strlen($result) > 100 ? substr($result, 0, 97).'...' : $result;
+        $truncated = strlen($result) > $maxLen ? substr($result, 0, $maxLen - 3).'...' : $result;
 
         return $prefix->format($truncated);
     }
 
     public static function formatSequence(string $summaryText, bool $hasError, bool $hasSuccess): string
     {
-        $prefix = ($hasError && $hasSuccess)
-            ? TaskResultPrefix::Partial
-            : ($hasError ? TaskResultPrefix::Error : TaskResultPrefix::Ok);
+        $prefix = match (true) {
+            $hasError && $hasSuccess => TaskResultPrefix::Partial,
+            $hasError => TaskResultPrefix::Error,
+            default => TaskResultPrefix::Ok,
+        };
 
         $maxLen = (int) config('game.tasks.max_result_length', 150);
         $truncated = strlen($summaryText) > $maxLen ? substr($summaryText, 0, $maxLen - 3).'...' : $summaryText;

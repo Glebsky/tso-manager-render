@@ -9,6 +9,7 @@ use App\Services\Market\Contracts\ResourceNameResolver;
 use App\Services\Market\MarketOfferQueryService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use LogicException;
 
 /**
  * Single serializer for a market offer.
@@ -47,7 +48,7 @@ class MarketOfferResource extends JsonResource
         $serialized = [];
 
         foreach ($offers as $offer) {
-            $serialized[] = (new self($offer))->using($names, $queries)->toArray(request());
+            $serialized[] = self::make($offer)->using($names, $queries)->toArray(request());
         }
 
         return $serialized;
@@ -58,8 +59,8 @@ class MarketOfferResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $names = $this->names ?? throw new \LogicException('MarketOfferResource requires using() to be called first.');
-        $offers = $this->offers ?? throw new \LogicException('MarketOfferResource requires using() to be called first.');
+        $names = $this->names ?? throw new LogicException('MarketOfferResource requires using() to be called first.');
+        $offers = $this->offers ?? throw new LogicException('MarketOfferResource requires using() to be called first.');
 
         return [
             'id' => $this->id,
@@ -72,7 +73,7 @@ class MarketOfferResource extends JsonResource
             'target_item_id' => $this->target_item_id,
             'target_item_name' => $names->resolve($this->target_item_id, $this->target_item_name),
             'target_amount' => $this->target_amount,
-            'price' => round((float) $this->price, 4),
+            'price' => round($this->price, 4),
             'volume' => $this->volume,
             'lots_remaining' => $this->lots_remaining,
             'created_at' => $this->created_at->toIso8601String(),

@@ -22,6 +22,9 @@ class MarketSyncLog extends Model
         'created_at' => 'datetime',
     ];
 
+    /**
+     * @return BelongsTo<Account, $this>
+     */
     public function account(): BelongsTo
     {
         return $this->belongsTo(Account::class);

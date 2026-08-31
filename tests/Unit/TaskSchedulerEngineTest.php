@@ -66,7 +66,7 @@ class TaskSchedulerEngineTest extends TestCase
 
         $this->assertEquals(1, $recoveredCount);
         $staleTask->refresh();
-        $this->assertEquals('pending', $staleTask->status?->value);
+        $this->assertEquals('pending', $staleTask->status->value);
         $this->assertNull($staleTask->execution_token);
     }
 
@@ -95,7 +95,7 @@ class TaskSchedulerEngineTest extends TestCase
 
         $this->assertTrue($reserved);
         $task->refresh();
-        $this->assertEquals('queued', $task->status?->value);
+        $this->assertEquals('queued', $task->status->value);
         $this->assertNotNull($task->execution_token);
     }
 }

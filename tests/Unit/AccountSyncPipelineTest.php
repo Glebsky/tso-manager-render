@@ -29,7 +29,8 @@ class AccountSyncPipelineTest extends TestCase
         $persister = new AccountSyncPersister;
 
         $persister->markSyncing($account);
-        $this->assertEquals('syncing', $account->fresh()->status);
+        $account->refresh();
+        $this->assertEquals('syncing', $account->status);
 
         $zoneData = ['userID' => 123, 'buildings' => [['id' => 1]]];
         $persister->saveSuccess($account, $zoneData);
@@ -40,7 +41,8 @@ class AccountSyncPipelineTest extends TestCase
         $this->assertSame(123, $account->zone_data['userID'] ?? null);
 
         $persister->markError($account);
-        $this->assertEquals('error', $account->fresh()->status);
+        $account->refresh();
+        $this->assertEquals('error', $account->status);
     }
 
     public function test_logger_creates_bot_logs(): void
@@ -96,6 +98,7 @@ class AccountSyncPipelineTest extends TestCase
         $result = $orchestrator->sync($account);
 
         $this->assertArrayHasKey('buildings', $result);
-        $this->assertEquals('online', $account->fresh()->status);
+        $account->refresh();
+        $this->assertEquals('online', $account->status);
     }
 }

@@ -160,7 +160,7 @@ class MarketAnalyticsTest extends TestCase
         $this->assertEquals(0.5, $response->json('stats.current'));
     }
 
-    public function test_get_arbitrage_finds_profitable_loops()
+    public function test_get_arbitrage_finds_profitable_loops(): void
     {
         MarketOffer::truncate();
 
@@ -223,7 +223,7 @@ class MarketAnalyticsTest extends TestCase
         $this->assertEquals(4, $loops[1]['steps'][1]['lots']);
     }
 
-    public function test_expired_offers_are_filtered_out_from_active_listings()
+    public function test_expired_offers_are_filtered_out_from_active_listings(): void
     {
         MarketOffer::truncate();
 

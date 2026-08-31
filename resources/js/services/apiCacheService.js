@@ -5,8 +5,8 @@ const BULK_PREFIX = 'tso_bulk:';
 const DATA_VERSION_PREFIX = 'tso_data_version:';
 const VERSION_CHECKED_AT_PREFIX = 'tso_data_version_checked_at:';
 const CACHE_STRATEGY_KEY = 'tso_market_cache_strategy';
-// v3: cache-first responses backed by lightweight server-version checks.
-const CACHE_SCHEMA_VERSION = 3;
+// v4: robust active offers mapping and cache revalidation
+const CACHE_SCHEMA_VERSION = 4;
 const VERSION_CHECK_INTERVAL_MS = 60000;
 
 export function getMarketCacheStrategy() {
@@ -18,9 +18,9 @@ export function getMarketCacheStrategy() {
         if (stored) {
             return stored === 'individual' ? 'individual' : 'bulk';
         }
-        return 'individual';
+        return 'bulk';
     } catch {
-        return 'individual';
+        return 'bulk';
     }
 }
 
@@ -33,7 +33,7 @@ export function setMarketCacheStrategy(strategy) {
         localStorage.setItem(CACHE_STRATEGY_KEY, validStrategy);
         return validStrategy;
     } catch {
-        return 'individual';
+        return 'bulk';
     }
 }
 

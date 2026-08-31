@@ -181,7 +181,73 @@ def extract_pickups(zone_obj):
     return pickups
 
 
-def recursive_extract(obj, buildings, specialists, buffs, resources, friends, players, zone_info, visited=None):
+def extract_production_queues(zone_obj):
+    """Extract dZoneVO.timedProductions_vector as a list of non-empty queue state dicts.
+
+    Returns:
+        None if timedProductions_vector is missing from zone_obj (unparseable / old snapshot).
+        [] if timedProductions_vector is present but contains no orders across all queues.
+        list of { 'production_type': int, 'orders': list[dict] } for queues with orders.
+    """
+    tp_container = _attr(zone_obj, 'timedProductions_vector', 'timedProductions')
+    if tp_container is None:
+        return None
+
+    collections = _as_items(tp_container)
+    queues = []
+
+    for col in collections:
+        orders_raw = _as_items(col)
+        if not orders_raw:
+            continue
+
+        orders = []
+        production_type = None
+
+        for item in orders_raw:
+            if item is None:
+                continue
+
+            ptype = _attr(item, 'productionType')
+            if production_type is None and ptype is not None:
+                try:
+                    production_type = int(ptype)
+                except (TypeError, ValueError):
+                    pass
+
+            t_str = str(_attr(item, 'type_string', 'typeString', 'type', default='') or '')
+
+            def _to_int(val, default=0):
+                try:
+                    return int(val)
+                except (TypeError, ValueError):
+                    return default
+
+            def _to_float(val, default=0.0):
+                try:
+                    return float(val)
+                except (TypeError, ValueError):
+                    return default
+
+            orders.append({
+                'type_string': t_str,
+                'amount': _to_int(_attr(item, 'amount'), 1),
+                'produced_items': _to_int(_attr(item, 'producedItems', 'produced_items'), 0),
+                'collected_time': _to_float(_attr(item, 'collectedTime', 'collected_time'), 0.0),
+                'stacks': _to_int(_attr(item, 'stacks'), 1),
+                'index': _to_int(_attr(item, 'index'), 0),
+            })
+
+        if production_type is not None and orders:
+            queues.append({
+                'production_type': production_type,
+                'orders': orders,
+            })
+
+    return queues
+
+
+def recursive_extract(obj, buildings, specialists, buffs, resources, friends, players, zone_info, deposits, build_queue, visited=None):
     """Recursively walk the decoded AMF object tree and extract VOs."""
     if visited is None:
         visited = set()
@@ -248,6 +314,87 @@ def recursive_extract(obj, buildings, specialists, buffs, resources, friends, pl
 
             if building:
                 buildings.append(building)
+
+        elif 'dDepositVO' in full_name or 'DepositVO' in full_name:
+            deposit = {}
+            for attr in ['gridIdx', 'name_string', 'name', 'amount', 'maxAmount',
+                         'accessible', 'refillable', 'emptied', 'depositGroupdId']:
+                val = None
+                if hasattr(obj, attr):
+                    val = getattr(obj, attr)
+                elif isinstance(obj, dict) and attr in obj:
+                    val = obj[attr]
+
+                if val is not None:
+                    deposit[attr] = val
+
+            grid_raw = deposit.get('gridIdx')
+            name_raw = deposit.get('name_string') or deposit.get('name')
+
+            if isinstance(name_raw, bytes):
+                name_raw = name_raw.decode('utf-8', errors='replace')
+
+            try:
+                grid_val = int(grid_raw) if grid_raw is not None else 0
+            except (TypeError, ValueError):
+                grid_val = 0
+
+            def _int_or(value, fallback=0):
+                try:
+                    return int(value)
+                except (TypeError, ValueError):
+                    return fallback
+
+            if grid_val > 0 and name_raw:
+                deposits.append({
+                    'grid': grid_val,
+                    'name': str(name_raw),
+                    'amount': _int_or(deposit.get('amount')),
+                    'max_amount': _int_or(deposit.get('maxAmount')),
+                    'accessible': (_int_or(deposit['accessible'], -1)
+                                   if deposit.get('accessible') is not None else None),
+                    'refillable': bool(deposit.get('refillable') or False),
+                    'emptied': _int_or(deposit.get('emptied')),
+                })
+
+        elif 'dBuildQueueVO' in full_name or 'BuildQueueVO' in full_name:
+            b_list = None
+            if hasattr(obj, 'buildings'):
+                b_list = getattr(obj, 'buildings')
+            elif isinstance(obj, dict) and 'buildings' in obj:
+                b_list = obj['buildings']
+
+            queue_buildings = []
+            if b_list is not None:
+                if hasattr(b_list, 'source'):
+                    queue_buildings = b_list.source or []
+                elif isinstance(b_list, (list, tuple)):
+                    queue_buildings = b_list
+
+            max_count = None
+            for attr in ['maxCount', 'max_count']:
+                if hasattr(obj, attr):
+                    max_count = getattr(obj, attr)
+                elif isinstance(obj, dict) and attr in obj:
+                    max_count = obj[attr]
+
+            perm_count = None
+            for attr in ['permanentSlotsCount', 'permanent_slots_count']:
+                if hasattr(obj, attr):
+                    perm_count = getattr(obj, attr)
+                elif isinstance(obj, dict) and attr in obj:
+                    perm_count = obj[attr]
+
+            temp_count = None
+            for attr in ['tempSlotsCount', 'temp_slots_count']:
+                if hasattr(obj, attr):
+                    temp_count = getattr(obj, attr)
+                elif isinstance(obj, dict) and attr in obj:
+                    temp_count = obj[attr]
+
+            total_slots = int(max_count if max_count is not None else 3) + int(perm_count or 0) + int(temp_count or 0)
+            build_queue['used'] = len(queue_buildings)
+            build_queue['total'] = max(total_slots, 3)
 
         elif 'dSpecialistVO' in full_name or 'SpecialistVO' in full_name:
             specialist = {}
@@ -514,6 +661,11 @@ def recursive_extract(obj, buildings, specialists, buffs, resources, friends, pl
                         seen.add(key)
                         existing.append(entry)
 
+            # Extract production queues from zone
+            p_queues = extract_production_queues(obj)
+            if p_queues is not None or 'production_queues' not in zone_info:
+                zone_info['production_queues'] = p_queues
+
             # Extract friends list from zone
             for attr in ['friends', 'friendList', 'friendVOs']:
                 friends_list = None
@@ -553,7 +705,7 @@ def recursive_extract(obj, buildings, specialists, buffs, resources, friends, pl
             if source is not None and source is not obj:
                 recursive_extract(
                     source, buildings, specialists, buffs, resources,
-                    friends, players, zone_info, visited
+                    friends, players, zone_info, deposits, build_queue, visited=visited
                 )
         except Exception:
             pass
@@ -562,20 +714,20 @@ def recursive_extract(obj, buildings, specialists, buffs, resources, friends, pl
     if hasattr(obj, '__dict__'):
         for key, value in obj.__dict__.items():
             if value is not None:
-                recursive_extract(value, buildings, specialists, buffs, resources, friends, players, zone_info, visited)
+                recursive_extract(value, buildings, specialists, buffs, resources, friends, players, zone_info, deposits, build_queue, visited=visited)
 
     # Recurse into lists / tuples
     if isinstance(obj, (list, tuple, pyamf.ASObject if hasattr(pyamf, 'ASObject') else list)):
         iterable = obj.items() if isinstance(obj, dict) else enumerate(obj)
         for _, value in iterable:
             if value is not None:
-                recursive_extract(value, buildings, specialists, buffs, resources, friends, players, zone_info, visited)
+                recursive_extract(value, buildings, specialists, buffs, resources, friends, players, zone_info, deposits, build_queue, visited=visited)
 
     # Recurse into dicts
     if isinstance(obj, dict):
         for key, value in obj.items():
             if value is not None:
-                recursive_extract(value, buildings, specialists, buffs, resources, friends, players, zone_info, visited)
+                recursive_extract(value, buildings, specialists, buffs, resources, friends, players, zone_info, deposits, build_queue, visited=visited)
 
 
 def make_serializable(obj, visited=None):
@@ -643,6 +795,8 @@ def main():
     friends = []
     players = []
     zone_info = {}
+    deposits = []
+    build_queue = {}
     error_code = 0
 
     # Extract errorCode from dServerResponse first
@@ -660,9 +814,9 @@ def main():
     # Walk through all bodies in the remoting envelope
     for target, message in envelope.bodies:
         if hasattr(message, 'body'):
-            recursive_extract(message.body, buildings, specialists, buffs, resources, friends, players, zone_info)
+            recursive_extract(message.body, buildings, specialists, buffs, resources, friends, players, zone_info, deposits, build_queue)
         else:
-            recursive_extract(message, buildings, specialists, buffs, resources, friends, players, zone_info)
+            recursive_extract(message, buildings, specialists, buffs, resources, friends, players, zone_info, deposits, build_queue)
 
     # Resource category mapping
     RESOURCE_CATEGORIES = {
@@ -790,7 +944,13 @@ def main():
         'gameWorldName': zone_info.get('gameWorldName'),
         'pickups': make_serializable(merged_pickups),
         'errorCode': error_code,
-        'visitors': make_serializable(visitors)
+        'visitors': make_serializable(visitors),
+        'deposits': deposits,
+        'build_queue': {
+            'used': int(build_queue.get('used', 0)),
+            'total': int(build_queue.get('total', 0)),
+        } if build_queue else None,
+        'production_queues': make_serializable(zone_info['production_queues']) if zone_info.get('production_queues') is not None else None
     }
 
     print(json.dumps(result, ensure_ascii=False, indent=2))

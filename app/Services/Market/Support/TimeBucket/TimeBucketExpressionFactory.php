@@ -9,14 +9,14 @@ namespace App\Services\Market\Support\TimeBucket;
  * database driver. Registered strategies are injected, so no consumer needs
  * to know which engines exist.
  */
-final class TimeBucketExpressionFactory
+final readonly class TimeBucketExpressionFactory
 {
     /**
      * @param  list<TimeBucketExpression>  $expressions
      */
     public function __construct(
-        private readonly array $expressions,
-        private readonly TimeBucketExpression $fallback,
+        private array $expressions,
+        private TimeBucketExpression $fallback,
     ) {}
 
     public function forDriver(string $driver): TimeBucketExpression

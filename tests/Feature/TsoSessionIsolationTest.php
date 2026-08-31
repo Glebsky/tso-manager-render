@@ -117,7 +117,7 @@ class TsoSessionIsolationTest extends TestCase
             });
 
         $this->amfMock->shouldReceive('resetClient')->with((int) $account->id)->once();
-        $this->amfMock->shouldReceive('ensureZoneLoaded')->with(Mockery::any(), Mockery::any(), Mockery::any())->once()->andReturn('zone_data');
+        $this->amfMock->shouldReceive('ensureZoneLoaded')->once()->andReturn('zone_data');
 
         $service = $this->app->make(TaskExecutionService::class);
         $result = $service->execute($task);
@@ -125,5 +125,20 @@ class TsoSessionIsolationTest extends TestCase
         $this->assertEquals('geo_success_response', $result);
         $task->refresh();
         $this->assertEquals(TaskStatus::Completed, $task->status);
+    }
+
+    public function test_login_lock_key_structure(): void
+    {
+        $account = Account::create([
+            'username' => 'locked_user',
+            'password' => 'secret',
+            'region' => 'ru',
+            'nickname' => 'locked_user',
+        ]);
+
+        $lockKey = "tso:login_lock:{$account->id}";
+        $lock = Cache::lock($lockKey, 10);
+        $this->assertTrue($lock->get());
+        $lock->release();
     }
 }

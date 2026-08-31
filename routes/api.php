@@ -3,7 +3,10 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\Api\BuffProducerController;
+use App\Http\Controllers\Api\BuildableDepositController;
 use App\Http\Controllers\Api\ClickableBuildingController;
+use App\Http\Controllers\Api\UpgradableMineController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\Market\AnalyticsController;
@@ -62,6 +65,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Game lookups
     Route::get('/game/clickable-buildings', [ClickableBuildingController::class, 'index']);
+    Route::get('/game/buildable-deposits', [BuildableDepositController::class, 'index']);
+    Route::get('/game/upgradable-mines', [UpgradableMineController::class, 'index']);
+    Route::get('/game/buff-producers', [BuffProducerController::class, 'index']);
     Route::post('/tasks/{task}/toggle', [ScheduledTaskController::class, 'toggle'])->whereNumber('task');
     Route::post('/tasks/{task}/execute', [ScheduledTaskController::class, 'execute'])
         ->whereNumber('task')

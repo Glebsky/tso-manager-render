@@ -47,6 +47,8 @@ class EnumsTest extends TestCase
         $this->assertEquals('send_specialist', TaskType::SendSpecialist->value);
         $this->assertEquals('collect_pickups', TaskType::CollectPickups->value);
         $this->assertEquals('collect_building', TaskType::CollectBuilding->value);
+        $this->assertEquals('build_mine', TaskType::BuildMine->value);
+        $this->assertEquals('upgrade_mine', TaskType::UpgradeMine->value);
         $this->assertEquals('sequence', TaskType::Sequence->value);
         $this->assertEquals('trade', TaskType::Trade->value);
     }

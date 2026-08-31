@@ -5,6 +5,7 @@
             @click="isOpen = !isOpen"
             class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs font-semibold text-white/80 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all duration-200 shadow-sm"
             :aria-expanded="isOpen"
+            aria-label="Switch Language / Сменить язык / Змінити мову"
             title="Switch Language / Сменить язык / Змінити мову"
         >
             <span class="text-sm leading-none">{{ currentLangInfo.flag }}</span>
@@ -52,53 +53,39 @@
     </div>
 </template>
 
-<script>
+<script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { locale as activeLocale, setLocale, AVAILABLE_LOCALES } from '../lang';
 
-export default {
-    name: 'LanguageSwitcher',
-    setup() {
-        const isOpen = ref(false);
-        const dropdownRef = ref(null);
-        const currentLocale = ref(activeLocale);
+const isOpen = ref(false);
+const dropdownRef = ref(null);
+const currentLocale = ref(activeLocale);
 
-        // Rendered from the single locale registry in ../lang (no duplication).
-        const availableLanguages = AVAILABLE_LOCALES;
+// Rendered from the single locale registry in ../lang (no duplication).
+const availableLanguages = AVAILABLE_LOCALES;
 
-        const currentLangInfo = computed(() => {
-            return availableLanguages.find(l => l.code === currentLocale.value) || availableLanguages[0];
-        });
+const currentLangInfo = computed(() => {
+    return availableLanguages.find(l => l.code === currentLocale.value) || availableLanguages[0];
+});
 
-        const selectLanguage = (code) => {
-            isOpen.value = false;
-            if (code !== currentLocale.value) {
-                setLocale(code);
-            }
-        };
-
-        const handleClickOutside = (e) => {
-            if (dropdownRef.value && !dropdownRef.value.contains(e.target)) {
-                isOpen.value = false;
-            }
-        };
-
-        onMounted(() => {
-            document.addEventListener('click', handleClickOutside);
-        });
-
-        onUnmounted(() => {
-            document.removeEventListener('click', handleClickOutside);
-        });
-
-        return {
-            isOpen,
-            dropdownRef,
-            currentLocale,
-            availableLanguages,
-            currentLangInfo,
-            selectLanguage
-        };
+const selectLanguage = (code) => {
+    isOpen.value = false;
+    if (code !== currentLocale.value) {
+        setLocale(code);
     }
 };
+
+const handleClickOutside = (e) => {
+    if (dropdownRef.value && !dropdownRef.value.contains(e.target)) {
+        isOpen.value = false;
+    }
+};
+
+onMounted(() => {
+    document.addEventListener('click', handleClickOutside);
+});
+
+onUnmounted(() => {
+    document.removeEventListener('click', handleClickOutside);
+});
 </script>

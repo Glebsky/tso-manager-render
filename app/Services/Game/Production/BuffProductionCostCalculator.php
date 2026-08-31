@@ -1,0 +1,53 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Services\Game\Production;
+
+final readonly class BuffProductionCostCalculator
+{
+    public function forOrder(ProductionRecipe $recipe, int $amount = 1, int $stacks = 1): ProductionCost
+    {
+        $resources = [];
+        $population = 0;
+
+        foreach ($recipe->costs as $cost) {
+            $res = (string) $cost['resource'];
+            $count = (int) $cost['count'];
+            $isPopulation = (bool) ($cost['is_population'] ?? ($res === 'Population'));
+
+            if ($isPopulation) {
+                $population += $count * $amount * $stacks;
+            } else {
+                $resources[$res] = ($resources[$res] ?? 0) + ($count * $amount * $stacks);
+            }
+        }
+        ksort($resources, SORT_STRING);
+
+        return new ProductionCost(
+            resources: $resources,
+            durationSeconds: $recipe->durationSeconds * $amount * $stacks,
+            complete: $recipe->costsKnown,
+            population: $population,
+            isLowerBound: $recipe->costIsLowerBound,
+        );
+    }
+
+    /**
+     * @param  list<array{recipe: ProductionRecipe, amount?: int, stacks?: int}>  $orders
+     */
+    public function forSequence(array $orders): ProductionCost
+    {
+        $total = new ProductionCost(resources: [], durationSeconds: 0, complete: true, population: 0, isLowerBound: false);
+        foreach ($orders as $order) {
+            $orderCost = $this->forOrder(
+                $order['recipe'],
+                $order['amount'] ?? 1,
+                $order['stacks'] ?? 1,
+            );
+            $total = $total->plus($orderCost);
+        }
+
+        return $total;
+    }
+}

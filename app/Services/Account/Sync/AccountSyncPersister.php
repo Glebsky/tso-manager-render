@@ -27,7 +27,7 @@ class AccountSyncPersister
     public function saveSuccess(Account $account, array $zoneData): void
     {
         $account->update([
-            'zone_data' => json_encode($zoneData, JSON_UNESCAPED_UNICODE),
+            'zone_data' => json_encode($zoneData, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE),
             'last_sync_at' => now(),
             'status' => 'online',
         ]);

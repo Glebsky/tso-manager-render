@@ -9,6 +9,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Crypt;
 use Throwable;
 
+/**
+ * @implements CastsAttributes<?string, ?string>
+ */
 class SafeEncrypted implements CastsAttributes
 {
     /**

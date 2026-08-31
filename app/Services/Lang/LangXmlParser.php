@@ -23,7 +23,7 @@ use XMLReader;
  */
 final class LangXmlParser
 {
-    private const LOCALE_ALIASES = [
+    private const array LOCALE_ALIASES = [
         'en_uk' => 'en',
         'ru_ru' => 'ru',
     ];
@@ -136,7 +136,7 @@ final class LangXmlParser
             return self::LOCALE_ALIASES[$normalized];
         }
 
-        $primary = explode('_', $normalized)[0];
+        $primary = explode('_', $normalized, 2)[0];
 
         return $primary !== '' ? $primary : $normalized;
     }

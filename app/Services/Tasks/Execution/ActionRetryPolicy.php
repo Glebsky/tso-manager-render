@@ -10,12 +10,13 @@ use App\Services\TsoAmfService;
 use App\Services\TsoAuthService;
 use Exception;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
-final class ActionRetryPolicy
+final readonly class ActionRetryPolicy
 {
     public function __construct(
-        private readonly TsoAuthService $authService,
-        private readonly TsoAmfService $amfService,
+        private TsoAuthService $authService,
+        private TsoAmfService $amfService,
     ) {}
 
     /**
@@ -31,8 +32,8 @@ final class ActionRetryPolicy
         $sessionCodes = (array) config('game.tasks.relogin_errors', [1005]);
         $transportCodes = (array) config('game.tasks.transport_retry_errors', [1012]);
         $transportDelay = (int) config('game.tasks.transport_retry_delay', 3);
-        $accountId = (int) $account->id;
-        $username = (string) ($account->username ?? $account->nickname ?? "account#{$accountId}");
+        $accountId = $account->id;
+        $username = $account->username ?? $account->nickname ?? "account#{$accountId}";
 
         for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
             Log::info("[TaskExecution] Action [{$taskTypeStr}] for account #{$accountId} ({$username}): attempt {$attempt}/{$maxAttempts} starting");
@@ -55,18 +56,15 @@ final class ActionRetryPolicy
                     throw $e;
                 }
 
-                // 1012 (NEWER_SESSION_DETECTED / Zone loading) means the game zone is
-                // still loading or uninitialized on this connection. Do NOT re-login
-                // (which would destroy the zone loading process), but warm up the zone
-                // and retry in the same/refreshed session.
-                if (in_array($code, $transportCodes, true)) {
+                // 1012 (NEWER_SESSION_DETECTED / Zone loading):
+                if ($attempt === 1 && in_array($code, $transportCodes, true)) {
                     Log::info("[TaskExecution] Action [{$taskTypeStr}] hit game error {$code} (Zone loading/unready) for account #{$accountId} ({$username}); warming up zone and retrying in {$transportDelay}s (attempt {$attempt}/{$maxAttempts})");
 
                     $this->amfService->resetClient($accountId);
 
                     try {
-                        $this->amfService->ensureZoneLoaded($account, maxAttempts: 2, delaySeconds: 2);
-                    } catch (\Throwable $zoneEx) {
+                        $this->amfService->ensureZoneLoaded($account, maxAttempts: 2);
+                    } catch (Throwable $zoneEx) {
                         Log::warning("[TaskExecution] Zone warm-up check for account #{$accountId} returned: ".$zoneEx->getMessage());
                     }
 
@@ -75,8 +73,8 @@ final class ActionRetryPolicy
                     continue;
                 }
 
-                if (in_array($code, $sessionCodes, true)) {
-                    Log::info("[TaskExecution] Action [{$taskTypeStr}] hit game error {$code} (Session expired) for account #{$accountId} ({$username}); re-authenticating and retrying (attempt {$attempt}/{$maxAttempts})");
+                if (in_array($code, $sessionCodes, true) || in_array($code, $transportCodes, true)) {
+                    Log::info("[TaskExecution] Action [{$taskTypeStr}] hit session conflict/expired (error {$code}) for account #{$accountId} ({$username}); re-authenticating and retrying (attempt {$attempt}/{$maxAttempts})");
 
                     $this->authService->resetSession($account);
                     $this->authService->login($account);
@@ -93,6 +91,6 @@ final class ActionRetryPolicy
             }
         }
 
-        throw new Exception("Action [{$taskTypeStr}] failed.");
+        throw new \RuntimeException("Action [{$taskTypeStr}] failed.");
     }
 }

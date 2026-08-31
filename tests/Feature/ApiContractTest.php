@@ -7,8 +7,14 @@ namespace Tests\Feature;
 use App\Models\Account;
 use App\Models\ScheduledTask;
 use App\Models\User;
+use App\Services\Game\Mines\BuildingSnapshot;
+use App\Services\Game\Mines\BuildQueueSnapshot;
+use App\Services\Game\Mines\Contracts\ZoneSnapshotProviderInterface;
+use App\Services\Game\Mines\DepositSnapshot;
+use App\Services\Game\Mines\ZoneSnapshot;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
+use Mockery\MockInterface;
 use Tests\TestCase;
 
 class ApiContractTest extends TestCase
@@ -69,6 +75,38 @@ class ApiContractTest extends TestCase
             ->assertJsonStructure([
                 'data' => [
                     '*' => ['grid', 'building_name', 'kind', 'available'],
+                ],
+            ]);
+
+        /** @var ZoneSnapshotProviderInterface&MockInterface $mockZones */
+        $mockZones = \Mockery::mock(ZoneSnapshotProviderInterface::class);
+        $mockZones->shouldReceive('forAccount')
+            ->andReturn(new ZoneSnapshot(
+                depositsByGrid: [
+                    6431 => new DepositSnapshot(grid: 6431, name: 'IronOre', amount: 1000, maxAmount: 1000),
+                ],
+                buildingsByGrid: [
+                    6431 => new BuildingSnapshot(grid: 6431, name: 'IronMine', upgradeLevel: 1, isProductionActive: true, upgradeInProgress: false),
+                ],
+                buildQueue: new BuildQueueSnapshot(used: 1, total: 3),
+            ));
+        $this->app->instance(ZoneSnapshotProviderInterface::class, $mockZones);
+
+        // GET /api/game/buildable-deposits -> 200 OK
+        $buildableResponse = $this->getJson('/api/game/buildable-deposits?account_id='.$account->id);
+        $buildableResponse->assertOk()
+            ->assertJsonStructure([
+                'data' => [
+                    '*' => ['grid', 'deposit_name', 'mine_name', 'amount', 'max_amount', 'allowed', 'reason'],
+                ],
+            ]);
+
+        // GET /api/game/upgradable-mines -> 200 OK
+        $upgradableResponse = $this->getJson('/api/game/upgradable-mines?account_id='.$account->id);
+        $upgradableResponse->assertOk()
+            ->assertJsonStructure([
+                'data' => [
+                    '*' => ['grid', 'building_name', 'deposit_name', 'level', 'max_level', 'is_active', 'upgrade_in_progress', 'allowed', 'reason'],
                 ],
             ]);
 

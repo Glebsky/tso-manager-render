@@ -8,7 +8,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 /**
- * Validation of the market synchronisation settings.
+ * Validation of the market synchronization settings.
  *
  * The allowed intervals come from config/market.php, so the whitelist has a
  * single source of truth instead of being duplicated in a rule string.

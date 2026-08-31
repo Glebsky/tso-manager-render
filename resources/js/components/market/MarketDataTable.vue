@@ -33,19 +33,19 @@
         <!-- Mobile: each row becomes a card, so no horizontal scrolling is needed -->
         <div class="sm:hidden space-y-2.5">
             <div v-for="(row, index) in rows" :key="'card-' + index"
-                 class="rounded-xl border border-white/5 bg-white/[0.02] p-3 space-y-1.5">
+                 class="rounded-xl border border-white/5 bg-white/[0.02] p-3 space-y-2">
                 <!-- First column acts as the card title -->
                 <div class="text-sm font-semibold text-white wrap-anywhere pb-1.5 border-b border-white/5">
                     <slot :name="'cell-' + columns[0].key" :row="row" :index="index">{{ row[columns[0].key] }}</slot>
                 </div>
                 <div v-for="col in columns.slice(1)" :key="'card-row-' + col.key"
-                     class="flex items-start justify-between gap-3 text-xs">
+                     class="flex items-start justify-between gap-2.5 text-xs py-0.5">
                     <span class="text-white/35 uppercase tracking-wider text-[10px] font-semibold shrink-0 pt-0.5">
                         {{ col.label }}
                     </span>
-                    <span class="text-right text-white/70 min-w-0 wrap-anywhere">
+                    <div class="text-right text-white/70 min-w-0 flex-1 flex items-center justify-end">
                         <slot :name="'cell-' + col.key" :row="row" :index="index">{{ row[col.key] }}</slot>
-                    </span>
+                    </div>
                 </div>
             </div>
             <div v-if="rows.length === 0" class="py-8 text-center text-white/20 text-xs">
@@ -55,7 +55,7 @@
     </div>
 </template>
 
-<script>
+<script setup>
 /**
  * Responsive market table.
  *
@@ -65,12 +65,9 @@
  * Columns: [{ key, label, align?: 'right', cellClass?: string }]
  * Cells are customised through the `cell-<key>` slots.
  */
-export default {
-    name: 'MarketDataTable',
-    props: {
-        columns: { type: Array, required: true },
-        rows: { type: Array, default: () => [] },
-        emptyText: { type: String, default: '' }
-    }
-};
+defineProps({
+    columns: { type: Array, required: true },
+    rows: { type: Array, default: () => [] },
+    emptyText: { type: String, default: '' }
+});
 </script>

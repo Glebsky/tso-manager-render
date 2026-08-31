@@ -11,6 +11,7 @@ use App\Services\Tasks\BuffPayloadValidator;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Psr\SimpleCache\InvalidArgumentException;
 
 /**
  * Shared validation rules and custom validators for Scheduled Task payloads.
@@ -34,6 +35,7 @@ abstract class ScheduledTaskRequest extends FormRequest
             $this->isSpecialistTask() ? $this->specialistRules() : [],
             $this->buffRules(),
             $this->pickupRules(),
+            $this->produceBuffRules(),
         );
     }
 
@@ -102,13 +104,21 @@ abstract class ScheduledTaskRequest extends FormRequest
                 $rules["payload.actions.{$index}.payload.name"] = 'nullable|string|max:255';
                 $rules["payload.actions.{$index}.payload.mode"] = 'nullable|string|in:auto,collectible,quest_trigger';
             }
+
+            if (in_array($taskType, [TaskType::BuildMine->value, TaskType::UpgradeMine->value], true)) {
+                $rules["payload.actions.{$index}.payload.grid"] = 'required|integer|min:1';
+                $rules["payload.actions.{$index}.payload.deposit_name"] = 'nullable|string|max:255';
+                $rules["payload.actions.{$index}.payload.building_name"] = 'nullable|string|max:255';
+                $rules["payload.actions.{$index}.payload.max_level"] = 'nullable|integer|min:1|max:7';
+                $rules["payload.actions.{$index}.payload.name"] = 'nullable|string|max:255';
+            }
         }
 
         return $rules;
     }
 
     /**
-     * Rules for building grid tasks (stop_production, start_production, collect_building).
+     * Rules for building grid tasks (stop_production, start_production, collect_building, build_mine, upgrade_mine).
      *
      * @return array<string, mixed>
      */
@@ -118,6 +128,8 @@ abstract class ScheduledTaskRequest extends FormRequest
             'payload.grid' => 'required|integer|min:1',
             'payload.building_name' => 'nullable|string|max:255',
             'payload.building_raw_name' => 'nullable|string|max:255',
+            'payload.deposit_name' => 'nullable|string|max:255',
+            'payload.max_level' => 'nullable|integer|min:1|max:7',
             'payload.name' => 'nullable|string|max:255',
             'payload.mode' => 'nullable|string|in:auto,collectible,quest_trigger',
         ];
@@ -256,6 +268,60 @@ abstract class ScheduledTaskRequest extends FormRequest
         return $prefixes;
     }
 
+    /**
+     * Shape rules for every produce_buff payload, direct or inside a sequence.
+     *
+     * @return array<string, mixed>
+     */
+    private function produceBuffRules(): array
+    {
+        $rules = [];
+
+        foreach ($this->produceBuffPrefixes() as $prefix) {
+            $rules += [
+                $prefix.'grid' => 'required|integer|min:1',
+                $prefix.'production_type' => 'required|integer|min:0',
+                $prefix.'recipe_name' => 'required|string|max:255',
+                $prefix.'amount' => 'required|integer|min:1|max:25',
+                $prefix.'stacks' => 'nullable|integer|min:1|max:200',
+                $prefix.'building_name' => 'nullable|string|max:255',
+                $prefix.'name' => 'nullable|string|max:255',
+            ];
+        }
+
+        return $rules;
+    }
+
+    /**
+     * Payload prefixes that must be validated as a produce_buff payload.
+     *
+     * @return array<int, string>
+     */
+    private function produceBuffPrefixes(): array
+    {
+        if ($this->taskTypeString() === TaskType::ProduceBuff->value) {
+            return ['payload.'];
+        }
+
+        if (! $this->isSequence()) {
+            return [];
+        }
+
+        $prefixes = [];
+
+        foreach ((array) $this->input('payload.actions', []) as $index => $action) {
+            $taskType = $action['task_type'] ?? '';
+            if ($taskType instanceof TaskType) {
+                $taskType = $taskType->value;
+            }
+            if ($taskType === TaskType::ProduceBuff->value) {
+                $prefixes[] = "payload.actions.{$index}.payload.";
+            }
+        }
+
+        return $prefixes;
+    }
+
     private function taskTypeString(): ?string
     {
         $val = $this->input('task_type');
@@ -287,6 +353,8 @@ abstract class ScheduledTaskRequest extends FormRequest
             TaskType::StopProduction->value,
             TaskType::StartProduction->value,
             TaskType::CollectBuilding->value,
+            TaskType::BuildMine->value,
+            TaskType::UpgradeMine->value,
         ], true);
     }
 
@@ -309,6 +377,9 @@ abstract class ScheduledTaskRequest extends FormRequest
         }
     }
 
+    /**
+     * @throws InvalidArgumentException
+     */
     private function validateBuffPayloads(Validator $validator): void
     {
         $prefixes = $this->buffPrefixes();
@@ -322,19 +393,20 @@ abstract class ScheduledTaskRequest extends FormRequest
             return;
         }
 
-        $account = Account::find($accountId);
-        if (! $account) {
+        $account = Account::find((int) $accountId);
+        if (! $account instanceof Account) {
             return;
         }
 
         $buffValidator = app(BuffPayloadValidator::class);
+        $errorBag = $validator->errors();
 
         foreach ($prefixes as $prefix => $inputKey) {
             $errors = $buffValidator->validate($account, (array) $this->input($inputKey, []), $prefix);
 
             foreach ($errors as $field => $messages) {
                 foreach ($messages as $message) {
-                    $validator->errors()->add($field, $message);
+                    $errorBag->add($field, $message);
                 }
             }
 

@@ -13,14 +13,14 @@ use App\Services\Market\Contracts\ResourceNameResolver;
  */
 final class GameResourceNameResolver implements ResourceNameResolver
 {
-    private const SECTION = 'RES';
+    private const string SECTION = 'RES';
 
     public function __construct(private readonly GameTranslationResolver $translations) {}
 
     public function resolve(?string $itemId, ?string $legacyName = null): string
     {
         if ($itemId === null || $itemId === '') {
-            return (string) ($legacyName ?? '');
+            return $legacyName ?? '';
         }
 
         $fallback = ($legacyName !== null && $legacyName !== '') ? $legacyName : null;

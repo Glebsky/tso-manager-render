@@ -194,4 +194,50 @@ class TaskExecutionCharacterizationTest extends TestCase
         $task->refresh();
         $this->assertEquals(TaskStatus::Completed, $task->status);
     }
+
+    public function test_retries_session_error_1012_with_warmup_and_then_relogin(): void
+    {
+        $account = Account::create([
+            'username' => 'retry_1012_user',
+            'password' => 'secret',
+            'region' => 'ru',
+            'nickname' => 'retry_1012_user',
+        ]);
+
+        $task = ScheduledTask::create([
+            'account_id' => $account->id,
+            'task_type' => TaskType::StopProduction,
+            'payload' => ['grid' => 103],
+            'schedule_type' => ScheduleType::Daily,
+            'is_active' => true,
+            'status' => TaskStatus::Pending,
+        ]);
+
+        $this->authMock->shouldReceive('isAuthenticated')->andReturn(true);
+        $this->authMock->shouldReceive('resetSession')->once()->with(Mockery::any());
+        $this->authMock->shouldReceive('login')->once()->with(Mockery::any())->andReturn([]);
+
+        $this->amfMock->shouldReceive('resetClient')->atLeast()->once();
+        $this->amfMock->shouldReceive('ensureZoneLoaded')->once()->andReturn('zone_data');
+        $this->amfMock->shouldReceive('invalidateSession')->once();
+
+        $this->amfMock->shouldReceive('stopProduction')
+            ->times(3)
+            ->andReturnUsing(function () {
+                static $attempts = 0;
+                $attempts++;
+                if ($attempts <= 2) {
+                    throw new GameServerErrorException(1012, 'Newer game session detected');
+                }
+
+                return 'stop_ok_after_1012_relogin';
+            });
+
+        $service = $this->app->make(TaskExecutionService::class);
+        $result = $service->execute($task);
+
+        $this->assertEquals('stop_ok_after_1012_relogin', $result);
+        $task->refresh();
+        $this->assertEquals(TaskStatus::Completed, $task->status);
+    }
 }

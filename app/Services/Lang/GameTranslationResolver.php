@@ -19,7 +19,7 @@ use Illuminate\Translation\Translator;
  */
 final class GameTranslationResolver
 {
-    private const MAX_PLACEHOLDER_DEPTH = 3;
+    private const int MAX_PLACEHOLDER_DEPTH = 3;
 
     /** @var array<string, array<string, array<string, string>>> */
     private array $catalogs = [];
@@ -82,7 +82,7 @@ final class GameTranslationResolver
             if (isset($catalog[$section])) {
                 $sec = $catalog[$section];
                 foreach ($candidates as $cand) {
-                    if (isset($sec[$cand]) && is_string($sec[$cand])) {
+                    if (isset($sec[$cand])) {
                         return $sec[$cand];
                     }
                 }
@@ -90,7 +90,7 @@ final class GameTranslationResolver
                 $idLowerClean = str_replace([' ', '_'], '', strtolower($id));
                 foreach ($sec as $k => $v) {
                     $kLowerClean = str_replace([' ', '_'], '', strtolower($k));
-                    if ($kLowerClean === $idLowerClean && is_string($v)) {
+                    if ($kLowerClean === $idLowerClean) {
                         return $v;
                     }
                 }
@@ -129,8 +129,8 @@ final class GameTranslationResolver
      */
     private function interpolate(string $template, array $parameters, ?string $locale, int $depth, array $visited): string
     {
-        return (string) preg_replace_callback(
-            '/\{(\d+)(?:,([A-Za-z0-9_]+))?\}/',
+        return preg_replace_callback(
+            '/\{(\d+)(?:,(\w+))?\}/',
             function (array $matches) use ($parameters, $locale, $depth, $visited): string {
                 $index = (int) $matches[1];
 
@@ -162,6 +162,6 @@ final class GameTranslationResolver
                 return $this->interpolate($nested, [], $locale, $depth + 1, $visited);
             },
             $template
-        );
+        ) ?? $template;
     }
 }

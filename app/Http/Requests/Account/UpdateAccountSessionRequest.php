@@ -24,4 +24,16 @@ final class UpdateAccountSessionRequest extends FormRequest
             'bb_url' => ['required', 'url', 'starts_with:http://,https://'],
         ];
     }
+
+    /**
+     * @return array{dso_auth_token: string, dso_auth_user: string, bb_url: string}
+     */
+    public function sessionData(): array
+    {
+        return [
+            'dso_auth_token' => (string) $this->validated('dso_auth_token'),
+            'dso_auth_user' => (string) $this->validated('dso_auth_user'),
+            'bb_url' => (string) $this->validated('bb_url'),
+        ];
+    }
 }

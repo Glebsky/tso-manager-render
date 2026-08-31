@@ -13,6 +13,11 @@ use Illuminate\Support\Facades\Log;
 
 final class TaskExecutionGuard
 {
+    /**
+     * @throws TaskInactiveException
+     * @throws TaskAccountNotFoundException
+     * @throws TokenMismatchException
+     */
     public function ensureCanExecute(ScheduledTask $task, ?string $expectedToken = null, bool $force = false): Account
     {
         $task->refresh();
@@ -35,7 +40,6 @@ final class TaskExecutionGuard
         if (! $account) {
             throw new TaskAccountNotFoundException($task->id);
         }
-        assert($account instanceof Account);
 
         return $account;
     }
@@ -45,16 +49,16 @@ final class TaskExecutionGuard
         Log::warning(sprintf(
             '[Task] Task #%d rejected because is_active=false. state: type=%s status=%s schedule=%s token=%s expected_token=%s completed_steps=%s queued_at=%s last_run_at=%s updated_at=%s last_result=%s',
             $task->id,
-            (string) $task->task_type?->value,
-            (string) $task->status?->value,
-            (string) $task->schedule_type?->value,
+            $task->task_type->value,
+            $task->status->value,
+            $task->schedule_type->value,
             $task->execution_token ?? 'null',
             $expectedToken ?? 'null',
-            (string) $task->completed_steps,
+            $task->completed_steps,
             $task->queued_at?->toDateTimeString() ?? 'null',
             $task->last_run_at?->toDateTimeString() ?? 'null',
             $task->updated_at?->toDateTimeString() ?? 'null',
-            (string) ($task->last_result ?? 'null')
+            $task->last_result ?? 'null'
         ));
     }
 }

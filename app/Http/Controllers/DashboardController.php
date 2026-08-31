@@ -27,11 +27,15 @@ class DashboardController extends Controller
             ->limit(50)
             ->get();
 
+        $todayLogStats = BotLog::where('created_at', '>=', now()->startOfDay())
+            ->selectRaw('count(*) as total, count(case when level = ? then 1 end) as errors', [LogLevel::Error->value])
+            ->first();
+
         $stats = [
             'total_accounts' => $accounts->count(),
             'active_tasks' => ScheduledTask::where('is_active', true)->count(),
-            'today_actions' => BotLog::where('created_at', '>=', now()->startOfDay())->count(),
-            'errors' => BotLog::where('level', LogLevel::Error)->where('created_at', '>=', now()->startOfDay())->count(),
+            'today_actions' => (int) ($todayLogStats->total ?? 0),
+            'errors' => (int) ($todayLogStats->errors ?? 0),
         ];
 
         return new JsonResponse([

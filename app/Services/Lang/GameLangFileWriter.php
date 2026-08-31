@@ -47,7 +47,7 @@ final class GameLangFileWriter
         $target = rtrim($directory, '/').'/game.php';
         $temporary = $target.'.tmp.'.getmypid();
 
-        if (file_put_contents($temporary, $php) === false) {
+        if (file_put_contents($temporary, $php, LOCK_EX) === false) {
             throw new LangImportException("Unable to write temporary lang file: {$temporary}");
         }
 

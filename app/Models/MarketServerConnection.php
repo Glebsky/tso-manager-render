@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class MarketServerConnection extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
         'server_id',
         'locale',
@@ -29,6 +26,9 @@ class MarketServerConnection extends Model
         'data_version' => 'integer',
     ];
 
+    /**
+     * @return BelongsTo<Account, $this>
+     */
     public function account(): BelongsTo
     {
         return $this->belongsTo(Account::class);

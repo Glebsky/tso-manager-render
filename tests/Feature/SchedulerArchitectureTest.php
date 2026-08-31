@@ -16,15 +16,16 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Queue;
 use Mockery;
+use Mockery\MockInterface;
 use Tests\TestCase;
 
 class SchedulerArchitectureTest extends TestCase
 {
     use RefreshDatabase;
 
-    private $authMock;
+    private MockInterface $authMock;
 
-    private $amfMock;
+    private MockInterface $amfMock;
 
     protected function setUp(): void
     {
@@ -37,7 +38,7 @@ class SchedulerArchitectureTest extends TestCase
         $this->app->instance(TsoAmfService::class, $this->amfMock);
     }
 
-    public function test_scheduler_reserves_due_tasks_atomically_and_dispatches_to_tso_tasks_queue()
+    public function test_scheduler_reserves_due_tasks_atomically_and_dispatches_to_tso_tasks_queue(): void
     {
         Queue::fake();
 
@@ -61,7 +62,7 @@ class SchedulerArchitectureTest extends TestCase
         Artisan::call('tso:run-scheduler', ['--mode' => 'queue']);
 
         $task->refresh();
-        $this->assertEquals('queued', $task->status?->value);
+        $this->assertEquals('queued', $task->status->value);
 
         $this->assertNotNull($task->execution_token);
         $this->assertNotNull($task->queued_at);
@@ -71,7 +72,7 @@ class SchedulerArchitectureTest extends TestCase
         });
     }
 
-    public function test_concurrent_scheduler_runs_do_not_duplicate_dispatch()
+    public function test_concurrent_scheduler_runs_do_not_duplicate_dispatch(): void
     {
         Queue::fake();
 
@@ -94,11 +95,13 @@ class SchedulerArchitectureTest extends TestCase
 
         // First run reserves task
         Artisan::call('tso:run-scheduler', ['--mode' => 'queue']);
-        $token1 = $task->fresh()->execution_token;
+        $task->refresh();
+        $token1 = $task->execution_token;
 
         // Second concurrent run should skip already queued task
         Artisan::call('tso:run-scheduler', ['--mode' => 'queue']);
-        $token2 = $task->fresh()->execution_token;
+        $task->refresh();
+        $token2 = $task->execution_token;
 
         $this->assertEquals($token1, $token2);
 
@@ -106,7 +109,7 @@ class SchedulerArchitectureTest extends TestCase
         Queue::assertPushed(ExecuteScheduledTaskJob::class, 1);
     }
 
-    public function test_job_skips_execution_if_token_mismatch_or_inactive()
+    public function test_job_skips_execution_if_token_mismatch_or_inactive(): void
     {
         $account = Account::create([
             'username' => 'token_user',
@@ -132,7 +135,7 @@ class SchedulerArchitectureTest extends TestCase
         $job->handle($this->app->make(TaskExecutionService::class));
     }
 
-    public function test_sequence_task_step_idempotency_resumes_from_failed_step()
+    public function test_sequence_task_step_idempotency_resumes_from_failed_step(): void
     {
         $account = Account::create([
             'username' => 'seq_user',
@@ -180,13 +183,13 @@ class SchedulerArchitectureTest extends TestCase
         $service->execute($task);
 
         $task->refresh();
-        $this->assertEquals('completed', $task->status?->value);
+        $this->assertEquals('completed', $task->status->value);
 
-        $this->assertStringContainsString('Step 1 [stop_production]: SKIPPED (already executed)', $task->last_result);
-        $this->assertStringContainsString('Step 2 [start_production]: OK', $task->last_result);
+        $this->assertStringContainsString('Step 1 [stop_production]: SKIPPED (already executed)', (string) $task->last_result);
+        $this->assertStringContainsString('Step 2 [start_production]: OK', (string) $task->last_result);
     }
 
-    public function test_market_sync_atomic_lock_prevents_duplicate_sync()
+    public function test_market_sync_atomic_lock_prevents_duplicate_sync(): void
     {
         Queue::fake();
 

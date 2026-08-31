@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Account\Sync;
 
+use App\Exceptions\AccountSyncException;
 use App\Models\Account;
 use App\Services\TsoAmfService;
 use App\Services\TsoAuthService;
@@ -14,12 +15,12 @@ use Illuminate\Support\Facades\Log;
 /**
  * Handles network authentication, AMF zone fetching, retry loops, error code handling (1012/1005), and friend list enrichment.
  */
-class AccountSyncFetcher
+readonly class AccountSyncFetcher
 {
     public function __construct(
-        private readonly TsoAuthService $authService,
-        private readonly TsoAmfService $amfService,
-        private readonly ZoneParserService $zoneParser,
+        private TsoAuthService $authService,
+        private TsoAmfService $amfService,
+        private ZoneParserService $zoneParser,
     ) {}
 
     /**
@@ -51,21 +52,30 @@ class AccountSyncFetcher
                 $buildingCount = count($zoneData['buildings'] ?? []);
 
                 if ($errorCode === 1012) {
-                    Log::info("[AccountSync] Zone is still loading (error 1012) for account #{$account->id}; retrying in {$retryDelay}s");
-                    sleep($retryDelay);
+                    if ($hasResetSession) {
+                        throw new AccountSyncException(__('ui.sync.zone_locked'), 409);
+                    }
+
+                    Log::info("[AccountSync] Zone locked by another session (error 1012) for account #{$account->id}; resetting session and logging in again to take over");
+                    $this->authService->resetSession($account);
+                    $this->authService->login($account);
+                    $this->amfService->invalidateSession($account->id);
+                    $account->refresh();
+                    $hasResetSession = true;
+                    sleep(1);
 
                     continue;
                 }
 
                 if ($errorCode === 1005) {
                     if ($hasResetSession) {
-                        throw new Exception(__('ui.sync.session_intercepted', ['code' => $errorCode]));
+                        throw new AccountSyncException(__('ui.sync.session_intercepted', ['code' => $errorCode]), 409);
                     }
                     Log::info("[AccountSync] Session expired (error {$errorCode}) for account #{$account->id}; resetting session and logging in again");
                     $this->authService->resetSession($account);
                     $this->authService->login($account);
-
-                    $this->amfService->resetClient();
+                    $this->amfService->invalidateSession($account->id);
+                    $this->amfService->resetClient($account->id);
                     $account->refresh();
                     $hasResetSession = true;
                     sleep(2);
@@ -93,18 +103,21 @@ class AccountSyncFetcher
 
         if ($errorCode !== 0) {
             if ($errorCode === 1012) {
-                throw new Exception(__('ui.sync.zone_locked'));
+                throw new AccountSyncException(__('ui.sync.zone_locked'), 409);
             }
-            throw new Exception("Server error code {$errorCode}. The zone may not be loaded yet — try again in a few seconds.");
+            throw new AccountSyncException("Server error code {$errorCode}. The zone may not be loaded yet — try again in a few seconds.", 502);
         }
 
         if ($buildingCount === 0) {
-            throw $lastException ?: new Exception('Server returned empty zone data. Make sure the game client is closed and try again.');
+            throw $lastException ?: new AccountSyncException('Server returned empty zone data. Make sure the game client is closed and try again.', 502);
         }
 
         return (array) $zoneData;
     }
 
+    /**
+     * @throws Exception
+     */
     private function ensureAuthenticated(Account $account): void
     {
         if (! $this->authService->isAuthenticated($account)) {
@@ -133,7 +146,7 @@ class AccountSyncFetcher
 
                 foreach ($parsedPlayers as $p) {
                     $puid = $p['id'] ?? $p['userID'] ?? null;
-                    if ($puid && $ownerUid && $puid == $ownerUid) {
+                    if ($puid !== null && $ownerUid !== null && (int) $puid === (int) $ownerUid) {
                         continue;
                     }
                     $friendsList[] = [

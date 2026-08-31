@@ -8,6 +8,7 @@ use App\Services\Tasks\TaskSchedulerEngine;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
+use Psr\SimpleCache\InvalidArgumentException;
 
 class RunSchedulerCommand extends Command
 {
@@ -22,6 +23,9 @@ class RunSchedulerCommand extends Command
         parent::__construct();
     }
 
+    /**
+     * @throws InvalidArgumentException
+     */
     public function handle(): int
     {
         $mode = $this->option('mode') ?: config('game.scheduler_mode', 'queue');
@@ -43,14 +47,14 @@ class RunSchedulerCommand extends Command
 
         $this->engine->recoverStaleTasks();
 
-        $tasksProcessed = $this->engine->processDueTasks($now, (string) $mode);
+        $tasksProcessed = $this->engine->processDueTasks($now, $mode);
         $marketProcessed = Artisan::call('tso:sync-market', $mode === 'sync' ? ['--sync' => true] : []) === 0;
-        $accountSyncProcessed = $this->engine->processAccountSync($now, (string) $mode);
+        $accountSyncProcessed = $this->engine->processAccountSync($now, $mode);
         $logCleanupProcessed = $this->engine->processLogCleanup($now);
 
         $this->info("Scheduler cycle completed. Tasks reserved/dispatched: {$tasksProcessed}, Market sync triggered: ".($marketProcessed ? 'Yes' : 'No').', Account sync triggered: '.($accountSyncProcessed > 0 ? "Yes ({$accountSyncProcessed})" : 'No').', Log retention cleanup: '.($logCleanupProcessed ? 'Yes' : 'No'));
 
-        if ($this->option('work') || ($mode === 'cron' && $this->option('work'))) {
+        if ($this->option('work')) {
             $this->info('Running inline TSO queue worker (--stop-when-empty --max-time=50)...');
             Artisan::call('queue:work', [
                 '--queue' => 'tso-tasks,tso-accounts,tso-market',

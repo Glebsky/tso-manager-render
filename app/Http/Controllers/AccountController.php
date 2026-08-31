@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\AccountSyncException;
 use App\Http\Requests\Account\ExecuteAccountActionRequest;
 use App\Http\Requests\Account\StoreAccountRequest;
 use App\Http\Requests\Account\UpdateAccountSessionRequest;
@@ -12,7 +13,9 @@ use App\Models\Account;
 use App\Services\AccountService;
 use App\Services\AccountSyncService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
+use Psr\SimpleCache\InvalidArgumentException;
 
 /**
  * RESTful controller for managing player game accounts.
@@ -24,7 +27,7 @@ final class AccountController extends Controller
         private readonly AccountSyncService $syncService,
     ) {}
 
-    public function index(): mixed
+    public function index(): AnonymousResourceCollection
     {
         $accounts = Account::withExists('marketServerConnections')->latest()->get();
 
@@ -36,11 +39,11 @@ final class AccountController extends Controller
             ]);
     }
 
-    public function store(StoreAccountRequest $request): mixed
+    public function store(StoreAccountRequest $request): JsonResponse
     {
         $account = Account::create($request->validated());
 
-        return (new AccountResource($account))
+        return AccountResource::make($account)
             ->additional([
                 'meta' => [
                     'server_time' => now()->toIso8601String(),
@@ -52,7 +55,7 @@ final class AccountController extends Controller
 
     public function show(Account $account): AccountResource
     {
-        return (new AccountResource($account))->withZoneData();
+        return AccountResource::make($account)->withZoneData();
     }
 
     public function zone(Account $account): JsonResponse
@@ -70,12 +73,15 @@ final class AccountController extends Controller
         return response()->noContent();
     }
 
+    /**
+     * @throws AccountSyncException
+     */
     public function sync(Account $account): AccountResource
     {
         $this->syncService->sync($account);
         $freshAccount = $account->fresh() ?? $account;
 
-        return (new AccountResource($freshAccount))->withZoneData();
+        return AccountResource::make($freshAccount)->withZoneData();
     }
 
     public function action(ExecuteAccountActionRequest $request, Account $account): JsonResponse
@@ -91,11 +97,14 @@ final class AccountController extends Controller
 
     public function updateSession(UpdateAccountSessionRequest $request, Account $account): AccountResource
     {
-        $updatedAccount = $this->accountService->updateSession($account, $request->validated());
+        $updatedAccount = $this->accountService->updateSession($account, $request->sessionData());
 
         return new AccountResource($updatedAccount);
     }
 
+    /**
+     * @throws InvalidArgumentException
+     */
     public function friendZone(Account $account, int|string $friendId): JsonResponse
     {
         $res = $this->accountService->getFriendZone($account, (int) $friendId);

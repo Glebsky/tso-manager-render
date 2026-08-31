@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * Serializer of a market synchronisation log entry.
+ * Serializer of a market synchronization log entry.
  *
  * @mixin MarketSyncLog
  */

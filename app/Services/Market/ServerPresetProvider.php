@@ -21,6 +21,6 @@ final class ServerPresetProvider
         /** @var list<array{server_id: string, locale: string, display_name: string}> $presets */
         $presets = (array) config('market.presets', []);
 
-        return array_values($presets);
+        return $presets;
     }
 }

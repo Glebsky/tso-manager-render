@@ -10,6 +10,8 @@ use Exception;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use RuntimeException;
+use Throwable;
 
 class TsoAuthService
 {
@@ -18,7 +20,7 @@ class TsoAuthService
      *
      * @var array<string, array{domain: string, uplay: string, main: string, play: string}>
      */
-    private const SERVERS = [
+    private const array SERVERS = [
         'de' => ['domain' => 'https://www.diesiedleronline.de',       'uplay' => '/de/api/user/uplay', 'main' => '/de/startseite',                                             'play' => '/de/spielen'],
         'us' => ['domain' => 'https://www.thesettlersonline.net',     'uplay' => '/en/api/user/uplay', 'main' => '/en/homepage',                                               'play' => '/en/play'],
         'en' => ['domain' => 'https://www.thesettlersonline.com',     'uplay' => '/en/api/user/uplay', 'main' => '/en/homepage',                                               'play' => '/en/play'],
@@ -42,10 +44,8 @@ class TsoAuthService
     public function getCookieFile(Account $account): string
     {
         $dir = storage_path('app/cookies');
-        if (! is_dir($dir)) {
-            if (! mkdir($dir, 0700, true) && ! is_dir($dir)) {
-                throw new \RuntimeException(sprintf('Directory "%s" was not created', $dir));
-            }
+        if (! is_dir($dir) && ! mkdir($dir, 0700, true) && ! is_dir($dir)) {
+            throw new RuntimeException(sprintf('Directory "%s" was not created', $dir));
         }
 
         return $dir.'/account_'.$account->id.'.txt';
@@ -57,7 +57,7 @@ class TsoAuthService
     public function resetSession(Account $account): void
     {
         $cookieFile = $this->getCookieFile($account);
-        if (file_exists($cookieFile)) {
+        if (is_file($cookieFile)) {
             @unlink($cookieFile);
         }
     }
@@ -71,17 +71,44 @@ class TsoAuthService
      */
     public function login(Account $account): array
     {
+        $lock = Cache::lock("tso:login_lock:{$account->id}", 60);
+        $locked = false;
+
+        try {
+            $locked = (bool) $lock->block(25);
+        } catch (Throwable $e) {
+            Log::warning("[TsoAuth] Proceeding without login lock for account #{$account->id}: ".$e->getMessage());
+        }
+
+        try {
+            return $this->performLogin($account);
+        } finally {
+            if ($locked) {
+                $lock->release();
+            }
+        }
+    }
+
+    /**
+     * Internal login routine executing authentication against TSO server.
+     *
+     * @return array<string, mixed>
+     *
+     * @throws Exception
+     */
+    private function performLogin(Account $account): array
+    {
         $cooldownKey = "account_login_cooldown:{$account->id}";
         if (Cache::has($cooldownKey)) {
             $reason = Cache::get($cooldownKey);
             $msg = is_string($reason) && ! empty($reason) ? $reason : __('ui.auth.captcha_required');
 
-            throw new Exception($msg);
+            throw new RuntimeException($msg);
         }
 
-        $region = (string) $account->region;
+        $region = $account->region;
         if (! isset(self::SERVERS[$region])) {
-            throw new Exception("Invalid region: {$region}");
+            throw new RuntimeException("Invalid region: {$region}");
         }
 
         $server = self::SERVERS[$region];
@@ -149,22 +176,25 @@ class TsoAuthService
      *
      * @param  array{domain: string, uplay: string, main: string, play: string}  $server
      * @return array<string, mixed>
+     *
+     * @throws Exception
      */
     public function loginLegacy(Account $account, string $cookieFile, array $server): array
     {
         $loginUrl = $server['domain'].str_replace('uplay', 'login', $server['uplay']);
         $loginRes = $this->cipMigratedRequest($loginUrl, [
-            'name' => (string) $account->username,
-            'password' => (string) $account->password,
+            'name' => $account->username,
+            'password' => $account->password,
         ], $cookieFile);
 
-        Log::info('[TsoAuth] Legacy (CipMigrated) login response: '.CredentialRedactor::redact(substr($loginRes, 0, 500), $account));
+        Log::info('[TsoAuth] Legacy (CipMigrated) login response: '.CredentialRedactor::redact(substr($this->formatAuthResponse($loginRes), 0, 500), $account));
 
-        if (strpos($loginRes, 'OKAY') === false) {
-            if (str_contains($loginRes, 'CAPTCHA') || str_contains($loginRes, 'captcha') || str_contains($loginRes, 'Captcha')) {
-                throw new Exception(__('ui.auth.captcha_required'));
+        if (! str_contains($loginRes, 'OKAY')) {
+            if (stripos($loginRes, 'captcha') !== false) {
+                throw new RuntimeException((string) __('ui.auth.captcha_required'));
             }
-            throw new Exception('Login failed: '.CredentialRedactor::redact($loginRes, $account));
+            $formattedError = $this->formatAuthResponse($loginRes);
+            throw new RuntimeException('Login failed: '.CredentialRedactor::redact($formattedError, $account));
         }
 
         $mainUrl = $server['domain'].$server['main'];
@@ -180,15 +210,21 @@ class TsoAuthService
      * HTTP request that mimics C# PostSubmitter with useBC=true.
      *
      * @param  array<string, string>|null  $postData
+     *
+     * @throws Exception
      */
     private function cipMigratedRequest(string $url, ?array $postData, string $cookieFile): string
     {
         $maxRedirects = 10;
         $currentUrl = $url;
         $isPost = ($postData !== null);
-        $postFields = $isPost ? http_build_query($postData) : null;
+        $postFields = $isPost ? http_build_query($postData) : '';
 
         for ($i = 0; $i < $maxRedirects; $i++) {
+            if ($currentUrl === '' || $cookieFile === '') {
+                throw new RuntimeException('Invalid URL or cookie file.');
+            }
+
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $currentUrl);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -219,29 +255,29 @@ class TsoAuthService
             curl_close($ch);
 
             if ($error) {
-                throw new Exception('cURL Error: '.$error);
+                throw new RuntimeException('cURL Error: '.$error);
             }
 
             $headerText = substr($response, 0, $headerSize);
             $body = substr($response, $headerSize);
 
-            if ($httpCode >= 300 && $httpCode < 400) {
-                if (preg_match('/^Location:\s*([^\r\n]+)/mi', $headerText, $matches)) {
-                    $location = trim($matches[1]);
-                    if (! str_starts_with($location, 'http')) {
-                        $parsed = parse_url($currentUrl);
+            if ($httpCode >= 300 && $httpCode < 400 && preg_match('/^Location:\s*([^\r\n]+)/mi', $headerText, $matches)) {
+                $location = trim($matches[1]);
+                if (! str_starts_with($location, 'http')) {
+                    $parsed = parse_url($currentUrl);
+                    if (is_array($parsed) && isset($parsed['scheme'], $parsed['host'])) {
                         $location = $parsed['scheme'].'://'.$parsed['host'].$location;
                     }
-                    $currentUrl = $location;
-
-                    continue;
                 }
+                $currentUrl = $location;
+
+                continue;
             }
 
             return $body;
         }
 
-        throw new Exception('Too many redirects for URL: '.$url);
+        throw new RuntimeException('Too many redirects for URL: '.$url);
     }
 
     /**
@@ -249,6 +285,8 @@ class TsoAuthService
      *
      * @param  array{domain: string, uplay: string, main: string, play: string}  $server
      * @return array<string, mixed>
+     *
+     * @throws Exception
      */
     public function loginOAuth(Account $account, string $cookieFile, array $server): array
     {
@@ -257,37 +295,40 @@ class TsoAuthService
 
         $redirectUrl2 = $this->curlRequest($redirectUrl, null, $cookieFile, true);
 
-        $urlParts = parse_url($redirectUrl2);
-        if (! isset($urlParts['query'])) {
-            throw new Exception('OAuth redirect URL query parameters missing: '.$redirectUrl2);
+        $queryString = parse_url($redirectUrl2, PHP_URL_QUERY);
+        if (! is_string($queryString) || $queryString === '') {
+            throw new RuntimeException('OAuth redirect URL query parameters missing: '.$redirectUrl2);
         }
-        parse_str($urlParts['query'], $redirectUrlOpts);
+        parse_str($queryString, $redirectUrlOpts);
         $clientId = $redirectUrlOpts['client_id'] ?? null;
         if (! $clientId) {
-            throw new Exception('Could not find client_id in Ubisoft redirect URL');
+            throw new RuntimeException('Could not find client_id in Ubisoft redirect URL');
         }
 
         $oauthTokenUrl = 'https://connect.ubisoft.com/v2/webauth/public/ubiservices/oauthToken';
-        $oauthTokenBody = json_encode([
-            'headers' => [
-                'Content-Type' => 'application/json',
-                'Accept' => 'application/json',
+        $oauthTokenBody = (string) json_encode([
+            'operationName' => 'SignIn',
+            'variables' => [
+                'input' => [
+                    'rememberMe' => true,
+                ],
             ],
-        ]);
+            'query' => 'mutation SignIn($input: SignInInput!) { signIn(input: $input) { ... on SignInResultSuccess { accessToken } } }',
+        ], JSON_THROW_ON_ERROR);
         $oauthTokenHeaders = [
             'Content-Type: application/json',
             'Accept: application/json',
         ];
         $oauthTokenRes = $this->curlRequest($oauthTokenUrl, $oauthTokenBody, $cookieFile, false, $oauthTokenHeaders);
-        $oauthTokenData = json_decode($oauthTokenRes, true);
-        $accessToken = $oauthTokenData['accessToken'] ?? null;
-        if (! $accessToken) {
-            throw new Exception('Ubisoft login failed (could not get oauthToken): '.$oauthTokenRes);
+        $oauthTokenData = json_decode($oauthTokenRes, true, 512, JSON_THROW_ON_ERROR);
+        $accessToken = is_array($oauthTokenData) ? ($oauthTokenData['accessToken'] ?? null) : null;
+        if (! is_string($accessToken) || $accessToken === '') {
+            throw new RuntimeException('Ubisoft login failed (could not get oauthToken): '.$this->formatAuthResponse($oauthTokenRes));
         }
 
         $authTokenUrl = 'https://api.partners.ubisoft.com/v1/profiles/authentication/token';
-        $authTokenBody = json_encode(['rememberMe' => true]);
-        $credentials = base64_encode(trim((string) $account->username).':'.trim((string) $account->password));
+        $authTokenBody = (string) json_encode(['rememberMe' => true], JSON_THROW_ON_ERROR);
+        $credentials = base64_encode(trim($account->username).':'.trim($account->password));
         $authTokenHeaders = [
             'Content-Type: application/json',
             'Ubi-RequestedPlatformType: uplay',
@@ -295,42 +336,49 @@ class TsoAuthService
             'Ubi-Profile-Authorization: Basic '.$credentials,
         ];
         $authTokenRes = $this->curlRequest($authTokenUrl, $authTokenBody, $cookieFile, false, $authTokenHeaders);
-        $authTokenData = json_decode($authTokenRes, true);
+        $authTokenData = json_decode($authTokenRes, true, 512, JSON_THROW_ON_ERROR);
 
-        if (isset($authTokenData['twoFactorAuthenticationTicket'])) {
-            throw new Exception(__('ui.auth.2fa_required'));
+        if (is_array($authTokenData) && isset($authTokenData['twoFactorAuthenticationTicket'])) {
+            throw new RuntimeException((string) __('ui.auth.2fa_required'));
         }
 
-        $token = $authTokenData['token'] ?? null;
-        if (! $token) {
-            throw new Exception('Ubisoft authentication failed (could not get token): '.$authTokenRes);
+        $token = is_array($authTokenData) ? ($authTokenData['token'] ?? null) : null;
+        if (! is_string($token) || $token === '') {
+            throw new RuntimeException('Ubisoft authentication failed (could not get token): '.$this->formatAuthResponse($authTokenRes));
         }
 
         $redirectUrlOpts['token'] = $token;
         $authorizeCallbackUrl = 'https://api.partners.ubisoft.com/v1/oauth/authorize/callback?'.http_build_query($redirectUrlOpts);
         $callbackRedirect = $this->curlRequest($authorizeCallbackUrl, null, $cookieFile, true);
 
-        $callbackParts = parse_url($callbackRedirect);
-        if (! isset($callbackParts['query'])) {
-            throw new Exception('Authorize callback query missing: '.$callbackRedirect);
+        $callbackQuery = parse_url($callbackRedirect, PHP_URL_QUERY);
+        if (! is_string($callbackQuery) || $callbackQuery === '') {
+            throw new RuntimeException('Authorize callback query missing: '.$callbackRedirect);
         }
-        parse_str($callbackParts['query'], $callbackOpts);
+        parse_str($callbackQuery, $callbackOpts);
         $consentRedirectUrl = $callbackOpts['redirectUrl'] ?? null;
-        if (! $consentRedirectUrl) {
-            throw new Exception('Consent redirectUrl missing in callback redirect: '.$callbackRedirect);
+        if (! is_string($consentRedirectUrl) || $consentRedirectUrl === '') {
+            throw new RuntimeException('Consent redirectUrl missing in callback redirect: '.$callbackRedirect);
         }
-        $consentRedirectParts = parse_url((string) $consentRedirectUrl);
-        parse_str($consentRedirectParts['query'] ?? '', $consentOpts);
+        $consentQuery = parse_url($consentRedirectUrl, PHP_URL_QUERY);
+        $consentOpts = [];
+        if (is_string($consentQuery) && $consentQuery !== '') {
+            parse_str($consentQuery, $consentOpts);
+        }
         $profileToken = $consentOpts['profile_token'] ?? null;
 
         unset($redirectUrlOpts['token']);
-        $redirectUrlOpts['profile_token'] = $profileToken;
+        if (is_string($profileToken)) {
+            $redirectUrlOpts['profile_token'] = $profileToken;
+        }
         $consentUrl = 'https://api.partners.ubisoft.com/v1/oauth/consents';
-        $consentBody = json_encode([
+        $consentBody = (string) json_encode([
             'scopesConsented' => ['offline_access', 'openid', 'profile', 'email'],
             'isConsented' => true,
-            'redirectUrl' => 'https://api.partners.ubisoft.com/v1/oauth/authorize/callback?'.http_build_query($redirectUrlOpts),
-        ]);
+            'redirectUrl' => 'https://api.partners.ubisoft.com/v1/oauth/authorize/callback?'
+                                 .http_build_query($redirectUrlOpts),
+        ], JSON_THROW_ON_ERROR);
+        $clientId = is_string($redirectUrlOpts['client_id'] ?? null) ? $redirectUrlOpts['client_id'] : '';
         $consentHeaders = [
             'Content-Type: application/json',
             'Ubi-RequestedPlatformType: uplay',
@@ -389,6 +437,8 @@ class TsoAuthService
      * Extract flash vars from the play page HTML.
      *
      * @return array<string, mixed>
+     *
+     * @throws Exception
      */
     private function extractParams(string $html): array
     {
@@ -406,10 +456,11 @@ class TsoAuthService
         Storage::disk('local')->put('debug/play_page.html', $html);
 
         if (empty($params) || ! isset($params['dsoAuthToken'])) {
-            throw new Exception('Could not extract auth tokens from play page. Possible captcha or maintenance.');
+            throw new RuntimeException('Could not extract auth tokens from play page. Possible captcha or maintenance.');
         }
 
-        Storage::disk('local')->put('debug/flash_vars.json', (string) json_encode($params, JSON_PRETTY_PRINT));
+        Storage::disk('local')->put('debug/flash_vars.json', (string) json_encode($params, JSON_THROW_ON_ERROR
+                                                                                          | JSON_PRETTY_PRINT));
 
         return [
             'dsoAuthToken' => $params['dsoAuthToken'],
@@ -425,9 +476,15 @@ class TsoAuthService
      *
      * @param  array<string, mixed>|string|null  $postData
      * @param  list<string>|null  $headers
+     *
+     * @throws Exception
      */
     private function curlRequest(string $url, mixed $postData, string $cookieFile, bool $returnRedirect = false, ?array $headers = null): string
     {
+        if ($url === '' || $cookieFile === '') {
+            throw new RuntimeException('Invalid URL or cookie file.');
+        }
+
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -468,18 +525,53 @@ class TsoAuthService
         curl_close($ch);
 
         if ($error) {
-            throw new Exception('cURL Error: '.$error);
+            throw new RuntimeException('cURL Error: '.$error);
         }
 
         if ($returnRedirect) {
             if (preg_match('/^Location:\s*([^\r\n]+)/mi', $response, $matches)) {
                 return trim($matches[1]);
             }
-            if (isset($info['redirect_url']) && $info['redirect_url']) {
+            if (! empty($info['redirect_url'])) {
                 return (string) $info['redirect_url'];
             }
 
             return $response;
+        }
+
+        return $response;
+    }
+
+    /**
+     * Decode and format authentication error response into a human-readable string.
+     */
+    private function formatAuthResponse(string $response): string
+    {
+        $decoded = json_decode($response, true);
+        if (is_array($decoded)) {
+            if (isset($decoded['data']) && is_array($decoded['data'])) {
+                $title = isset($decoded['data']['title']) && is_string($decoded['data']['title'])
+                    ? trim(strip_tags($decoded['data']['title']))
+                    : '';
+                $text = isset($decoded['data']['text']) && is_string($decoded['data']['text'])
+                    ? trim(strip_tags(str_replace(['<br>', '<br/>', '<br />', "\r\n", "\r", "\n"], ' ', $decoded['data']['text'])))
+                    : '';
+
+                if ($title !== '' && $text !== '') {
+                    return "{$title}: {$text}";
+                }
+                if ($text !== '') {
+                    return $text;
+                }
+                if ($title !== '') {
+                    return $title;
+                }
+            }
+
+            $unescaped = json_encode($decoded, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            if (is_string($unescaped)) {
+                return $unescaped;
+            }
         }
 
         return $response;

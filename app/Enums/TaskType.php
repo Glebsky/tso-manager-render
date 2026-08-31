@@ -17,6 +17,9 @@ enum TaskType: string
     case SendSpecialist = 'send_specialist';
     case CollectPickups = 'collect_pickups';
     case CollectBuilding = 'collect_building';
+    case BuildMine = 'build_mine';
+    case UpgradeMine = 'upgrade_mine';
+    case ProduceBuff = 'produce_buff';
     case Sequence = 'sequence';
     case Trade = 'trade';
 

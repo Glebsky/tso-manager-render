@@ -12,10 +12,12 @@ class MarketServerVerificationService
 {
     /**
      * Determine server and locale from account properties.
+     *
+     * @return array{detected_server_id: ?string, detected_locale: ?string, game_world: ?string, confidence: string}
      */
     public function detectServerForAccount(Account $account): array
     {
-        $region = strtolower((string) ($account->region ?? ''));
+        $region = strtolower($account->region ?? '');
         if (empty($region)) {
             return [
                 'detected_server_id' => null,
@@ -48,7 +50,7 @@ class MarketServerVerificationService
         if (! empty($gameWorld)) {
             $worldSlug = Str::slug($gameWorld, '_');
             if (empty($worldSlug)) {
-                $worldSlug = strtolower((string) preg_replace('/[^a-zA-Z0-9_]+/', '', $gameWorld));
+                $worldSlug = strtolower(preg_replace('/\W+/', '', $gameWorld) ?? '');
             }
             if (! empty($worldSlug)) {
                 $serverId = "{$region}_{$worldSlug}";
@@ -65,6 +67,8 @@ class MarketServerVerificationService
 
     /**
      * Verify if the account matches the target server connection.
+     *
+     * @return array{status: string, detected_server: ?string, message: string, detected_locale: ?string}
      */
     public function verifyAccountServerMatch(Account $account, MarketServerConnection $connection): array
     {
@@ -77,22 +81,24 @@ class MarketServerVerificationService
             return [
                 'status' => 'unverified',
                 'detected_server' => null,
-                'message' => __('ui.market.verification_unverified'),
+                'detected_locale' => null,
+                'message' => (string) __('ui.market.verification_unverified'),
             ];
         }
 
         $detectedRegion = strtolower((string) $account->region);
-        $targetRegion = explode('_', $targetServerId)[0];
+        $targetRegion = explode('_', $targetServerId, 2)[0];
 
         $isMatch = ($detectedServerId === $targetServerId)
-            || ($detectedRegion === $targetRegion && $detection['detected_locale'] === $targetLocale);
+            || ($targetServerId === $detectedRegion && $detection['detected_locale'] === $targetLocale)
+            || ($detectedServerId === $targetRegion && $detection['detected_locale'] === $targetLocale);
 
         if ($isMatch) {
             return [
                 'status' => 'verified',
                 'detected_server' => $detectedServerId,
                 'detected_locale' => $detection['detected_locale'],
-                'message' => __('ui.market.verification_verified'),
+                'message' => (string) __('ui.market.verification_verified'),
             ];
         }
 
@@ -100,7 +106,7 @@ class MarketServerVerificationService
             'status' => 'mismatch',
             'detected_server' => $detectedServerId,
             'detected_locale' => $detection['detected_locale'],
-            'message' => __('ui.market.verification_mismatch', ['detected' => $detectedServerId, 'server' => $connection->server_id]),
+            'message' => (string) __('ui.market.verification_mismatch', ['detected' => $detectedServerId, 'server' => $connection->server_id]),
         ];
     }
 }

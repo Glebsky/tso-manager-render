@@ -12,6 +12,7 @@ use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
+use Throwable;
 
 class AuthController extends Controller
 {
@@ -57,6 +58,9 @@ class AuthController extends Controller
         return view('app');
     }
 
+    /**
+     * @throws Throwable
+     */
     public function register(Request $request): Response
     {
         $validated = $request->validate([
@@ -65,7 +69,7 @@ class AuthController extends Controller
             'password' => ['required', 'confirmed', Password::min(8)],
         ]);
 
-        $user = DB::transaction(function () use ($validated): User {
+        $user = DB::transaction(static function () use ($validated): User {
             // Serialize the first-user check to reduce the risk of two admins
             // being created by simultaneous registration requests.
             if (User::query()->lockForUpdate()->exists()) {
@@ -94,8 +98,11 @@ class AuthController extends Controller
     {
         Auth::logout();
 
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        if ($request->hasSession()) {
+            $session = $request->session();
+            $session->invalidate();
+            $session->regenerateToken();
+        }
 
         return redirect()->route('login');
     }

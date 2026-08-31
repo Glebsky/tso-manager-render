@@ -11,6 +11,10 @@ use PHPUnit\Framework\TestCase;
 
 class GameTranslationResolverTest extends TestCase
 {
+    /**
+     * @param  array<string, array<string, string>>  $en
+     * @param  array<string, array<string, string>>  $ru
+     */
     private function makeResolver(array $en, array $ru = [], string $locale = 'en'): GameTranslationResolver
     {
         $loader = new ArrayLoader;

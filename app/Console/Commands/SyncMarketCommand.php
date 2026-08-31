@@ -14,6 +14,7 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
+use Throwable;
 
 class SyncMarketCommand extends Command
 {
@@ -39,6 +40,9 @@ class SyncMarketCommand extends Command
         return (int) $syncIntervalStr;
     }
 
+    /**
+     * @throws Throwable
+     */
     public function handle(): int
     {
         $interval = $this->getSyncIntervalMinutes();
@@ -86,12 +90,12 @@ class SyncMarketCommand extends Command
             // Check elapsed time since last successful sync for this server
             $lastLog = MarketSyncLog::where('server_id', $serverId)
                 ->where('status', 'SUCCESS')
-                ->orderBy('created_at', 'desc')
+                ->latest()
                 ->first();
 
-            $lastSyncTime = $connection->last_synced_at ?? ($lastLog ? $lastLog->created_at : null);
+            $lastSyncTime = $connection->last_synced_at ?? $lastLog?->created_at;
             if ($lastSyncTime) {
-                $elapsedMinutes = (int) $lastSyncTime->diffInMinutes(Carbon::now(), false);
+                $elapsedMinutes = (int) $lastSyncTime->diffInMinutes(Carbon::now());
                 if ($elapsedMinutes < $interval) {
                     $this->info("Server [{$serverId}]: Last sync was {$elapsedMinutes} minutes ago. Configured interval: {$interval} minutes. Skipping.");
 
@@ -100,9 +104,7 @@ class SyncMarketCommand extends Command
             }
 
             $lockKey = "market_sync_lock:server:{$serverId}";
-            $acquired = Cache::add($lockKey, true, 180);
-
-            if (! $acquired) {
+            if (! Cache::add($lockKey, true, 180)) {
                 $this->info("Market sync lock for server [{$serverId}] already held. Skipping.");
 
                 continue;

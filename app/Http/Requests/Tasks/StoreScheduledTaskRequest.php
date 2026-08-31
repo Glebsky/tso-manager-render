@@ -7,13 +7,4 @@ namespace App\Http\Requests\Tasks;
 /**
  * Form Request for creating a new scheduled task.
  */
-final class StoreScheduledTaskRequest extends ScheduledTaskRequest
-{
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool
-    {
-        return true;
-    }
-}
+final class StoreScheduledTaskRequest extends ScheduledTaskRequest {}

@@ -35,7 +35,6 @@ class ScheduledTaskController extends Controller
             ->paginate($perPage);
 
         return ScheduledTaskResource::collection($paginator)->additional([
-            'tasks' => ScheduledTaskResource::collection($paginator->items()),
             'accounts' => AccountResource::collection($this->tasks->accounts()),
             'meta' => [
                 'server_time' => now()->toIso8601String(),

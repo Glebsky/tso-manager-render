@@ -12,15 +12,16 @@ use App\Models\Account;
 use App\Models\ScheduledTask;
 use App\Services\Tasks\TaskActivityLogger;
 use App\Services\TsoAuthService;
+use Exception;
 use Throwable;
 
-final class SequenceStepExecutor
+final readonly class SequenceStepExecutor
 {
     public function __construct(
-        private readonly TsoAuthService $authService,
-        private readonly SingleActionExecutor $actionExecutor,
-        private readonly TaskStateWriter $stateWriter,
-        private readonly TaskActivityLogger $activityLogger,
+        private TsoAuthService $authService,
+        private SingleActionExecutor $actionExecutor,
+        private TaskStateWriter $stateWriter,
+        private TaskActivityLogger $activityLogger,
     ) {}
 
     /**
@@ -32,7 +33,7 @@ final class SequenceStepExecutor
     {
         $actions = $payload['actions'] ?? [];
         $resultsSummary = [];
-        $completedSteps = (int) ($task->completed_steps ?? 0);
+        $completedSteps = $task->completed_steps ?? 0;
         $stepResults = $payload['step_results'] ?? [];
         $hasStepError = false;
         $hasStepSuccess = false;
@@ -66,15 +67,15 @@ final class SequenceStepExecutor
                 $resultsSummary[] = __('tasks.step.ok', ['step' => $index + 1, 'type' => $actionType, 'bytes' => strlen($stepResult)]);
 
                 $this->activityLogger->logTaskEvent(
-                    (int) $account->id,
-                    (int) $task->id,
+                    $account->id,
+                    $task->id,
                     LogLevel::Success,
                     __('logs.task.step_completed', ['id' => $task->id, 'step' => $index + 1, 'type' => $actionType])
                 );
             } catch (Throwable $e) {
                 $hasStepError = true;
                 $errorMsg = $e instanceof TaskExecutionException
-                    ? (string) json_encode($e->toPayload())
+                    ? (string) json_encode($e->toPayload(), JSON_THROW_ON_ERROR)
                     : $e->getMessage();
 
                 $stepResults[$index] = [
@@ -85,8 +86,8 @@ final class SequenceStepExecutor
                 $resultsSummary[] = __('tasks.step.error', ['step' => $index + 1, 'type' => $actionType, 'error' => $errorMsg]);
 
                 $this->activityLogger->logTaskEvent(
-                    (int) $account->id,
-                    (int) $task->id,
+                    $account->id,
+                    $task->id,
                     LogLevel::Error,
                     __('logs.task.step_failed', ['id' => $task->id, 'step' => $index + 1, 'type' => $actionType, 'error' => $errorMsg])
                 );
@@ -96,7 +97,7 @@ final class SequenceStepExecutor
             $payload['step_results'] = $stepResults;
             $this->stateWriter->updateStepProgress($task, $completedSteps, $payload);
 
-            if ($index < count($actions) - 1 && $delay > 0) {
+            if ($delay > 0 && $index < count($actions) - 1) {
                 sleep($delay);
             }
         }
@@ -104,7 +105,7 @@ final class SequenceStepExecutor
         $result = implode('; ', $resultsSummary);
         $resultSummary = TaskResultSummary::formatSequence($result, $hasStepError, $hasStepSuccess);
 
-        $this->stateWriter->markSequenceFinished($task, (int) $account->id, $resultSummary, $hasStepError, $payload);
+        $this->stateWriter->markSequenceFinished($task, $account->id, $resultSummary, $hasStepError, $payload);
 
         return $result;
     }
@@ -113,17 +114,20 @@ final class SequenceStepExecutor
      * Execute exactly one step of a sequence task (queued step execution).
      *
      * @return array{finished: bool, nextDelay: int}
+     *
+     * @throws InvalidTaskTypeException
+     * @throws Exception
      */
     public function executeSingleStep(ScheduledTask $task, Account $account): array
     {
         if ($task->task_type !== TaskType::Sequence) {
-            throw new InvalidTaskTypeException("Task #{$task->id} is not a sequence task.", 422, ['id' => $task->id, 'type' => $task->task_type?->value ?? $task->task_type]);
+            throw new InvalidTaskTypeException("Task #{$task->id} is not a sequence task.", 422, ['id' => $task->id, 'type' => $task->task_type->value]);
         }
 
         $payload = $task->payload ?? [];
         $actions = $payload['actions'] ?? [];
         $stepResults = $payload['step_results'] ?? [];
-        $index = (int) ($task->completed_steps ?? 0);
+        $index = $task->completed_steps ?? 0;
 
         if ($index === 0 && ! empty($stepResults)) {
             $stepResults = [];
@@ -131,7 +135,7 @@ final class SequenceStepExecutor
         }
 
         if (empty($actions) || $index >= count($actions)) {
-            return $this->finalizeSequenceStep($task, (int) $account->id, $payload, $stepResults);
+            return $this->finalizeSequenceStep($task, $account->id, $payload, $stepResults);
         }
 
         $this->stateWriter->markRunning($task, $payload);
@@ -147,7 +151,7 @@ final class SequenceStepExecutor
         $delay = (int) ($action['delay_seconds'] ?? 0);
 
         try {
-            $stepResult = $this->actionExecutor->executeWithRetry($account, $actionType, $actionPayload);
+            $this->actionExecutor->executeWithRetry($account, $actionType, $actionPayload);
 
             $stepResults[$index] = [
                 'status' => 'completed',
@@ -155,14 +159,14 @@ final class SequenceStepExecutor
             ];
 
             $this->activityLogger->logTaskEvent(
-                (int) $account->id,
-                (int) $task->id,
+                $account->id,
+                $task->id,
                 LogLevel::Success,
                 __('logs.task.step_completed', ['id' => $task->id, 'step' => $index + 1, 'type' => $actionType])
             );
         } catch (Throwable $e) {
             $errorMsg = $e instanceof TaskExecutionException
-                ? (string) json_encode($e->toPayload())
+                ? (string) json_encode($e->toPayload(), JSON_THROW_ON_ERROR)
                 : $e->getMessage();
 
             $stepResults[$index] = [
@@ -171,8 +175,8 @@ final class SequenceStepExecutor
             ];
 
             $this->activityLogger->logTaskEvent(
-                (int) $account->id,
-                (int) $task->id,
+                $account->id,
+                $task->id,
                 LogLevel::Error,
                 __('logs.task.step_failed', ['id' => $task->id, 'step' => $index + 1, 'type' => $actionType, 'error' => $errorMsg])
             );
@@ -182,7 +186,7 @@ final class SequenceStepExecutor
         $this->stateWriter->updateStepProgress($task, $index + 1, $payload);
 
         if ($index + 1 >= count($actions)) {
-            return $this->finalizeSequenceStep($task, (int) $account->id, $payload, $stepResults);
+            return $this->finalizeSequenceStep($task, $account->id, $payload, $stepResults);
         }
 
         return [
@@ -203,12 +207,16 @@ final class SequenceStepExecutor
         $summaryParts = [];
 
         foreach ($stepResults as $i => $stepResult) {
-            if (($stepResult['status'] ?? null) === 'failed') {
+            $stepNumber = (int) $i + 1;
+            $stepStatus = is_array($stepResult) ? ($stepResult['status'] ?? null) : null;
+            $stepError = is_array($stepResult) ? ($stepResult['error'] ?? 'unknown') : 'unknown';
+
+            if ($stepStatus === 'failed') {
                 $hasStepError = true;
-                $summaryParts[] = __('tasks.step.error_short', ['step' => $i + 1, 'error' => $stepResult['error'] ?? 'unknown']);
+                $summaryParts[] = (string) __('tasks.step.error_short', ['step' => $stepNumber, 'error' => $stepError]);
             } else {
                 $hasStepSuccess = true;
-                $summaryParts[] = __('tasks.step.ok_short', ['step' => $i + 1]);
+                $summaryParts[] = (string) __('tasks.step.ok_short', ['step' => $stepNumber]);
             }
         }
 

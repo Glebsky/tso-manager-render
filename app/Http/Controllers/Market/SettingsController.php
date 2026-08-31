@@ -13,7 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
- * Market synchronisation settings and the "sync now" action.
+ * Market synchronization settings and the "sync now" action.
  */
 final class SettingsController extends Controller
 {

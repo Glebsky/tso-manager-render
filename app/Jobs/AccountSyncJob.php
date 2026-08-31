@@ -26,6 +26,9 @@ class AccountSyncJob implements ShouldQueue, ShouldBeUnique
 
     public int $timeout = 120;
 
+    /**
+     * @var list<int>
+     */
     public array $backoff = [30, 120, 300];
 
     public Account $account;

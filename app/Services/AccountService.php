@@ -11,14 +11,15 @@ use App\Models\BotLog;
 use Exception;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
 use Illuminate\Support\Facades\Log;
+use Psr\SimpleCache\InvalidArgumentException;
 
-final class AccountService
+readonly class AccountService
 {
     public function __construct(
-        private readonly TsoAuthService $authService,
-        private readonly TsoAmfService $amfService,
-        private readonly ZoneParserService $zoneParser,
-        private readonly CacheRepository $cache,
+        private TsoAuthService $authService,
+        private TsoAmfService $amfService,
+        private ZoneParserService $zoneParser,
+        private CacheRepository $cache,
     ) {}
 
     /**
@@ -27,7 +28,7 @@ final class AccountService
     public function deleteAccount(Account $account): void
     {
         $cookieFile = $this->authService->getCookieFile($account);
-        if (file_exists($cookieFile)) {
+        if (is_file($cookieFile)) {
             @unlink($cookieFile);
         }
 
@@ -140,6 +141,8 @@ final class AccountService
      * Fetch friend's zone data.
      *
      * @return array{status: int, payload: array<string, mixed>}
+     *
+     * @throws InvalidArgumentException
      */
     public function getFriendZone(Account $account, int $friendId): array
     {
@@ -179,7 +182,7 @@ final class AccountService
         $cachedZone = $this->cache->get($cacheKey);
 
         if ($cachedZone) {
-            $friendZoneData = json_decode((string) $cachedZone, true);
+            $friendZoneData = json_decode((string) $cachedZone, true, 512, JSON_THROW_ON_ERROR);
         } else {
             try {
                 if (! $this->authService->isAuthenticated($account)) {
@@ -196,7 +199,7 @@ final class AccountService
                     $staleCache = $this->cache->get($staleCacheKey);
                     if ($staleCache) {
                         Log::warning("[FriendZone] Game server returned error {$errorCode} while loading zone of friend #{$friendId} for account #{$account->id}; falling back to stale cache");
-                        $friendZoneData = json_decode((string) $staleCache, true);
+                        $friendZoneData = json_decode((string) $staleCache, true, 512, JSON_THROW_ON_ERROR);
                     } else {
                         return [
                             'status' => 500,
@@ -210,7 +213,7 @@ final class AccountService
                         ];
                     }
                 } else {
-                    $jsonEncoded = json_encode($friendZoneData);
+                    $jsonEncoded = json_encode($friendZoneData, JSON_THROW_ON_ERROR);
                     $this->cache->put($cacheKey, $jsonEncoded, 3600);
                     $this->cache->put($staleCacheKey, $jsonEncoded, 86400);
                 }
@@ -220,7 +223,7 @@ final class AccountService
                 $staleCache = $this->cache->get($staleCacheKey);
                 if ($staleCache) {
                     Log::warning("[FriendZone] Exception while loading zone of friend #{$friendId} for account #{$account->id}; falling back to stale cache");
-                    $friendZoneData = json_decode((string) $staleCache, true);
+                    $friendZoneData = json_decode((string) $staleCache, true, 512, JSON_THROW_ON_ERROR);
                 } else {
                     return [
                         'status' => 500,

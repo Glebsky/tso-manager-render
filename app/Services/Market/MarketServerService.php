@@ -25,9 +25,9 @@ use Throwable;
  */
 final class MarketServerService
 {
-    private const ACCOUNT_COLUMNS = 'account:id,username,nickname,region,status';
+    private const string ACCOUNT_COLUMNS = 'account:id,username,nickname,region,status';
 
-    private const ACCOUNT_COLUMNS_WITH_ZONE = 'account:id,username,nickname,region,status,zone_data';
+    private const string ACCOUNT_COLUMNS_WITH_ZONE = 'account:id,username,nickname,region,status,zone_data';
 
     public function __construct(
         private readonly MarketCacheService $cache,
@@ -251,7 +251,7 @@ final class MarketServerService
         }
 
         try {
-            return (array) $this->sync->sync($account, $server->server_id);
+            return $this->sync->sync($account, $server->server_id);
         } catch (Throwable $e) {
             throw MarketOperationException::serverError(
                 __('ui.market.api.sync_failed', ['error' => $e->getMessage()])
@@ -283,7 +283,7 @@ final class MarketServerService
     private function normalizedServers(): Collection
     {
         return MarketServerConnection::with(self::ACCOUNT_COLUMNS_WITH_ZONE)
-            ->orderBy('id', 'asc')
+            ->orderBy('id')
             ->get()
             ->map(function (MarketServerConnection $server): MarketServerConnection {
                 if ($server->account && $server->account->server_name) {
@@ -324,8 +324,15 @@ final class MarketServerService
 
         $detection = $this->verification->detectServerForAccount($account);
         $detectedServerId = $detection['detected_server_id'] ? strtolower((string) $detection['detected_server_id']) : null;
+        $targetServerId = strtolower((string) $server->server_id);
+        $detectedRegion = strtolower((string) $account->region);
+        $targetRegion = explode('_', $targetServerId, 2)[0];
 
-        if ($detectedServerId && $detectedServerId !== strtolower((string) $server->server_id)) {
+        $isMatch = ($detectedServerId === $targetServerId)
+            || ($targetServerId === $detectedRegion)
+            || ($detectedServerId === $targetRegion);
+
+        if (! $isMatch) {
             throw MarketOperationException::unprocessable(__('ui.market.api.account_wrong_server', [
                 'username' => $account->username,
                 'detected' => $detectedServerId,

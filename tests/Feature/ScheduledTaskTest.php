@@ -12,15 +12,16 @@ use App\Services\ZoneParserService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Mockery;
+use Mockery\MockInterface;
 use Tests\TestCase;
 
 class ScheduledTaskTest extends TestCase
 {
     use RefreshDatabase;
 
-    private $authMock;
+    private MockInterface $authMock;
 
-    private $amfMock;
+    private MockInterface $amfMock;
 
     protected function setUp(): void
     {
@@ -36,7 +37,7 @@ class ScheduledTaskTest extends TestCase
         $this->app->instance(ZoneParserService::class, $parserMock);
     }
 
-    public function test_can_schedule_sequence_task()
+    public function test_can_schedule_sequence_task(): void
     {
         $account = Account::create([
             'username' => 'testuser',
@@ -80,7 +81,7 @@ class ScheduledTaskTest extends TestCase
         ]);
     }
 
-    public function test_executes_sequence_task_actions_with_delays()
+    public function test_executes_sequence_task_actions_with_delays(): void
     {
         $account = Account::create([
             'username' => 'runneruser',
@@ -140,8 +141,8 @@ class ScheduledTaskTest extends TestCase
         $task->refresh();
         $this->assertFalse($task->is_active);
         $this->assertNotNull($task->last_run_at);
-        $this->assertStringContainsString('Step 1 [stop_production]: OK', $task->last_result);
-        $this->assertStringContainsString('Step 2 [start_production]: OK', $task->last_result);
+        $this->assertStringContainsString('Step 1 [stop_production]: OK', (string) $task->last_result);
+        $this->assertStringContainsString('Step 2 [start_production]: OK', (string) $task->last_result);
 
         // Verify BotLogs were created
         $this->assertDatabaseHas('bot_logs', [
@@ -156,7 +157,7 @@ class ScheduledTaskTest extends TestCase
         ]);
     }
 
-    public function test_can_execute_task_manually_via_endpoint()
+    public function test_can_execute_task_manually_via_endpoint(): void
     {
         $account = Account::create([
             'username' => 'manualuser',
@@ -193,7 +194,7 @@ class ScheduledTaskTest extends TestCase
         $this->assertEquals('OK: manual_response', $task->last_result);
     }
 
-    public function test_can_update_scheduled_task()
+    public function test_can_update_scheduled_task(): void
     {
         $account = Account::create([
             'username' => 'updateuser',
@@ -252,7 +253,7 @@ class ScheduledTaskTest extends TestCase
         ]);
     }
 
-    public function test_sequence_task_continues_on_step_failure_and_records_errors()
+    public function test_sequence_task_continues_on_step_failure_and_records_errors(): void
     {
         $account = Account::create([
             'username' => 'seqerroruser',
@@ -302,12 +303,15 @@ class ScheduledTaskTest extends TestCase
         $service->execute($task);
 
         $task->refresh();
-        $this->assertEquals('failed', $task->status?->value);
+        $this->assertEquals('failed', $task->status->value);
+        $this->assertIsArray($task->payload);
         $this->assertArrayHasKey('step_results', $task->payload);
-        $this->assertEquals('failed', $task->payload['step_results'][0]['status']);
-        $this->assertStringContainsString('Building not found on grid 101', $task->payload['step_results'][0]['error']);
-        $this->assertEquals('completed', $task->payload['step_results'][1]['status']);
-        $this->assertNull($task->payload['step_results'][1]['error']);
+        $stepResults = $task->payload['step_results'];
+        $this->assertIsArray($stepResults);
+        $this->assertEquals('failed', $stepResults[0]['status']);
+        $this->assertStringContainsString('Building not found on grid 101', (string) $stepResults[0]['error']);
+        $this->assertEquals('completed', $stepResults[1]['status']);
+        $this->assertNull($stepResults[1]['error']);
     }
 
     public function test_invalid_non_numeric_task_parameter_returns_404(): void

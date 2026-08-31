@@ -35,10 +35,10 @@ class PublicServerResource extends JsonResource
             return $this->account->server_name;
         }
 
-        $name = preg_replace('/\s+Settlers\s+Market$/i', '', (string) $this->display_name);
+        $name = preg_replace('/\s+Settlers\s+Market$/i', '', $this->display_name);
         $name = preg_replace('/\s+Market(\s*\([^)]*\))?$/i', '', (string) $name);
         $name = trim((string) $name);
 
-        return $name !== '' ? $name : strtoupper((string) $this->server_id);
+        return $name !== '' ? $name : strtoupper($this->server_id);
     }
 }

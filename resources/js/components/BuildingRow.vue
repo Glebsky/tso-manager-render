@@ -38,65 +38,54 @@
     </div>
 </template>
 
-<script>
+<script setup>
 import { ref, computed } from 'vue';
+import { t } from '../lang';
 import { buildingName } from '../lang/gameNames';
 import { accountsApi } from '../services/api/accounts';
 import { showToast } from '../toast';
 import Spinner from './Spinner.vue';
 
-export default {
-    name: 'BuildingRow',
-    components: { Spinner },
-    props: {
-        building: {
-            type: Object,
-            required: true
-        },
-        accountId: {
-            type: Number,
-            required: true
-        }
+const props = defineProps({
+    building: {
+        type: Object,
+        required: true
     },
-    emits: ['action-success'],
-    setup(props, { emit }) {
-        const loading = ref(false);
-        const grid = computed(() => props.building.buildingGrid || 0);
-        
-        const isProducing = computed(() => {
-            return !!props.building.isProductionActive;
+    accountId: {
+        type: Number,
+        required: true
+    }
+});
+
+const emit = defineEmits(['action-success']);
+
+const loading = ref(false);
+const grid = computed(() => props.building.buildingGrid || 0);
+
+const isProducing = computed(() => {
+    return !!props.building.isProductionActive;
+});
+
+const formattedName = computed(() => buildingName(props.building.buildingName_string || props.building.buildingName || 'Building'));
+
+const toggleProduction = async () => {
+    loading.value = true;
+    const actionType = isProducing.value ? 'stop_production' : 'start_production';
+    try {
+        const res = await accountsApi.executeAccountAction(props.accountId, actionType, {
+            grid: grid.value
         });
 
-        const formattedName = computed(() => buildingName(props.building.buildingName_string || props.building.buildingName || 'Building'));
-
-        const toggleProduction = async () => {
-            loading.value = true;
-            const actionType = isProducing.value ? 'stop_production' : 'start_production';
-            try {
-                const res = await accountsApi.executeAccountAction(props.accountId, actionType, {
-                    grid: grid.value
-                });
-
-                if (res.success) {
-                    showToast(isProducing.value ? t('account.production_stopped') : t('account.production_started'));
-                    emit('action-success');
-                } else {
-                    showToast(res.message || t('account.action_failed'), 'error');
-                }
-            } catch (e) {
-                showToast(e.response?.data?.message || t('account.action_failed'), 'error');
-            } finally {
-                loading.value = false;
-            }
-        };
-
-        return {
-            grid,
-            isProducing,
-            formattedName,
-            loading,
-            toggleProduction
-        };
+        if (res.success) {
+            showToast(isProducing.value ? t('account.production_stopped') : t('account.production_started'));
+            emit('action-success');
+        } else {
+            showToast(res.message || t('account.action_failed'), 'error');
+        }
+    } catch (e) {
+        showToast(e.response?.data?.message || t('account.action_failed'), 'error');
+    } finally {
+        loading.value = false;
     }
 };
 </script>

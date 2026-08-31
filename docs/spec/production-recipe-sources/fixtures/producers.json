@@ -1,0 +1,416 @@
+{
+  "Barracks": {
+    "production_type": 0,
+    "ui": "timedproduction",
+    "ui_content": "0",
+    "nof_upgrades": "7"
+  },
+  "ProvisionHouse": {
+    "production_type": 1,
+    "ui": "timedproduction",
+    "ui_content": "1",
+    "nof_upgrades": "7"
+  },
+  "Mayorhouse": {
+    "production_type": 4,
+    "ui": "warehouse",
+    "ui_content": null,
+    "nof_upgrades": "7"
+  },
+  "Bookbinder": {
+    "production_type": 2,
+    "ui": "timedproduction",
+    "ui_content": "2",
+    "nof_upgrades": "6"
+  },
+  "ProvisionHouse2": {
+    "production_type": 5,
+    "ui": "timedproduction",
+    "ui_content": "1",
+    "nof_upgrades": null
+  },
+  "Barracks3": {
+    "production_type": 7,
+    "ui": "timedproduction",
+    "ui_content": "0",
+    "nof_upgrades": "7"
+  },
+  "ExpeditionWeaponSmith": {
+    "production_type": 6,
+    "ui": "timedproduction",
+    "ui_content": "0",
+    "nof_upgrades": "7"
+  },
+  "ExpeditionWeaponSmith2": {
+    "production_type": 11,
+    "ui": "timedproduction",
+    "ui_content": "0",
+    "nof_upgrades": "7"
+  },
+  "EliteBarracks": {
+    "production_type": 8,
+    "ui": "timedproduction",
+    "ui_content": "0",
+    "nof_upgrades": "7"
+  },
+  "SoccerField": {
+    "production_type": 12,
+    "ui": "culture",
+    "ui_content": null,
+    "nof_upgrades": null
+  },
+  "SpringPark": {
+    "production_type": 17,
+    "ui": "culture",
+    "ui_content": null,
+    "nof_upgrades": null
+  },
+  "Meadhall": {
+    "production_type": 13,
+    "ui": "culture",
+    "ui_content": null,
+    "nof_upgrades": null
+  },
+  "Smokehouse": {
+    "production_type": 15,
+    "ui": "timedproduction",
+    "ui_content": "1",
+    "nof_upgrades": "0"
+  },
+  "Stronghold": {
+    "production_type": 14,
+    "ui": "timedproduction",
+    "ui_content": null,
+    "nof_upgrades": null
+  },
+  "Laboratory": {
+    "production_type": 16,
+    "ui": "timedproduction",
+    "ui_content": "1",
+    "nof_upgrades": "0"
+  },
+  "SnackStand": {
+    "production_type": 18,
+    "ui": "timedproduction",
+    "ui_content": "1",
+    "nof_upgrades": "0"
+  },
+  "EspionageBuilding": {
+    "production_type": 19,
+    "ui": "culture",
+    "ui_content": null,
+    "nof_upgrades": null
+  },
+  "ChristmasMarket_Player": {
+    "production_type": 20,
+    "ui": "culture",
+    "ui_content": null,
+    "nof_upgrades": "4"
+  },
+  "WeatherStation": {
+    "production_type": 21,
+    "ui": "culture",
+    "ui_content": null,
+    "nof_upgrades": null
+  },
+  "Observatory": {
+    "production_type": 23,
+    "ui": "culture",
+    "ui_content": null,
+    "nof_upgrades": "0"
+  },
+  "LoveGarden": {
+    "production_type": 22,
+    "ui": "culture",
+    "ui_content": null,
+    "nof_upgrades": "0"
+  },
+  "Harbour": {
+    "production_type": 25,
+    "ui": "timedproduction",
+    "ui_content": "1",
+    "nof_upgrades": "2"
+  },
+  "AdventureBookbinder": {
+    "production_type": 24,
+    "ui": "timedproduction",
+    "ui_content": "1",
+    "nof_upgrades": "0"
+  },
+  "ChristmasBakery": {
+    "production_type": 27,
+    "ui": "culture",
+    "ui_content": null,
+    "nof_upgrades": "0"
+  },
+  "Oilmill": {
+    "production_type": 26,
+    "ui": "timedproduction",
+    "ui_content": "1",
+    "nof_upgrades": "0"
+  },
+  "LoveTree": {
+    "production_type": 28,
+    "ui": "culture",
+    "ui_content": null,
+    "nof_upgrades": "3"
+  },
+  "Chocolatier": {
+    "production_type": 29,
+    "ui": "timedproduction",
+    "ui_content": "1",
+    "nof_upgrades": "3"
+  },
+  "S4Lazaret": {
+    "production_type": 31,
+    "ui": "timedproduction",
+    "ui_content": null,
+    "nof_upgrades": null
+  },
+  "OilRefinery": {
+    "production_type": 30,
+    "ui": "timedproduction",
+    "ui_content": "1",
+    "nof_upgrades": "0"
+  },
+  "BlackTree_Blue": {
+    "production_type": 32,
+    "ui": "timedproduction",
+    "ui_content": "1",
+    "nof_upgrades": "7"
+  },
+  "BlackTree_Gold": {
+    "production_type": 33,
+    "ui": "timedproduction",
+    "ui_content": "1",
+    "nof_upgrades": "7"
+  },
+  "BlackTree_Green": {
+    "production_type": 34,
+    "ui": "timedproduction",
+    "ui_content": "1",
+    "nof_upgrades": "7"
+  },
+  "BlackTree_Purple": {
+    "production_type": 35,
+    "ui": "timedproduction",
+    "ui_content": "1",
+    "nof_upgrades": "7"
+  },
+  "BlackTree_Red": {
+    "production_type": 36,
+    "ui": "timedproduction",
+    "ui_content": "1",
+    "nof_upgrades": "7"
+  },
+  "ConcertHall": {
+    "production_type": 37,
+    "ui": "culture",
+    "ui_content": null,
+    "nof_upgrades": null
+  },
+  "LoversStatue": {
+    "production_type": 38,
+    "ui": "timedproduction",
+    "ui_content": "1",
+    "nof_upgrades": "3"
+  },
+  "BalloonMarket": {
+    "production_type": 39,
+    "ui": "timedproduction",
+    "ui_content": "1",
+    "nof_upgrades": "0"
+  },
+  "StoneDepot": {
+    "production_type": 40,
+    "ui": "timedproduction",
+    "ui_content": "1",
+    "nof_upgrades": "3"
+  },
+  "ToyFactory": {
+    "production_type": 41,
+    "ui": "timedproduction",
+    "ui_content": "1",
+    "nof_upgrades": "3"
+  },
+  "Snowglobe": {
+    "production_type": 42,
+    "ui": "culture",
+    "ui_content": null,
+    "nof_upgrades": "3"
+  },
+  "CandyFactory": {
+    "production_type": 44,
+    "ui": "timedproduction",
+    "ui_content": "1",
+    "nof_upgrades": "3"
+  },
+  "Ostereierbaum": {
+    "production_type": 43,
+    "ui": "culture",
+    "ui_content": "1",
+    "nof_upgrades": "0"
+  },
+  "SiegeWorkshop": {
+    "production_type": 45,
+    "ui": "timedproduction",
+    "ui_content": "1",
+    "nof_upgrades": "5"
+  },
+  "GrandFieldHospital": {
+    "production_type": 46,
+    "ui": "culture",
+    "ui_content": null,
+    "nof_upgrades": "3"
+  },
+  "ArtificerStudy": {
+    "production_type": 47,
+    "ui": "timedproduction",
+    "ui_content": "1",
+    "nof_upgrades": "0"
+  },
+  "UnityEvent_Trophy": {
+    "production_type": 48,
+    "ui": "culture",
+    "ui_content": "1",
+    "nof_upgrades": "0"
+  },
+  "OutdoorCanteen": {
+    "production_type": 49,
+    "ui": "culture",
+    "ui_content": null,
+    "nof_upgrades": "5"
+  },
+  "CarnivalGrounds": {
+    "production_type": 50,
+    "ui": "timedproduction",
+    "ui_content": "1",
+    "nof_upgrades": "3"
+  },
+  "ArtMuseum": {
+    "production_type": 51,
+    "ui": "culture",
+    "ui_content": null,
+    "nof_upgrades": "3"
+  },
+  "PrintPress": {
+    "production_type": 52,
+    "ui": "culture",
+    "ui_content": null,
+    "nof_upgrades": "2"
+  },
+  "GiantTreeOfHope": {
+    "production_type": 53,
+    "ui": "culture",
+    "ui_content": null,
+    "nof_upgrades": "0"
+  },
+  "StarfallAirship": {
+    "production_type": 54,
+    "ui": "timedproduction",
+    "ui_content": null,
+    "nof_upgrades": "4"
+  },
+  "RomanticRestaurant": {
+    "production_type": 55,
+    "ui": "timedproduction",
+    "ui_content": "0",
+    "nof_upgrades": null
+  },
+  "HoliFestivalGrounds": {
+    "production_type": 56,
+    "ui": "culture",
+    "ui_content": null,
+    "nof_upgrades": "0"
+  },
+  "GuildFestGrounds": {
+    "production_type": 58,
+    "ui": "timedproduction",
+    "ui_content": null,
+    "nof_upgrades": "0"
+  },
+  "TowerOfBraggingRights": {
+    "production_type": 62,
+    "ui": "culture",
+    "ui_content": "1",
+    "nof_upgrades": "7"
+  },
+  "GuildFestTentI": {
+    "production_type": 59,
+    "ui": "timedproduction",
+    "ui_content": null,
+    "nof_upgrades": "0"
+  },
+  "GuildFestTentII": {
+    "production_type": 60,
+    "ui": "timedproduction",
+    "ui_content": null,
+    "nof_upgrades": "0"
+  },
+  "GuildFestTentIII": {
+    "production_type": 61,
+    "ui": "timedproduction",
+    "ui_content": null,
+    "nof_upgrades": "0"
+  },
+  "IceSkatingLake": {
+    "production_type": 63,
+    "ui": "culture",
+    "ui_content": null,
+    "nof_upgrades": "0"
+  },
+  "CoffeeShop": {
+    "production_type": 64,
+    "ui": "timedproduction",
+    "ui_content": "0",
+    "nof_upgrades": "3"
+  },
+  "Jewelcrafter": {
+    "production_type": 65,
+    "ui": "timedproduction",
+    "ui_content": "0",
+    "nof_upgrades": "3"
+  },
+  "Prospector": {
+    "production_type": 66,
+    "ui": "timedproduction",
+    "ui_content": "0",
+    "nof_upgrades": "3"
+  },
+  "ElderTreeLH": {
+    "production_type": 67,
+    "ui": "culture",
+    "ui_content": null,
+    "nof_upgrades": null
+  },
+  "WitchCoven": {
+    "production_type": 68,
+    "ui": "timedproduction",
+    "ui_content": "1",
+    "nof_upgrades": "3"
+  },
+  "RetirementHome": {
+    "production_type": 69,
+    "ui": "timedproduction",
+    "ui_content": "1",
+    "nof_upgrades": "0"
+  },
+  "WeddingChapel": {
+    "production_type": 70,
+    "ui": "timedproduction",
+    "ui_content": "0",
+    "nof_upgrades": "3"
+  },
+  "FluffyLogistics": {
+    "production_type": 71,
+    "ui": "timedproduction",
+    "ui_content": "0",
+    "nof_upgrades": "0"
+  },
+  "CommandCenter": {
+    "production_type": 72,
+    "ui": "timedproduction",
+    "ui_content": "0",
+    "nof_upgrades": "3"
+  }
+}

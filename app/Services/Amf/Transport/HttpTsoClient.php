@@ -11,6 +11,7 @@ use App\Services\TsoAuthService;
 use Exception;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Random\RandomException;
 use Throwable;
 
 class HttpTsoClient implements TsoClientInterface
@@ -103,11 +104,25 @@ class HttpTsoClient implements TsoClientInterface
     {
         $record = Cache::get($this->sharedSessionKey($accountId, $zoneId));
 
-        if (! is_array($record) || ($record['auth_token'] ?? null) !== $authToken) {
+        if (! is_array($record)
+            || ! isset($record['url'], $record['cookie_file'], $record['ds_id'], $record['auth_token'], $record['resolved_at'])
+            || ! is_string($record['url'])
+            || ! is_string($record['cookie_file'])
+            || ! is_string($record['ds_id'])
+            || ! is_string($record['auth_token'])
+            || ! is_numeric($record['resolved_at'])
+            || $record['auth_token'] !== $authToken
+        ) {
             return null;
         }
 
-        return $record;
+        return [
+            'url' => $record['url'],
+            'cookie_file' => $record['cookie_file'],
+            'ds_id' => $record['ds_id'],
+            'auth_token' => $record['auth_token'],
+            'resolved_at' => (float) $record['resolved_at'],
+        ];
     }
 
     /**
@@ -139,17 +154,23 @@ class HttpTsoClient implements TsoClientInterface
         return preg_match($pattern, $response, $matches) === 1 ? $matches[1] : null;
     }
 
+    /**
+     * @throws Exception
+     */
     public function resolveServerUrl(Account $account, int $targetZoneId = 0, ?string &$dsId = null): string
     {
         $lsUrl = (string) $account->bb_url;
         $scheme = parse_url($lsUrl, PHP_URL_SCHEME);
         if (! in_array($scheme, ['http', 'https'], true)) {
-            throw new Exception("Invalid or unsupported URL scheme for account bb_url: {$scheme}");
+            throw new \RuntimeException("Invalid or unsupported URL scheme for account bb_url: {$scheme}");
         }
 
         $dsoAuthUser = (string) $account->dso_auth_user;
         $dsoAuthToken = (string) $account->dso_auth_token;
         $cookieFile = $this->authService->getCookieFile($account);
+        if ($cookieFile === '') {
+            throw new \RuntimeException("Cookie file for account #{$account->id} cannot be empty.");
+        }
 
         Log::info("[TsoAmf] Resolving real AMF server: bbUrl={$lsUrl}, user={$dsoAuthUser}, targetZoneId={$targetZoneId}");
 
@@ -176,21 +197,6 @@ class HttpTsoClient implements TsoClientInterface
         curl_close($chAuth);
 
         Log::info("[TsoAmf] Load server authentication: HTTP {$authStatus}, response: ".trim($authRes));
-
-        if ($authStatus === 200 && $authRes !== '') {
-            $parts = explode('|', trim($authRes));
-            if (count($parts) >= 3) {
-                $hash = trim($parts[2]);
-                if (strlen($hash) === 32) {
-                    $dsId = substr($hash, 0, 8).'-'.
-                            substr($hash, 8, 4).'-'.
-                            substr($hash, 12, 4).'-'.
-                            substr($hash, 16, 4).'-'.
-                            substr($hash, 20);
-                    Log::info("[TsoAmf] Extracted DSId from authentication response: {$dsId}");
-                }
-            }
-        }
 
         $maxRetries = 20;
         $lsStatus = 0;
@@ -234,10 +240,10 @@ class HttpTsoClient implements TsoClientInterface
         }
 
         if ($amfServerUrl === '') {
-            if ($lsStatus === 301 || ($lsStatus >= 300 && $lsStatus < 400)) {
-                throw new Exception("Load Server returned status {$lsStatus}: Session expired or invalid.");
+            if ($lsStatus >= 300 && $lsStatus < 400) {
+                throw new \RuntimeException("Load Server returned status {$lsStatus}: Session expired or invalid.");
             }
-            throw new Exception("Timeout waiting for Load Server. Last status: {$lsStatus}, Resp: {$lsRes}");
+            throw new \RuntimeException("Timeout waiting for Load Server. Last status: {$lsStatus}, Resp: {$lsRes}");
         }
 
         if (! str_starts_with($amfServerUrl, 'http')) {
@@ -253,9 +259,12 @@ class HttpTsoClient implements TsoClientInterface
         return $amfServerUrl;
     }
 
+    /**
+     * @throws RandomException
+     */
     public function sendCommand(Account $account, mixed $dServerCall, string $destination = 'SMC', string $operation = 'ExecuteServerCall', ?string $source = 'com.bluebyte.game.servlet.EventHandler', ?int $targetZoneId = null): string
     {
-        $accountId = (int) $account->id;
+        $accountId = $account->id;
         $lock = Cache::lock("tso:amf_lock:{$accountId}", 60);
         $locked = false;
 
@@ -274,9 +283,17 @@ class HttpTsoClient implements TsoClientInterface
         }
     }
 
+    /**
+     * @throws RandomException
+     * @throws Exception
+     * @throws Exception
+     * @throws Exception
+     * @throws Exception
+     * @throws Exception
+     */
     private function dispatchCommand(Account $account, int $zoneId, mixed $dServerCall, string $destination, string $operation, ?string $source): string
     {
-        $accountId = (int) $account->id;
+        $accountId = $account->id;
         $clientKey = $accountId.':'.$zoneId;
         $authToken = (string) $account->dso_auth_token;
         $ttl = (float) config('game.session_ttl_seconds', 300);
@@ -299,17 +316,21 @@ class HttpTsoClient implements TsoClientInterface
             $dsId = 'nil';
             $amfServerUrl = $this->resolveServerUrl($account, $zoneId, $dsId);
 
-            $accountDsId = $dsId !== 'nil' ? $dsId : ($this->dsIds[$accountId] ?? 'nil');
+            $resolvedDsId = ($dsId !== null && $dsId !== 'nil') ? $dsId : ($this->dsIds[$accountId] ?? 'nil');
+            $cookieFile = $this->authService->getCookieFile($account);
+            if ($cookieFile === '' || $amfServerUrl === '') {
+                throw new \RuntimeException('Invalid AMF server URL or cookie file.');
+            }
 
             $session = [
                 'url' => $amfServerUrl,
-                'cookie_file' => $this->authService->getCookieFile($account),
-                'ds_id' => $accountDsId,
+                'cookie_file' => $cookieFile,
+                'ds_id' => $resolvedDsId,
                 'auth_token' => $authToken,
                 'resolved_at' => microtime(true),
             ];
 
-            if ($dsId !== 'nil') {
+            if ($dsId !== null && $dsId !== 'nil') {
                 $this->dsIds[$accountId] = $dsId;
             }
 
@@ -328,10 +349,10 @@ class HttpTsoClient implements TsoClientInterface
         $message->source = $source;
         $message->messageId = sprintf(
             '%04X%04X-%04X-%04X-%04X-%04X%04X%04X',
-            mt_rand(0, 65535), mt_rand(0, 65535),
-            mt_rand(0, 65535), mt_rand(16384, 20479),
-            mt_rand(32768, 49151),
-            mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535)
+            random_int(0, 65535), random_int(0, 65535),
+            random_int(0, 65535), random_int(16384, 20479),
+            random_int(32768, 49151),
+            random_int(0, 65535), random_int(0, 65535), random_int(0, 65535)
         );
         $message->headers = (object) [
             'DSId' => $clientDsId,
@@ -343,9 +364,13 @@ class HttpTsoClient implements TsoClientInterface
         $encoder->encode([$message]);
         $amf3Body = $encoder->getOutput();
 
-        $amf0Envelope = $this->wrapAmf0Remoting('null', '/1', $amf3Body);
+        $amf0Envelope = $this->wrapAmf0Remoting($amf3Body);
 
         $startTime = microtime(true);
+
+        if ($client['url'] === '' || $client['cookie_file'] === '') {
+            throw new \RuntimeException('Invalid client URL or cookie file.');
+        }
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $client['url']);
@@ -374,11 +399,11 @@ class HttpTsoClient implements TsoClientInterface
 
         if ($error) {
             Log::error("[TsoAmf] Command [{$operation}] for account #{$accountId} failed after {$durationMs}ms with cURL error: {$error}");
-            throw new Exception('AMF cURL Error: '.$error);
+            throw new \RuntimeException('AMF cURL Error: '.$error);
         }
         if ($httpCode !== 200) {
             Log::error("[TsoAmf] Command [{$operation}] for account #{$accountId} returned HTTP {$httpCode} after {$durationMs}ms. Response: ".substr($response, 0, 300));
-            throw new Exception("AMF Server returned HTTP {$httpCode}. Response: ".$response);
+            throw new \RuntimeException("AMF Server returned HTTP {$httpCode}. Response: ".$response);
         }
 
         Log::info("[TsoAmf] Command [{$operation}] for account #{$accountId} completed in {$durationMs}ms (HTTP {$httpCode}, ".strlen($response).' bytes)');
@@ -398,10 +423,9 @@ class HttpTsoClient implements TsoClientInterface
         return $response;
     }
 
-    private function wrapAmf0Remoting(string $targetUri, string $responseUri, string $amf3Body): string
+    private function wrapAmf0Remoting(string $amf3Body, string $targetUri = 'null', string $responseUri = '/1'): string
     {
-        $out = '';
-        $out .= pack('n', 3);
+        $out = pack('n', 3);
         $out .= pack('n', 0);
         $out .= pack('n', 1);
         $out .= pack('n', strlen($targetUri)).$targetUri;

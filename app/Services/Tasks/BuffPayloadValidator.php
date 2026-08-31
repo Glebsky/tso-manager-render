@@ -6,6 +6,7 @@ namespace App\Services\Tasks;
 
 use App\Models\Account;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
+use Psr\SimpleCache\InvalidArgumentException;
 
 /**
  * Semantic validation of an `apply_buff` payload.
@@ -17,13 +18,16 @@ use Illuminate\Contracts\Cache\Repository as CacheRepository;
  * Returns the collected errors instead of throwing, so the caller decides how
  * to surface them (form request, console command, queued job).
  */
-final class BuffPayloadValidator
+final readonly class BuffPayloadValidator
 {
-    public function __construct(private readonly CacheRepository $cache) {}
+    public function __construct(private CacheRepository $cache) {}
 
     /**
      * @param  array<string, mixed>  $payload
      * @return array<string, list<string>>
+     *
+     * @throws InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function validate(Account $account, array $payload, string $prefix = 'payload.'): array
     {
@@ -38,7 +42,10 @@ final class BuffPayloadValidator
             $u1 = $buff['uniqueId1'] ?? $buff['uniqueID1'] ?? $buff['uniqueID']['uniqueID1'] ?? $buff['uniqueID']['uniqueId1'] ?? $buff['uniqueId']['uniqueId1'] ?? null;
             $u2 = $buff['uniqueId2'] ?? $buff['uniqueID2'] ?? $buff['uniqueID']['uniqueID2'] ?? $buff['uniqueID']['uniqueId2'] ?? $buff['uniqueId']['uniqueId2'] ?? null;
 
-            if ($u1 == ($payload['unique_id1'] ?? null) && $u2 == ($payload['unique_id2'] ?? null)) {
+            $targetU1 = $payload['unique_id1'] ?? null;
+            $targetU2 = $payload['unique_id2'] ?? null;
+
+            if ($targetU1 !== null && $targetU2 !== null && (int) $u1 === (int) $targetU1 && (int) $u2 === (int) $targetU2) {
                 $buffFound = true;
                 $availableAmount = $buff['amount'] ?? 0;
 
@@ -65,6 +72,8 @@ final class BuffPayloadValidator
      * @param  array<string, mixed>  $payload
      * @param  array<string, mixed>  $zoneData
      * @return array<string, list<string>>
+     *
+     * @throws InvalidArgumentException
      */
     private function validateFriendTarget(Account $account, array $payload, string $prefix, array $zoneData): array
     {
@@ -84,12 +93,12 @@ final class BuffPayloadValidator
             return [$prefix.'target_player_id' => [__('tasks.error.friend_zone_not_cached')]];
         }
 
-        $friendZoneData = json_decode((string) $cachedZone, true) ?: [];
+        $friendZoneData = json_decode((string) $cachedZone, true, 512, JSON_THROW_ON_ERROR) ?: [];
+        $targetGrid = (int) ($payload['grid'] ?? 0);
 
-        foreach ($friendZoneData['buildings'] ?? [] as $building) {
-            if (($building['buildingGrid'] ?? null) == ($payload['grid'] ?? null)) {
-                return [];
-            }
+        $buildings = is_array($friendZoneData['buildings'] ?? null) ? $friendZoneData['buildings'] : [];
+        if (array_any($buildings, static fn (mixed $b): bool => is_array($b) && (int) ($b['buildingGrid'] ?? 0) === $targetGrid)) {
+            return [];
         }
 
         return [$prefix.'grid' => [__('tasks.error.friend_building_not_found_grid', ['grid' => $payload['grid'] ?? null])]];
@@ -100,13 +109,12 @@ final class BuffPayloadValidator
      */
     private function isKnownFriend(array $zoneData, int $friendId): bool
     {
-        foreach ($zoneData['friends'] ?? [] as $friend) {
-            if (isset($friend['id']) && (int) $friend['id'] === $friendId) {
-                return true;
-            }
-        }
+        $friends = is_array($zoneData['friends'] ?? null) ? $zoneData['friends'] : [];
 
-        return false;
+        return array_any(
+            $friends,
+            static fn (mixed $f): bool => is_array($f) && isset($f['id']) && (int) $f['id'] === $friendId
+        );
     }
 
     /**

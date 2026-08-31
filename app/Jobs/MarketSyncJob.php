@@ -27,6 +27,9 @@ class MarketSyncJob implements ShouldQueue
 
     public int $timeout = 120;
 
+    /**
+     * @var list<int>
+     */
     public array $backoff = [30, 120, 300];
 
     public Account $account;
@@ -45,6 +48,8 @@ class MarketSyncJob implements ShouldQueue
 
     /**
      * Execute the job.
+     *
+     * @throws Throwable
      */
     public function handle(MarketSyncService $syncService): void
     {

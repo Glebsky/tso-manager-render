@@ -6,18 +6,23 @@ namespace App\Services\Tasks;
 
 use App\Exceptions\UnknownTaskActionException;
 use App\Services\Tasks\Contracts\TaskActionHandlerInterface;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Container\Container;
 
-final class TaskHandlerRegistry
+final readonly class TaskHandlerRegistry
 {
     /**
      * @param  array<int, class-string<TaskActionHandlerInterface>>  $handlerClasses
      */
     public function __construct(
-        private readonly Container $container,
-        private readonly array $handlerClasses,
+        private Container $container,
+        private array $handlerClasses,
     ) {}
 
+    /**
+     * @throws BindingResolutionException
+     * @throws UnknownTaskActionException
+     */
     public function getHandler(string $actionType): TaskActionHandlerInterface
     {
         foreach ($this->handlerClasses as $handlerClass) {

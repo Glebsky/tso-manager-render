@@ -6,11 +6,13 @@ namespace Tests\Unit;
 
 use App\Exceptions\UnknownTaskActionException;
 use App\Services\Tasks\Handlers\ApplyBuffHandler;
+use App\Services\Tasks\Handlers\BuildMineHandler;
 use App\Services\Tasks\Handlers\CollectBuildingHandler;
 use App\Services\Tasks\Handlers\CollectPickupsHandler;
 use App\Services\Tasks\Handlers\SendSpecialistHandler;
 use App\Services\Tasks\Handlers\StartProductionHandler;
 use App\Services\Tasks\Handlers\StopProductionHandler;
+use App\Services\Tasks\Handlers\UpgradeMineHandler;
 use App\Services\Tasks\TaskHandlerRegistry;
 use Tests\TestCase;
 
@@ -35,6 +37,8 @@ class TaskHandlerRegistryTest extends TestCase
         $this->assertInstanceOf(SendSpecialistHandler::class, $this->registry->getHandler('send_specialist'));
         $this->assertInstanceOf(CollectPickupsHandler::class, $this->registry->getHandler('collect_pickups'));
         $this->assertInstanceOf(CollectBuildingHandler::class, $this->registry->getHandler('collect_building'));
+        $this->assertInstanceOf(BuildMineHandler::class, $this->registry->getHandler('build_mine'));
+        $this->assertInstanceOf(UpgradeMineHandler::class, $this->registry->getHandler('upgrade_mine'));
     }
 
     public function test_throws_unknown_task_action_exception_for_invalid_type(): void

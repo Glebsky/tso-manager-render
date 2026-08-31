@@ -42,7 +42,7 @@ class AccountResource extends JsonResource
             'avatar_id' => $this->avatar_id,
             'building_count' => $this->building_count,
             'last_sync_at' => $this->last_sync_at?->toIso8601String(),
-            'session_updated_at' => $this->session_updated_at?->toIso8601String(),
+            'session_updated_at' => $this->updated_at?->toIso8601String(),
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
             'scheduled_tasks_count' => $this->whenCounted('scheduledTasks'),

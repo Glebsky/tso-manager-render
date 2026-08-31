@@ -21,17 +21,19 @@ use Illuminate\Contracts\Cache\Repository as CacheRepository;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Psr\SimpleCache\InvalidArgumentException;
+use Throwable;
 
 /**
  * Domain engine responsible for task scheduling, atomic reservation, stale recovery, and account sync orchestration.
  */
-class TaskSchedulerEngine
+readonly class TaskSchedulerEngine
 {
     public function __construct(
-        private readonly TaskExecutionService $taskExecutionService,
-        private readonly AccountSyncService $accountSyncService,
-        private readonly SystemLogCleanupService $systemLogCleanupService,
-        private readonly CacheRepository $cache,
+        private TaskExecutionService $taskExecutionService,
+        private AccountSyncService $accountSyncService,
+        private SystemLogCleanupService $systemLogCleanupService,
+        private CacheRepository $cache,
     ) {}
 
     /**
@@ -49,11 +51,11 @@ class TaskSchedulerEngine
             ->get();
 
         foreach ($staleTasks as $task) {
-            Log::warning("[Scheduler] Resetting stale task #{$task->id} [{$task->task_type?->value}] from status '{$task->status?->value}' back to 'pending'");
+            Log::warning("[Scheduler] Resetting stale task #{$task->id} [{$task->task_type->value}] from status '{$task->status->value}' back to 'pending'");
             $task->update([
                 'status' => TaskStatus::Pending,
                 'execution_token' => null,
-                'last_result' => TaskResultPrefix::Warning->format("Execution timed out / stuck in {$task->status?->value} state."),
+                'last_result' => TaskResultPrefix::Warning->format("Execution timed out / stuck in {$task->status->value} state."),
             ]);
         }
 
@@ -65,43 +67,44 @@ class TaskSchedulerEngine
      */
     public function isTaskDue(ScheduledTask $task, Carbon $now): bool
     {
-        if ($task->schedule_type === ScheduleType::Daily || is_null($task->schedule_type)) {
-            if (! $task->run_at_time) {
-                return false;
-            }
+        return match ($task->schedule_type) {
+            ScheduleType::Daily => $this->isDailyTaskDue($task, $now),
+            ScheduleType::Once => $task->run_at_datetime !== null
+                && $task->last_run_at === null
+                && $now->greaterThanOrEqualTo($task->run_at_datetime),
+            ScheduleType::Interval => $this->isIntervalTaskDue($task, $now),
+        };
+    }
 
-            $timeParts = explode(':', $task->run_at_time);
-            $hours = (int) $timeParts[0];
-            $minutes = (int) ($timeParts[1] ?? 0);
-
-            $targetToday = $now->copy()->setTime($hours, $minutes, 0);
-
-            if ($now->greaterThanOrEqualTo($targetToday)) {
-                return is_null($task->last_run_at) || $task->last_run_at->lt($targetToday);
-            }
-
+    private function isDailyTaskDue(ScheduledTask $task, Carbon $now): bool
+    {
+        if (! $task->run_at_time) {
             return false;
         }
 
-        if ($task->schedule_type === ScheduleType::Once) {
-            if ($task->run_at_datetime && is_null($task->last_run_at)) {
-                return $now->greaterThanOrEqualTo($task->run_at_datetime);
-            }
+        $timeParts = explode(':', $task->run_at_time);
+        $hours = (int) $timeParts[0];
+        $minutes = (int) ($timeParts[1] ?? 0);
 
-            return false;
+        $targetToday = $now->copy()->setTime($hours, $minutes);
+
+        if ($now->greaterThanOrEqualTo($targetToday)) {
+            return is_null($task->last_run_at) || $task->last_run_at->lt($targetToday);
         }
 
-        if ($task->schedule_type === ScheduleType::Interval) {
-            $hours = (int) $task->interval_hours;
-            $minutes = (int) $task->interval_minutes;
-            $intervalTotalMinutes = ($hours * 60) + $minutes;
+        return false;
+    }
 
-            if ($intervalTotalMinutes > 0) {
-                $baseline = $task->last_run_at ?? $task->created_at;
-                if ($baseline) {
-                    return $now->diffInMinutes($baseline, false) >= $intervalTotalMinutes
-                        || $baseline->diffInMinutes($now, false) >= $intervalTotalMinutes;
-                }
+    private function isIntervalTaskDue(ScheduledTask $task, Carbon $now): bool
+    {
+        $hours = (int) $task->interval_hours;
+        $minutes = (int) $task->interval_minutes;
+        $intervalTotalMinutes = ($hours * 60) + $minutes;
+
+        if ($intervalTotalMinutes > 0) {
+            $baseline = $task->last_run_at ?? $task->created_at;
+            if ($baseline) {
+                return abs((int) $now->diffInMinutes($baseline)) >= $intervalTotalMinutes;
             }
         }
 
@@ -110,6 +113,8 @@ class TaskSchedulerEngine
 
     /**
      * Perform atomic reservation and dispatch a task.
+     *
+     * @throws Throwable
      */
     public function reserveAndDispatchTask(ScheduledTask $task, string $mode = 'queue'): bool
     {
@@ -128,7 +133,7 @@ class TaskSchedulerEngine
                 'payload' => $payload,
             ]);
 
-        if ($reserved === 0) {
+        if (! $reserved) {
             return false;
         }
 
@@ -140,12 +145,12 @@ class TaskSchedulerEngine
                 Log::error("Sync execution failed for task #{$task->id}: {$e->getMessage()}");
             }
         } else {
-            DB::afterCommit(function () use ($task, $token) {
+            DB::afterCommit(static function () use ($task, $token) {
                 Log::info(sprintf(
                     '[Scheduler] Task #%d [%s] reserved and dispatched (schedule=%s, token=%s, queued_at=%s)',
                     $task->id,
-                    (string) $task->task_type?->value,
-                    (string) $task->schedule_type?->value,
+                    $task->task_type->value,
+                    $task->schedule_type->value,
                     $token,
                     now()->toDateTimeString()
                 ));
@@ -159,21 +164,21 @@ class TaskSchedulerEngine
 
     /**
      * Evaluate due tasks and perform atomic reservation before dispatching.
+     *
+     * @throws Throwable
      */
     public function processDueTasks(Carbon $now, string $mode = 'queue'): int
     {
         $activeTasks = ScheduledTask::where('is_active', true)
             ->whereIn('status', [TaskStatus::Pending, TaskStatus::Completed, TaskStatus::Failed])
-            ->with('account')
+            ->with('account:id,username,nickname,region,status')
             ->get();
 
         $count = 0;
 
         foreach ($activeTasks as $task) {
-            if ($this->isTaskDue($task, $now)) {
-                if ($this->reserveAndDispatchTask($task, $mode)) {
-                    $count++;
-                }
+            if ($this->isTaskDue($task, $now) && $this->reserveAndDispatchTask($task, $mode)) {
+                $count++;
             }
         }
 
@@ -182,6 +187,8 @@ class TaskSchedulerEngine
 
     /**
      * Evaluate Account Sync and dispatch atomically.
+     *
+     * @throws InvalidArgumentException
      */
     public function processAccountSync(Carbon $now, string $mode = 'queue'): int
     {
@@ -191,7 +198,7 @@ class TaskSchedulerEngine
             return 0;
         }
 
-        $accounts = Account::all();
+        $accounts = Account::query()->select(['id', 'username', 'nickname', 'region', 'status', 'last_sync_at'])->get();
         $count = 0;
 
         foreach ($accounts as $account) {
@@ -200,16 +207,14 @@ class TaskSchedulerEngine
             }
 
             if ($account->last_sync_at) {
-                $elapsedMinutes = (int) $now->diffInMinutes($account->last_sync_at, false);
+                $elapsedMinutes = (int) $now->diffInMinutes($account->last_sync_at);
                 if (abs($elapsedMinutes) < $syncInterval) {
                     continue;
                 }
             }
 
             $lockKey = "account_sync_lock:{$account->id}";
-            $acquired = $this->cache->add($lockKey, true, 300);
-
-            if (! $acquired) {
+            if (! $this->cache->add($lockKey, true, 300)) {
                 continue;
             }
 

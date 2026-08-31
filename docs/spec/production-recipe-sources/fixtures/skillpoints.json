@@ -1,0 +1,347 @@
+[
+  {
+    "id": "Manuscript",
+    "instant_finish_cost": 200,
+    "reset_cost": 50,
+    "production_levels": [
+      {
+        "amount_produced_from": 0,
+        "production_time": 216000,
+        "costs": [
+          {
+            "resource": "SimplePaper",
+            "count": 250
+          },
+          {
+            "resource": "Nib",
+            "count": 200
+          },
+          {
+            "resource": "Coin",
+            "count": 10
+          }
+        ]
+      },
+      {
+        "amount_produced_from": 10,
+        "production_time": 216000,
+        "costs": [
+          {
+            "resource": "SimplePaper",
+            "count": 275
+          },
+          {
+            "resource": "Nib",
+            "count": 220
+          },
+          {
+            "resource": "Coin",
+            "count": 11
+          }
+        ]
+      },
+      {
+        "amount_produced_from": 20,
+        "production_time": 216000,
+        "costs": [
+          {
+            "resource": "SimplePaper",
+            "count": 305
+          },
+          {
+            "resource": "Nib",
+            "count": 240
+          },
+          {
+            "resource": "Coin",
+            "count": 12
+          }
+        ]
+      },
+      {
+        "amount_produced_from": 30,
+        "production_time": 216000,
+        "costs": [
+          {
+            "resource": "SimplePaper",
+            "count": 335
+          },
+          {
+            "resource": "Nib",
+            "count": 265
+          },
+          {
+            "resource": "Coin",
+            "count": 13
+          }
+        ]
+      },
+      {
+        "amount_produced_from": 40,
+        "production_time": 216000,
+        "costs": [
+          {
+            "resource": "SimplePaper",
+            "count": 365
+          },
+          {
+            "resource": "Nib",
+            "count": 295
+          },
+          {
+            "resource": "Coin",
+            "count": 15
+          }
+        ]
+      },
+      {
+        "amount_produced_from": 50,
+        "production_time": 216000,
+        "costs": [
+          {
+            "resource": "SimplePaper",
+            "count": 405
+          },
+          {
+            "resource": "Nib",
+            "count": 320
+          },
+          {
+            "resource": "Coin",
+            "count": 16
+          }
+        ]
+      },
+      {
+        "amount_produced_from": 60,
+        "production_time": 216000,
+        "costs": [
+          {
+            "resource": "SimplePaper",
+            "count": 445
+          },
+          {
+            "resource": "Nib",
+            "count": 355
+          },
+          {
+            "resource": "Coin",
+            "count": 18
+          }
+        ]
+      },
+      {
+        "amount_produced_from": 70,
+        "production_time": 216000,
+        "costs": [
+          {
+            "resource": "SimplePaper",
+            "count": 490
+          },
+          {
+            "resource": "Nib",
+            "count": 390
+          },
+          {
+            "resource": "Coin",
+            "count": 19
+          }
+        ]
+      },
+      {
+        "amount_produced_from": 80,
+        "production_time": 216000,
+        "costs": [
+          {
+            "resource": "SimplePaper",
+            "count": 535
+          },
+          {
+            "resource": "Nib",
+            "count": 430
+          },
+          {
+            "resource": "Coin",
+            "count": 21
+          }
+        ]
+      },
+      {
+        "amount_produced_from": 90,
+        "production_time": 216000,
+        "costs": [
+          {
+            "resource": "SimplePaper",
+            "count": 590
+          },
+          {
+            "resource": "Nib",
+            "count": 470
+          },
+          {
+            "resource": "Coin",
+            "count": 24
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "Tome",
+    "instant_finish_cost": 200,
+    "reset_cost": 50,
+    "production_levels": [
+      {
+        "amount_produced_from": 0,
+        "production_time": 259200,
+        "costs": [
+          {
+            "resource": "IntermediatePaper",
+            "count": 250
+          },
+          {
+            "resource": "Letter",
+            "count": 200
+          },
+          {
+            "resource": "Manuscript",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "amount_produced_from": 20,
+        "production_time": 259200,
+        "costs": [
+          {
+            "resource": "IntermediatePaper",
+            "count": 350
+          },
+          {
+            "resource": "Letter",
+            "count": 240
+          },
+          {
+            "resource": "Manuscript",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "amount_produced_from": 40,
+        "production_time": 259200,
+        "costs": [
+          {
+            "resource": "IntermediatePaper",
+            "count": 420
+          },
+          {
+            "resource": "Letter",
+            "count": 290
+          },
+          {
+            "resource": "Manuscript",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "amount_produced_from": 60,
+        "production_time": 259200,
+        "costs": [
+          {
+            "resource": "IntermediatePaper",
+            "count": 505
+          },
+          {
+            "resource": "Letter",
+            "count": 345
+          },
+          {
+            "resource": "Manuscript",
+            "count": 4
+          }
+        ]
+      },
+      {
+        "amount_produced_from": 80,
+        "production_time": 259200,
+        "costs": [
+          {
+            "resource": "IntermediatePaper",
+            "count": 605
+          },
+          {
+            "resource": "Letter",
+            "count": 415
+          },
+          {
+            "resource": "Manuscript",
+            "count": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "Codex",
+    "instant_finish_cost": 200,
+    "reset_cost": 50,
+    "production_levels": [
+      {
+        "amount_produced_from": 0,
+        "production_time": 302400,
+        "costs": [
+          {
+            "resource": "AdvancedPaper",
+            "count": 250
+          },
+          {
+            "resource": "BookFitting",
+            "count": 200
+          },
+          {
+            "resource": "Tome",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "amount_produced_from": 30,
+        "production_time": 302400,
+        "costs": [
+          {
+            "resource": "AdvancedPaper",
+            "count": 375
+          },
+          {
+            "resource": "BookFitting",
+            "count": 300
+          },
+          {
+            "resource": "Tome",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "amount_produced_from": 60,
+        "production_time": 302400,
+        "costs": [
+          {
+            "resource": "AdvancedPaper",
+            "count": 560
+          },
+          {
+            "resource": "BookFitting",
+            "count": 400
+          },
+          {
+            "resource": "Tome",
+            "count": 3
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -4,6 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property ?int $offers_count
+ * @property ?int $sellers_count
+ */
 class MarketOffer extends Model
 {
     protected $fillable = [

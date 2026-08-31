@@ -18,24 +18,12 @@ final class StepResultCollection
 
     public function hasFailure(): bool
     {
-        foreach ($this->outcomes as $outcome) {
-            if (! $outcome->isSuccess) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any($this->outcomes, static fn (StepOutcome $outcome): bool => ! $outcome->isSuccess);
     }
 
     public function hasSuccess(): bool
     {
-        foreach ($this->outcomes as $outcome) {
-            if ($outcome->isSuccess && ! $outcome->isSkipped) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any($this->outcomes, static fn (StepOutcome $outcome): bool => $outcome->isSuccess && ! $outcome->isSkipped);
     }
 
     /**
@@ -43,12 +31,7 @@ final class StepResultCollection
      */
     public function toArray(): array
     {
-        $result = [];
-        foreach ($this->outcomes as $index => $outcome) {
-            $result[$index] = $outcome->toArray();
-        }
-
-        return $result;
+        return array_map(static fn (StepOutcome $outcome): array => $outcome->toArray(), $this->outcomes);
     }
 
     /**

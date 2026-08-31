@@ -15,12 +15,12 @@ use Throwable;
 /**
  * High-level orchestrator for Account synchronization pipeline.
  */
-class AccountSyncService
+readonly class AccountSyncService
 {
     public function __construct(
-        private readonly AccountSyncFetcher $fetcher,
-        private readonly AccountSyncPersister $persister,
-        private readonly AccountSyncLogger $logger,
+        private AccountSyncFetcher $fetcher,
+        private AccountSyncPersister $persister,
+        private AccountSyncLogger $logger,
     ) {}
 
     /**

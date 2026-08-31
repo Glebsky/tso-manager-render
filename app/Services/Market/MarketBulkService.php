@@ -21,18 +21,18 @@ use Illuminate\Support\Carbon;
  * /market/goods, /market/analytics or /market/arbitrage - which is exactly
  * what happened while all of this was copy-pasted inside one controller.
  */
-final class MarketBulkService
+final readonly class MarketBulkService
 {
     public function __construct(
-        private readonly MarketCacheService $cache,
-        private readonly MarketSettingsService $settings,
-        private readonly MarketCatalogService $catalog,
-        private readonly PopularItemService $popularItems,
-        private readonly MarketOfferQueryService $offers,
-        private readonly MarketHistoryAggregator $history,
-        private readonly ArbitrageFinder $arbitrage,
-        private readonly PeriodResolver $periods,
-        private readonly ResourceNameResolver $names,
+        private MarketCacheService $cache,
+        private MarketSettingsService $settings,
+        private MarketCatalogService $catalog,
+        private PopularItemService $popularItems,
+        private MarketOfferQueryService $offers,
+        private MarketHistoryAggregator $history,
+        private ArbitrageFinder $arbitrage,
+        private PeriodResolver $periods,
+        private ResourceNameResolver $names,
     ) {}
 
     /**
@@ -171,7 +171,7 @@ final class MarketBulkService
         /** @var list<string> $keys */
         $keys = (array) config('market.bulk.periods', ['1d', '7d']);
 
-        return array_values($keys);
+        return $keys;
     }
 
     private function nextSyncAt(string $serverId, int $intervalMinutes): CarbonInterface
@@ -190,7 +190,7 @@ final class MarketBulkService
     private function cacheTtlSeconds(CarbonInterface $nextSyncAt, int $intervalMinutes): int
     {
         $minimum = (int) config('market.bulk.min_ttl_seconds', 30);
-        $ttl = (int) max($minimum, Carbon::now()->diffInSeconds($nextSyncAt, false));
+        $ttl = (int) max($minimum, Carbon::now()->diffInSeconds($nextSyncAt));
 
         return min($ttl, $intervalMinutes * 60);
     }

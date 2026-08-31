@@ -9,7 +9,7 @@
     </transition>
 </template>
 
-<script>
+<script setup>
 /**
  * Non-blocking loading overlay for panels that refresh in place.
  * Keeps the old content visible (slightly dimmed and blurred) instead of
@@ -18,22 +18,18 @@
  */
 import Spinner from './Spinner.vue';
 
-export default {
-    name: 'LoadingOverlay',
-    components: { Spinner },
-    props: {
-        show: {
-            type: Boolean,
-            default: false
-        },
-        label: {
-            type: String,
-            default: ''
-        },
-        size: {
-            type: String,
-            default: 'md'
-        }
+defineProps({
+    show: {
+        type: Boolean,
+        default: false
+    },
+    label: {
+        type: String,
+        default: ''
+    },
+    size: {
+        type: String,
+        default: 'md'
     }
-};
+});
 </script>

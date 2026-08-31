@@ -11,7 +11,7 @@ use Illuminate\Console\Command;
 
 class LangImportCommand extends Command
 {
-    private const SUPPORTED_LOCALES = ['en', 'ru'];
+    private const array SUPPORTED_LOCALES = ['en', 'ru'];
 
     protected $signature = 'tso:lang:import
         {source : Path to the game lang XML export (e.g. en_lang.xml)}

@@ -26,7 +26,7 @@ Game protocol behavior is an external contract derived from observed traffic and
 - PostgreSQL in deployed environments; SQLite in test configuration.
 - Redis for cache, sessions, queues, throttling, and account-scoped runtime state.
 - Vue 3 Composition API, Vue Router, Axios, Vite 6, Tailwind CSS 3.
-- PHPUnit 10, Laravel Pint, PHPStan.
+- PHPUnit 10 / 11, Laravel Pint, PHPStan.
 - Modern PHP 8.5 features are enabled and allowed.
 - Do not add/replace/upgrade dependencies without approval and a documented need.
 

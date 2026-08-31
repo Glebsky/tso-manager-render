@@ -25,6 +25,15 @@ final readonly class ApplyBuffHandler implements TaskActionHandlerInterface
         return $actionType === 'apply_buff';
     }
 
+    /**
+     * @throws FriendBuildingNotFoundException
+     * @throws FriendNotFoundException
+     * @throws FriendZoneLoadException
+     * @throws \Exception
+     * @throws \Exception
+     * @throws \Exception
+     * @throws \Exception
+     */
     public function handle(Account $account, array $payload): string
     {
         $grid = (int) ($payload['grid'] ?? 0);
@@ -64,7 +73,7 @@ final readonly class ApplyBuffHandler implements TaskActionHandlerInterface
             $gridFound = false;
 
             foreach ($buildings as $building) {
-                if (($building['buildingGrid'] ?? null) == $grid) {
+                if ((int) ($building['buildingGrid'] ?? 0) === $grid) {
                     $gridFound = true;
                     break;
                 }

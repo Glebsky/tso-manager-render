@@ -53,7 +53,7 @@ class SystemLogCleanupService
 
         $cutoffDate = $now->copy()->subDays($retentionDays);
 
-        $deletedCount = BotLog::where('created_at', '<', $cutoffDate)->delete();
+        $deletedCount = (int) BotLog::where('created_at', '<', $cutoffDate)->delete();
 
         Setting::set('last_log_cleanup_at', $now->toIso8601String());
 

@@ -1,18 +1,18 @@
 <template>
     <div>
         <!-- Заголовок страницы -->
-        <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center justify-between mb-5 sm:mb-8">
             <div>
-                <h1 class="text-3xl font-bold text-white">{{ t('tasks.title') }}</h1>
-                <p class="text-white/40 mt-1">{{ t('tasks.subtitle') }}</p>
+                <h1 class="text-xl sm:text-3xl font-bold text-white">{{ t('tasks.title') }}</h1>
+                <p class="text-xs sm:text-sm text-white/40 mt-0.5 sm:mt-1">{{ t('tasks.subtitle') }}</p>
             </div>
         </div>
 
         <!-- Форма добавления/редактирования задачи -->
-        <div id="task-form-card" class="glass-card p-6 mb-8 transition-all duration-300" :class="{ 'border-amber-500/30 bg-amber-500/[0.02]': editingTaskId }">
-            <div class="flex items-center justify-between mb-5 flex-wrap gap-2">
-                <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br flex items-center justify-center transition-all duration-300"
+        <div id="task-form-card" class="glass-card p-4 sm:p-6 mb-6 sm:mb-8 transition-all duration-300" :class="{ 'border-amber-500/30 bg-amber-500/[0.02]': editingTaskId }">
+            <div class="flex items-center justify-between mb-4 sm:mb-5 flex-wrap gap-2">
+                <div class="flex items-center gap-2.5 sm:gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br flex items-center justify-center transition-all duration-300 shrink-0"
                          :class="editingTaskId ? 'from-amber-500 to-orange-600 shadow-lg shadow-amber-500/20' : 'from-emerald-500 to-teal-600 shadow-lg shadow-emerald-500/20'">
                         <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                             <path v-if="editingTaskId" stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
@@ -20,10 +20,10 @@
                         </svg>
                     </div>
                     <div>
-                        <h2 class="text-lg font-semibold text-white">
+                        <h2 class="text-base sm:text-lg font-semibold text-white">
                             {{ editingTaskId ? t('tasks.editing_task', { id: editingTaskId }) : t('tasks.schedule_new') }}
                         </h2>
-                        <p v-if="editingTaskId" class="text-xs text-amber-400 font-medium">{{ t('tasks.editing_hint') }}</p>
+                        <p v-if="editingTaskId" class="text-[11px] sm:text-xs text-amber-400 font-medium">{{ t('tasks.editing_hint') }}</p>
                     </div>
                 </div>
 
@@ -33,25 +33,25 @@
             </div>
 
             <form @submit.prevent="scheduleTask">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4 mb-4">
                     <!-- Название серии -->
                     <div>
-                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('tasks.series_name') }}</label>
-                        <input type="text" v-model="taskName" :placeholder="t('tasks.series_name_placeholder')" class="glass-input w-full text-left  py-2.5">
+                        <label for="task-series-name" class="block text-xs font-medium text-white/40 mb-1.5 sm:mb-2 uppercase tracking-wider">{{ t('tasks.series_name') }}</label>
+                        <input id="task-series-name" type="text" v-model="taskName" :placeholder="t('tasks.series_name_placeholder')" :aria-label="t('tasks.series_name')" class="glass-input w-full text-left py-2 sm:py-2.5 text-xs sm:text-sm">
                     </div>
 
                     <!-- Выбор аккаунта -->
                     <div>
-                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('tasks.game_account') }}</label>
+                        <label class="block text-xs font-medium text-white/40 mb-1.5 sm:mb-2 uppercase tracking-wider">{{ t('tasks.game_account') }}</label>
                         <div class="relative">
-                            <button type="button" @click.stop="activeDropdown = activeDropdown === 'account' ? null : 'account'" class="glass-select w-full flex items-center justify-between text-left">
-                                <span>{{ selectedAccountLabel }}</span>
-                                <svg class="w-4 h-4 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <button type="button" @click.stop="activeDropdown = activeDropdown === 'account' ? null : 'account'" class="glass-select w-full flex items-center justify-between text-left text-xs sm:text-sm py-2 sm:py-2.5">
+                                <span class="truncate">{{ selectedAccountLabel }}</span>
+                                <svg class="w-4 h-4 text-white/30 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                                 </svg>
                             </button>
-                            <div v-if="activeDropdown === 'account'" class="absolute z-50 mt-1.5 w-full glass-card border border-white/10 shadow-2xl rounded-xl py-1 max-h-60 overflow-y-auto">
-                                <button v-for="acc in accounts" :key="acc.id" type="button" @click="selectedAccountId = acc.id; onAccountChange(); activeDropdown = null" class="w-full px-4 py-2 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">
+                            <div v-if="activeDropdown === 'account'" class="absolute z-50 mt-1.5 w-full bg-dark-900 border border-white/15 shadow-2xl rounded-xl py-1.5 max-h-60 overflow-y-auto backdrop-blur-xl">
+                                <button v-for="acc in accounts" :key="acc.id" type="button" @click="selectedAccountId = acc.id; onAccountChange(); activeDropdown = null" class="w-full px-4 py-2 text-left text-xs text-white/90 hover:bg-emerald-500/20 hover:text-white transition-colors">
                                     {{ acc.nickname || acc.username }} ({{ (acc.region || '').toUpperCase() }})
                                 </button>
                             </div>
@@ -60,20 +60,20 @@
 
                     <!-- Режим запуска (Тип планирования) -->
                     <div>
-                        <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('tasks.planning_type') }}</label>
-                        <div class="grid grid-cols-1 xs:grid-cols-3 gap-2">
+                        <label class="block text-xs font-medium text-white/40 mb-1.5 sm:mb-2 uppercase tracking-wider">{{ t('tasks.planning_type') }}</label>
+                        <div class="grid grid-cols-3 gap-1.5 sm:gap-2">
                             <button type="button" @click="scheduleType = 'daily'"
-                                    class="px-3 py-2 rounded-lg text-xs font-semibold border transition-all duration-300"
+                                    class="px-2 sm:px-3 py-2 rounded-lg text-xs font-semibold border transition-all duration-300 text-center"
                                     :class="scheduleType === 'daily' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
                                 {{ t('tasks.daily') }}
                             </button>
                             <button type="button" @click="scheduleType = 'once'"
-                                    class="px-3 py-2 rounded-lg text-xs font-semibold border transition-all duration-300"
+                                    class="px-2 sm:px-3 py-2 rounded-lg text-xs font-semibold border transition-all duration-300 text-center"
                                     :class="scheduleType === 'once' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
                                 {{ t('tasks.once') }}
                             </button>
                             <button type="button" @click="scheduleType = 'interval'"
-                                    class="px-3 py-2 rounded-lg text-xs font-semibold border transition-all duration-300"
+                                    class="px-2 sm:px-3 py-2 rounded-lg text-xs font-semibold border transition-all duration-300 text-center"
                                     :class="scheduleType === 'interval' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10'">
                                 {{ t('tasks.interval') }}
                             </button>
@@ -89,10 +89,10 @@
                                 :scheduleType="scheduleType" />
 
                 <!-- Панель конструктора серии действий -->
-                <div class="border-t border-white/5 pt-5 mb-5">
+                <div class="border-t border-white/5 pt-4 sm:pt-5 mb-4 sm:mb-5">
                     <!-- Текущие шаги серии -->
-                    <div class="flex items-center justify-between mb-3">
-                        <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+                    <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+                        <h3 class="text-xs sm:text-sm font-semibold text-white flex items-center gap-2">
                             <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
                             </svg>
@@ -107,8 +107,8 @@
                     </div>
 
                     <div v-if="sequenceActions.length > 0" class="space-y-2 mb-4 max-h-72 sm:max-h-60 overflow-y-auto pr-1 sm:pr-2">
-                        <div v-for="(act, idx) in sequenceActions" :key="idx" class="glass-card p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 border border-white/5 hover:border-white/20 hover:bg-white/[0.04] transition-all duration-200">
-                            <div class="flex items-start gap-3 min-w-0 w-full">
+                        <div v-for="(act, idx) in sequenceActions" :key="idx" class="glass-card p-2.5 sm:p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 border border-white/5 hover:border-white/20 hover:bg-white/[0.04] transition-all duration-200">
+                            <div class="flex items-start gap-2.5 sm:gap-3 min-w-0 w-full">
                                 <span class="w-5 h-5 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-[10px] font-bold font-mono flex-shrink-0">{{ idx + 1 }}</span>
                                 <span class="text-lg flex-shrink-0">{{ typeIcons[act.task_type] }}</span>
                                 <div class="text-xs min-w-0 flex-1">
@@ -118,6 +118,7 @@
                                             <span class="inline-flex items-center gap-1 text-emerald-400 font-semibold">
                                                 <img v-if="getBuildingInfo(null, act).icon"
                                                      :src="getBuildingInfo(null, act).icon"
+                                                     loading="lazy" decoding="async"
                                                      class="w-4 h-4 object-contain rounded flex-shrink-0"
                                                      @error="handleBuildingIconError($event, getBuildingInfo(null, act).raw || act.meta?.building)" />
                                                 <span v-else class="text-xs flex-shrink-0">🏭</span>
@@ -131,6 +132,7 @@
                                             <span class="inline-flex items-center gap-1 text-amber-300 font-medium">
                                                 <img v-if="getBuffInfo(null, act).icon"
                                                      :src="getBuffInfo(null, act).icon"
+                                                     loading="lazy" decoding="async"
                                                      class="w-4 h-4 object-contain rounded flex-shrink-0"
                                                      @error="handleBuffIconError($event, getBuffInfo(null, act).raw || act.meta?.buff)" />
                                                 <span v-else class="text-xs flex-shrink-0">✨</span>
@@ -148,6 +150,7 @@
                                             <span class="inline-flex items-center gap-1 text-emerald-400 font-semibold">
                                                 • <img v-if="getBuildingInfo(null, act).icon"
                                                      :src="getBuildingInfo(null, act).icon"
+                                                     loading="lazy" decoding="async"
                                                      class="w-4 h-4 object-contain rounded flex-shrink-0"
                                                      @error="handleBuildingIconError($event, getBuildingInfo(null, act).raw || act.meta?.building)" />
                                                 <span v-else class="text-xs flex-shrink-0">🏭</span>
@@ -161,6 +164,7 @@
                                             <span class="inline-flex items-center gap-1 text-emerald-300 font-medium">
                                                 <img v-if="getSpecialistInfo(null, act).icon"
                                                      :src="getSpecialistInfo(null, act).icon"
+                                                     loading="lazy" decoding="async"
                                                      class="w-4 h-4 object-contain rounded flex-shrink-0"
                                                      @error="handleSpecialistIconError($event)" />
                                                 <span v-else class="text-xs flex-shrink-0">🎖️</span>
@@ -173,6 +177,57 @@
                                         <span v-if="act.task_type === 'collect_pickups'" class="inline-flex items-center gap-1.5 flex-wrap">
                                             <span class="badge badge-neutral text-[9px]">
                                                 🧺 {{ act.payload?.pickup_type === 'event' ? t('tasks.event_pickups') : t('tasks.all_pickups') }}
+                                            </span>
+                                        </span>
+                                        <span v-if="act.task_type === 'build_mine'" class="inline-flex items-center gap-1.5 flex-wrap">
+                                            <span class="inline-flex items-center gap-1 text-emerald-400 font-semibold">
+                                                <img v-if="getBuildingInfo(null, act).icon"
+                                                     :src="getBuildingInfo(null, act).icon"
+                                                     loading="lazy" decoding="async"
+                                                     class="w-4 h-4 object-contain rounded flex-shrink-0"
+                                                     @error="handleBuildingIconError($event, getBuildingInfo(null, act).raw || act.payload?.mine_name)" />
+                                                <span v-else class="text-xs flex-shrink-0">⛏️</span>
+                                                <span>{{ t('tasks.action.build_mine') }}: {{ getBuildingInfo(null, act).name || act.payload.mine_name || act.payload.deposit_name }}</span>
+                                            </span>
+                                            <span class="font-mono text-white/50 bg-white/5 px-1.5 py-0.5 rounded text-[9px]">
+                                                {{ t('tasks.grid_number', { id: act.payload.grid }) }}
+                                            </span>
+                                        </span>
+                                        <span v-if="act.task_type === 'upgrade_mine'" class="inline-flex items-center gap-1.5 flex-wrap">
+                                            <span class="inline-flex items-center gap-1 text-emerald-400 font-semibold">
+                                                <img v-if="getBuildingInfo(null, act).icon"
+                                                     :src="getBuildingInfo(null, act).icon"
+                                                     loading="lazy" decoding="async"
+                                                     class="w-4 h-4 object-contain rounded flex-shrink-0"
+                                                     @error="handleBuildingIconError($event, getBuildingInfo(null, act).raw || act.payload?.building_name)" />
+                                                <span v-else class="text-xs flex-shrink-0">🏭</span>
+                                                <span>{{ t('tasks.action.upgrade_mine') }}: {{ getBuildingInfo(null, act).name || act.payload.building_name }}</span>
+                                            </span>
+                                            <span class="font-mono text-white/50 bg-white/5 px-1.5 py-0.5 rounded text-[9px]">
+                                                {{ t('tasks.grid_number', { id: act.payload.grid }) }}
+                                            </span>
+                                            <span v-if="act.payload.max_level" class="badge badge-emerald text-[9px]">
+                                                {{ t('tasks.level_short') }} ≤ {{ act.payload.max_level }}
+                                            </span>
+                                        </span>
+                                        <span v-if="act.task_type === 'produce_buff'" class="inline-flex items-center gap-1.5 flex-wrap">
+                                            <span class="inline-flex items-center gap-1 text-emerald-400 font-semibold">
+                                                <img v-if="getBuffInfo(null, act).icon"
+                                                     :src="getBuffInfo(null, act).icon"
+                                                     loading="lazy" decoding="async"
+                                                     class="w-4 h-4 object-contain rounded flex-shrink-0"
+                                                     @error="handleBuffIconError($event, act.payload?.recipe_name)" />
+                                                <span v-else class="text-xs flex-shrink-0">🧪</span>
+                                                <span>{{ t('tasks.action.produce_buff') }}: {{ getBuffInfo(null, act).name }} (x{{ act.payload.amount || 1 }})</span>
+                                            </span>
+                                            <span v-if="act.payload.stacks && act.payload.stacks > 1" class="text-white/60 text-[10px]">
+                                                • {{ act.payload.stacks }} {{ t('tasks.produce_stacks').toLowerCase() }}
+                                            </span>
+                                            <span class="inline-flex items-center gap-1 text-white/60">
+                                                • 🏭 {{ getBuildingName(act.payload.building_name || act.meta?.building?.building_name) }}
+                                            </span>
+                                            <span class="font-mono text-white/50 bg-white/5 px-1.5 py-0.5 rounded text-[9px]">
+                                                {{ t('tasks.grid_number', { id: act.payload.grid }) }}
                                             </span>
                                         </span>
                                     </p>
@@ -222,14 +277,17 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                                         </svg>
                                     </button>
-                                    <div v-if="selectedAccountId && activeDropdown === 'stepActionType'" class="absolute z-50 mt-1.5 w-full glass-card border border-white/10 shadow-2xl rounded-xl py-1 max-h-60 overflow-y-auto">
-                                        <button type="button" @click="stepActionType = 'stop_production'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">🛑 {{ t('tasks.action.stop_production') }}</button>
-                                        <button type="button" @click="stepActionType = 'start_production'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">▶️ {{ t('tasks.action.start_production') }}</button>
-                                        <button type="button" @click="stepActionType = 'collect_building'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">🎁 {{ t('tasks.action.collect_building') }}</button>
-                                        <button type="button" @click="stepActionType = 'apply_buff'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">⚡ {{ t('tasks.action.apply_buff') }}</button>
-                                        <button type="button" @click="stepActionType = 'send_geologist'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">⛏️ {{ t('tasks.action.send_geologist') }}</button>
-                                        <button type="button" @click="stepActionType = 'send_explorer'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">🧭 {{ t('tasks.action.send_explorer') }}</button>
-                                        <button type="button" @click="stepActionType = 'collect_pickups'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">🧺 {{ t('tasks.action.collect_pickups') }}</button>
+                                    <div v-if="selectedAccountId && activeDropdown === 'stepActionType'" class="absolute z-50 mt-1.5 w-full bg-dark-900 border border-white/15 shadow-2xl rounded-xl py-1.5 max-h-60 overflow-y-auto backdrop-blur-xl divide-y divide-white/5">
+                                        <button type="button" @click="stepActionType = 'stop_production'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-2 text-left text-xs text-white/90 hover:bg-emerald-500/20 hover:text-white transition-colors flex items-center gap-2">🛑 {{ t('tasks.action.stop_production') }}</button>
+                                        <button type="button" @click="stepActionType = 'start_production'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-2 text-left text-xs text-white/90 hover:bg-emerald-500/20 hover:text-white transition-colors flex items-center gap-2">▶️ {{ t('tasks.action.start_production') }}</button>
+                                        <button type="button" @click="stepActionType = 'collect_building'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-2 text-left text-xs text-white/90 hover:bg-emerald-500/20 hover:text-white transition-colors flex items-center gap-2">🎁 {{ t('tasks.action.collect_building') }}</button>
+                                        <button type="button" @click="stepActionType = 'build_mine'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-2 text-left text-xs text-white/90 hover:bg-emerald-500/20 hover:text-white transition-colors flex items-center gap-2">🏗️ {{ t('tasks.action.build_mine') }}</button>
+                                        <button type="button" @click="stepActionType = 'upgrade_mine'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-2 text-left text-xs text-white/90 hover:bg-emerald-500/20 hover:text-white transition-colors flex items-center gap-2">⬆️ {{ t('tasks.action.upgrade_mine') }}</button>
+                                        <button type="button" @click="stepActionType = 'produce_buff'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-2 text-left text-xs text-white/90 hover:bg-emerald-500/20 hover:text-white transition-colors flex items-center gap-2">🧪 {{ t('tasks.action.produce_buff') }}</button>
+                                        <button type="button" @click="stepActionType = 'apply_buff'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-2 text-left text-xs text-white/90 hover:bg-emerald-500/20 hover:text-white transition-colors flex items-center gap-2">⚡ {{ t('tasks.action.apply_buff') }}</button>
+                                        <button type="button" @click="stepActionType = 'send_geologist'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-2 text-left text-xs text-white/90 hover:bg-emerald-500/20 hover:text-white transition-colors flex items-center gap-2">⛏️ {{ t('tasks.action.send_geologist') }}</button>
+                                        <button type="button" @click="stepActionType = 'send_explorer'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-2 text-left text-xs text-white/90 hover:bg-emerald-500/20 hover:text-white transition-colors flex items-center gap-2">🧭 {{ t('tasks.action.send_explorer') }}</button>
+                                        <button type="button" @click="stepActionType = 'collect_pickups'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-2 text-left text-xs text-white/90 hover:bg-emerald-500/20 hover:text-white transition-colors flex items-center gap-2">🧺 {{ t('tasks.action.collect_pickups') }}</button>
                                     </div>
                                 </div>
                             </div>
@@ -272,11 +330,11 @@
                                                         <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                                                     </svg>
                                                 </button>
-                                                <div v-if="activeDropdown === 'friendList'" class="absolute z-50 mt-1.5 w-full glass-card border border-white/10 shadow-2xl rounded-xl py-1 max-h-60 overflow-y-auto">
-                                                    <button v-for="friend in friendsList" :key="friend.id" type="button" @click="selectFriend(friend); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors flex justify-between items-center">
+                                                <div v-if="activeDropdown === 'friendList'" class="absolute z-50 mt-1.5 w-full bg-dark-900 border border-white/15 shadow-2xl rounded-xl py-1.5 max-h-60 overflow-y-auto backdrop-blur-xl divide-y divide-white/5">
+                                                    <button v-for="friend in friendsList" :key="friend.id" type="button" @click="selectFriend(friend); activeDropdown = null" class="w-full px-3 py-2 text-left text-xs text-white/90 hover:bg-emerald-500/20 hover:text-white transition-colors flex justify-between items-center">
                                                         <span>👤 {{ friend.nickname || friend.username }} ({{ t('tasks.level') }} {{ friend.playerLevel }})</span>
                                                     </button>
-                                                    <div v-if="friendsList.length === 0" class="px-3 py-1.5 text-xs text-white/40">
+                                                    <div v-if="friendsList.length === 0" class="px-3 py-2 text-xs text-white/40">
                                                         {{ t('tasks.friends_empty') }}
                                                     </div>
                                                 </div>
@@ -290,7 +348,7 @@
                                                     class="glass-select w-full flex items-center justify-between text-left text-xs py-2 bg-dark-900/40 transition-all duration-300"
                                                     :class="{ 'border-amber-500/40 bg-amber-500/5': !selectedBuff }">
                                                 <span v-if="selectedBuff" class="flex items-center gap-2 min-w-0">
-                                                    <img alt="" v-if="getBuffIcon(selectedBuff)" :src="getBuffIcon(selectedBuff)" class="w-5 h-5 object-contain flex-shrink-0" @error="handleBuffIconError($event, selectedBuff)" />
+                                                    <img alt="" v-if="getBuffIcon(selectedBuff)" :src="getBuffIcon(selectedBuff)" loading="lazy" decoding="async" class="w-5 h-5 object-contain flex-shrink-0" @error="handleBuffIconError($event, selectedBuff)" />
                                                     <span class="truncate">{{ getStarBuffName(selectedBuff) }} ({{ selectedBuff.amount }})</span>
                                                     <span v-if="buffDurationLabel(selectedBuff)" class="badge badge-emerald text-[9px] flex-shrink-0">⏱ {{ buffDurationLabel(selectedBuff) }}</span>
                                                 </span>
@@ -321,7 +379,7 @@
                                                           :class="bTarget.scope === 'friend' ? 'bg-amber-500/20 text-amber-300' : 'bg-emerald-500/20 text-emerald-300'">
                                                         {{ bTarget.scope === 'friend' ? ('👤 ' + (bTarget.friend?.nickname || bTarget.friend?.username || t('tasks.friend'))) : '🏡 ' + t('tasks.my_city') }}
                                                     </span>
-                                                    <img alt="" v-if="getBuildingIcon(bTarget.building)" :src="getBuildingIcon(bTarget.building)" class="w-4 h-4 object-contain flex-shrink-0" @error="handleBuildingIconError($event, bTarget.building)" />
+                                                    <img alt="" v-if="getBuildingIcon(bTarget.building)" :src="getBuildingIcon(bTarget.building)" loading="lazy" decoding="async" class="w-4 h-4 object-contain flex-shrink-0" @error="handleBuildingIconError($event, bTarget.building)" />
                                                     <span class="text-white/90 font-medium truncate text-xs">{{ getBuildingName(bTarget.building) }} (Grid #{{ bTarget.buildingGrid }})</span>
                                                     <button type="button" @click="removeSelectedBuilding(bIdx)" class="text-white/40 hover:text-red-400 transition-colors ml-1 font-bold flex-shrink-0">✕</button>
                                                 </div>
@@ -369,7 +427,7 @@
                                             <div v-if="selectedSpecialists.length > 0" class="flex flex-wrap gap-2 mb-2 max-h-40 overflow-y-auto p-2 bg-dark-900/40 rounded-xl border border-white/5">
                                                 <div v-for="(spec, sIdx) in selectedSpecialists" :key="getSpecialistId(spec)"
                                                      class="glass-card px-2.5 py-1.5 flex items-center gap-2 text-xs border border-emerald-500/30 bg-emerald-500/10 rounded-lg max-w-full">
-                                                    <img alt="" v-if="getSpecialistIcon(spec.type)" :src="getSpecialistIcon(spec.type)" class="w-5 h-5 object-contain flex-shrink-0" @error="handleSpecialistIconError($event, spec.type)" />
+                                                    <img alt="" v-if="getSpecialistIcon(spec.type)" :src="getSpecialistIcon(spec.type)" loading="lazy" decoding="async" class="w-5 h-5 object-contain flex-shrink-0" @error="handleSpecialistIconError($event, spec.type)" />
                                                     <span class="text-white/90 font-medium truncate text-xs">{{ spec.name || getSpecialistTypeName(spec.type) }}</span>
                                                     <button type="button" @click="removeSelectedSpecialist(sIdx)" class="text-white/40 hover:text-red-400 transition-colors ml-1 font-bold flex-shrink-0">✕</button>
                                                 </div>
@@ -387,6 +445,195 @@
                                                 </svg>
                                             </button>
                                         </div>
+
+                                        <!-- ЗАЛЕЖИ (для постройки шахт) -->
+                                        <div v-if="stepActionType === 'build_mine'" class="mb-3">
+                                            <div class="flex items-center justify-between mb-1.5">
+                                                <label class="block text-[10px] font-medium text-white/40 uppercase">
+                                                    {{ t('tasks.selected_targets', { count: selectedDeposits.length }) }}
+                                                </label>
+                                                <button v-if="selectedDeposits.length > 0" type="button" @click="clearSelectedDeposits" class="text-[10px] text-red-400/80 hover:text-red-400 transition-colors">
+                                                    {{ t('tasks.modal.clear_selection') }}
+                                                </button>
+                                            </div>
+
+                                            <!-- Список выбранных чипов залежей -->
+                                            <div v-if="selectedDeposits.length > 0" class="flex flex-wrap gap-2 mb-2 max-h-40 overflow-y-auto p-2 bg-dark-900/40 rounded-xl border border-white/5">
+                                                <div v-for="(dep, dIdx) in selectedDeposits" :key="dep.grid"
+                                                     class="glass-card px-2.5 py-1.5 flex items-center gap-2 text-xs border border-emerald-500/30 bg-emerald-500/10 rounded-lg max-w-full">
+                                                    <img alt="" v-if="getBuildingIcon(dep.mine_name)" :src="getBuildingIcon(dep.mine_name)" loading="lazy" decoding="async" class="w-4 h-4 object-contain flex-shrink-0" @error="handleBuildingIconError($event, dep.mine_name)" />
+                                                    <span v-else class="text-xs">⛏️</span>
+                                                    <span class="text-white/90 font-medium truncate text-xs">{{ getBuildingName(dep.mine_name) }} (Grid #{{ dep.grid }})</span>
+                                                    <button type="button" @click="removeSelectedDeposit(dIdx)" class="text-white/40 hover:text-red-400 transition-colors ml-1 font-bold flex-shrink-0">✕</button>
+                                                </div>
+                                            </div>
+
+                                            <button type="button" @click="openDepositModal"
+                                                    class="glass-select w-full flex items-center justify-between text-left text-xs py-2 bg-dark-900/40 transition-all duration-300"
+                                                    :class="{ 'border-amber-500/40 bg-amber-500/5': selectedDeposits.length === 0 }">
+                                                <span class="flex items-center gap-2 truncate">
+                                                    <span>⛏️ {{ t('tasks.select_deposits') }}</span>
+                                                    <span v-if="selectedDeposits.length > 0" class="badge badge-emerald text-[10px]">{{ selectedDeposits.length }}</span>
+                                                </span>
+                                                <svg class="w-3.5 h-3.5 text-white/30 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                                </svg>
+                                            </button>
+                                        </div>
+
+                                        <!-- ШАХТЫ (для улучшения шахт) -->
+                                        <div v-if="stepActionType === 'upgrade_mine'" class="mb-3">
+                                            <div class="flex items-center justify-between mb-1.5">
+                                                <label class="block text-[10px] font-medium text-white/40 uppercase">
+                                                    {{ t('tasks.selected_targets', { count: selectedMines.length }) }}
+                                                </label>
+                                                <button v-if="selectedMines.length > 0" type="button" @click="clearSelectedMines" class="text-[10px] text-red-400/80 hover:text-red-400 transition-colors">
+                                                    {{ t('tasks.modal.clear_selection') }}
+                                                </button>
+                                            </div>
+
+                                            <!-- Список выбранных чипов шахт -->
+                                            <div v-if="selectedMines.length > 0" class="flex flex-wrap gap-2 mb-2 max-h-40 overflow-y-auto p-2 bg-dark-900/40 rounded-xl border border-white/5">
+                                                <div v-for="(mine, mIdx) in selectedMines" :key="mine.grid"
+                                                     class="glass-card px-2.5 py-1.5 flex items-center gap-2 text-xs border border-emerald-500/30 bg-emerald-500/10 rounded-lg max-w-full">
+                                                    <img alt="" v-if="getBuildingIcon(mine.building_name)" :src="getBuildingIcon(mine.building_name)" loading="lazy" decoding="async" class="w-4 h-4 object-contain flex-shrink-0" @error="handleBuildingIconError($event, mine.building_name)" />
+                                                    <span v-else class="text-xs">🏭</span>
+                                                    <span class="text-white/90 font-medium truncate text-xs">{{ getBuildingName(mine.building_name) }} (Grid #{{ mine.grid }})</span>
+                                                    <button type="button" @click="removeSelectedMine(mIdx)" class="text-white/40 hover:text-red-400 transition-colors ml-1 font-bold flex-shrink-0">✕</button>
+                                                </div>
+                                            </div>
+
+                                            <button type="button" @click="openMineModal"
+                                                    class="glass-select w-full flex items-center justify-between text-left text-xs py-2 bg-dark-900/40 transition-all duration-300"
+                                                    :class="{ 'border-amber-500/40 bg-amber-500/5': selectedMines.length === 0 }">
+                                                <span class="flex items-center gap-2 truncate">
+                                                    <span>🏭 {{ t('tasks.select_mines') }}</span>
+                                                    <span v-if="selectedMines.length > 0" class="badge badge-emerald text-[10px]">{{ selectedMines.length }}</span>
+                                                </span>
+                                                <svg class="w-3.5 h-3.5 text-white/30 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                                </svg>
+                                            </button>
+                                        </div>
+
+                                        <!-- МАСТЕРСКИЕ И РЕЦЕПТЫ (для производства баффов) -->
+                                        <div v-if="stepActionType === 'produce_buff'" class="mb-3 space-y-3">
+                                            <!-- Выбор мастерской -->
+                                            <div>
+                                                <label class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">
+                                                    {{ t('tasks.select_producer') }}
+                                                </label>
+                                                <div v-if="selectedProducer" class="flex items-center justify-between p-2.5 bg-dark-900/40 rounded-xl border border-emerald-500/30 bg-emerald-500/10 mb-2">
+                                                    <div class="flex items-center gap-2.5 min-w-0">
+                                                        <img v-if="getBuildingIcon(selectedProducer.building_name)"
+                                                             :src="getBuildingIcon(selectedProducer.building_name)"
+                                                             class="w-6 h-6 object-contain flex-shrink-0"
+                                                             @error="handleBuildingIconError($event, selectedProducer.building_name)" />
+                                                        <span v-else class="text-sm">🏭</span>
+                                                        <div class="truncate text-xs">
+                                                            <p class="text-white/90 font-semibold truncate">{{ getBuildingName(selectedProducer.building_name) }}</p>
+                                                            <p class="text-[10px] text-white/40 font-mono">{{ t('tasks.grid_number', { id: selectedProducer.grid }) }} • Lvl {{ selectedProducer.upgrade_level }}</p>
+                                                        </div>
+                                                    </div>
+                                                    <button type="button" @click="openProducerModal" class="btn-secondary btn-sm text-[10px] py-1 px-2">
+                                                        {{ t('common.change') || 'Change' }}
+                                                    </button>
+                                                </div>
+                                                <button v-else type="button" @click="openProducerModal"
+                                                        class="glass-select w-full flex items-center justify-between text-left text-xs py-2 bg-dark-900/40 border-amber-500/40 bg-amber-500/5">
+                                                    <span class="flex items-center gap-2 truncate text-amber-400/90">
+                                                        <span>🏭 {{ t('tasks.select_producer') }}</span>
+                                                    </span>
+                                                    <svg class="w-3.5 h-3.5 text-white/30 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+
+                                            <!-- Выбор рецепта (если мастерская выбрана) -->
+                                            <div v-if="selectedProducer">
+                                                <label class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">
+                                                    {{ t('tasks.select_recipe') }}
+                                                </label>
+                                                <div v-if="selectedRecipe" class="p-2.5 bg-dark-900/40 rounded-xl border border-emerald-500/30 bg-emerald-500/10 mb-2 space-y-2">
+                                                    <div class="flex items-center justify-between">
+                                                        <div class="flex items-center gap-2.5 min-w-0">
+                                                            <img v-if="getBuffIcon(selectedRecipe.name)"
+                                                                 :src="getBuffIcon(selectedRecipe.name)"
+                                                                 class="w-6 h-6 object-contain flex-shrink-0"
+                                                                 @error="handleBuffIconError($event, selectedRecipe.name)" />
+                                                            <span v-else class="text-sm">🧪</span>
+                                                            <div class="truncate text-xs">
+                                                                <p class="text-white/90 font-semibold truncate">{{ getRecipeName(selectedRecipe.name) }}</p>
+                                                                <p class="text-[10px] text-white/40">⏱️ {{ formatSeconds(selectedRecipe.duration_seconds) }}</p>
+                                                            </div>
+                                                        </div>
+                                                        <button type="button" @click="openProducerModal" class="btn-secondary btn-sm text-[10px] py-1 px-2">
+                                                            {{ t('common.change') || 'Change' }}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <button v-else type="button" @click="openProducerModal"
+                                                        class="glass-select w-full flex items-center justify-between text-left text-xs py-2 bg-dark-900/40 border-amber-500/40 bg-amber-500/5">
+                                                    <span class="flex items-center gap-2 truncate text-amber-400/90">
+                                                        <span>🧪 {{ t('tasks.select_recipe') }}</span>
+                                                    </span>
+                                                    <svg class="w-3.5 h-3.5 text-white/30 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+
+                                            <!-- Количество и стеки (если рецепт выбран) -->
+                                            <div v-if="selectedProducer && selectedRecipe" class="space-y-3 pt-2 border-t border-white/5">
+                                                <div v-if="selectedRecipe.max_amount_per_order === 1 && selectedRecipe.stacks_supported === false" class="text-[11px] text-amber-300/90 py-1 flex items-center gap-1.5">
+                                                    <span>ℹ️</span>
+                                                    <span>{{ t('tasks.production.single_item_only') }}</span>
+                                                </div>
+                                                <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                    <div v-if="selectedRecipe.max_amount_per_order !== 1">
+                                                        <div class="flex items-center justify-between mb-1">
+                                                            <label class="block text-[10px] font-medium text-white/40 uppercase">
+                                                                {{ t('tasks.produce_amount') }} (1..{{ selectedRecipe.max_amount_per_order || 25 }})
+                                                            </label>
+                                                            <span class="text-xs font-mono font-bold text-emerald-400">{{ produceAmount }}</span>
+                                                        </div>
+                                                        <input type="range" min="1" :max="selectedRecipe.max_amount_per_order || 25" v-model.number="produceAmount" class="w-full accent-emerald-500 cursor-pointer">
+                                                    </div>
+
+                                                    <div v-if="selectedRecipe.stacks_supported !== false">
+                                                        <label class="block text-[10px] font-medium text-white/40 mb-1 uppercase">
+                                                            {{ t('tasks.produce_stacks') }} (1..{{ selectedRecipe.max_stacks_per_order || 200 }})
+                                                        </label>
+                                                        <input type="number" min="1" :max="selectedRecipe.max_stacks_per_order || 200" v-model.number="produceStacks" class="glass-input w-full text-xs py-1.5 font-mono">
+                                                    </div>
+                                                </div>
+
+                                                <!-- Сводка стоимости и времени -->
+                                                <div class="p-2.5 bg-white/[0.02] border border-white/5 rounded-xl text-xs space-y-1.5">
+                                                    <div class="flex items-center justify-between text-[11px] text-white/50">
+                                                        <span>⏱️ {{ t('tasks.production_duration') }}:</span>
+                                                        <span class="font-mono text-white/90 font-semibold">{{ formatSeconds(totalProduceDuration) }}</span>
+                                                    </div>
+                                                    <div v-if="totalProduceResources.length > 0" class="pt-1.5 border-t border-white/5">
+                                                        <p class="text-[10px] text-white/40 mb-1 uppercase font-medium flex items-center gap-1">
+                                                            <span>{{ t('tasks.cost_summary') }}:</span>
+                                                            <span v-if="selectedRecipe.cost_is_lower_bound" class="text-amber-400" :title="t('tasks.production.progressive_cost_hint')">
+                                                                (≥ {{ t('tasks.production.from_price') }})
+                                                            </span>
+                                                        </p>
+                                                        <div class="flex flex-wrap gap-1.5">
+                                                            <span v-for="c in totalProduceResources" :key="c.resource"
+                                                                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px]"
+                                                                  :class="c.is_population ? 'bg-blue-500/10 text-blue-300 border border-blue-500/20' : 'bg-white/5 text-white/80'">
+                                                                <span>{{ c.is_population ? '👥 ' + formatResourceName(c.resource) : formatResourceName(c.resource) }}:</span>
+                                                                <strong class="font-mono" :class="c.is_population ? 'text-blue-400' : 'text-emerald-400'">{{ Number(c.count).toLocaleString() }}</strong>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
 
 
@@ -399,11 +646,11 @@
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                                                 </svg>
                                             </button>
-                                            <div v-if="activeDropdown === 'searchType'" class="absolute z-50 mt-1.5 w-full glass-card border border-white/10 shadow-2xl rounded-xl py-1 max-h-60 overflow-y-auto">
-                                                <button v-if="stepActionType === 'send_geologist'" type="button" @click="payload.task_type = 0; onSearchTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">{{ t('tasks.search_deposits') }}</button>
+                                            <div v-if="activeDropdown === 'searchType'" class="absolute z-50 mt-1.5 w-full bg-dark-900 border border-white/15 shadow-2xl rounded-xl py-1.5 max-h-60 overflow-y-auto backdrop-blur-xl divide-y divide-white/5">
+                                                <button v-if="stepActionType === 'send_geologist'" type="button" @click="payload.task_type = 0; onSearchTypeChange(); activeDropdown = null" class="w-full px-3 py-2 text-left text-xs text-white/90 hover:bg-emerald-500/20 hover:text-white transition-colors">{{ t('tasks.search_deposits') }}</button>
                                                 <template v-if="stepActionType === 'send_explorer'">
-                                                    <button type="button" @click="payload.task_type = 1; onSearchTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">{{ t('tasks.search_treasure') }}</button>
-                                                    <button type="button" @click="payload.task_type = 2; onSearchTypeChange(); activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">{{ t('tasks.search_adventure') }}</button>
+                                                    <button type="button" @click="payload.task_type = 1; onSearchTypeChange(); activeDropdown = null" class="w-full px-3 py-2 text-left text-xs text-white/90 hover:bg-emerald-500/20 hover:text-white transition-colors">{{ t('tasks.search_treasure') }}</button>
+                                                    <button type="button" @click="payload.task_type = 2; onSearchTypeChange(); activeDropdown = null" class="w-full px-3 py-2 text-left text-xs text-white/90 hover:bg-emerald-500/20 hover:text-white transition-colors">{{ t('tasks.search_adventure') }}</button>
                                                 </template>
                                             </div>
                                         </div>
@@ -418,8 +665,8 @@
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                                                 </svg>
                                             </button>
-                                            <div v-if="activeDropdown === 'subTask'" class="absolute z-50 mt-1.5 w-full glass-card border border-white/10 shadow-2xl rounded-xl py-1 max-h-60 overflow-y-auto">
-                                                <button v-for="st in availableSubTasks" :key="st.id" type="button" @click="payload.sub_task_id = st.id; activeDropdown = null" class="w-full px-3 py-1.5 text-left text-xs text-white/80 hover:bg-white/5 hover:text-white transition-colors">
+                                            <div v-if="activeDropdown === 'subTask'" class="absolute z-50 mt-1.5 w-full bg-dark-900 border border-white/15 shadow-2xl rounded-xl py-1.5 max-h-60 overflow-y-auto backdrop-blur-xl divide-y divide-white/5">
+                                                <button v-for="st in availableSubTasks" :key="st.id" type="button" @click="payload.sub_task_id = st.id; activeDropdown = null" class="w-full px-3 py-2 text-left text-xs text-white/90 hover:bg-emerald-500/20 hover:text-white transition-colors">
                                                     {{ st.name }}
                                                 </button>
                                             </div>
@@ -430,16 +677,16 @@
 
                             <!-- Задержка после шага -->
                             <div>
-                                <label class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">{{ t('tasks.step_delay') }}</label>
+                                <label for="task-step-delay" class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">{{ t('tasks.step_delay') }}</label>
                                 <div class="flex items-center gap-2">
-                                    <input type="number" min="0" required v-model.number="stepDelay" class="glass-input w-full text-xs py-1.5">
-                                    <span class="text-[10px] text-white/40 font-semibold uppercase">{{ t('tasks.seconds_unit') }}</span>
+                                    <input id="task-step-delay" type="number" min="0" required v-model.number="stepDelay" :aria-label="t('tasks.step_delay')" class="glass-input w-full text-xs py-1.5">
+                                    <label for="task-step-delay" class="text-[10px] text-white/40 font-semibold uppercase cursor-pointer">{{ t('tasks.seconds_unit') }}</label>
                                 </div>
                             </div>
                         </div>
 
                         <div class="flex justify-end">
-                            <button type="button" @click="addStepToSequence" class="px-4 py-2 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 transition-all duration-300 flex items-center gap-1.5">
+                            <button type="button" @click="addStepToSequence" class="w-full sm:w-auto justify-center px-4 py-2 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 transition-all duration-300 flex items-center gap-1.5">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                                 </svg>
@@ -449,7 +696,7 @@
                     </div>
                 </div>
 
-                <button type="submit" :disabled="scheduling" class="btn-primary flex items-center gap-2 disabled:opacity-50"
+                <button type="submit" :disabled="scheduling" class="btn-primary flex items-center justify-center gap-2 disabled:opacity-50 w-full sm:w-auto px-5 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm"
                         :class="{ 'bg-gradient-to-r from-amber-500 to-orange-600 border-amber-500/30': editingTaskId }">
                     <spinner v-if="scheduling" size="sm" />
                     <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -462,11 +709,11 @@
 
         <!-- Список запланированных задач -->
         <div>
-            <h2 class="text-lg font-semibold text-white flex items-center gap-2 mb-5">
+            <h2 class="text-base sm:text-lg font-semibold text-white flex items-center gap-2 mb-4 sm:mb-5">
                 <svg class="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                 </svg>
-                {{ t('tasks.scheduled_tasks') }}
+                <span>{{ t('tasks.scheduled_tasks') }}</span>
                 <span class="badge badge-neutral text-[10px]">{{ tasks.length }}</span>
             </h2>
 
@@ -497,17 +744,17 @@
                       v-model:accountFilter="taskAccountFilter"
                       v-model:statusFilter="taskStatusFilter">
                 <div v-for="(groupTasks, accountName) in groupedTasks" :key="accountName" class="glass-card overflow-hidden">
-                    <div class="px-5 py-3 border-b border-white/5 bg-white/[0.02]">
-                        <h3 class="font-medium text-white/60 flex items-center gap-2">
-                            <svg class="w-4 h-4 text-emerald-400/60" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <div class="px-3.5 sm:px-5 py-2.5 sm:py-3 border-b border-white/5 bg-white/[0.02]">
+                        <h3 class="font-medium text-white/60 flex items-center gap-2 text-xs sm:text-sm">
+                            <svg class="w-4 h-4 text-emerald-400/60 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                             </svg>
-                            {{ accountName }}
-                            <span class="badge badge-neutral text-[10px]">{{ groupTasks.length }} {{ t('tasks.tasks_word') }}</span>
+                            <span class="truncate">{{ accountName }}</span>
+                            <span class="badge badge-neutral text-[10px] flex-shrink-0">{{ groupTasks.length }} {{ t('tasks.tasks_word') }}</span>
                         </h3>
                     </div>
 
-                    <div class="p-4 sm:p-5 space-y-4">
+                    <div class="p-2.5 sm:p-5 space-y-3 sm:space-y-4">
                         <TaskCard v-for="task in groupTasks" :key="task.id"
                                   :task="task"
                                   :typeIcons="typeIcons"
@@ -586,11 +833,59 @@
                     :handleBuffIconError="handleBuffIconError"
                     @close="closeBuffModal"
                     @select-buff="selectBuff" />
+
+        <DepositPicker :showModal="showDepositModal"
+                       v-model:depositSearch="depositSearch"
+                       :selectedDeposits="selectedDeposits"
+                       :deposits="buildableDeposits"
+                       :loading="loadingDeposits"
+                       :isSelectedDeposit="isSelectedDeposit"
+                       :getBuildingIcon="getBuildingIcon"
+                       :getBuildingName="getBuildingName"
+                       :getDepositName="getDepositName"
+                       :handleBuildingIconError="handleBuildingIconError"
+                       @close="closeDepositModal"
+                       @select-all="selectAllDeposits"
+                       @clear="clearSelectedDeposits"
+                       @toggle-deposit="toggleDepositSelection" />
+
+        <MinePicker :showModal="showMineModal"
+                    v-model:mineSearch="mineSearch"
+                    v-model:maxLevel="upgradeMaxLevel"
+                    :selectedMines="selectedMines"
+                    :mines="upgradableMines"
+                    :loading="loadingMines"
+                    :isSelectedMine="isSelectedMine"
+                    :getBuildingIcon="getBuildingIcon"
+                    :getBuildingName="getBuildingName"
+                    :handleBuildingIconError="handleBuildingIconError"
+                    @close="closeMineModal"
+                    @select-all="selectAllMines"
+                    @clear="clearSelectedMines"
+                    @toggle-mine="toggleMineSelection" />
+
+        <ProducerPicker :showModal="showProducerModal"
+                        v-model:producerSearch="producerSearch"
+                        :selectedProducer="selectedProducer"
+                        :selectedRecipeName="selectedRecipe?.name"
+                        :producers="buffProducers"
+                        :warehouseResources="zone?.resources || []"
+                        :loading="loadingProducers"
+                        :getBuildingIcon="getBuildingIcon"
+                        :getBuildingName="getBuildingName"
+                        :getBuffIcon="getBuffIcon"
+                        :handleBuildingIconError="handleBuildingIconError"
+                        :handleBuffIconError="handleBuffIconError"
+                        @close="closeProducerModal"
+                        @select-producer="selectProducer"
+                        @select-recipe="selectRecipe"
+                        @clear-producer="clearSelectedProducer" />
     </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import axios from 'axios';
 import { tasksApi } from '../services/api/tasks';
 import { accountsApi } from '../services/api/accounts';
 import { showToast } from '../toast';
@@ -604,6 +899,9 @@ import SchedulePicker from '../components/tasks/SchedulePicker.vue';
 import BuildingPicker from '../components/tasks/BuildingPicker.vue';
 import SpecialistPicker from '../components/tasks/SpecialistPicker.vue';
 import BuffPicker from '../components/tasks/BuffPicker.vue';
+import DepositPicker from '../components/tasks/DepositPicker.vue';
+import MinePicker from '../components/tasks/MinePicker.vue';
+import ProducerPicker from '../components/tasks/ProducerPicker.vue';
 import TaskCard from '../components/tasks/TaskCard.vue';
 import TaskList from '../components/tasks/TaskList.vue';
         const tasks = ref([]);
@@ -648,6 +946,9 @@ import TaskList from '../components/tasks/TaskList.vue';
                 stop_production: '🛑 ' + t('tasks.action.stop_production'),
                 start_production: '▶️ ' + t('tasks.action.start_production'),
                 collect_building: '🎁 ' + t('tasks.action.collect_building'),
+                build_mine: '🏗️ ' + t('tasks.action.build_mine'),
+                upgrade_mine: '⬆️ ' + t('tasks.action.upgrade_mine'),
+                produce_buff: '🧪 ' + t('tasks.action.produce_buff'),
                 apply_buff: '⚡ ' + t('tasks.action.apply_buff'),
                 send_geologist: '⛏️ ' + t('tasks.action.send_geologist'),
                 send_explorer: '🧭 ' + t('tasks.action.send_explorer'),
@@ -678,6 +979,9 @@ import TaskList from '../components/tasks/TaskList.vue';
         const showBuildingModal = ref(false);
         const showSpecialistModal = ref(false);
         const showBuffModal = ref(false);
+        const showDepositModal = ref(false);
+        const showMineModal = ref(false);
+        const showProducerModal = ref(false);
 
         const buildingCategories = ['All', 'Basic', 'Improved', 'Advanced', 'Elite'];
         const buildingSearch = ref('');
@@ -686,10 +990,27 @@ import TaskList from '../components/tasks/TaskList.vue';
 
         const specialistSearch = ref('');
         const buffSearch = ref('');
+        const depositSearch = ref('');
+        const mineSearch = ref('');
+        const producerSearch = ref('');
+        const upgradeMaxLevel = ref(7);
+
+        const buildableDeposits = ref([]);
+        const upgradableMines = ref([]);
+        const buffProducers = ref([]);
+        const loadingDeposits = ref(false);
+        const loadingMines = ref(false);
+        const loadingProducers = ref(false);
 
         const selectedBuildings = ref([]);
         const selectedSpecialists = ref([]);
         const selectedBuff = ref(null);
+        const selectedDeposits = ref([]);
+        const selectedMines = ref([]);
+        const selectedProducer = ref(null);
+        const selectedRecipe = ref(null);
+        const produceAmount = ref(25);
+        const produceStacks = ref(1);
         const buildingModalTab = ref('self');
 
         const stepTargetScope = ref('self');
@@ -724,6 +1045,190 @@ import TaskList from '../components/tasks/TaskList.vue';
             if (!b) return null;
             const grid = Number(b.buildingGrid || b.grid);
             return clickableBuildings.value.find(item => Number(item.grid) === grid) || null;
+        };
+
+        const fetchBuildableDeposits = async (accountId) => {
+            if (!accountId) return;
+            loadingDeposits.value = true;
+            try {
+                const res = await axios.get(`/api/game/buildable-deposits?account_id=${accountId}`);
+                buildableDeposits.value = res.data?.data || [];
+            } catch (err) {
+                buildableDeposits.value = [];
+            } finally {
+                loadingDeposits.value = false;
+            }
+        };
+
+        const fetchUpgradableMines = async (accountId) => {
+            if (!accountId) return;
+            loadingMines.value = true;
+            try {
+                const res = await axios.get(`/api/game/upgradable-mines?account_id=${accountId}`);
+                upgradableMines.value = res.data?.data || [];
+            } catch (err) {
+                upgradableMines.value = [];
+            } finally {
+                loadingMines.value = false;
+            }
+        };
+
+        const openDepositModal = async () => {
+            if (!selectedAccountId.value) return;
+            showDepositModal.value = true;
+            await fetchBuildableDeposits(selectedAccountId.value);
+        };
+
+        const closeDepositModal = () => {
+            showDepositModal.value = false;
+        };
+
+        const openMineModal = async () => {
+            if (!selectedAccountId.value) return;
+            showMineModal.value = true;
+            await fetchUpgradableMines(selectedAccountId.value);
+        };
+
+        const closeMineModal = () => {
+            showMineModal.value = false;
+        };
+
+        const fetchBuffProducers = async (accountId, forceRefresh = false) => {
+            if (!accountId) return;
+            loadingProducers.value = true;
+            try {
+                const res = await axios.get(`/api/game/buff-producers?account_id=${accountId}${forceRefresh ? '&refresh=1' : ''}`);
+                buffProducers.value = res.data?.data || [];
+            } catch (err) {
+                buffProducers.value = [];
+            } finally {
+                loadingProducers.value = false;
+            }
+        };
+
+        const openProducerModal = async () => {
+            if (!selectedAccountId.value) return;
+            producerSearch.value = '';
+            showProducerModal.value = true;
+            await fetchBuffProducers(selectedAccountId.value);
+        };
+
+        const closeProducerModal = () => {
+            showProducerModal.value = false;
+        };
+
+        const selectProducer = (producer) => {
+            selectedProducer.value = producer;
+            selectedRecipe.value = null;
+        };
+
+        const selectRecipe = (recipe) => {
+            selectedRecipe.value = recipe;
+            if (recipe.max_amount_per_order === 1) {
+                produceAmount.value = 1;
+            }
+            if (recipe.stacks_supported === false) {
+                produceStacks.value = 1;
+            }
+            showProducerModal.value = false;
+        };
+
+        const clearSelectedProducer = () => {
+            selectedProducer.value = null;
+            selectedRecipe.value = null;
+        };
+
+        const totalProduceResources = computed(() => {
+            if (!selectedRecipe.value || !selectedRecipe.value.costs) return [];
+            const amt = Number(produceAmount.value || 1);
+            const stk = Number(produceStacks.value || 1);
+            return selectedRecipe.value.costs.map(c => ({
+                resource: c.resource,
+                count: Number(c.count) * amt * stk,
+                is_population: Boolean(c.is_population || c.resource === 'Population'),
+            }));
+        });
+
+        const totalProduceDuration = computed(() => {
+            if (!selectedRecipe.value) return 0;
+            const amt = Number(produceAmount.value || 1);
+            const stk = Number(produceStacks.value || 1);
+            return Number(selectedRecipe.value.duration_seconds || 0) * amt * stk;
+        });
+
+        const getRecipeName = (name) => {
+            if (!name) return '';
+            return resourceName(name) || humanizeGameId(name);
+        };
+
+        const formatSeconds = (seconds) => {
+            const s = Number(seconds || 0);
+            if (s <= 0) return '0s';
+            const hours = Math.floor(s / 3600);
+            const mins = Math.floor((s % 3600) / 60);
+            const secs = s % 60;
+            const parts = [];
+            if (hours > 0) parts.push(`${hours}${t('tasks.unit.h')}`);
+            if (mins > 0) parts.push(`${mins}${t('tasks.unit.m')}`);
+            if (secs > 0 && hours === 0) parts.push(`${secs}${t('tasks.unit.s')}`);
+            return parts.join(' ');
+        };
+
+        const isSelectedDeposit = (grid) => {
+            return selectedDeposits.value.some(d => Number(d.grid) === Number(grid));
+        };
+
+        const toggleDepositSelection = (deposit) => {
+            const idx = selectedDeposits.value.findIndex(d => Number(d.grid) === Number(deposit.grid));
+            if (idx >= 0) {
+                selectedDeposits.value.splice(idx, 1);
+            } else {
+                selectedDeposits.value.push({ ...deposit });
+            }
+        };
+
+        const selectAllDeposits = () => {
+            const available = buildableDeposits.value.filter(d => d.allowed);
+            selectedDeposits.value = available.length > 0 ? [...available] : [...buildableDeposits.value];
+        };
+
+        const clearSelectedDeposits = () => {
+            selectedDeposits.value = [];
+        };
+
+        const removeSelectedDeposit = (index) => {
+            selectedDeposits.value.splice(index, 1);
+        };
+
+        const isSelectedMine = (grid) => {
+            return selectedMines.value.some(m => Number(m.grid) === Number(grid));
+        };
+
+        const toggleMineSelection = (mine) => {
+            const idx = selectedMines.value.findIndex(m => Number(m.grid) === Number(mine.grid));
+            if (idx >= 0) {
+                selectedMines.value.splice(idx, 1);
+            } else {
+                selectedMines.value.push({ ...mine });
+            }
+        };
+
+        const selectAllMines = () => {
+            const available = upgradableMines.value.filter(m => m.allowed);
+            selectedMines.value = available.length > 0 ? [...available] : [...upgradableMines.value];
+        };
+
+        const clearSelectedMines = () => {
+            selectedMines.value = [];
+        };
+
+        const removeSelectedMine = (index) => {
+            selectedMines.value.splice(index, 1);
+        };
+
+        const getDepositName = (name) => {
+            if (!name) return '';
+            return resourceName(name) || humanizeGameId(name);
         };
 
         // Multi-select building helpers
@@ -924,6 +1429,9 @@ import TaskList from '../components/tasks/TaskList.vue';
             stop_production: '🛑',
             start_production: '▶️',
             collect_building: '🎁',
+            build_mine: '🏗️',
+            upgrade_mine: '⬆️',
+            produce_buff: '🧪',
             apply_buff: '⚡',
             send_geologist: '⛏️',
             send_explorer: '🧭',
@@ -934,6 +1442,9 @@ import TaskList from '../components/tasks/TaskList.vue';
             stop_production: t('tasks.type_label.stop_production'),
             start_production: t('tasks.type_label.start_production'),
             collect_building: t('tasks.type_label.collect_building'),
+            build_mine: t('tasks.type_label.build_mine'),
+            upgrade_mine: t('tasks.type_label.upgrade_mine'),
+            produce_buff: t('tasks.type_label.produce_buff'),
             apply_buff: t('tasks.type_label.apply_buff'),
             send_geologist: t('tasks.type_label.send_geologist'),
             send_explorer: t('tasks.type_label.send_explorer'),
@@ -1012,6 +1523,10 @@ import TaskList from '../components/tasks/TaskList.vue';
             selectedBuildings.value = [];
             selectedSpecialists.value = [];
             selectedBuff.value = null;
+            selectedDeposits.value = [];
+            selectedMines.value = [];
+            buildableDeposits.value = [];
+            upgradableMines.value = [];
             selectedFriend.value = null;
             selectedFriendBuilding.value = null;
             stepTargetScope.value = 'self';
@@ -1032,9 +1547,21 @@ import TaskList from '../components/tasks/TaskList.vue';
             selectedBuildings.value = [];
             selectedSpecialists.value = [];
             selectedBuff.value = null;
+            selectedDeposits.value = [];
+            selectedMines.value = [];
+            selectedProducer.value = null;
+            selectedRecipe.value = null;
+            produceAmount.value = 25;
+            produceStacks.value = 1;
 
             if (['stop_production', 'start_production', 'collect_building'].includes(type)) {
                 payload.value = { grid: '' };
+            } else if (type === 'build_mine') {
+                payload.value = { grid: '' };
+            } else if (type === 'upgrade_mine') {
+                payload.value = { grid: '', max_level: 7 };
+            } else if (type === 'produce_buff') {
+                payload.value = { grid: '', production_type: 1, recipe_name: '', amount: 25, stacks: 1 };
             } else if (type === 'apply_buff') {
                 payload.value = { grid: '', unique_id1: '', unique_id2: '' };
             } else if (['send_geologist', 'send_explorer'].includes(type)) {
@@ -1169,6 +1696,92 @@ import TaskList from '../components/tasks/TaskList.vue';
 
                 selectedSpecialists.value = [];
                 showToast(`${t('tasks.toast.action_added')} (${addedCount})`);
+                return;
+            }
+
+            if (stepActionType.value === 'build_mine') {
+                if (selectedDeposits.value.length === 0) {
+                    showToast(t('tasks.toast.select_deposit_first'), 'warning');
+                    return;
+                }
+                let addedCount = 0;
+                for (const dep of selectedDeposits.value) {
+                    const actionPayload = {
+                        grid: Number(dep.grid),
+                        deposit_name: dep.deposit_name,
+                        mine_name: dep.mine_name
+                    };
+                    sequenceActions.value.push({
+                        task_type: 'build_mine',
+                        payload: actionPayload,
+                        delay_seconds: Number(stepDelay.value || 0),
+                        meta: {
+                            deposit: { ...dep }
+                        }
+                    });
+                    addedCount++;
+                }
+                selectedDeposits.value = [];
+                showToast(`${t('tasks.toast.action_added')} (${addedCount})`);
+                return;
+            }
+
+            if (stepActionType.value === 'upgrade_mine') {
+                if (selectedMines.value.length === 0) {
+                    showToast(t('tasks.toast.select_mine_first'), 'warning');
+                    return;
+                }
+                let addedCount = 0;
+                for (const m of selectedMines.value) {
+                    const actionPayload = {
+                        grid: Number(m.grid),
+                        building_name: m.building_name,
+                        max_level: Number(upgradeMaxLevel.value || 7)
+                    };
+                    sequenceActions.value.push({
+                        task_type: 'upgrade_mine',
+                        payload: actionPayload,
+                        delay_seconds: Number(stepDelay.value || 0),
+                        meta: {
+                            mine: { ...m },
+                            max_level: Number(upgradeMaxLevel.value || 7)
+                        }
+                    });
+                    addedCount++;
+                }
+                selectedMines.value = [];
+                showToast(`${t('tasks.toast.action_added')} (${addedCount})`);
+                return;
+            }
+
+            if (stepActionType.value === 'produce_buff') {
+                if (!selectedProducer.value) {
+                    showToast(t('tasks.toast.select_producer_first'), 'warning');
+                    return;
+                }
+                if (!selectedRecipe.value) {
+                    showToast(t('tasks.toast.select_recipe_first'), 'warning');
+                    return;
+                }
+                const amt = Math.max(1, Math.min(25, Number(produceAmount.value || 1)));
+                const stk = Math.max(1, Math.min(200, Number(produceStacks.value || 1)));
+                sequenceActions.value.push({
+                    task_type: 'produce_buff',
+                    payload: {
+                        grid: Number(selectedProducer.value.grid),
+                        production_type: Number(selectedProducer.value.production_type),
+                        recipe_name: selectedRecipe.value.name,
+                        amount: amt,
+                        stacks: stk,
+                        building_name: selectedProducer.value.building_name,
+                    },
+                    delay_seconds: Number(stepDelay.value || 0),
+                    meta: {
+                        building: { ...selectedProducer.value },
+                        recipe: { ...selectedRecipe.value },
+                    }
+                });
+                showToast(t('tasks.toast.action_added'));
                 return;
             }
 
@@ -1362,7 +1975,12 @@ import TaskList from '../components/tasks/TaskList.vue';
             return list;
         });
 
-        const formatResourceName = humanizeGameId;
+        const formatResourceName = (res) => {
+            if (res === 'Population') {
+                return t('tasks.production.population') || 'Population';
+            }
+            return resourceName(res) || humanizeGameId(res);
+        };
 
         // Central game-catalog lookup with legacy prettifier fallback.
         const resourceDisplayName = resourceName;
@@ -2301,6 +2919,8 @@ import TaskList from '../components/tasks/TaskList.vue';
                 name = getBuildingName(buildingObj);
             } else if (action?.payload?.building_name || action?.payload?.name) {
                 name = action.payload.building_name || action.payload.name;
+            } else if (action?.payload?.mine_name) {
+                name = buildingName(action.payload.mine_name);
             } else if (action?.payload?.building_raw_name) {
                 name = buildingName(action.payload.building_raw_name);
             }
@@ -2310,6 +2930,8 @@ import TaskList from '../components/tasks/TaskList.vue';
                 icon = getBuildingIcon(buildingObj);
             } else if (action?.payload?.building_raw_name) {
                 icon = getBuildingIcon(action.payload.building_raw_name);
+            } else if (action?.payload?.mine_name) {
+                icon = getBuildingIcon(action.payload.mine_name);
             } else if (action?.payload?.building_name) {
                 icon = getBuildingIcon(action.payload.building_name);
             }
@@ -2324,6 +2946,18 @@ import TaskList from '../components/tasks/TaskList.vue';
         };
 
         const getBuffInfo = (taskObj, action) => {
+            if (action?.task_type === 'produce_buff') {
+                const rName = action?.payload?.recipe_name || action?.meta?.recipe?.name;
+                const recipeTranslated = rName ? (resourceName(rName) || humanizeGameId(rName)) : t('tasks.action.produce_buff');
+                return {
+                    name: recipeTranslated,
+                    icon: rName ? getBuffIcon({ buffName_string: rName }) : null,
+                    amount: action?.payload?.amount || 1,
+                    stacks: action?.payload?.stacks || 1,
+                    raw: action?.meta?.recipe || null,
+                };
+            }
+
             let buffObj = action?.meta?.buff;
 
             if (!buffObj && action?.payload?.unique_id1) {
