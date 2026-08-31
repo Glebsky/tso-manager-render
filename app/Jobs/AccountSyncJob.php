@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-class AccountSyncJob implements ShouldQueue, ShouldBeUnique
+class AccountSyncJob implements ShouldBeUnique, ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -53,8 +53,8 @@ class AccountSyncJob implements ShouldQueue, ShouldBeUnique
     public function tags(): array
     {
         return [
-            'account:' . $this->account->id,
-            'account_name:' . $this->account->username,
+            'account:'.$this->account->id,
+            'account_name:'.$this->account->username,
         ];
     }
 
@@ -76,6 +76,8 @@ class AccountSyncJob implements ShouldQueue, ShouldBeUnique
                     'level' => LogLevel::Error,
                     'message' => '[AccountSync] '.__('logs.account.sync_job_failed', ['error' => $e->getMessage()]),
                 ]);
+
+                $this->fail($e);
 
                 return;
             }

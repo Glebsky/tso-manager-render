@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Models\User;
+use Illuminate\Queue\Events\JobExceptionOccurred;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Support\Facades\DB;
@@ -85,6 +86,34 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
                     $content = json_decode($entry->content, true);
                     if (is_array($content)) {
                         $content['status'] = 'failed';
+                        $content['exception'] = [
+                            'message' => $event->exception->getMessage(),
+                            'file' => $event->exception->getFile(),
+                            'line' => $event->exception->getLine(),
+                        ];
+                        DB::table('telescope_entries')
+                            ->where('uuid', $uuid)
+                            ->update([
+                                'content' => json_encode($content, JSON_UNESCAPED_UNICODE),
+                            ]);
+                    }
+                }
+            } catch (\Throwable) {
+                // Ignore any logging errors in local worker
+            }
+        });
+
+        Queue::exceptionOccurred(static function (JobExceptionOccurred $event): void {
+            $uuid = $event->job->payload()['telescope_uuid'] ?? null;
+            if (! $uuid) {
+                return;
+            }
+
+            try {
+                $entry = DB::table('telescope_entries')->where('uuid', $uuid)->first();
+                if ($entry) {
+                    $content = json_decode($entry->content, true);
+                    if (is_array($content)) {
                         $content['exception'] = [
                             'message' => $event->exception->getMessage(),
                             'file' => $event->exception->getFile(),
