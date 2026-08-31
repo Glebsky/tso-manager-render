@@ -19,9 +19,9 @@ class MarketCacheService
 
     /**
      * Micro-TTL (seconds) for the cached copy of the DB-stored data version.
-     * Keeps per-request version lookups cheap without long staleness windows.
+     * Invalidated immediately on sync via Cache::forget.
      */
-    private const int VERSION_MICRO_TTL_SECONDS = 5;
+    private const int VERSION_MICRO_TTL_SECONDS = 300;
 
     /**
      * Time bucket size (seconds) mixed into ETags. Responses that depend on

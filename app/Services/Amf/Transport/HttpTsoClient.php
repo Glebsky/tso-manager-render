@@ -85,7 +85,7 @@ class HttpTsoClient implements TsoClientInterface
 
     private function sessionGeneration(int $accountId): int
     {
-        return (int) Cache::get("tso:amf_gen:{$accountId}", 1);
+        return (int) Cache::remember("tso:amf_gen:{$accountId}", now()->addDay(), static fn (): int => 1);
     }
 
     private function sharedSessionKey(int $accountId, int $zoneId): string
