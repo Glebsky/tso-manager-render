@@ -34,12 +34,17 @@ class AccountSyncPersister
     }
 
     /**
-     * Mark account status as error.
+     * Mark account status as error or session_expired based on exception.
      */
-    public function markError(Account $account): void
+    public function markError(Account $account, ?\Throwable $exception = null): void
     {
-        if ($account->status !== 'error') {
-            $account->update(['status' => 'error']);
+        $targetStatus = 'error';
+        if ($exception && preg_match('/captcha|2fa|twofactor|session_expired|session expired|unauthorized/i', $exception->getMessage())) {
+            $targetStatus = 'session_expired';
+        }
+
+        if ($account->status !== $targetStatus) {
+            $account->update(['status' => $targetStatus]);
         }
     }
 }

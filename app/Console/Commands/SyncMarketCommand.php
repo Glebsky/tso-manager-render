@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Jobs\MarketSyncJob;
-use App\Models\Account;
 use App\Models\MarketServerConnection;
 use App\Models\MarketSyncLog;
 use App\Models\Setting;
@@ -53,7 +52,8 @@ class SyncMarketCommand extends Command
         }
 
         $specificServer = $this->option('server');
-        $query = MarketServerConnection::whereNotNull('account_id')
+        $query = MarketServerConnection::with('account')
+            ->whereNotNull('account_id')
             ->where('sync_status', '!=', 'disabled');
 
         if ($specificServer) {
@@ -69,7 +69,7 @@ class SyncMarketCommand extends Command
 
         foreach ($connections as $connection) {
             $serverId = $connection->server_id;
-            $account = Account::find($connection->account_id);
+            $account = $connection->account;
 
             if (! $account) {
                 $this->error("Account #{$connection->account_id} for server [{$serverId}] not found.");
@@ -88,12 +88,15 @@ class SyncMarketCommand extends Command
             }
 
             // Check elapsed time since last successful sync for this server
-            $lastLog = MarketSyncLog::where('server_id', $serverId)
-                ->where('status', 'SUCCESS')
-                ->latest()
-                ->first();
+            $lastSyncTime = $connection->last_synced_at;
+            if ($lastSyncTime === null) {
+                $lastLog = MarketSyncLog::where('server_id', $serverId)
+                    ->where('status', 'SUCCESS')
+                    ->latest()
+                    ->first();
+                $lastSyncTime = $lastLog?->created_at;
+            }
 
-            $lastSyncTime = $connection->last_synced_at ?? $lastLog?->created_at;
             if ($lastSyncTime) {
                 $elapsedMinutes = (int) $lastSyncTime->diffInMinutes(Carbon::now());
                 if ($elapsedMinutes < $interval) {

@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
-use App\Enums\LogLevel;
 use App\Models\Account;
-use App\Models\BotLog;
 use App\Services\AccountSyncService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -70,13 +68,6 @@ class AccountSyncJob implements ShouldBeUnique, ShouldQueue
             Log::error("[AccountSyncJob] Failed for account #{$this->account->id}: {$e->getMessage()}");
 
             if ($this->isUnrecoverableAuthError($e->getMessage())) {
-                $this->account->update(['status' => 'session_expired']);
-                BotLog::create([
-                    'account_id' => $this->account->id,
-                    'level' => LogLevel::Error,
-                    'message' => '[AccountSync] '.__('logs.account.sync_job_failed', ['error' => $e->getMessage()]),
-                ]);
-
                 $this->fail($e);
 
                 return;
@@ -99,13 +90,6 @@ class AccountSyncJob implements ShouldBeUnique, ShouldQueue
     public function failed(Throwable $exception): void
     {
         Log::error("[AccountSyncJob] Failed permanently for account #{$this->account->id} after all retries: {$exception->getMessage()}");
-
-        BotLog::create([
-            'account_id' => $this->account->id,
-            'level' => LogLevel::Error,
-            'message' => '[AccountSync] '.__('logs.account.sync_job_failed', ['error' => $exception->getMessage()]),
-        ]);
-
         Cache::forget("account_sync_lock:{$this->account->id}");
     }
 }
