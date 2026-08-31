@@ -586,22 +586,26 @@
 
                                             <!-- Количество и стеки (если рецепт выбран) -->
                                             <div v-if="selectedProducer && selectedRecipe" class="space-y-3 pt-2 border-t border-white/5">
-                                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                                    <div>
+                                                <div v-if="selectedRecipe.max_amount_per_order === 1 && selectedRecipe.stacks_supported === false" class="text-[11px] text-amber-300/90 py-1 flex items-center gap-1.5">
+                                                    <span>ℹ️</span>
+                                                    <span>{{ t('tasks.production.single_item_only') }}</span>
+                                                </div>
+                                                <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                    <div v-if="selectedRecipe.max_amount_per_order !== 1">
                                                         <div class="flex items-center justify-between mb-1">
                                                             <label class="block text-[10px] font-medium text-white/40 uppercase">
-                                                                {{ t('tasks.produce_amount') }} (1..25)
+                                                                {{ t('tasks.produce_amount') }} (1..{{ selectedRecipe.max_amount_per_order || 25 }})
                                                             </label>
                                                             <span class="text-xs font-mono font-bold text-emerald-400">{{ produceAmount }}</span>
                                                         </div>
-                                                        <input type="range" min="1" max="25" v-model.number="produceAmount" class="w-full accent-emerald-500 cursor-pointer">
+                                                        <input type="range" min="1" :max="selectedRecipe.max_amount_per_order || 25" v-model.number="produceAmount" class="w-full accent-emerald-500 cursor-pointer">
                                                     </div>
 
-                                                    <div>
+                                                    <div v-if="selectedRecipe.stacks_supported !== false">
                                                         <label class="block text-[10px] font-medium text-white/40 mb-1 uppercase">
-                                                            {{ t('tasks.produce_stacks') }} (1..200)
+                                                            {{ t('tasks.produce_stacks') }} (1..{{ selectedRecipe.max_stacks_per_order || 200 }})
                                                         </label>
-                                                        <input type="number" min="1" max="200" v-model.number="produceStacks" class="glass-input w-full text-xs py-1.5 font-mono">
+                                                        <input type="number" min="1" :max="selectedRecipe.max_stacks_per_order || 200" v-model.number="produceStacks" class="glass-input w-full text-xs py-1.5 font-mono">
                                                     </div>
                                                 </div>
 
@@ -612,11 +616,18 @@
                                                         <span class="font-mono text-white/90 font-semibold">{{ formatSeconds(totalProduceDuration) }}</span>
                                                     </div>
                                                     <div v-if="totalProduceResources.length > 0" class="pt-1.5 border-t border-white/5">
-                                                        <p class="text-[10px] text-white/40 mb-1 uppercase font-medium">{{ t('tasks.cost_summary') }}:</p>
+                                                        <p class="text-[10px] text-white/40 mb-1 uppercase font-medium flex items-center gap-1">
+                                                            <span>{{ t('tasks.cost_summary') }}:</span>
+                                                            <span v-if="selectedRecipe.cost_is_lower_bound" class="text-amber-400" :title="t('tasks.production.progressive_cost_hint')">
+                                                                (≥ {{ t('tasks.production.from_price') }})
+                                                            </span>
+                                                        </p>
                                                         <div class="flex flex-wrap gap-1.5">
-                                                            <span v-for="c in totalProduceResources" :key="c.resource" class="inline-flex items-center gap-1 bg-white/5 px-2 py-0.5 rounded text-[11px] text-white/80">
-                                                                <span>{{ formatResourceName(c.resource) }}:</span>
-                                                                <strong class="text-emerald-400 font-mono">{{ Number(c.count).toLocaleString() }}</strong>
+                                                            <span v-for="c in totalProduceResources" :key="c.resource"
+                                                                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px]"
+                                                                  :class="c.is_population ? 'bg-blue-500/10 text-blue-300 border border-blue-500/20' : 'bg-white/5 text-white/80'">
+                                                                <span>{{ c.is_population ? '👥 ' + formatResourceName(c.resource) : formatResourceName(c.resource) }}:</span>
+                                                                <strong class="font-mono" :class="c.is_population ? 'text-blue-400' : 'text-emerald-400'">{{ Number(c.count).toLocaleString() }}</strong>
                                                             </span>
                                                         </div>
                                                     </div>
@@ -1113,6 +1124,12 @@ import TaskList from '../components/tasks/TaskList.vue';
 
         const selectRecipe = (recipe) => {
             selectedRecipe.value = recipe;
+            if (recipe.max_amount_per_order === 1) {
+                produceAmount.value = 1;
+            }
+            if (recipe.stacks_supported === false) {
+                produceStacks.value = 1;
+            }
             showProducerModal.value = false;
         };
 
@@ -1128,6 +1145,7 @@ import TaskList from '../components/tasks/TaskList.vue';
             return selectedRecipe.value.costs.map(c => ({
                 resource: c.resource,
                 count: Number(c.count) * amt * stk,
+                is_population: Boolean(c.is_population || c.resource === 'Population'),
             }));
         });
 
@@ -1957,7 +1975,12 @@ import TaskList from '../components/tasks/TaskList.vue';
             return list;
         });
 
-        const formatResourceName = humanizeGameId;
+        const formatResourceName = (res) => {
+            if (res === 'Population') {
+                return t('tasks.production.population') || 'Population';
+            }
+            return resourceName(res) || humanizeGameId(res);
+        };
 
         // Central game-catalog lookup with legacy prettifier fallback.
         const resourceDisplayName = resourceName;

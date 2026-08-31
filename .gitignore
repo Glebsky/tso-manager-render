@@ -30,3 +30,5 @@ docker/nginx/certs/
 # OpenServer 6
 /.osp/backup/
 *.zip
+__pycache__/
+*.py[cod]

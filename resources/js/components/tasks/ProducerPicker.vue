@@ -95,7 +95,24 @@
 
                 <!-- 2. Список рецептов для выбранной мастерской -->
                 <div v-else>
-                    <div v-if="filteredRecipes.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
+                    <!-- Состояние 1: Неподдерживаемое здание -->
+                    <div v-if="isProducerUnsupported" class="text-center py-10 px-4">
+                        <div class="text-2xl mb-2">🚧</div>
+                        <p class="text-xs text-amber-300 font-medium">
+                            {{ t('tasks.production.unsupported_building') }}
+                        </p>
+                    </div>
+
+                    <!-- Состояние 2: Каталог не загружен -->
+                    <div v-else-if="isCatalogMissing" class="text-center py-10 px-4">
+                        <div class="text-2xl mb-2">⚠️</div>
+                        <p class="text-xs text-red-300 font-medium">
+                            {{ t('tasks.production.catalog_missing') }}
+                        </p>
+                    </div>
+
+                    <!-- Список рецептов -->
+                    <div v-else-if="filteredRecipes.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
                         <div v-for="r in filteredRecipes" :key="r.name"
                              @click="onSelectRecipe(r)"
                              class="glass-card p-3 cursor-pointer transition-all duration-200 flex flex-col justify-between gap-2.5"
@@ -115,28 +132,45 @@
                                 <div class="flex-1 min-w-0">
                                     <div class="flex items-center gap-1.5 flex-wrap">
                                         <p class="text-xs font-semibold text-white/90 truncate">{{ getRecipeName(r.name) }}</p>
+                                        <span v-if="r.unit_group" class="badge badge-neutral text-[8px] uppercase tracking-wider">
+                                            {{ r.unit_group }}
+                                        </span>
                                         <span v-if="r.is_locked" class="badge badge-danger text-[9px]">
                                             🔒 Lvl {{ r.requires_upgrade_level_min }}
                                         </span>
+                                        <span v-if="r.instant_finish_cost" class="badge badge-primary text-[8px]" :title="'Instant finish cost'">
+                                            💎 {{ r.instant_finish_cost }}
+                                        </span>
                                     </div>
-                                    <p class="text-[10px] text-white/40 mt-0.5">
-                                        ⏱️ {{ formatSeconds(r.duration_seconds) }}
+                                    <p class="text-[10px] text-white/40 mt-0.5 flex items-center gap-2">
+                                        <span>⏱️ {{ formatSeconds(r.duration_seconds) }}</span>
+                                        <span v-if="r.unverified_protocol" class="text-amber-400/80 text-[9px]" :title="t('tasks.production.unverified_protocol_hint')">
+                                            ⚠️ {{ t('tasks.production.unverified_protocol_hint') }}
+                                        </span>
                                     </p>
                                 </div>
                             </div>
 
                             <!-- Стоимость в ресурсах с отображением остатка на складе -->
                             <div v-if="r.costs && r.costs.length > 0" class="flex flex-wrap gap-1.5 pt-1.5 border-t border-white/5">
+                                <span v-if="r.cost_is_lower_bound" class="text-[10px] text-amber-400/90 font-semibold self-center" :title="t('tasks.production.progressive_cost_hint')">
+                                    ≥
+                                </span>
                                 <span v-for="c in r.costs" :key="c.resource"
                                       class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] transition-colors"
-                                      :class="getResourceStock(c.resource) !== null && getResourceStock(c.resource) < c.count
-                                          ? 'bg-red-500/10 text-red-300 border border-red-500/20'
-                                          : 'bg-white/5 text-white/70'">
+                                      :class="c.is_population || c.resource === 'Population'
+                                          ? 'bg-blue-500/10 text-blue-300 border border-blue-500/20'
+                                          : (getResourceStock(c.resource) !== null && getResourceStock(c.resource) < c.count
+                                              ? 'bg-red-500/10 text-red-300 border border-red-500/20'
+                                              : 'bg-white/5 text-white/70')">
                                     <span>{{ formatResourceName(c.resource) }}:</span>
-                                    <strong class="font-mono" :class="getResourceStock(c.resource) !== null && getResourceStock(c.resource) < c.count ? 'text-red-400' : 'text-emerald-400'">
+                                    <strong class="font-mono"
+                                            :class="c.is_population || c.resource === 'Population'
+                                                ? 'text-blue-400'
+                                                : (getResourceStock(c.resource) !== null && getResourceStock(c.resource) < c.count ? 'text-red-400' : 'text-emerald-400')">
                                         {{ c.count }}
                                     </strong>
-                                    <span v-if="getResourceStock(c.resource) !== null" class="text-[9px] opacity-60">
+                                    <span v-if="!c.is_population && c.resource !== 'Population' && getResourceStock(c.resource) !== null" class="text-[9px] opacity-60">
                                         ({{ getResourceStock(c.resource) }})
                                     </span>
                                 </span>
@@ -146,8 +180,10 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Состояние 3: Нет доступных рецептов при фильтрации -->
                     <div v-else class="text-center py-8 text-white/30 text-xs">
-                        {{ t('tasks.modal.no_recipes') }}
+                        {{ t('tasks.production.no_available_recipes') }}
                     </div>
                 </div>
             </div>
@@ -204,6 +240,18 @@ const isSelectedRecipe = (name) => {
     return props.selectedRecipeName === name;
 };
 
+const isProducerUnsupported = computed(() => {
+    if (!props.selectedProducer) return false;
+    const src = props.selectedProducer.recipe_source;
+    return typeof src === 'string' && src.startsWith('unsupported:');
+});
+
+const isCatalogMissing = computed(() => {
+    if (!props.selectedProducer) return false;
+    if (isProducerUnsupported.value) return false;
+    return !props.selectedProducer.recipes || props.selectedProducer.recipes.length === 0;
+});
+
 const getResourceStock = (resName) => {
     if (!props.warehouseResources) return null;
     if (Array.isArray(props.warehouseResources)) {
@@ -222,6 +270,9 @@ const getRecipeName = (name) => {
 };
 
 const formatResourceName = (res) => {
+    if (res === 'Population') {
+        return t('tasks.production.population') || 'Population';
+    }
     return resourceName(res) || humanizeGameId(res);
 };
 
