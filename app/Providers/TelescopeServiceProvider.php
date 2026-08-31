@@ -55,6 +55,19 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
                 return;
             }
 
+            foreach (Telescope::$entriesQueue as &$entries) {
+                foreach ($entries as &$entry) {
+                    if ($entry->uuid === $uuid) {
+                        $content = $entry->content;
+                        if (is_array($content)) {
+                            $content['status'] = 'processed';
+                            $content['exception'] = null;
+                            $entry->content = $content;
+                        }
+                    }
+                }
+            }
+
             try {
                 $entry = DB::table('telescope_entries')->where('uuid', $uuid)->first();
                 if ($entry) {
@@ -78,6 +91,23 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
             $uuid = $event->job->payload()['telescope_uuid'] ?? null;
             if (! $uuid) {
                 return;
+            }
+
+            foreach (Telescope::$entriesQueue as &$entries) {
+                foreach ($entries as &$entry) {
+                    if ($entry->uuid === $uuid) {
+                        $content = $entry->content;
+                        if (is_array($content)) {
+                            $content['status'] = 'failed';
+                            $content['exception'] = [
+                                'message' => $event->exception->getMessage(),
+                                'file' => $event->exception->getFile(),
+                                'line' => $event->exception->getLine(),
+                            ];
+                            $entry->content = $content;
+                        }
+                    }
+                }
             }
 
             try {
@@ -107,6 +137,22 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
             $uuid = $event->job->payload()['telescope_uuid'] ?? null;
             if (! $uuid) {
                 return;
+            }
+
+            foreach (Telescope::$entriesQueue as &$entries) {
+                foreach ($entries as &$entry) {
+                    if ($entry->uuid === $uuid) {
+                        $content = $entry->content;
+                        if (is_array($content)) {
+                            $content['exception'] = [
+                                'message' => $event->exception->getMessage(),
+                                'file' => $event->exception->getFile(),
+                                'line' => $event->exception->getLine(),
+                            ];
+                            $entry->content = $content;
+                        }
+                    }
+                }
             }
 
             try {
