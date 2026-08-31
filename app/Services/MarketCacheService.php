@@ -105,6 +105,12 @@ class MarketCacheService
         );
     }
 
+    public function invalidateVersionCache(string $serverId): void
+    {
+        Cache::forget($this->versionMicroCacheKey($serverId));
+        Cache::forget($this->versionMicroCacheKey(self::GLOBAL_SERVER));
+    }
+
     /**
      * Increment the data version of a server after a successful sync or a
      * data mutation. Old cache entries become unreachable (the version is

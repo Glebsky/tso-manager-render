@@ -26,6 +26,10 @@ class MarketSyncLogger
             Log::info($logMessage);
         }
 
+        if (strtoupper($status) === 'INFO') {
+            return;
+        }
+
         try {
             MarketSyncLog::create([
                 'account_id' => $account->id,
@@ -35,10 +39,6 @@ class MarketSyncLogger
                 'message' => $message,
                 'created_at' => now(),
             ]);
-
-            if (strtoupper($status) === 'INFO') {
-                return;
-            }
 
             $botLogLevel = match (strtoupper($status)) {
                 'FAILED', 'ERROR' => 'error',

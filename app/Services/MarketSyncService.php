@@ -66,9 +66,10 @@ readonly class MarketSyncService
                 'sync_status' => 'connected',
                 'last_synced_at' => now(),
                 'last_error' => null,
+                'data_version' => ($connection->data_version ?? 0) + 1,
             ]);
 
-            $this->cacheService->bumpDataVersion($serverId);
+            $this->cacheService->invalidateVersionCache($serverId);
 
             return [
                 'success' => true,

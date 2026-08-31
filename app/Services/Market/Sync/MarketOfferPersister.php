@@ -57,31 +57,23 @@ class MarketOfferPersister
                 MarketOffer::where('server_id', $serverId)->delete();
             }
 
-            // Filter out history entries that already exist for this server
-            $offerIds = array_column($history, 'offer_id');
-            $existingIds = [];
-            if (! empty($offerIds)) {
-                $existingIds = collect($offerIds)
-                    ->chunk(500)
-                    ->flatMap(function ($idChunk) use ($serverId) {
-                        return MarketHistory::where('server_id', $serverId)
-                            ->whereIn('offer_id', $idChunk)
-                            ->pluck('offer_id');
-                    })
+            if (! empty($history)) {
+                $offerIds = array_column($history, 'offer_id');
+                $existingIds = MarketHistory::where('server_id', $serverId)
+                    ->whereIn('offer_id', $offerIds)
+                    ->pluck('offer_id')
                     ->all();
-            }
 
-            $existingIdsSet = array_flip($existingIds);
-            $filteredHistory = [];
-            foreach ($history as $h) {
-                if (! isset($existingIdsSet[$h['offer_id']])) {
-                    $filteredHistory[] = $h;
-                }
-            }
+                $existingIdsSet = array_flip($existingIds);
+                $filteredHistory = array_values(array_filter(
+                    $history,
+                    static fn (array $h): bool => ! isset($existingIdsSet[$h['offer_id']])
+                ));
 
-            if (! empty($filteredHistory)) {
-                foreach (array_chunk($filteredHistory, 200) as $chunk) {
-                    MarketHistory::insert($chunk);
+                if (! empty($filteredHistory)) {
+                    foreach (array_chunk($filteredHistory, 200) as $chunk) {
+                        MarketHistory::insert($chunk);
+                    }
                 }
             }
         });
