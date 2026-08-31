@@ -40,7 +40,7 @@ readonly class AccountSyncFetcher
         $errorCode = 0;
         $buildingCount = 0;
         $lastException = null;
-        $hasResetSession = false;
+        $reloginCount = 0;
 
         for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
             try {
@@ -52,33 +52,37 @@ readonly class AccountSyncFetcher
                 $buildingCount = count($zoneData['buildings'] ?? []);
 
                 if ($errorCode === 1012) {
-                    if ($hasResetSession) {
-                        throw new AccountSyncException(__('ui.sync.zone_locked'), 409);
+                    if ($reloginCount < 2) {
+                        Log::info("[AccountSync] Zone locked/superseded (error 1012) for account #{$account->id}; re-authenticating to take over session (relogin #".($reloginCount + 1).')');
+                        $this->authService->resetSession($account);
+                        $this->authService->login($account);
+                        $this->amfService->invalidateSession($account->id);
+                        $account->refresh();
+                        $reloginCount++;
+                        sleep(2);
+
+                        continue;
                     }
 
-                    Log::info("[AccountSync] Zone locked by another session (error 1012) for account #{$account->id}; resetting session and logging in again to take over");
-                    $this->authService->resetSession($account);
-                    $this->authService->login($account);
-                    $this->amfService->invalidateSession($account->id);
-                    $account->refresh();
-                    $hasResetSession = true;
-                    sleep(1);
+                    sleep($retryDelay);
 
                     continue;
                 }
 
                 if ($errorCode === 1005) {
-                    if ($hasResetSession) {
-                        throw new AccountSyncException(__('ui.sync.session_intercepted', ['code' => $errorCode]), 409);
+                    if ($reloginCount < 2) {
+                        Log::info("[AccountSync] Session expired (error {$errorCode}) for account #{$account->id}; re-authenticating (relogin #".($reloginCount + 1).')');
+                        $this->authService->resetSession($account);
+                        $this->authService->login($account);
+                        $this->amfService->invalidateSession($account->id);
+                        $account->refresh();
+                        $reloginCount++;
+                        sleep(2);
+
+                        continue;
                     }
-                    Log::info("[AccountSync] Session expired (error {$errorCode}) for account #{$account->id}; resetting session and logging in again");
-                    $this->authService->resetSession($account);
-                    $this->authService->login($account);
-                    $this->amfService->invalidateSession($account->id);
-                    $this->amfService->resetClient($account->id);
-                    $account->refresh();
-                    $hasResetSession = true;
-                    sleep(2);
+
+                    sleep($retryDelay);
 
                     continue;
                 }
