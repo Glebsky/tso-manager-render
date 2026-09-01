@@ -2384,13 +2384,23 @@ import TaskList from '../components/tasks/TaskList.vue';
 
         const editingTaskId = ref(null);
 
-        const cancelEdit = () => {
+        const cancelEdit = async () => {
             editingTaskId.value = null;
             taskName.value = '';
             sequenceActions.value = [];
             selectedBuildings.value = [];
             selectedSpecialists.value = [];
             selectedBuff.value = null;
+            selectedDeposits.value = [];
+            selectedMines.value = [];
+            buildableDeposits.value = [];
+            upgradableMines.value = [];
+            selectedFriend.value = null;
+            selectedFriendBuilding.value = null;
+            stepTargetScope.value = 'self';
+            stepAmount.value = 1;
+            friendBuildings.value = [];
+            friendZoneError.value = false;
             resetPayload(stepActionType.value);
 
             runAtTime.value = '';
@@ -2398,7 +2408,12 @@ import TaskList from '../components/tasks/TaskList.vue';
             intervalHours.value = 0;
             intervalMinutes.value = 0;
             scheduleType.value = 'daily';
-            zone.value = { buildings: [], specialists: [], buffs: [] };
+
+            if (selectedAccountId.value) {
+                zone.value = await fetchAccountZone(selectedAccountId.value);
+            } else {
+                zone.value = { buildings: [], specialists: [], buffs: [] };
+            }
         };
 
         const editTask = async (task) => {
@@ -2495,7 +2510,7 @@ import TaskList from '../components/tasks/TaskList.vue';
 
                 if (res.status === 201 || res.status === 200 || res.data.data || res.data.success) {
                     showToast(editingTaskId.value ? t('tasks.toast.task_updated') : t('tasks.toast.series_scheduled'));
-                    cancelEdit();
+                    await cancelEdit();
                     loadPlanner();
                 }
             } catch (e) {
