@@ -37,7 +37,7 @@ class AppServiceProvider extends ServiceProvider
 
         DB::whenQueryingForLongerThan(200, function ($connection, QueryExecuted $event): void {
             Log::warning('[Slow query]', [
-                'sql'  => $event->sql,
+                'sql' => $event->sql,
                 'time' => $event->time,
             ]);
         });

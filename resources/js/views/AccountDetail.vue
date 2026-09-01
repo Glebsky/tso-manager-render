@@ -740,10 +740,11 @@ const account = ref(null);
 
         const statusClass = computed(() => {
             const colors = {
-                online:  { gradient: 'from-emerald-500 to-teal-500', glow: '#10b981' },
-                syncing: { gradient: 'from-amber-500 to-orange-500', glow: '#f59e0b' },
-                error:   { gradient: 'from-red-500 to-rose-500', glow: '#ef4444' },
-                offline: { gradient: 'from-gray-500 to-gray-600', glow: '#6b7280' }
+                online:          { gradient: 'from-emerald-500 to-teal-500', glow: '#10b981' },
+                syncing:         { gradient: 'from-amber-500 to-orange-500', glow: '#f59e0b' },
+                session_expired: { gradient: 'from-amber-500 to-rose-500', glow: '#f43f5e' },
+                error:           { gradient: 'from-red-500 to-rose-500', glow: '#ef4444' },
+                offline:         { gradient: 'from-gray-500 to-gray-600', glow: '#6b7280' }
             };
             return colors[account.value?.status] || colors.offline;
         });

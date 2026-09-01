@@ -155,6 +155,7 @@ return [
     'card.status.error' => 'Error',
     'card.status.offline' => 'Offline',
     'card.status.online' => 'Online',
+    'card.status.session_expired' => 'Session expired',
     'card.status.syncing' => 'Syncing',
     'card.sync' => 'Sync',
     'card.sync_failed' => 'Sync failed.',

@@ -155,6 +155,7 @@ return [
     'card.status.error' => 'Ошибка',
     'card.status.offline' => 'Не в сети',
     'card.status.online' => 'В сети',
+    'card.status.session_expired' => 'Сессия истекла',
     'card.status.syncing' => 'Синхронизация',
     'card.sync' => 'Синхронизировать',
     'card.sync_failed' => 'Синхронизация не удалась.',

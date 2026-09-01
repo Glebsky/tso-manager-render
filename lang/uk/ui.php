@@ -153,6 +153,7 @@ return [
     'card.status.error' => 'Помилка',
     'card.status.offline' => 'Не в мережі',
     'card.status.online' => 'У мережі',
+    'card.status.session_expired' => 'Сесія закінчилася',
     'card.status.syncing' => 'Синхронізація',
     'card.sync' => 'Синхронізувати',
     'card.sync_failed' => 'Синхронізація не вдалася.',
