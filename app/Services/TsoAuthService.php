@@ -113,7 +113,7 @@ class TsoAuthService
 
         $server = self::SERVERS[$region];
         $cookieFile = $this->getCookieFile($account);
-        $this->resetSession($account);
+        //        $this->resetSession($account);
 
         try {
             $params = $this->loginLegacy($account, $cookieFile, $server);

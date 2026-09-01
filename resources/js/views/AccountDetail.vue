@@ -621,13 +621,47 @@
 
                             <div>
                                 <label for="session-bb-url" class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('account.bb_url_label') }}</label>
-                                <select id="session-bb-url" required v-model="sessionForm.bb_url" :aria-label="t('account.bb_url_label')" class="glass-select w-full text-sm">
-                                    <option value="https://r02-ls.thesettlersonline.ru/">RU (https://r02-ls.thesettlersonline.ru/)</option>
-                                    <option value="https://r01-ls.thesettlersonline.com/">EN/US (https://r01-ls.thesettlersonline.com/)</option>
-                                    <option value="https://r01-ls.diesiedleronline.de/">DE (https://r01-ls.diesiedleronline.de/)</option>
-                                    <option value="https://r01-ls.thesettlersonline.fr/">FR (https://r01-ls.thesettlersonline.fr/)</option>
-                                    <option value="https://r01-ls.thesettlersonline.pl/">PL (https://r01-ls.thesettlersonline.pl/)</option>
-                                </select>
+                                <input id="session-bb-url"
+                                       type="url"
+                                       required
+                                       list="bb-urls-datalist"
+                                       v-model="sessionForm.bb_url"
+                                       :placeholder="'https://r01-ls.thesettlersonline.ru/'"
+                                       :aria-label="t('account.bb_url_label')"
+                                       class="glass-input w-full font-mono text-sm">
+                                <datalist id="bb-urls-datalist">
+                                    <option value="https://r01-ls.thesettlersonline.ru/">RU 1 — Курон (r01)</option>
+                                    <option value="https://r02-ls.thesettlersonline.ru/">RU 2 — Эвеланс (r02)</option>
+                                    <option value="https://r03-ls.thesettlersonline.ru/">RU 3 — Тандрия (r03)</option>
+                                    <option value="https://r01-ls.thesettlersonline.com/">EN 1 — Newfoundland (r01)</option>
+                                    <option value="https://r02-ls.thesettlersonline.com/">EN 2 — Northisle (r02)</option>
+                                    <option value="https://r01-ls.diesiedleronline.de/">DE 1 — Grünland (r01)</option>
+                                    <option value="https://r02-ls.diesiedleronline.de/">DE 2 — Bernsteingarten (r02)</option>
+                                    <option value="https://r03-ls.diesiedleronline.de/">DE 3 — Tuxingen (r03)</option>
+                                    <option value="https://r04-ls.diesiedleronline.de/">DE 4 — Steppenwald (r04)</option>
+                                    <option value="https://r05-ls.diesiedleronline.de/">DE 5 — Goldenau (r05)</option>
+                                    <option value="https://r06-ls.diesiedleronline.de/">DE 6 — Mittsommerstadt (r06)</option>
+                                    <option value="https://r07-ls.diesiedleronline.de/">DE 7 — Apfelhain (r07)</option>
+                                    <option value="https://r08-ls.diesiedleronline.de/">DE 8 — Schneefeuer (r08)</option>
+                                    <option value="https://r09-ls.diesiedleronline.de/">DE 9 — Morgentau (r09)</option>
+                                    <option value="https://r10-ls.diesiedleronline.de/">DE 10 — Regenbogenweide (r10)</option>
+                                    <option value="https://r11-ls.diesiedleronline.de/">DE 11 — Andosia (r11)</option>
+                                    <option value="https://r12-ls.diesiedleronline.de/">DE 12 — Windfeuertal (r12)</option>
+                                    <option value="https://r13-ls.diesiedleronline.de/">DE 13 — Wildblumenwiese (r13)</option>
+                                    <option value="https://r14-ls.diesiedleronline.de/">DE 14 — Glitzerstadt (r14)</option>
+                                    <option value="https://r01-ls.thesettlersonline.fr/">FR 1 — Terres d'Ambre (r01)</option>
+                                    <option value="https://r02-ls.thesettlersonline.fr/">FR 2 — Les Plaines d'Helios (r02)</option>
+                                    <option value="https://r01-ls.thesettlersonline.pl/">PL 1 — Nowa Ziemia (r01)</option>
+                                    <option value="https://r02-ls.thesettlersonline.pl/">PL 2 — Nowy Swiat (r02)</option>
+                                    <option value="https://r03-ls.thesettlersonline.pl/">PL 3 — Sloneczny Grod (r03)</option>
+                                    <option value="https://r04-ls.thesettlersonline.pl/">PL 4 — Kolonia (r04)</option>
+                                    <option value="https://r05-ls.thesettlersonline.pl/">PL 5 — Czarny Rycerz (r05)</option>
+                                    <option value="https://r01-ls.thesettlersonline.nl/">NL 1 — Zandwoestijn (r01)</option>
+                                    <option value="https://r01-ls.juego-thesettlersonline.com/">ES 1 — Tierras Salvajes (r01)</option>
+                                    <option value="https://r01-ls.thesettlersonline.it/">IT 1 — Mondo (r01)</option>
+                                    <option value="https://r01-ls.thesettlersonline.cz/">CZ 1 — Moravia (r01)</option>
+                                    <option value="https://r01-ls.thesettlersonline.ro/">RO 1 — Lumea 1 (r01)</option>
+                                </datalist>
                             </div>
                         </div>
 

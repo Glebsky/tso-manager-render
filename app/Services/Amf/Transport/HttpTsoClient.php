@@ -174,30 +174,6 @@ class HttpTsoClient implements TsoClientInterface
 
         Log::info("[TsoAmf] Resolving real AMF server: bbUrl={$lsUrl}, user={$dsoAuthUser}, targetZoneId={$targetZoneId}");
 
-        $authUrl = rtrim($lsUrl, '/').'/authenticate';
-        $chAuth = curl_init();
-        curl_setopt($chAuth, CURLOPT_URL, $authUrl);
-        curl_setopt($chAuth, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($chAuth, CURLOPT_SSL_VERIFYPEER, (bool) config('game.ssl_verify', true));
-        curl_setopt($chAuth, CURLOPT_TIMEOUT, (int) config('game.http_timeout', 30));
-        curl_setopt($chAuth, CURLOPT_POST, true);
-        curl_setopt($chAuth, CURLOPT_POSTFIELDS, http_build_query([
-            'DSOAUTHUSER' => $dsoAuthUser,
-            'DSOAUTHTOKEN' => $dsoAuthToken,
-        ]));
-        curl_setopt($chAuth, CURLOPT_COOKIEFILE, $cookieFile);
-        curl_setopt($chAuth, CURLOPT_COOKIEJAR, $cookieFile);
-        curl_setopt($chAuth, CURLOPT_HTTPHEADER, [
-            'Content-Type: application/x-www-form-urlencoded',
-            'User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.12 (KHTML, like Gecko) Chrome/9.0.570.0 Safari/534.12',
-            'Referer: http://game-cdn.thesettlersonline.net/prestaging/PS5724/SWMMO/debug/SWMMO.swf',
-        ]);
-        $authRes = (string) curl_exec($chAuth);
-        $authStatus = (int) curl_getinfo($chAuth, CURLINFO_HTTP_CODE);
-        curl_close($chAuth);
-
-        Log::info("[TsoAmf] Load server authentication: HTTP {$authStatus}, response: ".trim($authRes));
-
         $maxRetries = 20;
         $lsStatus = 0;
         $lsRes = '';
