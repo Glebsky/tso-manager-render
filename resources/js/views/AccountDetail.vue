@@ -39,12 +39,22 @@
                     <div class="flex-1 min-w-0 w-full">
                         <div class="flex flex-wrap items-center gap-2 sm:gap-3 mb-1">
                             <h1 class="text-base sm:text-2xl font-bold text-white wrap-anywhere leading-tight">{{ playerNickname || account.username }}</h1>
-                            <span v-if="account.username" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-xs font-mono bg-white/5 border border-white/10 text-white/70 hover:text-white hover:border-white/20 transition-colors" :title="t('account.login_email')">
-                                <svg class="w-3.5 h-3.5 text-white/40 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <button v-if="account.username"
+                                    type="button"
+                                    @click="copyEmail(account.username)"
+                                    class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-xs font-mono bg-white/5 border border-white/10 text-white/70 hover:text-white hover:border-emerald-500/40 hover:bg-white/10 transition-all cursor-pointer group"
+                                    :title="t('account.copy_email')">
+                                <svg class="w-3.5 h-3.5 text-white/40 group-hover:text-emerald-400 shrink-0 transition-colors" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
                                 </svg>
                                 <span>{{ account.username }}</span>
-                            </span>
+                                <svg v-if="copiedEmail" class="w-3.5 h-3.5 text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                                </svg>
+                                <svg v-else class="w-3.5 h-3.5 text-white/30 group-hover:text-white/70 shrink-0 transition-colors" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184" />
+                                </svg>
+                            </button>
                         </div>
                         <div class="flex items-center flex-wrap gap-2 sm:gap-4 text-xs sm:text-sm text-white/40">
                             <span class="flex items-center gap-1 text-white/80 whitespace-nowrap">
@@ -604,8 +614,32 @@
 
                     <form @submit.prevent="saveSession" class="space-y-4">
                         <div>
-                            <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('account.login_email') }}</label>
-                            <input type="text" readonly disabled :value="account.username" class="glass-input w-full font-mono text-sm opacity-60 cursor-not-allowed">
+                            <div class="flex items-center justify-between mb-2">
+                                <label class="block text-xs font-medium text-white/40 uppercase tracking-wider">{{ t('account.login_email') }}</label>
+                                <button type="button"
+                                        @click="copyEmail(account.username)"
+                                        class="text-xs text-emerald-400 hover:text-emerald-300 transition-colors inline-flex items-center gap-1 font-medium cursor-pointer">
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184" />
+                                    </svg>
+                                    <span>{{ copiedEmail ? t('account.email_copied') : t('account.copy_email') }}</span>
+                                </button>
+                            </div>
+                            <div class="relative cursor-pointer group" @click="copyEmail(account.username)">
+                                <input type="text"
+                                       readonly
+                                       :value="account.username"
+                                       class="glass-input w-full font-mono text-sm pr-10 cursor-pointer group-hover:border-emerald-500/40 transition-colors"
+                                       :title="t('account.copy_email')">
+                                <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-white/30 group-hover:text-emerald-400 transition-colors">
+                                    <svg v-if="copiedEmail" class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                                    </svg>
+                                    <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184" />
+                                    </svg>
+                                </div>
+                            </div>
                         </div>
 
                         <div>
@@ -1538,6 +1572,35 @@ const account = ref(null);
         ];
 
         const isCustomBbUrl = ref(false);
+        const copiedEmail = ref(false);
+        let copyTimeout = null;
+
+        const copyEmail = async (email) => {
+            if (!email) return;
+            try {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(email);
+                } else {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = email;
+                    textarea.style.position = 'fixed';
+                    textarea.style.opacity = '0';
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                }
+                copiedEmail.value = true;
+                showToast(t('account.email_copied'));
+                if (copyTimeout) clearTimeout(copyTimeout);
+                copyTimeout = setTimeout(() => {
+                    copiedEmail.value = false;
+                }, 2500);
+            } catch (e) {
+                showToast(t('account.copy_failed') || 'Failed to copy', 'error');
+            }
+        };
+
         const sessionSubmitting = ref(false);
         const sessionForm = ref({
             dso_auth_token: '',
