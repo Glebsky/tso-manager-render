@@ -32,7 +32,7 @@ readonly class MarketOfferFetcher
             $account->refresh();
         }
 
-        $maxRetries = 6;
+        $maxRetries = 3;
         $retryDelay = 3;
         $hasResetSession = false;
         $parsed = null;
