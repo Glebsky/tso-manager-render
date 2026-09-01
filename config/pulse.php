@@ -142,10 +142,20 @@ return [
             'sample_rate' => env('PULSE_CACHE_INTERACTIONS_SAMPLE_RATE', 1),
             'ignore' => [
                 ...Pulse::defaultVendorCacheKeys(),
+                '/^account_login_cooldown:.*/',
+                '/^livewire-checksum-failures:.*/',
+                '/^[a-f0-9]{32}$/',
             ],
             'groups' => [
                 '/^job-exceptions:.*/' => 'job-exceptions:*',
-                // '/:\d+/' => ':*',
+                '/^tso:amf_gen:.*/' => 'tso:amf_gen:*',
+                '/^tso:client_id:.*/' => 'tso:client_id:*',
+                '/^tso:amf_session:.*/' => 'tso:amf_session:*',
+                '/^market:data_version:.*/' => 'market:data_version:*',
+                '/^market:v\d+:([^:]+):([^:]+):goods:.*/' => 'market:*:goods',
+                '/^market:v\d+:([^:]+):([^:]+):popular:.*/' => 'market:*:popular',
+                '/^market:v\d+:([^:]+):([^:]+):arbitrage:.*/' => 'market:*:arbitrage',
+                '/^market:v\d+:([^:]+):([^:]+):analytics_overview:.*/' => 'market:*:analytics_overview',
             ],
         ],
 
