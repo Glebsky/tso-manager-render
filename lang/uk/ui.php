@@ -80,6 +80,8 @@ return [
     'account.scouting_number' => 'Розвідка #{id}',
     'account.search_buildings' => 'Пошук будівель...',
     'account.search_specialists' => 'Пошук спеціалістів...',
+    'account.select_from_list' => 'Вибрати зі списку',
+    'account.enter_manually' => 'Ввести вручну',
     'account.session_save_failed' => 'Помилка збереження сесії.',
     'account.session_title' => 'Ручне керування сесією',
     'account.session_updated' => 'Сесію успішно оновлено!',

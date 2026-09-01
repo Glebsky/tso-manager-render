@@ -620,48 +620,49 @@
                             </div>
 
                             <div>
-                                <label for="session-bb-url" class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('account.bb_url_label') }}</label>
-                                <input id="session-bb-url"
-                                       type="url"
-                                       required
-                                       list="bb-urls-datalist"
-                                       v-model="sessionForm.bb_url"
-                                       :placeholder="'https://r01-ls.thesettlersonline.ru/'"
-                                       :aria-label="t('account.bb_url_label')"
-                                       class="glass-input w-full font-mono text-sm">
-                                <datalist id="bb-urls-datalist">
-                                    <option value="https://r01-ls.thesettlersonline.ru/">RU 1 — Курон (r01)</option>
-                                    <option value="https://r02-ls.thesettlersonline.ru/">RU 2 — Эвеланс (r02)</option>
-                                    <option value="https://r03-ls.thesettlersonline.ru/">RU 3 — Тандрия (r03)</option>
-                                    <option value="https://r01-ls.thesettlersonline.com/">EN 1 — Newfoundland (r01)</option>
-                                    <option value="https://r02-ls.thesettlersonline.com/">EN 2 — Northisle (r02)</option>
-                                    <option value="https://r01-ls.diesiedleronline.de/">DE 1 — Grünland (r01)</option>
-                                    <option value="https://r02-ls.diesiedleronline.de/">DE 2 — Bernsteingarten (r02)</option>
-                                    <option value="https://r03-ls.diesiedleronline.de/">DE 3 — Tuxingen (r03)</option>
-                                    <option value="https://r04-ls.diesiedleronline.de/">DE 4 — Steppenwald (r04)</option>
-                                    <option value="https://r05-ls.diesiedleronline.de/">DE 5 — Goldenau (r05)</option>
-                                    <option value="https://r06-ls.diesiedleronline.de/">DE 6 — Mittsommerstadt (r06)</option>
-                                    <option value="https://r07-ls.diesiedleronline.de/">DE 7 — Apfelhain (r07)</option>
-                                    <option value="https://r08-ls.diesiedleronline.de/">DE 8 — Schneefeuer (r08)</option>
-                                    <option value="https://r09-ls.diesiedleronline.de/">DE 9 — Morgentau (r09)</option>
-                                    <option value="https://r10-ls.diesiedleronline.de/">DE 10 — Regenbogenweide (r10)</option>
-                                    <option value="https://r11-ls.diesiedleronline.de/">DE 11 — Andosia (r11)</option>
-                                    <option value="https://r12-ls.diesiedleronline.de/">DE 12 — Windfeuertal (r12)</option>
-                                    <option value="https://r13-ls.diesiedleronline.de/">DE 13 — Wildblumenwiese (r13)</option>
-                                    <option value="https://r14-ls.diesiedleronline.de/">DE 14 — Glitzerstadt (r14)</option>
-                                    <option value="https://r01-ls.thesettlersonline.fr/">FR 1 — Terres d'Ambre (r01)</option>
-                                    <option value="https://r02-ls.thesettlersonline.fr/">FR 2 — Les Plaines d'Helios (r02)</option>
-                                    <option value="https://r01-ls.thesettlersonline.pl/">PL 1 — Nowa Ziemia (r01)</option>
-                                    <option value="https://r02-ls.thesettlersonline.pl/">PL 2 — Nowy Swiat (r02)</option>
-                                    <option value="https://r03-ls.thesettlersonline.pl/">PL 3 — Sloneczny Grod (r03)</option>
-                                    <option value="https://r04-ls.thesettlersonline.pl/">PL 4 — Kolonia (r04)</option>
-                                    <option value="https://r05-ls.thesettlersonline.pl/">PL 5 — Czarny Rycerz (r05)</option>
-                                    <option value="https://r01-ls.thesettlersonline.nl/">NL 1 — Zandwoestijn (r01)</option>
-                                    <option value="https://r01-ls.juego-thesettlersonline.com/">ES 1 — Tierras Salvajes (r01)</option>
-                                    <option value="https://r01-ls.thesettlersonline.it/">IT 1 — Mondo (r01)</option>
-                                    <option value="https://r01-ls.thesettlersonline.cz/">CZ 1 — Moravia (r01)</option>
-                                    <option value="https://r01-ls.thesettlersonline.ro/">RO 1 — Lumea 1 (r01)</option>
-                                </datalist>
+                                <div class="flex items-center justify-between mb-2">
+                                    <label for="session-bb-url" class="block text-xs font-medium text-white/40 uppercase tracking-wider">{{ t('account.bb_url_label') }}</label>
+                                    <button type="button"
+                                            @click="isCustomBbUrl = !isCustomBbUrl"
+                                            class="text-xs text-emerald-400 hover:text-emerald-300 transition-colors inline-flex items-center gap-1 font-medium">
+                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                            <path v-if="!isCustomBbUrl" stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125" />
+                                            <path v-else stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm0 5.25h.007v.008H3.75V12Zm0 5.25h.007v.008H3.75v-.008Z" />
+                                        </svg>
+                                        <span>{{ isCustomBbUrl ? t('account.select_from_list') : t('account.enter_manually') }}</span>
+                                    </button>
+                                </div>
+
+                                <!-- Mode 1: Styled Glass Select with Grouped Worlds -->
+                                <div v-if="!isCustomBbUrl" class="relative">
+                                    <select id="session-bb-url"
+                                            required
+                                            v-model="sessionForm.bb_url"
+                                            :aria-label="t('account.bb_url_label')"
+                                            class="glass-select w-full text-xs sm:text-sm font-mono pr-10 cursor-pointer">
+                                        <optgroup v-for="g in GAME_SERVERS" :key="g.group" :label="g.group">
+                                            <option v-for="opt in g.options" :key="opt.value" :value="opt.value" class="bg-dark-900 text-white">
+                                                {{ opt.label }}
+                                            </option>
+                                        </optgroup>
+                                    </select>
+                                    <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                                        <svg class="w-4 h-4 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                        </svg>
+                                    </div>
+                                </div>
+
+                                <!-- Mode 2: Custom Text Input -->
+                                <div v-else class="relative">
+                                    <input id="session-bb-url-manual"
+                                           type="url"
+                                           required
+                                           v-model="sessionForm.bb_url"
+                                           :placeholder="'https://r01-ls.thesettlersonline.ru/'"
+                                           :aria-label="t('account.bb_url_label')"
+                                           class="glass-input w-full font-mono text-xs sm:text-sm">
+                                </div>
                             </div>
                         </div>
 
@@ -1452,18 +1453,117 @@ const account = ref(null);
             }
         };
 
+        const GAME_SERVERS = [
+            {
+                group: '🇷🇺 Россия (RU)',
+                options: [
+                    { label: 'RU 1 — Курон (r01)', value: 'https://r01-ls.thesettlersonline.ru/' },
+                    { label: 'RU 2 — Эвеланс (r02)', value: 'https://r02-ls.thesettlersonline.ru/' },
+                    { label: 'RU 3 — Тандрия (r03)', value: 'https://r03-ls.thesettlersonline.ru/' },
+                ]
+            },
+            {
+                group: '🇩🇪 Германия (DE)',
+                options: [
+                    { label: 'DE 1 — Grünland (r01)', value: 'https://r01-ls.diesiedleronline.de/' },
+                    { label: 'DE 2 — Bernsteingarten (r02)', value: 'https://r02-ls.diesiedleronline.de/' },
+                    { label: 'DE 3 — Tuxingen (r03)', value: 'https://r03-ls.diesiedleronline.de/' },
+                    { label: 'DE 4 — Steppenwald (r04)', value: 'https://r04-ls.diesiedleronline.de/' },
+                    { label: 'DE 5 — Goldenau (r05)', value: 'https://r05-ls.diesiedleronline.de/' },
+                    { label: 'DE 6 — Mittsommerstadt (r06)', value: 'https://r06-ls.diesiedleronline.de/' },
+                    { label: 'DE 7 — Apfelhain (r07)', value: 'https://r07-ls.diesiedleronline.de/' },
+                    { label: 'DE 8 — Schneefeuer (r08)', value: 'https://r08-ls.diesiedleronline.de/' },
+                    { label: 'DE 9 — Morgentau (r09)', value: 'https://r09-ls.diesiedleronline.de/' },
+                    { label: 'DE 10 — Regenbogenweide (r10)', value: 'https://r10-ls.diesiedleronline.de/' },
+                    { label: 'DE 11 — Andosia (r11)', value: 'https://r11-ls.diesiedleronline.de/' },
+                    { label: 'DE 12 — Windfeuertal (r12)', value: 'https://r12-ls.diesiedleronline.de/' },
+                    { label: 'DE 13 — Wildblumenwiese (r13)', value: 'https://r13-ls.diesiedleronline.de/' },
+                    { label: 'DE 14 — Glitzerstadt (r14)', value: 'https://r14-ls.diesiedleronline.de/' },
+                ]
+            },
+            {
+                group: '🇬🇧 / 🇺🇸 International (EN)',
+                options: [
+                    { label: 'EN 1 — Newfoundland (r01)', value: 'https://r01-ls.thesettlersonline.com/' },
+                    { label: 'EN 2 — Northisle (r02)', value: 'https://r02-ls.thesettlersonline.com/' },
+                ]
+            },
+            {
+                group: '🇵🇱 Польша (PL)',
+                options: [
+                    { label: 'PL 1 — Nowa Ziemia (r01)', value: 'https://r01-ls.thesettlersonline.pl/' },
+                    { label: 'PL 2 — Nowy Swiat (r02)', value: 'https://r02-ls.thesettlersonline.pl/' },
+                    { label: 'PL 3 — Sloneczny Grod (r03)', value: 'https://r03-ls.thesettlersonline.pl/' },
+                    { label: 'PL 4 — Kolonia (r04)', value: 'https://r04-ls.thesettlersonline.pl/' },
+                    { label: 'PL 5 — Czarny Rycerz (r05)', value: 'https://r05-ls.thesettlersonline.pl/' },
+                ]
+            },
+            {
+                group: '🇫🇷 Франция (FR)',
+                options: [
+                    { label: 'FR 1 — Terres d\'Ambre (r01)', value: 'https://r01-ls.thesettlersonline.fr/' },
+                    { label: 'FR 2 — Les Plaines d\'Helios (r02)', value: 'https://r02-ls.thesettlersonline.fr/' },
+                ]
+            },
+            {
+                group: '🇳🇱 Нидерланды (NL)',
+                options: [
+                    { label: 'NL 1 — Zandwoestijn (r01)', value: 'https://r01-ls.thesettlersonline.nl/' },
+                ]
+            },
+            {
+                group: '🇪🇸 Испания (ES)',
+                options: [
+                    { label: 'ES 1 — Tierras Salvajes (r01)', value: 'https://r01-ls.juego-thesettlersonline.com/' },
+                ]
+            },
+            {
+                group: '🇮🇹 Италия (IT)',
+                options: [
+                    { label: 'IT 1 — Mondo (r01)', value: 'https://r01-ls.thesettlersonline.it/' },
+                ]
+            },
+            {
+                group: '🇨🇿 Чехия (CZ)',
+                options: [
+                    { label: 'CZ 1 — Moravia (r01)', value: 'https://r01-ls.thesettlersonline.cz/' },
+                ]
+            },
+            {
+                group: '🇷🇴 Румыния (RO)',
+                options: [
+                    { label: 'RO 1 — Lumea 1 (r01)', value: 'https://r01-ls.thesettlersonline.ro/' },
+                ]
+            },
+        ];
+
+        const isCustomBbUrl = ref(false);
         const sessionSubmitting = ref(false);
         const sessionForm = ref({
             dso_auth_token: '',
             dso_auth_user: '',
-            bb_url: 'https://r02-ls.thesettlersonline.ru/',
+            bb_url: 'https://r01-ls.thesettlersonline.ru/',
+        });
+
+        const allKnownServerUrls = computed(() => {
+            const urls = new Set();
+            for (const g of GAME_SERVERS) {
+                for (const opt of g.options) {
+                    urls.add(opt.value);
+                }
+            }
+            return urls;
         });
 
         watch(account, (newVal) => {
             if (newVal) {
                 sessionForm.value.dso_auth_token = newVal.dso_auth_token || '';
                 sessionForm.value.dso_auth_user = newVal.dso_auth_user || '';
-                sessionForm.value.bb_url = newVal.bb_url || 'https://r02-ls.thesettlersonline.ru/';
+                const url = newVal.bb_url || 'https://r01-ls.thesettlersonline.ru/';
+                sessionForm.value.bb_url = url;
+                if (url && !allKnownServerUrls.value.has(url)) {
+                    isCustomBbUrl.value = true;
+                }
             }
         }, { immediate: true });
 

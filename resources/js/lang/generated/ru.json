@@ -77,6 +77,8 @@
         "account.scouting_number": "Разведка #{id}",
         "account.search_buildings": "Поиск зданий...",
         "account.search_specialists": "Поиск специалистов...",
+        "account.select_from_list": "Выбрать из списка",
+        "account.enter_manually": "Ввести вручную",
         "account.session_save_failed": "Ошибка сохранения сессии.",
         "account.session_title": "Ручное управление сессией",
         "account.session_updated": "Сессия успешно обновлена!",
