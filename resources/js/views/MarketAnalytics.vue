@@ -630,29 +630,46 @@
         <!-- TAB 2: SETTINGS & SERVERS -->
         <div v-else-if="activeTab === 'settings'" class="space-y-6">
             <!-- Section 1: Server Connections Table -->
-            <div class="glass-card p-4 sm:p-6">
+            <div class="glass-card p-4 sm:p-6 transition-all duration-300">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6 border-b border-white/5 pb-3 sm:pb-4">
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shrink-0">
+                    <div class="flex items-center gap-3 cursor-pointer select-none group" @click="isServersCollapsed = !isServersCollapsed">
+                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shrink-0 group-hover:scale-105 transition-transform">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 0 1-3-3m3 3a3 3 0 1 0 0 6h13.5a3 3 0 1 0 0-6m-13.5 0H3m16.5 0a3 3 0 0 0 3-3m-3 3a3 3 0 1 1 0 6M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                             </svg>
                         </div>
                         <div>
-                            <h2 class="text-base sm:text-lg font-semibold text-white">{{ t('market.servers_title') }}</h2>
+                            <div class="flex items-center gap-2">
+                                <h2 class="text-base sm:text-lg font-semibold text-white group-hover:text-emerald-400 transition-colors">{{ t('market.servers_title') }}</h2>
+                                <span class="badge bg-white/10 text-white/70 text-[11px] font-mono py-0.5 px-2">
+                                    {{ servers.length }}
+                                </span>
+                            </div>
                             <p class="text-xs text-white/40">{{ t('market.servers_subtitle') }}</p>
                         </div>
                     </div>
 
-                    <button @click="openAddServerModal" class="btn-primary py-2 px-4 text-xs flex items-center justify-center gap-1.5 w-full sm:w-auto">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                        </svg>
-                        {{ t('market.add_server') }}
-                    </button>
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <button @click="isServersCollapsed = !isServersCollapsed"
+                                type="button"
+                                class="btn-secondary py-1.5 px-3 text-xs flex items-center justify-center gap-1.5 text-white/70 hover:text-white flex-1 sm:flex-initial"
+                                :title="isServersCollapsed ? t('market.expand') : t('market.collapse')">
+                            <span>{{ isServersCollapsed ? t('market.expand') : t('market.collapse') }}</span>
+                            <svg class="w-3.5 h-3.5 transition-transform duration-300" :class="{ 'rotate-180': !isServersCollapsed }" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                            </svg>
+                        </button>
+
+                        <button @click="openAddServerModal" class="btn-primary py-2 px-4 text-xs flex items-center justify-center gap-1.5 flex-1 sm:flex-initial">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                            </svg>
+                            {{ t('market.add_server') }}
+                        </button>
+                    </div>
                 </div>
 
-                <div>
+                <div v-show="!isServersCollapsed">
                     <market-data-table :columns="serverColumns" :rows="servers" :empty-text="t('market.no_servers_row')">
                         <template #cell-locale="{ row }">
                             <div class="flex items-center gap-2 min-w-0">
@@ -980,6 +997,13 @@ const router = useRouter();
         const showPopularItems = ref(true);
         const showArbitrageSchemes = ref(true);
         const showActiveListings = ref(typeof window !== 'undefined' ? window.innerWidth >= 640 : false);
+        const isServersCollapsed = ref(typeof window !== 'undefined' ? localStorage.getItem('market_servers_collapsed') === 'true' : false);
+
+        watch(isServersCollapsed, (val) => {
+            if (typeof window !== 'undefined') {
+                localStorage.setItem('market_servers_collapsed', String(val));
+            }
+        });
 
         const onCacheStrategyChange = (strategy) => {
             cacheStrategy.value = setMarketCacheStrategy(strategy);

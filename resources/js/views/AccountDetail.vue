@@ -37,7 +37,15 @@
 
                     <!-- Details -->
                     <div class="flex-1 min-w-0 w-full">
-                        <h1 class="text-base sm:text-2xl font-bold text-white mb-1 wrap-anywhere leading-tight">{{ playerNickname || account.username }}</h1>
+                        <div class="flex flex-wrap items-center gap-2 sm:gap-3 mb-1">
+                            <h1 class="text-base sm:text-2xl font-bold text-white wrap-anywhere leading-tight">{{ playerNickname || account.username }}</h1>
+                            <span v-if="account.username" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-xs font-mono bg-white/5 border border-white/10 text-white/70 hover:text-white hover:border-white/20 transition-colors" :title="t('account.login_email')">
+                                <svg class="w-3.5 h-3.5 text-white/40 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+                                </svg>
+                                <span>{{ account.username }}</span>
+                            </span>
+                        </div>
                         <div class="flex items-center flex-wrap gap-2 sm:gap-4 text-xs sm:text-sm text-white/40">
                             <span class="flex items-center gap-1 text-white/80 whitespace-nowrap">
                                 <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -595,6 +603,11 @@
                     </div>
 
                     <form @submit.prevent="saveSession" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('account.login_email') }}</label>
+                            <input type="text" readonly disabled :value="account.username" class="glass-input w-full font-mono text-sm opacity-60 cursor-not-allowed">
+                        </div>
+
                         <div>
                             <label for="session-dso-token" class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">DSO Auth Token</label>
                             <input id="session-dso-token" type="text" required v-model="sessionForm.dso_auth_token" :placeholder="t('account.token_placeholder')" :aria-label="t('account.token_placeholder')" class="glass-input w-full font-mono text-sm">
