@@ -244,14 +244,14 @@ final class MarketServerService
             throw MarketOperationException::unprocessable(__('ui.market.api.assign_account_first'));
         }
 
-        $account = Account::find($server->account_id);
+        $account = $server->account ?? Account::find($server->account_id);
 
         if (! $account) {
             throw MarketOperationException::unprocessable(__('ui.market.api.account_not_found'));
         }
 
         try {
-            return $this->sync->sync($account, $server->server_id);
+            return $this->sync->sync($account, $server->server_id, $server);
         } catch (Throwable $e) {
             throw MarketOperationException::serverError(
                 __('ui.market.api.sync_failed', ['error' => $e->getMessage()])

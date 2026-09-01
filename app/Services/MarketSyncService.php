@@ -32,17 +32,21 @@ readonly class MarketSyncService
      * @throws Exception
      * @throws Throwable
      */
-    public function sync(Account $account, ?string $serverId = null): array
+    public function sync(Account $account, ?string $serverId = null, ?MarketServerConnection $connection = null): array
     {
         $action = 'Market sync';
         $collectedAt = now();
 
-        if (empty($serverId)) {
-            $connection = MarketServerConnection::where('account_id', $account->id)->first();
-            $serverId = $connection->server_id ?? strtolower($account->region ?? 'ru');
+        if (! $connection) {
+            if (empty($serverId)) {
+                $connection = MarketServerConnection::where('account_id', $account->id)->first();
+                $serverId = $connection->server_id ?? strtolower($account->region ?? 'ru');
+            }
+            $connection = MarketServerConnection::where('server_id', $serverId)->first();
+        } else {
+            $serverId = $connection->server_id;
         }
 
-        $connection = MarketServerConnection::where('server_id', $serverId)->first();
         $connection?->update(['sync_status' => 'syncing']);
 
         try {
