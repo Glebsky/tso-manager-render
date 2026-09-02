@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Market;
 
+use App\Enums\MarketItemKind;
 use App\Http\Controllers\Controller;
 use App\Services\Market\MarketCatalogService;
 use App\Services\MarketCacheService;
@@ -22,9 +23,16 @@ final class CatalogController extends Controller
 
     public function goods(Request $request): JsonResponse
     {
+        $validated = $request->validate([
+            'kind' => ['sometimes', 'string', 'in:all,resource,buff,adventure,building'],
+        ]);
+        $kind = ($validated['kind'] ?? 'all') === 'all'
+            ? null
+            : MarketItemKind::from($validated['kind']);
+
         $serverId = $this->cache->resolveServerId($request->input('server_id'));
 
-        return new JsonResponse($this->catalog->goods($serverId));
+        return new JsonResponse($this->catalog->goods($serverId, $kind));
     }
 
     public function targets(Request $request): JsonResponse
@@ -35,8 +43,15 @@ final class CatalogController extends Controller
             return new JsonResponse([]);
         }
 
+        $validated = $request->validate([
+            'kind' => ['sometimes', 'string', 'in:all,resource,buff,adventure,building'],
+        ]);
+        $kind = ($validated['kind'] ?? 'all') === 'all'
+            ? null
+            : MarketItemKind::from($validated['kind']);
+
         $serverId = $this->cache->resolveServerId($request->input('server_id'));
 
-        return new JsonResponse($this->catalog->targets($serverId, $itemId));
+        return new JsonResponse($this->catalog->targets($serverId, $itemId, $kind));
     }
 }

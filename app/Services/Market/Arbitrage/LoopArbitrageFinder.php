@@ -42,6 +42,11 @@ final class LoopArbitrageFinder implements ArbitrageFinder
         foreach ($activeOffers as $offer) {
             $from = $offer->target_item_id;
             $to = $offer->item_id;
+
+            if ($from === null || $offer->price === null || $offer->target_amount === null || $offer->target_amount <= 0 || $offer->amount <= 0) {
+                continue;
+            }
+
             $byPair[$from][$to][] = [
                 'offer_id' => $offer->offer_id,
                 'sender_name' => $offer->sender_name,
@@ -83,9 +88,6 @@ final class LoopArbitrageFinder implements ArbitrageFinder
                             for ($x = 1; $x <= $maxX; $x++) {
                                 $gotB = $x * $t1['amount'];
                                 $neededForT2Lot = $t2['target_amount'];
-                                if ($neededForT2Lot <= 0) {
-                                    continue;
-                                }
                                 $y = (int) floor($gotB / $neededForT2Lot);
                                 if ($y > $maxY) {
                                     $y = $maxY;
@@ -195,9 +197,6 @@ final class LoopArbitrageFinder implements ArbitrageFinder
                                         for ($x = 1; $x <= $maxX; $x++) {
                                             $gotB = $x * $t1['amount'];
                                             $neededForT2Lot = $t2['target_amount'];
-                                            if ($neededForT2Lot <= 0) {
-                                                continue;
-                                            }
                                             $y = (int) floor($gotB / $neededForT2Lot);
                                             if ($y > $maxY) {
                                                 $y = $maxY;
@@ -208,9 +207,6 @@ final class LoopArbitrageFinder implements ArbitrageFinder
 
                                             $gotC = $y * $t2['amount'];
                                             $neededForT3Lot = $t3['target_amount'];
-                                            if ($neededForT3Lot <= 0) {
-                                                continue;
-                                            }
                                             $z = (int) floor($gotC / $neededForT3Lot);
                                             if ($z > $maxZ) {
                                                 $z = $maxZ;

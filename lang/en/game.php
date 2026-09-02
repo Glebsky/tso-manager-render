@@ -37415,6 +37415,8 @@ Part II',
         'XMASEventCookieAdv_Military' => 'Frog Phobia',
     ],
     'RES' => [
+        'ChangeSkin_Anniversary2026_MayorsHouse_long' => 'Skin: Mayor\'s House (Three Decades Legacy)',
+        'ProductivityBuffLvl_CommandCenterBoost' => 'Tactic: Grapeshot',
         'AddBuildingLimit' => 'Building License',
         'AddRecipe_AddResourceCodex' => 'Recipe: Codex',
         'AddRecipe_AddResourceManuscript' => 'Recipe: Manuscript',

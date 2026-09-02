@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1001,
+    "senderID": 4242,
+    "senderName": "PlayerOne",
+    "type": 0,
+    "slotType": 0,
+    "created": 1756704000000,
+    "offer": "Marble,100|Coin,500|10",
+    "lotsRemaining": 5
+  },
+  {
+    "id": 1002,
+    "senderID": 4243,
+    "senderName": "PlayerTwo",
+    "type": 0,
+    "slotType": 0,
+    "created": 1756704000000,
+    "offer": "Plank,200|Stone,400|2",
+    "lotsRemaining": 2
+  }
+]

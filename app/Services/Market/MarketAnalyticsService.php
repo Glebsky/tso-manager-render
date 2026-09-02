@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Market;
 
+use App\Enums\MarketItemKind;
 use App\Http\Resources\MarketOfferResource;
 use App\Services\Market\Contracts\ResourceNameResolver;
 use App\Services\Market\Support\MarketPeriod;
@@ -35,23 +36,28 @@ final readonly class MarketAnalyticsService
      *
      * @return array<string, mixed>
      */
-    public function overview(string $serverId, MarketPeriod $period, int $page, int $limit): array
+    public function overview(string $serverId, MarketPeriod $period, int $page, int $limit, ?MarketItemKind $kind = null): array
     {
+        $params = ['period' => $period->key];
+        if ($kind !== null) {
+            $params['kind'] = $kind->value;
+        }
+
         $cached = $this->cache->remember(
             $serverId,
             'analytics_overview',
-            ['period' => $period->key],
+            $params,
             (int) config('market.cache_ttl.analytics_overview'),
-            function () use ($serverId, $period): array {
+            function () use ($serverId, $period, $kind): array {
                 $offers = MarketOfferResource::listFrom(
-                    $this->offers->activeOffers($serverId),
+                    $this->offers->activeOffers($serverId, $kind),
                     $this->names,
                     $this->offers
                 );
 
                 return [
                     'server_id' => $serverId,
-                    'popular' => $this->popularItems->popular($serverId, $period),
+                    'popular' => $this->popularItems->popular($serverId, $period, $kind),
                     'all_active_offers' => $offers,
                     'total_active_count' => count($offers),
                 ];

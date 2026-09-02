@@ -5,8 +5,8 @@ const BULK_PREFIX = 'tso_bulk:';
 const DATA_VERSION_PREFIX = 'tso_data_version:';
 const VERSION_CHECKED_AT_PREFIX = 'tso_data_version_checked_at:';
 const CACHE_STRATEGY_KEY = 'tso_market_cache_strategy';
-// v4: robust active offers mapping and cache revalidation
-const CACHE_SCHEMA_VERSION = 4;
+// v5: clean up legacy pseudo-resources and fresh catalog
+const CACHE_SCHEMA_VERSION = 5;
 const VERSION_CHECK_INTERVAL_MS = 60000;
 
 export function getMarketCacheStrategy() {

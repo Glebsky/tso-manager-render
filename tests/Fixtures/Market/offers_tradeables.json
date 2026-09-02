@@ -1,0 +1,122 @@
+[
+  {
+    "id": 2001,
+    "senderID": 5001,
+    "senderName": "HeroPlayer",
+    "type": 2,
+    "slotType": 0,
+    "created": 1756704000000,
+    "offer": "Adventure,MadHenry,0|Coin,150000|1",
+    "lotsRemaining": 1
+  },
+  {
+    "id": 2002,
+    "senderID": 5002,
+    "senderName": "ResourceTrader",
+    "type": 0,
+    "slotType": 0,
+    "created": 1756704000000,
+    "offer": "Marble,100|Coin,500|1",
+    "lotsRemaining": 1
+  },
+  {
+    "id": 2003,
+    "senderID": 5003,
+    "senderName": "BuffSeller",
+    "type": 2,
+    "slotType": 0,
+    "created": 1756704000000,
+    "offer": "FillDeposit,Fish,100|Coin,500|1",
+    "lotsRemaining": 1
+  },
+  {
+    "id": 2004,
+    "senderID": 5004,
+    "senderName": "AdventureBuyer",
+    "type": 1,
+    "slotType": 0,
+    "created": 1756704000000,
+    "offer": "Coin,150000|Adventure,MadHenry,0|1",
+    "lotsRemaining": 1
+  },
+  {
+    "id": 2005,
+    "senderID": 5005,
+    "senderName": "ProdBuffSeller",
+    "type": 2,
+    "slotType": 0,
+    "created": 1756704000000,
+    "offer": "ProductivityBuffLvl3,,1|Coin,5000|1",
+    "lotsRemaining": 1
+  },
+  {
+    "id": 2006,
+    "senderID": 5006,
+    "senderName": "PriceLessBuyer",
+    "type": 0,
+    "slotType": 0,
+    "created": 1756704000000,
+    "offer": "Marble,100|@|4",
+    "lotsRemaining": 4
+  },
+  {
+    "id": 2007,
+    "senderID": 5007,
+    "senderName": "BuildingTrader",
+    "type": 2,
+    "slotType": 0,
+    "created": 1756704000000,
+    "offer": "BuildBuilding,Mayorhouse,1|Coin,200000|1",
+    "lotsRemaining": 1
+  },
+  {
+    "id": 2008,
+    "senderID": 5008,
+    "senderName": "MilitaryTrader",
+    "type": 2,
+    "slotType": 0,
+    "created": 1756704000000,
+    "offer": "HiredMilitary,,100,50|Coin,900|3",
+    "lotsRemaining": 3
+  },
+  {
+    "id": 2009,
+    "senderID": 5009,
+    "senderName": "PremiumSeller",
+    "type": 2,
+    "slotType": 0,
+    "created": 1756704000000,
+    "offer": "PremiumAccount,Days7|Coin,900|1",
+    "lotsRemaining": 1
+  },
+  {
+    "id": 2010,
+    "senderID": 5010,
+    "senderName": "BuffForBuffTrader",
+    "type": 3,
+    "slotType": 0,
+    "created": 1756704000000,
+    "offer": "FillDeposit,Fish,100|FillDeposit,Meat,100|2",
+    "lotsRemaining": 2
+  },
+  {
+    "id": 9991,
+    "senderID": 5091,
+    "senderName": "BadTypePlayer",
+    "type": 7,
+    "slotType": 0,
+    "created": 1756704000000,
+    "offer": "Marble,100|Coin,500|1",
+    "lotsRemaining": 1
+  },
+  {
+    "id": 9992,
+    "senderID": 5092,
+    "senderName": "BrokenStringPlayer",
+    "type": 0,
+    "slotType": 0,
+    "created": 1756704000000,
+    "offer": "Marble,100",
+    "lotsRemaining": 1
+  }
+]

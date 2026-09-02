@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Market;
 
+use App\Enums\MarketItemKind;
 use App\Models\MarketOffer;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
@@ -34,12 +35,15 @@ final readonly class MarketOfferQueryService
     /**
      * @return Collection<int, MarketOffer>
      */
-    public function activeOffers(string $serverId): Collection
+    public function activeOffers(string $serverId, ?MarketItemKind $kind = null): Collection
     {
         $since = $this->activeSince();
 
+        $kindValue = $kind?->value;
+
         return MarketOffer::query()
             ->where('server_id', $serverId)
+            ->when($kindValue !== null, fn ($query) => $query->where('item_kind', $kindValue))
             ->where('created_at', '>', $since)
             ->orderByDesc('created_at')
             ->get();

@@ -24,7 +24,7 @@ final class PopularController extends Controller
     public function __invoke(MarketPopularRequest $request): JsonResponse
     {
         $period = $this->periodResolver->resolve($request->periodKey());
-        $items = $this->popular->popular($request->serverId(), $period);
+        $items = $this->popular->popular($request->serverId(), $period, $request->kind());
 
         return new JsonResponse(PopularItemResource::collection($items)->resolve());
     }
