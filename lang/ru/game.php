@@ -36397,6 +36397,8 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'XMASEventCookieAdv_Military' => 'Лягушкофобия',
     ],
     'RES' => [
+        'ChangeSkin_Anniversary2026_MayorsHouse_long' => 'Облик на 15 дней: ратуша (наследие трёх десятилетий)',
+        'ProductivityBuffLvl_CommandCenterBoost' => 'Тактика: Картечь',
         'AddBuildingLimit' => 'Разрешение на строительство',
         'AddRecipe_AddResourceCodex' => 'Рецепт: Кодекс',
         'AddRecipe_AddResourceManuscript' => 'Рецепт: Рукопись',

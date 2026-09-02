@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 return [
     'RES' => [
+        'ChangeSkin_Anniversary2026_MayorsHouse_long' => 'Вигляд на 15 днів: ратуша (спадок трьох десятиліть)',
+        'ProductivityBuffLvl_CommandCenterBoost' => 'Тактика: Картеч',
         'AdvancedPaper' => 'Відмінний папір',
         'AdvancedTools' => 'Відмінні інструменти',
         'Archebuse' => 'Аркебуза',
