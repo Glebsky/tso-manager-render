@@ -102,5 +102,14 @@ if [ "$APP_ENV" = "production" ]; then
     fi
 fi
 
+# Ensure all runtime files created by root during startup are owned by www-data
+if [ "$(id -u)" = "0" ]; then
+    mkdir -p /var/www/html/storage/logs
+    touch /var/www/html/storage/logs/laravel.log
+    chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+    chmod 664 /var/www/html/storage/logs/laravel.log 2>/dev/null || true
+fi
+
 # Execute the main container process
 exec "$@"

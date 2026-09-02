@@ -91,5 +91,14 @@ else
     echo ">> laravel: migrations skipped (RUN_MIGRATIONS=false)"
 fi
 
+# Ensure all runtime files created by root during startup are owned by www-data
+if [ "$(id -u)" = "0" ]; then
+    mkdir -p storage/logs
+    touch storage/logs/laravel.log
+    chown -R www-data:www-data storage bootstrap/cache
+    chmod -R 775 storage bootstrap/cache
+    chmod 664 storage/logs/laravel.log 2>/dev/null || true
+fi
+
 echo ">> starting supervisord (nginx + php-fpm + scheduler)"
 exec /usr/bin/supervisord -c /etc/supervisor/supervisord.conf
