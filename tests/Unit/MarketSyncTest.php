@@ -6,7 +6,6 @@ namespace Tests\Unit;
 
 use App\Models\MarketHistory;
 use App\Models\MarketOffer;
-use App\Services\Lang\GameTranslationResolver;
 use App\Services\Market\Sync\MarketOfferParser;
 use App\Services\Market\Sync\MarketOfferPersister;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -18,34 +17,38 @@ class MarketSyncTest extends TestCase
 
     public function test_market_offer_parser_transforms_raw_strings(): void
     {
-        $translations = app(GameTranslationResolver::class);
-        $parser = new MarketOfferParser($translations);
+        $parser = app(MarketOfferParser::class);
 
         $rawOffers = [
             [
                 'id' => 101,
                 'senderID' => 50,
                 'senderName' => 'TraderBob',
-                'offer' => 'Oil,100|Coin,50',
+                'type' => 0,
+                'offer' => 'Oil,100|Coin,50|2',
                 'lotsRemaining' => 2,
                 'created' => (int) now()->timestamp * 1000,
             ],
             [
                 // Invalid offer string - ignored
                 'id' => 102,
+                'type' => 0,
                 'offer' => 'InvalidString',
             ],
             [
-                // Free gift target - ignored
+                // Free gift target - parsed with null price
                 'id' => 103,
-                'offer' => 'Oil,100|@',
+                'type' => 0,
+                'offer' => 'Oil,100|@|1',
+                'lotsRemaining' => 1,
+                'created' => (int) now()->timestamp * 1000,
             ],
         ];
 
         $result = $parser->parse($rawOffers, 'ru_evelans', now());
 
-        $this->assertCount(1, $result['offers']);
-        $this->assertCount(1, $result['history']);
+        $this->assertCount(2, $result['offers']);
+        $this->assertCount(2, $result['history']);
 
         $offer = $result['offers'][0];
         $this->assertEquals(101, $offer['offer_id']);

@@ -62,7 +62,11 @@ readonly class MarketSyncService
             $this->persister->persist($serverId, $parsedData['offers'], $parsedData['history']);
 
             $count = count($parsedData['offers']);
+            $unparsed = $parsedData['unparsed_offers'];
             $message = __('logs.market.sync_success', ['count' => $count, 'server' => $serverId]);
+            if ($unparsed > 0) {
+                $message .= " (skipped {$unparsed} unparsed)";
+            }
 
             $this->syncLogger->log($account, $action, 'SUCCESS', $message, $serverId);
 

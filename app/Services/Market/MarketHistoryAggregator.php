@@ -129,6 +129,7 @@ final class MarketHistoryAggregator
             ->where('server_id', $serverId)
             ->where('item_id', $itemId)
             ->where('target_item_id', $targetItemId)
+            ->whereNotNull('price')
             ->orderByDesc('collected_at')
             ->value('price');
 
@@ -172,6 +173,7 @@ final class MarketHistoryAggregator
     {
         return MarketHistory::query()
             ->where('server_id', $serverId)
+            ->whereNotNull('price')
             ->where('collected_at', '>=', $since)
             ->selectRaw('item_id, target_item_id, '.self::PAIR_AGGREGATES)
             ->groupBy('item_id', 'target_item_id')
@@ -190,6 +192,7 @@ final class MarketHistoryAggregator
 
         $rows = MarketHistory::query()
             ->where('server_id', $serverId)
+            ->whereNotNull('price')
             ->where('collected_at', '>=', $since)
             ->selectRaw("item_id, target_item_id, {$bucket} as time_bucket, ".self::SERIES_AGGREGATES)
             ->groupBy('item_id', 'target_item_id', 'time_bucket')
@@ -220,7 +223,7 @@ final class MarketHistoryAggregator
             $rows = $connection->select(
                 'SELECT DISTINCT ON (item_id, target_item_id) item_id, target_item_id, price
                  FROM market_history
-                 WHERE server_id = ?
+                 WHERE server_id = ? AND price IS NOT NULL
                  ORDER BY item_id, target_item_id, collected_at DESC',
                 [$serverId]
             );
@@ -231,12 +234,12 @@ final class MarketHistoryAggregator
                  INNER JOIN (
                      SELECT item_id, target_item_id, MAX(collected_at) as max_collected
                      FROM market_history
-                     WHERE server_id = ?
+                     WHERE server_id = ? AND price IS NOT NULL
                      GROUP BY item_id, target_item_id
                  ) latest ON mh.item_id = latest.item_id
                      AND mh.target_item_id = latest.target_item_id
                      AND mh.collected_at = latest.max_collected
-                 WHERE mh.server_id = ?',
+                 WHERE mh.server_id = ? AND mh.price IS NOT NULL',
                 [$serverId, $serverId]
             );
         }
@@ -264,6 +267,7 @@ final class MarketHistoryAggregator
             ->where('server_id', $serverId)
             ->where('item_id', $itemId)
             ->where('target_item_id', $targetItemId)
+            ->whereNotNull('price')
             ->when($period->isBounded(), fn (Builder $query) => $query->where('collected_at', '>=', $period->since));
     }
 

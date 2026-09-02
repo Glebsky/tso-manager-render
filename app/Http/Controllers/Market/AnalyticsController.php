@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Market;
 
+use App\Enums\MarketItemKind;
 use App\Http\Controllers\Controller;
 use App\Services\Market\MarketAnalyticsService;
 use App\Services\Market\Support\PeriodResolver;
@@ -25,6 +26,13 @@ final class AnalyticsController extends Controller
 
     public function __invoke(Request $request): JsonResponse
     {
+        $validated = $request->validate([
+            'kind' => ['sometimes', 'string', 'in:all,resource,buff,adventure,building'],
+        ]);
+        $kind = ($validated['kind'] ?? 'all') === 'all'
+            ? null
+            : MarketItemKind::from($validated['kind']);
+
         $serverId = $this->cache->resolveServerId($request->input('server_id'));
         $period = $this->periods->resolve($request->input('period', PeriodResolver::DEFAULT_PERIOD));
 
@@ -37,6 +45,7 @@ final class AnalyticsController extends Controller
                 $period,
                 (int) $request->input('page', 1),
                 (int) $request->input('limit', config('market.offers_page_size')),
+                $kind,
             ));
         }
 
