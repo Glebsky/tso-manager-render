@@ -79,7 +79,7 @@ export const intlLocale = INTL_LOCALES[locale] || locale;
  * id without knowing its section (central compatibility map, replaces the
  * old per-component translation maps fed by /api/lang/res).
  */
-const GAME_SECTION_LOOKUP_ORDER = ['RES', 'BUI', 'SPE', 'LAB'];
+const GAME_SECTION_LOOKUP_ORDER = ['RES', 'ADN', 'BUI', 'SPE', 'LAB'];
 
 const MAX_PLACEHOLDER_DEPTH = 3;
 

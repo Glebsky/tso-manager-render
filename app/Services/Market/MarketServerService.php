@@ -77,7 +77,7 @@ final class MarketServerService
     {
         return MarketServerConnection::whereNotNull('account_id')
             ->whereHas('account')
-            ->with(self::ACCOUNT_COLUMNS_WITH_ZONE)
+            ->with(self::ACCOUNT_COLUMNS)
             ->select('id', 'server_id', 'locale', 'display_name', 'sync_status', 'account_id')
             ->orderBy('id')
             ->get();
@@ -244,14 +244,14 @@ final class MarketServerService
             throw MarketOperationException::unprocessable(__('ui.market.api.assign_account_first'));
         }
 
-        $account = Account::find($server->account_id);
+        $account = $server->account ?? Account::find($server->account_id);
 
         if (! $account) {
             throw MarketOperationException::unprocessable(__('ui.market.api.account_not_found'));
         }
 
         try {
-            return $this->sync->sync($account, $server->server_id);
+            return $this->sync->sync($account, $server->server_id, $server);
         } catch (Throwable $e) {
             throw MarketOperationException::serverError(
                 __('ui.market.api.sync_failed', ['error' => $e->getMessage()])
@@ -324,8 +324,15 @@ final class MarketServerService
 
         $detection = $this->verification->detectServerForAccount($account);
         $detectedServerId = $detection['detected_server_id'] ? strtolower((string) $detection['detected_server_id']) : null;
+        $targetServerId = strtolower((string) $server->server_id);
+        $detectedRegion = strtolower((string) $account->region);
+        $targetRegion = explode('_', $targetServerId, 2)[0];
 
-        if ($detectedServerId && $detectedServerId !== strtolower((string) $server->server_id)) {
+        $isMatch = ($detectedServerId === $targetServerId)
+            || ($targetServerId === $detectedRegion)
+            || ($detectedServerId === $targetRegion);
+
+        if (! $isMatch) {
             throw MarketOperationException::unprocessable(__('ui.market.api.account_wrong_server', [
                 'username' => $account->username,
                 'detected' => $detectedServerId,

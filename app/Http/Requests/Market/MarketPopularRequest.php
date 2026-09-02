@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Market;
 
+use App\Enums\MarketItemKind;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -25,6 +26,7 @@ final class MarketPopularRequest extends FormRequest
         return [
             'server_id' => ['nullable', 'string', 'max:50'],
             'period' => ['nullable', 'string', Rule::in(['1d', '7d', '30d', '1y', 'all'])],
+            'kind' => ['sometimes', 'string', 'in:all,resource,buff,adventure,building'],
         ];
     }
 
@@ -36,5 +38,12 @@ final class MarketPopularRequest extends FormRequest
     public function periodKey(): string
     {
         return (string) $this->input('period', '1d');
+    }
+
+    public function kind(): ?MarketItemKind
+    {
+        $kind = (string) $this->input('kind', 'all');
+
+        return $kind === 'all' ? null : MarketItemKind::tryFrom($kind);
     }
 }

@@ -7,12 +7,13 @@ namespace App\Providers;
 use App\Services\Market\Arbitrage\LoopArbitrageFinder;
 use App\Services\Market\Contracts\ArbitrageFinder;
 use App\Services\Market\Contracts\ResourceNameResolver;
-use App\Services\Market\GameResourceNameResolver;
 use App\Services\Market\MarketOfferQueryService;
 use App\Services\Market\Support\TimeBucket\MySqlTimeBucketExpression;
 use App\Services\Market\Support\TimeBucket\PostgresTimeBucketExpression;
 use App\Services\Market\Support\TimeBucket\SqliteTimeBucketExpression;
 use App\Services\Market\Support\TimeBucket\TimeBucketExpressionFactory;
+use App\Services\Market\Tradeables\CompositeTradeableNameResolver;
+use App\Services\MarketCacheService;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 
@@ -29,7 +30,8 @@ final class MarketServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->bind(ResourceNameResolver::class, GameResourceNameResolver::class);
+        $this->app->singleton(MarketCacheService::class);
+        $this->app->bind(ResourceNameResolver::class, CompositeTradeableNameResolver::class);
 
         $this->app->singleton(TimeBucketExpressionFactory::class, static function (): TimeBucketExpressionFactory {
             $sqlite = new SqliteTimeBucketExpression;

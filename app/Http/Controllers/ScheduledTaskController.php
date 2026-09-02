@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Tasks\IndexScheduledTaskRequest;
 use App\Http\Requests\Tasks\StoreScheduledTaskRequest;
 use App\Http\Requests\Tasks\UpdateScheduledTaskRequest;
 use App\Http\Resources\AccountResource;
@@ -11,7 +12,6 @@ use App\Http\Resources\ScheduledTaskResource;
 use App\Models\ScheduledTask;
 use App\Services\Tasks\ScheduledTaskService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 
@@ -25,17 +25,13 @@ class ScheduledTaskController extends Controller
     /**
      * Show the task planner view payload with paginated tasks.
      */
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(IndexScheduledTaskRequest $request): AnonymousResourceCollection
     {
-        $perPage = (int) $request->input('per_page', 50);
-        $perPage = max(1, min(100, $perPage));
+        $accounts = $this->tasks->accounts();
+        $tasks = $this->tasks->paginate($request->perPage(), $accounts);
 
-        $paginator = ScheduledTask::with('account:id,username,nickname')
-            ->latest()
-            ->paginate($perPage);
-
-        return ScheduledTaskResource::collection($paginator)->additional([
-            'accounts' => AccountResource::collection($this->tasks->accounts()),
+        return ScheduledTaskResource::collection($tasks)->additional([
+            'accounts' => AccountResource::collection($accounts),
             'meta' => [
                 'server_time' => now()->toIso8601String(),
             ],

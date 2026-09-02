@@ -43,7 +43,7 @@ readonly class AccountSyncService
 
             return $zoneData;
         } catch (Throwable $e) {
-            $this->persister->markError($account);
+            $this->persister->markError($account, $e);
             $this->logger->logFailure($account, $e);
 
             if ($e instanceof HasApiPresentation) {

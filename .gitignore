@@ -20,6 +20,7 @@ yarn-error.log
 /.mimocode
 /docs/foundbugs.md
 /.foglamp
+/load-tests/*.html
 
 # Docker
 /docker/php/error.log
@@ -30,3 +31,5 @@ docker/nginx/certs/
 # OpenServer 6
 /.osp/backup/
 *.zip
+__pycache__/
+*.py[cod]

@@ -23,39 +23,70 @@ class MarketOfferPersister
     public function persist(string $serverId, array $offers, array $history): void
     {
         DB::transaction(static function () use ($serverId, $offers, $history) {
-            // Clear active offers for this server ONLY
-            MarketOffer::where('server_id', $serverId)->delete();
+            if (! empty($offers)) {
+                $updateColumns = [
+                    'player_id',
+                    'sender_name',
+                    'item_kind',
+                    'item_id',
+                    'item_name',
+                    'item_subject',
+                    'amount',
+                    'target_item_kind',
+                    'target_item_id',
+                    'target_item_name',
+                    'target_item_subject',
+                    'target_amount',
+                    'price',
+                    'volume',
+                    'lots_remaining',
+                    'trade_type',
+                    'slot_type',
+                    'total_lots',
+                    'created_at',
+                    'collected_at',
+                ];
 
-            // Chunk inserts to avoid database limits
-            foreach (array_chunk($offers, 200) as $chunk) {
-                MarketOffer::insert($chunk);
-            }
-
-            // Filter out history entries that already exist for this server
-            $offerIds = array_column($history, 'offer_id');
-            $existingIds = [];
-            if (! empty($offerIds)) {
-                $existingIds = collect($offerIds)
-                    ->chunk(500)
-                    ->flatMap(function ($idChunk) use ($serverId) {
-                        return MarketHistory::where('server_id', $serverId)
-                            ->whereIn('offer_id', $idChunk)
-                            ->pluck('offer_id');
-                    })
-                    ->all();
-            }
-
-            $existingIdsSet = array_flip($existingIds);
-            $filteredHistory = [];
-            foreach ($history as $h) {
-                if (! isset($existingIdsSet[$h['offer_id']])) {
-                    $filteredHistory[] = $h;
+                $dedupedOffers = [];
+                foreach ($offers as $offer) {
+                    $key = (string) ($offer['server_id'] ?? $serverId).':'.(string) ($offer['offer_id'] ?? '');
+                    $dedupedOffers[$key] = $offer;
                 }
+
+                foreach (array_chunk(array_values($dedupedOffers), 200) as $chunk) {
+                    MarketOffer::upsert($chunk, ['server_id', 'offer_id'], $updateColumns);
+                }
+
+                $collectedAt = $offers[0]['collected_at'] ?? null;
+                if ($collectedAt !== null) {
+                    MarketOffer::where('server_id', $serverId)
+                        ->where(static function ($query) use ($collectedAt) {
+                            $query->where('collected_at', '<', $collectedAt)
+                                ->orWhereNull('collected_at');
+                        })
+                        ->delete();
+                }
+            } else {
+                MarketOffer::where('server_id', $serverId)->delete();
             }
 
-            if (! empty($filteredHistory)) {
-                foreach (array_chunk($filteredHistory, 200) as $chunk) {
-                    MarketHistory::insert($chunk);
+            if (! empty($history)) {
+                $offerIds = array_column($history, 'offer_id');
+                $existingIds = MarketHistory::where('server_id', $serverId)
+                    ->whereIn('offer_id', $offerIds)
+                    ->pluck('offer_id')
+                    ->all();
+
+                $existingIdsSet = array_flip($existingIds);
+                $filteredHistory = array_values(array_filter(
+                    $history,
+                    static fn (array $h): bool => ! isset($existingIdsSet[$h['offer_id']])
+                ));
+
+                if (! empty($filteredHistory)) {
+                    foreach (array_chunk($filteredHistory, 200) as $chunk) {
+                        MarketHistory::insert($chunk);
+                    }
                 }
             }
         });

@@ -113,7 +113,7 @@ class TsoAuthService
 
         $server = self::SERVERS[$region];
         $cookieFile = $this->getCookieFile($account);
-        $this->resetSession($account);
+        //        $this->resetSession($account);
 
         try {
             $params = $this->loginLegacy($account, $cookieFile, $server);
@@ -141,8 +141,6 @@ class TsoAuthService
                     throw $e2;
                 }
 
-                Cache::put($cooldownKey, $errMsg, 300);
-
                 throw $e;
             }
         }
@@ -158,6 +156,12 @@ class TsoAuthService
         ]);
 
         return $params;
+    }
+
+    public function clearCooldown(Account|int $account): void
+    {
+        $id = $account instanceof Account ? $account->id : $account;
+        Cache::forget("account_login_cooldown:{$id}");
     }
 
     public function isCaptchaOr2faError(string $message): bool

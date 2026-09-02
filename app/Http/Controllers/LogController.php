@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Logs\IndexLogRequest;
 use App\Http\Resources\AccountResource;
 use App\Http\Resources\BotLogResource;
-use App\Models\Account;
-use App\Models\BotLog;
-use Illuminate\Http\Request;
+use App\Services\Logs\BotLogService;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 /**
@@ -16,29 +15,23 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
  */
 class LogController extends Controller
 {
+    public function __construct(
+        private readonly BotLogService $logService,
+    ) {}
+
     /**
      * Show logs, filterable by account and log level.
      */
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(IndexLogRequest $request): AnonymousResourceCollection
     {
-        $perPage = (int) $request->input('per_page', $request->input('limit', 100));
-        $perPage = max(1, min(100, $perPage));
-
-        $query = BotLog::with('account:id,username,nickname')->latest('created_at');
-
-        if ($request->filled('account_id')) {
-            $query->where('account_id', $request->input('account_id'));
-        }
-
-        if ($request->filled('level')) {
-            $query->where('level', $request->input('level'));
-        }
-
-        $logs = $query->paginate($perPage);
-        $accounts = Account::select('id', 'username', 'nickname')->orderBy('username')->get();
+        $logs = $this->logService->paginate(
+            $request->perPage(),
+            $request->accountId(),
+            $request->level()
+        );
 
         return BotLogResource::collection($logs)->additional([
-            'accounts' => AccountResource::collection($accounts),
+            'accounts' => AccountResource::collection($this->logService->getFilterAccounts()),
             'meta' => [
                 'server_time' => now()->toIso8601String(),
             ],

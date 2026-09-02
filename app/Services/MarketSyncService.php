@@ -32,17 +32,21 @@ readonly class MarketSyncService
      * @throws Exception
      * @throws Throwable
      */
-    public function sync(Account $account, ?string $serverId = null): array
+    public function sync(Account $account, ?string $serverId = null, ?MarketServerConnection $connection = null): array
     {
         $action = 'Market sync';
         $collectedAt = now();
 
-        if (empty($serverId)) {
-            $connection = MarketServerConnection::where('account_id', $account->id)->first();
-            $serverId = $connection->server_id ?? strtolower($account->region ?? 'ru');
+        if (! $connection) {
+            if (empty($serverId)) {
+                $connection = MarketServerConnection::where('account_id', $account->id)->first();
+                $serverId = $connection->server_id ?? strtolower($account->region ?? 'ru');
+            }
+            $connection = MarketServerConnection::where('server_id', $serverId)->first();
+        } else {
+            $serverId = $connection->server_id;
         }
 
-        $connection = MarketServerConnection::where('server_id', $serverId)->first();
         $connection?->update(['sync_status' => 'syncing']);
 
         try {
@@ -58,7 +62,11 @@ readonly class MarketSyncService
             $this->persister->persist($serverId, $parsedData['offers'], $parsedData['history']);
 
             $count = count($parsedData['offers']);
+            $unparsed = $parsedData['unparsed_offers'];
             $message = __('logs.market.sync_success', ['count' => $count, 'server' => $serverId]);
+            if ($unparsed > 0) {
+                $message .= " (skipped {$unparsed} unparsed)";
+            }
 
             $this->syncLogger->log($account, $action, 'SUCCESS', $message, $serverId);
 
@@ -66,9 +74,10 @@ readonly class MarketSyncService
                 'sync_status' => 'connected',
                 'last_synced_at' => now(),
                 'last_error' => null,
+                'data_version' => ($connection->data_version ?? 0) + 1,
             ]);
 
-            $this->cacheService->bumpDataVersion($serverId);
+            $this->cacheService->invalidateVersionCache($serverId);
 
             return [
                 'success' => true,

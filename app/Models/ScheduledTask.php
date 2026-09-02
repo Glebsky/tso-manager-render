@@ -10,6 +10,7 @@ use App\Enums\TaskType;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
@@ -79,5 +80,17 @@ class ScheduledTask extends Model
     public function account(): BelongsTo
     {
         return $this->belongsTo(Account::class);
+    }
+
+    /**
+     * @return HasMany<MarketServerConnection, $this>
+     */
+    public function marketServerConnections(): HasMany
+    {
+        return $this->hasMany(
+            MarketServerConnection::class,
+            'account_id',
+            'account_id'
+        );
     }
 }

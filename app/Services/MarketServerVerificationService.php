@@ -86,11 +86,12 @@ class MarketServerVerificationService
             ];
         }
 
-        $detectedRegion = strtolower($account->region);
+        $detectedRegion = strtolower((string) $account->region);
         $targetRegion = explode('_', $targetServerId, 2)[0];
 
         $isMatch = ($detectedServerId === $targetServerId)
-            || ($detectedRegion === $targetRegion && $detection['detected_locale'] === $targetLocale);
+            || ($targetServerId === $detectedRegion && $detection['detected_locale'] === $targetLocale)
+            || ($detectedServerId === $targetRegion && $detection['detected_locale'] === $targetLocale);
 
         if ($isMatch) {
             return [

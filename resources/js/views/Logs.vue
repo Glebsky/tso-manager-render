@@ -126,7 +126,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { t } from '../lang';
 import { logsApi } from '../services/api/logs';
 import LogEntry from '../components/LogEntry.vue';
@@ -144,10 +144,9 @@ const pagination = ref({
     current_page: 1,
     last_page: 1
 });
-let timer = null;
 
-const loadLogs = async (page = 1, background = false) => {
-    if (!background) loading.value = true;
+const loadLogs = async (page = 1) => {
+    loading.value = true;
     try {
         const res = await logsApi.fetchLogs({
             page,
@@ -162,9 +161,9 @@ const loadLogs = async (page = 1, background = false) => {
             last_page: res.meta?.last_page || res.last_page || 1
         };
     } catch {
-        if (!background) showToast(t('logs.load_failed'), 'error');
+        showToast(t('logs.load_failed'), 'error');
     } finally {
-        if (!background) loading.value = false;
+        loading.value = false;
     }
 };
 
@@ -174,12 +173,5 @@ const onFilterChange = () => {
 
 onMounted(() => {
     loadLogs(1);
-    timer = setInterval(() => {
-        loadLogs(pagination.value.current_page, true);
-    }, 10000);
-});
-
-onUnmounted(() => {
-    if (timer) clearInterval(timer);
 });
 </script>

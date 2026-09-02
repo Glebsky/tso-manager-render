@@ -135,6 +135,10 @@ const statusClass = computed(() => {
             gradient: 'from-red-500 to-rose-500',
             glow: '#ef4444'
         },
+        session_expired: {
+            gradient: 'from-amber-500 to-rose-500',
+            glow: '#f43f5e'
+        },
         offline: {
             gradient: 'from-gray-500 to-gray-600',
             glow: '#6b7280'

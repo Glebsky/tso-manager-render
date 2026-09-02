@@ -15,7 +15,7 @@ RUN apk add --no-cache \
     pkgconfig \
     $PHPIZE_DEPS
 
-RUN docker-php-ext-install pdo pdo_pgsql pdo_sqlite zip bcmath \
+RUN docker-php-ext-install pdo pdo_pgsql pdo_sqlite zip \
     && pecl install redis \
     && docker-php-ext-enable redis
 

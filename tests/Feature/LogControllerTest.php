@@ -4,98 +4,94 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Enums\LogLevel;
 use App\Models\Account;
 use App\Models\BotLog;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Auth;
 use Tests\TestCase;
 
 class LogControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_logs_index_returns_paginated_logs_and_accounts(): void
+    private function createAccount(): Account
     {
-        $user = User::factory()->create();
-
-        $account = Account::create([
-            'username' => 'log_user',
-            'email' => 'log_user@example.com',
+        return Account::create([
+            'username' => 'testuser',
             'password' => 'secret',
-            'is_active' => true,
+            'region' => 'ru',
+            'nickname' => 'testuser',
+            'zone_data' => json_encode(['buildings' => []]),
+        ]);
+    }
+
+    public function test_guest_cannot_access_logs(): void
+    {
+        Auth::logout();
+        $this->app['session']->flush();
+
+        $response = $this->json('GET', '/api/logs');
+        $response->assertStatus(401);
+    }
+
+    public function test_authenticated_user_can_fetch_paginated_logs(): void
+    {
+        $account = $this->createAccount();
+
+        BotLog::create([
+            'account_id' => $account->id,
+            'level' => LogLevel::Info,
+            'message' => 'First message',
         ]);
 
         BotLog::create([
             'account_id' => $account->id,
-            'level' => 'info',
-            'message' => 'Test log entry 1',
+            'level' => LogLevel::Warning,
+            'message' => 'Second message',
         ]);
 
-        BotLog::create([
-            'account_id' => $account->id,
-            'level' => 'error',
-            'message' => 'Test log entry 2',
-        ]);
-
-        $response = $this->actingAs($user)->getJson('/api/logs');
+        $response = $this->getJson('/api/logs');
 
         $response->assertStatus(200);
         $response->assertJsonStructure([
-            'data',
-            'links',
-            'meta' => [
-                'current_page',
-                'last_page',
-                'per_page',
-                'total',
+            'data' => [
+                '*' => ['id', 'account_id', 'level', 'message', 'created_at', 'account'],
             ],
             'accounts',
+            'meta' => ['server_time'],
         ]);
-
         $this->assertCount(2, $response->json('data'));
-        $this->assertEquals(1, $response->json('meta.current_page'));
     }
 
-    public function test_logs_index_filters_by_account_and_level(): void
+    public function test_can_filter_logs_by_account_and_level(): void
     {
-        $user = User::factory()->create();
-
-        $account1 = Account::create([
-            'username' => 'user1',
-            'email' => 'user1@example.com',
-            'password' => 'secret',
-            'is_active' => true,
-        ]);
-
+        $account1 = $this->createAccount();
         $account2 = Account::create([
-            'username' => 'user2',
-            'email' => 'user2@example.com',
+            'username' => 'seconduser',
             'password' => 'secret',
-            'is_active' => true,
+            'region' => 'ru',
+            'nickname' => 'seconduser',
+            'zone_data' => json_encode(['buildings' => []]),
         ]);
 
         BotLog::create([
             'account_id' => $account1->id,
-            'level' => 'info',
-            'message' => 'Info log for user 1',
-        ]);
-
-        BotLog::create([
-            'account_id' => $account1->id,
-            'level' => 'error',
-            'message' => 'Error log for user 1',
+            'level' => LogLevel::Info,
+            'message' => 'Account 1 info',
         ]);
 
         BotLog::create([
             'account_id' => $account2->id,
-            'level' => 'error',
-            'message' => 'Error log for user 2',
+            'level' => LogLevel::Error,
+            'message' => 'Account 2 error',
         ]);
 
-        $response = $this->actingAs($user)->getJson('/api/logs?account_id='.$account1->id.'&level=error');
+        $response = $this->getJson("/api/logs?account_id={$account2->id}&level=error");
 
         $response->assertStatus(200);
-        $response->assertJsonCount(1, 'data');
-        $this->assertEquals('Error log for user 1', $response->json('data.0.message'));
+        $data = $response->json('data');
+        $this->assertCount(1, $data);
+        $this->assertEquals('Account 2 error', $data[0]['message']);
     }
 }

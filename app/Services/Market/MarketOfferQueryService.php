@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services\Market;
 
+use App\Enums\MarketItemKind;
 use App\Models\MarketOffer;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Collection as SupportCollection;
 
@@ -35,12 +35,15 @@ final readonly class MarketOfferQueryService
     /**
      * @return Collection<int, MarketOffer>
      */
-    public function activeOffers(string $serverId): Collection
+    public function activeOffers(string $serverId, ?MarketItemKind $kind = null): Collection
     {
         $since = $this->activeSince();
 
+        $kindValue = $kind?->value;
+
         return MarketOffer::query()
-            ->tap(fn ($q) => $this->applyServerFilter($q, $serverId))
+            ->where('server_id', $serverId)
+            ->when($kindValue !== null, fn ($query) => $query->where('item_kind', $kindValue))
             ->where('created_at', '>', $since)
             ->orderByDesc('created_at')
             ->get();
@@ -54,7 +57,7 @@ final readonly class MarketOfferQueryService
         $since = $this->activeSince();
 
         return MarketOffer::query()
-            ->tap(fn ($q) => $this->applyServerFilter($q, $serverId))
+            ->where('server_id', $serverId)
             ->where('item_id', $itemId)
             ->where('target_item_id', $targetItemId)
             ->where('created_at', '>', $since)
@@ -84,24 +87,11 @@ final readonly class MarketOfferQueryService
         $since = $this->activeSince();
 
         return MarketOffer::query()
-            ->tap(fn ($q) => $this->applyServerFilter($q, $serverId))
+            ->where('server_id', $serverId)
             ->where('created_at', '>', $since)
             ->selectRaw('item_id, target_item_id, sum(volume) as volume, count(*) as offers_count, count(distinct player_id) as sellers_count')
             ->groupBy('item_id', 'target_item_id')
             ->get()
             ->toBase();
-    }
-
-    /**
-     * @param  Builder<MarketOffer>  $query
-     */
-    private function applyServerFilter(Builder $query, string $serverId): void
-    {
-        $region = explode('_', $serverId, 2)[0];
-        $query->where(static function (Builder $q) use ($serverId, $region): void {
-            $q->where('server_id', $serverId)
-                ->orWhere('server_id', $region)
-                ->orWhere('server_id', 'LIKE', "{$region}\\_%");
-        });
     }
 }

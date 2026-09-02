@@ -173,6 +173,72 @@ class MarketServerConnectionTest extends TestCase
         $this->assertEquals(2001, $deAnalytics->json('active_offers.0.offer_id'));
     }
 
+    public function test_same_region_servers_data_isolation(): void
+    {
+        // 1. Create two server connections in EN region: en_north_sea and en_newfoundland
+        MarketServerConnection::create([
+            'server_id' => 'en_north_sea',
+            'locale' => 'EN',
+            'display_name' => 'North Sea Market',
+        ]);
+
+        MarketServerConnection::create([
+            'server_id' => 'en_newfoundland',
+            'locale' => 'EN',
+            'display_name' => 'Newfoundland Market',
+        ]);
+
+        // 2. Insert offer for en_north_sea
+        MarketOffer::create([
+            'server_id' => 'en_north_sea',
+            'offer_id' => 3001,
+            'player_id' => 1,
+            'sender_name' => 'NorthSeaPlayer',
+            'item_id' => 'Oil',
+            'item_name' => 'Oil',
+            'amount' => 100,
+            'target_item_id' => 'Coin',
+            'target_item_name' => 'Coin',
+            'target_amount' => 50,
+            'price' => 0.5,
+            'volume' => 1000,
+            'lots_remaining' => 10,
+            'created_at' => now(),
+            'collected_at' => now(),
+        ]);
+
+        // Insert offer for en_newfoundland
+        MarketOffer::create([
+            'server_id' => 'en_newfoundland',
+            'offer_id' => 3002,
+            'player_id' => 2,
+            'sender_name' => 'NewfoundlandPlayer',
+            'item_id' => 'Bread',
+            'item_name' => 'Bread',
+            'amount' => 500,
+            'target_item_id' => 'Water',
+            'target_item_name' => 'Water',
+            'target_amount' => 250,
+            'price' => 0.5,
+            'volume' => 5000,
+            'lots_remaining' => 10,
+            'created_at' => now(),
+            'collected_at' => now(),
+        ]);
+
+        // 3. Analytics for en_north_sea should return only Oil, count 1
+        $northSeaAnalytics = $this->getJson('/api/market/analytics?server_id=en_north_sea');
+        $northSeaAnalytics->assertStatus(200);
+        $this->assertEquals(1, $northSeaAnalytics->json('total_active_count'));
+        $this->assertEquals(3001, $northSeaAnalytics->json('active_offers.0.offer_id'));
+
+        // Analytics for en_newfoundland should return only Bread, count 1
+        $newfoundlandAnalytics = $this->getJson('/api/market/analytics?server_id=en_newfoundland');
+        $newfoundlandAnalytics->assertStatus(200);
+        $this->assertEquals(1, $newfoundlandAnalytics->json('total_active_count'));
+        $this->assertEquals(3002, $newfoundlandAnalytics->json('active_offers.0.offer_id'));
+    }
+
     public function test_multi_server_scheduler_command_continues_on_single_server_failure(): void
     {
         $accountRu = Account::create([

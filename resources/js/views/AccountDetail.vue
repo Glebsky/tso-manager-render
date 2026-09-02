@@ -37,7 +37,25 @@
 
                     <!-- Details -->
                     <div class="flex-1 min-w-0 w-full">
-                        <h1 class="text-base sm:text-2xl font-bold text-white mb-1 wrap-anywhere leading-tight">{{ playerNickname || account.username }}</h1>
+                        <div class="flex flex-wrap items-center gap-2 sm:gap-3 mb-1">
+                            <h1 class="text-base sm:text-2xl font-bold text-white wrap-anywhere leading-tight">{{ playerNickname || account.username }}</h1>
+                            <button v-if="account.username"
+                                    type="button"
+                                    @click="copyEmail(account.username)"
+                                    class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-xs font-mono bg-white/5 border border-white/10 text-white/70 hover:text-white hover:border-emerald-500/40 hover:bg-white/10 transition-all cursor-pointer group"
+                                    :title="t('account.copy_email')">
+                                <svg class="w-3.5 h-3.5 text-white/40 group-hover:text-emerald-400 shrink-0 transition-colors" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+                                </svg>
+                                <span>{{ account.username }}</span>
+                                <svg v-if="copiedEmail" class="w-3.5 h-3.5 text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                                </svg>
+                                <svg v-else class="w-3.5 h-3.5 text-white/30 group-hover:text-white/70 shrink-0 transition-colors" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184" />
+                                </svg>
+                            </button>
+                        </div>
                         <div class="flex items-center flex-wrap gap-2 sm:gap-4 text-xs sm:text-sm text-white/40">
                             <span class="flex items-center gap-1 text-white/80 whitespace-nowrap">
                                 <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -596,6 +614,35 @@
 
                     <form @submit.prevent="saveSession" class="space-y-4">
                         <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <label class="block text-xs font-medium text-white/40 uppercase tracking-wider">{{ t('account.login_email') }}</label>
+                                <button type="button"
+                                        @click="copyEmail(account.username)"
+                                        class="text-xs text-emerald-400 hover:text-emerald-300 transition-colors inline-flex items-center gap-1 font-medium cursor-pointer">
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184" />
+                                    </svg>
+                                    <span>{{ copiedEmail ? t('account.email_copied') : t('account.copy_email') }}</span>
+                                </button>
+                            </div>
+                            <div class="relative cursor-pointer group" @click="copyEmail(account.username)">
+                                <input type="text"
+                                       readonly
+                                       :value="account.username"
+                                       class="glass-input w-full font-mono text-sm pr-10 cursor-pointer group-hover:border-emerald-500/40 transition-colors"
+                                       :title="t('account.copy_email')">
+                                <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-white/30 group-hover:text-emerald-400 transition-colors">
+                                    <svg v-if="copiedEmail" class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                                    </svg>
+                                    <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
                             <label for="session-dso-token" class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">DSO Auth Token</label>
                             <input id="session-dso-token" type="text" required v-model="sessionForm.dso_auth_token" :placeholder="t('account.token_placeholder')" :aria-label="t('account.token_placeholder')" class="glass-input w-full font-mono text-sm">
                         </div>
@@ -607,14 +654,49 @@
                             </div>
 
                             <div>
-                                <label for="session-bb-url" class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('account.bb_url_label') }}</label>
-                                <select id="session-bb-url" required v-model="sessionForm.bb_url" :aria-label="t('account.bb_url_label')" class="glass-select w-full text-sm">
-                                    <option value="https://r02-ls.thesettlersonline.ru/">RU (https://r02-ls.thesettlersonline.ru/)</option>
-                                    <option value="https://r01-ls.thesettlersonline.com/">EN/US (https://r01-ls.thesettlersonline.com/)</option>
-                                    <option value="https://r01-ls.diesiedleronline.de/">DE (https://r01-ls.diesiedleronline.de/)</option>
-                                    <option value="https://r01-ls.thesettlersonline.fr/">FR (https://r01-ls.thesettlersonline.fr/)</option>
-                                    <option value="https://r01-ls.thesettlersonline.pl/">PL (https://r01-ls.thesettlersonline.pl/)</option>
-                                </select>
+                                <div class="flex items-center justify-between mb-2">
+                                    <label for="session-bb-url" class="block text-xs font-medium text-white/40 uppercase tracking-wider">{{ t('account.bb_url_label') }}</label>
+                                    <button type="button"
+                                            @click="isCustomBbUrl = !isCustomBbUrl"
+                                            class="text-xs text-emerald-400 hover:text-emerald-300 transition-colors inline-flex items-center gap-1 font-medium">
+                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                            <path v-if="!isCustomBbUrl" stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125" />
+                                            <path v-else stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm0 5.25h.007v.008H3.75V12Zm0 5.25h.007v.008H3.75v-.008Z" />
+                                        </svg>
+                                        <span>{{ isCustomBbUrl ? t('account.select_from_list') : t('account.enter_manually') }}</span>
+                                    </button>
+                                </div>
+
+                                <!-- Mode 1: Styled Glass Select with Grouped Worlds -->
+                                <div v-if="!isCustomBbUrl" class="relative">
+                                    <select id="session-bb-url"
+                                            required
+                                            v-model="sessionForm.bb_url"
+                                            :aria-label="t('account.bb_url_label')"
+                                            class="glass-select w-full text-xs sm:text-sm font-mono pr-10 cursor-pointer">
+                                        <optgroup v-for="g in GAME_SERVERS" :key="g.group" :label="g.group">
+                                            <option v-for="opt in g.options" :key="opt.value" :value="opt.value" class="bg-dark-900 text-white">
+                                                {{ opt.label }}
+                                            </option>
+                                        </optgroup>
+                                    </select>
+                                    <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                                        <svg class="w-4 h-4 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                        </svg>
+                                    </div>
+                                </div>
+
+                                <!-- Mode 2: Custom Text Input -->
+                                <div v-else class="relative">
+                                    <input id="session-bb-url-manual"
+                                           type="url"
+                                           required
+                                           v-model="sessionForm.bb_url"
+                                           :placeholder="'https://r01-ls.thesettlersonline.ru/'"
+                                           :aria-label="t('account.bb_url_label')"
+                                           class="glass-input w-full font-mono text-xs sm:text-sm">
+                                </div>
                             </div>
                         </div>
 
@@ -740,10 +822,11 @@ const account = ref(null);
 
         const statusClass = computed(() => {
             const colors = {
-                online:  { gradient: 'from-emerald-500 to-teal-500', glow: '#10b981' },
-                syncing: { gradient: 'from-amber-500 to-orange-500', glow: '#f59e0b' },
-                error:   { gradient: 'from-red-500 to-rose-500', glow: '#ef4444' },
-                offline: { gradient: 'from-gray-500 to-gray-600', glow: '#6b7280' }
+                online:          { gradient: 'from-emerald-500 to-teal-500', glow: '#10b981' },
+                syncing:         { gradient: 'from-amber-500 to-orange-500', glow: '#f59e0b' },
+                session_expired: { gradient: 'from-amber-500 to-rose-500', glow: '#f43f5e' },
+                error:           { gradient: 'from-red-500 to-rose-500', glow: '#ef4444' },
+                offline:         { gradient: 'from-gray-500 to-gray-600', glow: '#6b7280' }
             };
             return colors[account.value?.status] || colors.offline;
         });
@@ -1404,18 +1487,146 @@ const account = ref(null);
             }
         };
 
+        const GAME_SERVERS = [
+            {
+                group: '🇷🇺 Россия (RU)',
+                options: [
+                    { label: 'RU 1 — Курон (r01)', value: 'https://r01-ls.thesettlersonline.ru/' },
+                    { label: 'RU 2 — Эвеланс (r02)', value: 'https://r02-ls.thesettlersonline.ru/' },
+                    { label: 'RU 3 — Тандрия (r03)', value: 'https://r03-ls.thesettlersonline.ru/' },
+                ]
+            },
+            {
+                group: '🇩🇪 Германия (DE)',
+                options: [
+                    { label: 'DE 1 — Grünland (r01)', value: 'https://r01-ls.diesiedleronline.de/' },
+                    { label: 'DE 2 — Bernsteingarten (r02)', value: 'https://r02-ls.diesiedleronline.de/' },
+                    { label: 'DE 3 — Tuxingen (r03)', value: 'https://r03-ls.diesiedleronline.de/' },
+                    { label: 'DE 4 — Steppenwald (r04)', value: 'https://r04-ls.diesiedleronline.de/' },
+                    { label: 'DE 5 — Goldenau (r05)', value: 'https://r05-ls.diesiedleronline.de/' },
+                    { label: 'DE 6 — Mittsommerstadt (r06)', value: 'https://r06-ls.diesiedleronline.de/' },
+                    { label: 'DE 7 — Apfelhain (r07)', value: 'https://r07-ls.diesiedleronline.de/' },
+                    { label: 'DE 8 — Schneefeuer (r08)', value: 'https://r08-ls.diesiedleronline.de/' },
+                    { label: 'DE 9 — Morgentau (r09)', value: 'https://r09-ls.diesiedleronline.de/' },
+                    { label: 'DE 10 — Regenbogenweide (r10)', value: 'https://r10-ls.diesiedleronline.de/' },
+                    { label: 'DE 11 — Andosia (r11)', value: 'https://r11-ls.diesiedleronline.de/' },
+                    { label: 'DE 12 — Windfeuertal (r12)', value: 'https://r12-ls.diesiedleronline.de/' },
+                    { label: 'DE 13 — Wildblumenwiese (r13)', value: 'https://r13-ls.diesiedleronline.de/' },
+                    { label: 'DE 14 — Glitzerstadt (r14)', value: 'https://r14-ls.diesiedleronline.de/' },
+                ]
+            },
+            {
+                group: '🇬🇧 / 🇺🇸 International (EN)',
+                options: [
+                    { label: 'EN 1 — Newfoundland (r01)', value: 'https://r01-ls.thesettlersonline.com/' },
+                    { label: 'EN 2 — Northisle (r02)', value: 'https://r02-ls.thesettlersonline.com/' },
+                ]
+            },
+            {
+                group: '🇵🇱 Польша (PL)',
+                options: [
+                    { label: 'PL 1 — Nowa Ziemia (r01)', value: 'https://r01-ls.thesettlersonline.pl/' },
+                    { label: 'PL 2 — Nowy Swiat (r02)', value: 'https://r02-ls.thesettlersonline.pl/' },
+                    { label: 'PL 3 — Sloneczny Grod (r03)', value: 'https://r03-ls.thesettlersonline.pl/' },
+                    { label: 'PL 4 — Kolonia (r04)', value: 'https://r04-ls.thesettlersonline.pl/' },
+                    { label: 'PL 5 — Czarny Rycerz (r05)', value: 'https://r05-ls.thesettlersonline.pl/' },
+                ]
+            },
+            {
+                group: '🇫🇷 Франция (FR)',
+                options: [
+                    { label: 'FR 1 — Terres d\'Ambre (r01)', value: 'https://r01-ls.thesettlersonline.fr/' },
+                    { label: 'FR 2 — Les Plaines d\'Helios (r02)', value: 'https://r02-ls.thesettlersonline.fr/' },
+                ]
+            },
+            {
+                group: '🇳🇱 Нидерланды (NL)',
+                options: [
+                    { label: 'NL 1 — Zandwoestijn (r01)', value: 'https://r01-ls.thesettlersonline.nl/' },
+                ]
+            },
+            {
+                group: '🇪🇸 Испания (ES)',
+                options: [
+                    { label: 'ES 1 — Tierras Salvajes (r01)', value: 'https://r01-ls.juego-thesettlersonline.com/' },
+                ]
+            },
+            {
+                group: '🇮🇹 Италия (IT)',
+                options: [
+                    { label: 'IT 1 — Mondo (r01)', value: 'https://r01-ls.thesettlersonline.it/' },
+                ]
+            },
+            {
+                group: '🇨🇿 Чехия (CZ)',
+                options: [
+                    { label: 'CZ 1 — Moravia (r01)', value: 'https://r01-ls.thesettlersonline.cz/' },
+                ]
+            },
+            {
+                group: '🇷🇴 Румыния (RO)',
+                options: [
+                    { label: 'RO 1 — Lumea 1 (r01)', value: 'https://r01-ls.thesettlersonline.ro/' },
+                ]
+            },
+        ];
+
+        const isCustomBbUrl = ref(false);
+        const copiedEmail = ref(false);
+        let copyTimeout = null;
+
+        const copyEmail = async (email) => {
+            if (!email) return;
+            try {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(email);
+                } else {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = email;
+                    textarea.style.position = 'fixed';
+                    textarea.style.opacity = '0';
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                }
+                copiedEmail.value = true;
+                showToast(t('account.email_copied'));
+                if (copyTimeout) clearTimeout(copyTimeout);
+                copyTimeout = setTimeout(() => {
+                    copiedEmail.value = false;
+                }, 2500);
+            } catch (e) {
+                showToast(t('account.copy_failed') || 'Failed to copy', 'error');
+            }
+        };
+
         const sessionSubmitting = ref(false);
         const sessionForm = ref({
             dso_auth_token: '',
             dso_auth_user: '',
-            bb_url: 'https://r02-ls.thesettlersonline.ru/',
+            bb_url: 'https://r01-ls.thesettlersonline.ru/',
+        });
+
+        const allKnownServerUrls = computed(() => {
+            const urls = new Set();
+            for (const g of GAME_SERVERS) {
+                for (const opt of g.options) {
+                    urls.add(opt.value);
+                }
+            }
+            return urls;
         });
 
         watch(account, (newVal) => {
             if (newVal) {
                 sessionForm.value.dso_auth_token = newVal.dso_auth_token || '';
                 sessionForm.value.dso_auth_user = newVal.dso_auth_user || '';
-                sessionForm.value.bb_url = newVal.bb_url || 'https://r02-ls.thesettlersonline.ru/';
+                const url = newVal.bb_url || 'https://r01-ls.thesettlersonline.ru/';
+                sessionForm.value.bb_url = url;
+                if (url && !allKnownServerUrls.value.has(url)) {
+                    isCustomBbUrl.value = true;
+                }
             }
         }, { immediate: true });
 

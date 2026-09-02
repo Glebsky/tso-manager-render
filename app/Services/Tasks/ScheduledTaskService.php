@@ -9,6 +9,7 @@ use App\Jobs\ExecuteScheduledTaskJob;
 use App\Models\Account;
 use App\Models\ScheduledTask;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -22,8 +23,6 @@ use Illuminate\Support\Str;
  */
 final class ScheduledTaskService
 {
-    private const string ACCOUNT_COLUMNS = 'account:id,username,nickname,region,status';
-
     public function __construct(private readonly TaskActivityLogger $logger) {}
 
     /**
@@ -31,12 +30,42 @@ final class ScheduledTaskService
      */
     public function tasks(): Collection
     {
-        return ScheduledTask::with(self::ACCOUNT_COLUMNS)->orderByDesc('id')->get();
+        return ScheduledTask::with(['account' => static function ($query): void {
+            $query->select('id', 'username', 'nickname', 'region', 'status')->withExists('marketServerConnections');
+        }])->orderByDesc('id')->get();
     }
 
     public function find(int $id): ?ScheduledTask
     {
-        return ScheduledTask::with(self::ACCOUNT_COLUMNS)->find($id);
+        return ScheduledTask::with(['account' => static function ($query): void {
+            $query->select('id', 'username', 'nickname', 'region', 'status')->withExists('marketServerConnections');
+        }])->find($id);
+    }
+
+    /**
+     * @param  Collection<int, Account>|null  $preloadedAccounts
+     * @return LengthAwarePaginator<int, ScheduledTask>
+     */
+    public function paginate(int $perPage = 50, ?Collection $preloadedAccounts = null): LengthAwarePaginator
+    {
+        if ($preloadedAccounts !== null) {
+            $paginator = ScheduledTask::query()->latest()->paginate($perPage);
+            $accountsById = $preloadedAccounts->keyBy('id');
+            $paginator->getCollection()->each(static function (ScheduledTask $task) use ($accountsById): void {
+                $task->setRelation('account', $accountsById->get($task->account_id));
+            });
+
+            return $paginator;
+        }
+
+        return ScheduledTask::query()
+            ->with([
+                'account' => static function ($query): void {
+                    $query->select('id', 'username', 'nickname', 'region', 'status')->withExists('marketServerConnections');
+                },
+            ])
+            ->latest()
+            ->paginate($perPage);
     }
 
     /**
@@ -46,6 +75,7 @@ final class ScheduledTaskService
     {
         return Account::query()
             ->select(['id', 'username', 'nickname', 'region', 'status'])
+            ->withExists('marketServerConnections')
             ->orderBy('username')
             ->get();
     }
@@ -221,15 +251,21 @@ final class ScheduledTaskService
 
         ExecuteScheduledTaskJob::dispatch($task->id, $token, true);
 
-        $task->refresh();
-        $task->load(self::ACCOUNT_COLUMNS);
+        if (config('queue.default') === 'sync') {
+            $task->refresh();
+        }
+        $task->load(['account' => static function ($query): void {
+            $query->select('id', 'username', 'nickname', 'region', 'status')->withExists('marketServerConnections');
+        }]);
 
         return $task;
     }
 
     public function withAccount(ScheduledTask $task): ScheduledTask
     {
-        $task->load(self::ACCOUNT_COLUMNS);
+        $task->load(['account' => static function ($query): void {
+            $query->select('id', 'username', 'nickname', 'region', 'status')->withExists('marketServerConnections');
+        }]);
 
         return $task;
     }

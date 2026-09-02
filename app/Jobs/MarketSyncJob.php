@@ -72,6 +72,8 @@ class MarketSyncJob implements ShouldQueue
                     'created_at' => now(),
                 ]);
 
+                $this->fail($e);
+
                 return;
             }
 
