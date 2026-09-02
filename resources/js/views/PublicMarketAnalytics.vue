@@ -66,8 +66,8 @@
             <loading-overlay :show="loading || loadingPairs" :label="loadingPairs ? t('market.loading_pairs') : t('common.loading_data')" />
             <!-- Selector Header: Left Filters & Right Stacked Search + Actions -->
             <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4 mb-5 sm:mb-6 border-b border-white/5 pb-4">
-                <!-- Left: Selection Mode & Kind Filters -->
-                <div class="flex flex-col gap-2.5">
+                <!-- Left: Selection Mode & Kind Filters (inline on >= 1024px, stacked on < 1024px) -->
+                <div class="flex flex-col lg:flex-row lg:items-center gap-2 lg:gap-2.5">
                     <div class="flex items-center gap-2 flex-wrap">
                         <span class="text-xs font-semibold text-white/40 uppercase tracking-wider shrink-0">{{ t('market.selection_mode') }}</span>
                         <div class="flex items-center gap-1 bg-white/5 border border-white/10 p-0.5 rounded-lg shrink-0">
