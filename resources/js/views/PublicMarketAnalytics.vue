@@ -429,20 +429,20 @@
 
             <!-- Profitable Exchange Schemes Card -->
             <div class="glass-card p-4 sm:p-6 animate-fade-in-up transition-all duration-500 hover:border-white/20">
-                <div class="flex flex-wrap items-center justify-between gap-3 mb-5 sm:mb-6 border-b border-white/5 pb-3">
+                <div class="flex items-center justify-between gap-3 mb-4 sm:mb-6 border-b border-white/5 pb-3">
                     <div class="flex items-center gap-3 min-w-0">
-                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white shadow-md shadow-emerald-500/20 flex-shrink-0">
+                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white shadow-md shadow-emerald-500/20 shrink-0">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 0 0-3.7-3.7 48.656 48.656 0 0 0-7.324 0 4.006 4.006 0 0 0-3.7 3.7C4.547 9.547 4.5 10.768 4.5 12s.047 2.453.138 3.662a4.006 4.006 0 0 0 3.7 3.7 48.656 48.656 0 0 0 7.324 0 4.006 4.006 0 0 0 3.7-3.7C19.453 14.453 19.5 13.232 19.5 12Zm0 0h.008v.008h-.008V12Zm-3 0h.008v.008h-.008V12c0-1.68-.282-3.297-.802-4.806m-9.396 0A20.732 20.732 0 0 1 12 6.75c1.455 0 2.843.15 4.198.437M12 6.75a20.733 20.733 0 0 0-4.198.437m0 0A20.73 20.73 0 0 0 7 12c0 1.68.282 3.297.802 4.806m9.396 0A20.73 20.73 0 0 1 12 17.25c-1.455 0-2.843-.15-4.198-.437M12 17.25a20.73 20.73 0 0 0 4.198-.437" />
                             </svg>
                         </div>
-                        <div class="flex flex-col">
-                            <h2 class="text-base sm:text-lg font-semibold text-white">{{ t('market.schemes') }}</h2>
-                            <span class="text-xs text-white/40">{{ t('market.schemes_hint') }}</span>
+                        <div class="flex flex-col min-w-0">
+                            <h2 class="text-base sm:text-lg font-semibold text-white truncate">{{ t('market.schemes') }}</h2>
+                            <span class="text-xs text-white/40 truncate">{{ t('market.schemes_hint') }}</span>
                         </div>
                     </div>
-                    <div class="pill-row gap-2 sm:gap-3 flex-shrink-0">
-                        <span class="badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs py-1 px-2.5 sm:px-3">
+                    <div class="flex items-center gap-2.5 sm:gap-4 shrink-0">
+                        <span class="badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs py-1 px-2.5 sm:px-3 whitespace-nowrap">
                             {{ t('market.schemes_found', { count: arbitrageLoops.length }) }}
                         </span>
                         <button @click="toggleArbitrageSchemes" :aria-label="t('market.schemes')" :aria-expanded="showArbitrageSchemes ? 'true' : 'false'" class="text-white/40 hover:text-white transition-colors duration-300">
@@ -462,69 +462,87 @@
                              class="p-3.5 sm:p-4 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/10 transition-all duration-300 flex flex-col gap-3.5 sm:gap-4">
 
                             <!-- Card Header (Type & Profit) -->
-                            <div class="flex items-center justify-between flex-wrap gap-2 border-b border-white/5 pb-2">
-                                <span class="badge text-[10px] font-semibold tracking-wider uppercase"
-                                      :class="scheme.type === '2-step' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-purple-500/10 text-purple-400 border border-purple-500/20'">
-                                    {{ t('market.loop_type', { type: scheme.type }) }}
-                                </span>
+                            <div class="flex items-center justify-between flex-wrap gap-2.5 border-b border-white/5 pb-2.5">
+                                <div class="flex items-center flex-wrap gap-2">
+                                    <span class="badge text-[10px] font-semibold tracking-wider uppercase"
+                                          :class="scheme.type === '2-step' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-purple-500/10 text-purple-400 border border-purple-500/20'">
+                                        {{ t('market.loop_type', { type: scheme.type }) }}
+                                    </span>
 
-                                <div class="flex items-center flex-wrap gap-2 sm:gap-3">
                                     <!-- Leftovers -->
-                                    <div v-if="scheme.leftovers && scheme.leftovers.length" class="flex items-center gap-1.5 sm:gap-2 text-xs text-blue-400">
-                                        <span class="text-white/30">{{ t('market.leftovers') }}</span>
-                                        <span v-for="leftover in scheme.leftovers" :key="leftover.item_id" class="flex items-center gap-1 text-white/70">
-                                            <img alt="" :src="getResourceIcon(leftover.item_id)" @error="handleIconError($event, leftover.item_id)" class="w-3.5 h-3.5 object-contain" />
+                                    <div v-if="scheme.leftovers && scheme.leftovers.length" class="flex items-center gap-1.5 text-xs text-blue-400 bg-blue-500/10 border border-blue-500/20 rounded-lg py-0.5 px-2">
+                                        <span class="text-white/40 text-[11px]">{{ t('market.leftovers') }}</span>
+                                        <span v-for="leftover in scheme.leftovers" :key="leftover.item_id" class="flex items-center gap-1 text-white/80 font-mono text-[11px]">
+                                            <img alt="" :src="getResourceIcon(leftover.item_id)" @error="handleIconError($event, leftover.item_id)" class="w-3.5 h-3.5 object-contain shrink-0" />
                                             +{{ formatVolume(leftover.amount) }}
                                         </span>
                                     </div>
-                                    <!-- Net Profit -->
-                                    <div class="flex items-center gap-1.5 sm:gap-2">
-                                        <span class="text-xs text-white/40">{{ t('market.net_profit') }}</span>
-                                        <div class="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg py-1 px-2">
-                                            <img :alt="getItemName(scheme.profit.item_name, scheme.profit.item_id)" :src="getResourceIcon(scheme.profit.item_id)" @error="handleIconError($event, scheme.profit.item_id)" class="w-4 h-4 object-contain" />
-                                            <span class="font-mono text-sm font-bold text-emerald-400">+{{ formatVolume(scheme.profit.amount) }}</span>
-                                            <span class="text-xs text-emerald-400/70 truncate max-w-[80px]">{{ getItemName(scheme.profit.item_name, scheme.profit.item_id) }}</span>
-                                        </div>
+                                </div>
+
+                                <!-- Net Profit -->
+                                <div class="flex items-center gap-1.5 sm:gap-2 ml-auto">
+                                    <span class="text-xs text-white/40 hidden xs:inline">{{ t('market.net_profit') }}</span>
+                                    <div class="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg py-1 px-2">
+                                        <img :alt="getItemName(scheme.profit.item_name, scheme.profit.item_id)" :src="getResourceIcon(scheme.profit.item_id)" @error="handleIconError($event, scheme.profit.item_id)" class="w-4 h-4 object-contain shrink-0" />
+                                        <span class="font-mono text-sm font-bold text-emerald-400 shrink-0">+{{ formatVolume(scheme.profit.amount) }}</span>
+                                        <span class="text-xs text-emerald-400/80 truncate max-w-[90px] xs:max-w-[130px] sm:max-w-[180px]" :title="getItemName(scheme.profit.item_name, scheme.profit.item_id)">
+                                            {{ getItemName(scheme.profit.item_name, scheme.profit.item_id) }}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Steps flowchart -->
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 items-center">
+                            <div class="flex flex-col lg:flex-row lg:items-stretch gap-2.5 sm:gap-3">
                                 <template v-for="(step, sIdx) in scheme.steps" :key="sIdx">
-                                    <div class="flex items-center gap-3">
-                                        <div class="flex-1 p-3 rounded-lg bg-white/[0.02] border border-white/5 relative">
-                                            <div class="text-[10px] uppercase font-bold text-white/30 mb-2">{{ t('market.step_num', { step: sIdx + 1 }) }}</div>
+                                    <!-- Step Card -->
+                                    <div class="flex-1 min-w-0 p-3 sm:p-3.5 rounded-lg bg-white/[0.02] border border-white/5 hover:border-white/10 hover:bg-white/[0.04] transition-all flex flex-col justify-between gap-2.5">
+                                        <!-- Step header -->
+                                        <div class="flex items-center justify-between gap-2 border-b border-white/[0.04] pb-2">
+                                            <span class="text-[10px] uppercase font-bold text-emerald-400/80 tracking-wider bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+                                                {{ t('market.step_num', { step: sIdx + 1 }) }}
+                                            </span>
+                                            <div class="text-[11px] text-white/40 flex items-center gap-1 min-w-0 truncate" :title="step.sender">
+                                                <span class="shrink-0">{{ t('market.by') }}</span>
+                                                <strong class="text-white/85 font-medium truncate">{{ step.sender }}</strong>
+                                            </div>
+                                        </div>
 
-                                            <div class="flex flex-col gap-1.5">
-                                                <div class="flex items-center gap-1.5 text-xs">
-                                                    <span class="text-white/40 w-8">{{ t('market.give') }}</span>
-                                                    <img alt="" :src="getResourceIcon(step.give_item)" @error="handleIconError($event, step.give_item)" class="w-4.5 h-4.5 object-contain" />
-                                                    <span class="font-mono font-semibold text-white/90">{{ formatVolume(step.give_per_lot) }}</span>
-                                                    <span class="text-[10px] text-white/30">(total: {{ formatVolume(step.give_amount) }})</span>
+                                        <!-- Step body -->
+                                        <div class="flex flex-col gap-2 bg-black/20 rounded-md p-2.5 border border-white/[0.03]">
+                                            <div class="flex items-center justify-between gap-2 text-xs">
+                                                <span class="text-white/40 text-[11px] font-medium shrink-0">{{ t('market.give') }}</span>
+                                                <div class="flex items-center gap-1.5 min-w-0 flex-wrap justify-end">
+                                                    <img :alt="getItemName(step.give_name, step.give_item)" :src="getResourceIcon(step.give_item)" @error="handleIconError($event, step.give_item)" class="w-4 h-4 object-contain shrink-0" />
+                                                    <span class="font-mono font-semibold text-white/90 shrink-0">{{ formatVolume(step.give_per_lot) }}</span>
+                                                    <span class="text-[10px] text-white/35 shrink-0 whitespace-nowrap">({{ formatVolume(step.give_amount) }})</span>
                                                 </div>
-                                                <div class="flex items-center gap-1.5 text-xs">
-                                                    <span class="text-white/40 w-8">{{ t('market.get') }}</span>
-                                                    <img alt="" :src="getResourceIcon(step.receive_item)" @error="handleIconError($event, step.receive_item)" class="w-4.5 h-4.5 object-contain" />
-                                                    <span class="font-mono font-semibold text-emerald-400">{{ formatVolume(step.receive_per_lot) }}</span>
-                                                    <span class="text-[10px] text-emerald-400/40">(total: {{ formatVolume(step.receive_amount) }})</span>
-                                                </div>
-                                                <div class="text-[10px] text-white/30 mt-1 border-t border-white/5 pt-1 flex justify-between">
-                                                    <span>{{ t('market.lots') }} <strong class="text-white/80">{{ step.lots }}</strong></span>
-                                                    <span class="truncate max-w-[100px]" :title="step.sender">{{ t('market.by') }} <strong class="text-white/85">{{ step.sender }}</strong></span>
+                                            </div>
+                                            <div class="flex items-center justify-between gap-2 text-xs">
+                                                <span class="text-white/40 text-[11px] font-medium shrink-0">{{ t('market.get') }}</span>
+                                                <div class="flex items-center gap-1.5 min-w-0 flex-wrap justify-end">
+                                                    <img :alt="getItemName(step.receive_name, step.receive_item)" :src="getResourceIcon(step.receive_item)" @error="handleIconError($event, step.receive_item)" class="w-4 h-4 object-contain shrink-0" />
+                                                    <span class="font-mono font-semibold text-emerald-400 shrink-0">{{ formatVolume(step.receive_per_lot) }}</span>
+                                                    <span class="text-[10px] text-emerald-400/50 shrink-0 whitespace-nowrap">({{ formatVolume(step.receive_amount) }})</span>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <div v-if="sIdx < scheme.steps.length - 1" class="hidden md:flex text-white/20">
-                                            <svg class="w-5 h-5 animate-pulse" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-                                            </svg>
+                                        <!-- Step footer -->
+                                        <div class="text-[11px] text-white/40 flex items-center justify-between gap-2 pt-0.5">
+                                            <span class="shrink-0">{{ t('market.lots') }} <strong class="text-white/85 font-mono">{{ step.lots }}</strong></span>
+                                            <span class="text-[10px] text-white/35 truncate max-w-[160px]" :title="getItemName(step.give_name, step.give_item) + ' → ' + getItemName(step.receive_name, step.receive_item)">
+                                                {{ getItemName(step.give_name, step.give_item) }} → {{ getItemName(step.receive_name, step.receive_item) }}
+                                            </span>
                                         </div>
                                     </div>
-                                    <!-- Mobile down arrow between steps -->
-                                    <div v-if="sIdx < scheme.steps.length - 1" class="flex md:hidden justify-center text-white/20 my-0.5">
-                                        <svg class="w-4 h-4 animate-pulse" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+
+                                    <!-- Arrow between steps -->
+                                    <div v-if="sIdx < scheme.steps.length - 1" class="flex items-center justify-center shrink-0 text-white/25 py-1 lg:py-0 lg:px-1">
+                                        <svg class="w-5 h-5 hidden lg:block animate-pulse" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                                        </svg>
+                                        <svg class="w-4 h-4 lg:hidden animate-pulse" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                                         </svg>
                                     </div>
@@ -572,14 +590,14 @@
                             </template>
                             <template #cell-item_name="{ row }">
                                 <div class="flex items-center gap-1.5 justify-end sm:justify-start">
-                                    <img :alt="getItemName(row.item_name, row.item_id)" :src="getResourceIcon(row.item_id)" @error="handleIconError($event, row.item_id)" class="w-4.5 h-4.5 sm:w-5 sm:h-5 object-contain flex-shrink-0" />
+                                    <img :alt="getItemName(row.item_name, row.item_id)" :src="getResourceIcon(row.item_id)" @error="handleIconError($event, row.item_id)" class="w-4 h-4 sm:w-5 sm:h-5 object-contain flex-shrink-0" />
                                     <span class="font-mono text-white/90 font-semibold whitespace-nowrap">{{ formatVolume(row.amount) }}</span>
                                     <span class="text-[11px] sm:text-xs text-white/40 truncate max-w-[75px] xs:max-w-[85px] sm:max-w-[100px]">{{ getItemName(row.item_name, row.item_id) }}</span>
                                 </div>
                             </template>
                             <template #cell-target_item_name="{ row }">
                                 <div class="flex items-center gap-1.5 justify-end sm:justify-start">
-                                    <img :alt="getItemName(row.target_item_name, row.target_item_id)" :src="getResourceIcon(row.target_item_id)" @error="handleIconError($event, row.target_item_id)" class="w-4.5 h-4.5 sm:w-5 sm:h-5 object-contain flex-shrink-0" />
+                                    <img :alt="getItemName(row.target_item_name, row.target_item_id)" :src="getResourceIcon(row.target_item_id)" @error="handleIconError($event, row.target_item_id)" class="w-4 h-4 sm:w-5 sm:h-5 object-contain flex-shrink-0" />
                                     <span class="font-mono text-white/90 font-semibold whitespace-nowrap">{{ formatVolume(row.target_amount) }}</span>
                                     <span class="text-[11px] sm:text-xs text-white/40 truncate max-w-[75px] xs:max-w-[85px] sm:max-w-[100px]">{{ getItemName(row.target_item_name, row.target_item_id) }}</span>
                                 </div>
