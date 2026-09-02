@@ -64,41 +64,82 @@
         <!-- Selection Card (Dropdowns or Visual Grid) -->
         <div class="glass-card p-4 sm:p-6 relative transition-all duration-500 hover:border-white/20">
             <loading-overlay :show="loading || loadingPairs" :label="loadingPairs ? t('market.loading_pairs') : t('common.loading_data')" />
-            <!-- Selector Header: Mode Switch & Mirror Button -->
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-5 sm:mb-6 border-b border-white/5 pb-4">
-                <div class="flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto">
-                    <span class="text-xs font-semibold text-white/40 uppercase tracking-wider">{{ t('market.selection_mode') }}</span>
-                    <div class="flex items-center gap-1 bg-white/5 border border-white/10 p-0.5 rounded-lg">
-                        <button @click="selectionMode = 'dropdown'"
-                                class="px-2.5 sm:px-3 py-1 rounded text-[10px] font-bold uppercase transition-all duration-300"
-                                :class="selectionMode === 'dropdown' ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/20' : 'text-white/50 hover:text-white'">
-                            {{ t('market.dropdowns') }}
-                        </button>
-                        <button @click="selectionMode = 'visual'"
-                                class="px-2.5 sm:px-3 py-1 rounded text-[10px] font-bold uppercase transition-all duration-300"
-                                :class="selectionMode === 'visual' ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/20' : 'text-white/50 hover:text-white'">
-                            {{ t('market.visual_browser') }}
+            <!-- Selector Header: Left Filters & Right Stacked Search + Actions -->
+            <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4 mb-5 sm:mb-6 border-b border-white/5 pb-4">
+                <!-- Left: Selection Mode & Kind Filters -->
+                <div class="flex flex-col gap-2.5">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-xs font-semibold text-white/40 uppercase tracking-wider shrink-0">{{ t('market.selection_mode') }}</span>
+                        <div class="flex items-center gap-1 bg-white/5 border border-white/10 p-0.5 rounded-lg shrink-0">
+                            <button @click="selectionMode = 'dropdown'"
+                                    class="px-2.5 sm:px-3 py-1 rounded text-[10px] font-bold uppercase transition-all duration-300"
+                                    :class="selectionMode === 'dropdown' ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/20' : 'text-white/50 hover:text-white'">
+                                {{ t('market.dropdowns') }}
+                            </button>
+                            <button @click="selectionMode = 'visual'"
+                                    class="px-2.5 sm:px-3 py-1 rounded text-[10px] font-bold uppercase transition-all duration-300"
+                                    :class="selectionMode === 'visual' ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/20' : 'text-white/50 hover:text-white'">
+                                {{ t('market.visual_browser') }}
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-0.5 bg-white/5 border border-white/10 p-0.5 rounded-lg w-fit flex-wrap">
+                        <button v-for="k in ['all', 'resource', 'buff', 'adventure', 'building']" :key="'kind-' + k"
+                                @click="selectedKind = k"
+                                class="px-2 sm:px-2.5 py-0.5 rounded text-[9px] sm:text-[10px] font-bold uppercase transition-all"
+                                :class="selectedKind === k ? 'bg-indigo-600 text-white' : 'text-white/50 hover:text-white'">
+                            {{ k === 'all' ? 'All' : (k === 'resource' ? 'Res' : (k === 'buff' ? 'Buff' : (k === 'adventure' ? 'ADV' : 'BLD'))) }}
                         </button>
                     </div>
                 </div>
 
-                <!-- Reset Selection / Mirror / Copy Link Button -->
-                <div v-if="selectedItem || selectedTarget" class="flex flex-wrap items-center gap-1.5 sm:gap-2 w-full sm:w-auto">
-                    <button @click="resetSelection" class="btn-secondary py-1.5 px-2.5 sm:px-3 text-xs bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-300">
-                        {{ t('market.reset_selection') }}
-                    </button>
-                    <button v-if="selectedItem && selectedTarget" @click="mirrorSelection" class="btn-secondary py-1.5 px-2.5 sm:px-3 text-xs bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-300 flex items-center gap-1">
-                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
-                        </svg>
-                        <span>{{ t('market.mirror_trade') }}</span>
-                    </button>
-                    <button v-if="selectedItem && selectedTarget" @click="copyPairLink" class="btn-secondary py-1.5 px-2.5 sm:px-3 text-xs bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-300 flex items-center gap-1">
-                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
-                        </svg>
-                        <span>{{ t('market.copy_link') }}</span>
-                    </button>
+                <!-- Right: Search Input (Top) and Actions (Directly Underneath) -->
+                <div class="flex flex-col items-stretch sm:items-end gap-2 shrink-0 w-full sm:w-auto">
+                    <!-- Search Box (Top Right) -->
+                    <div class="relative w-full sm:w-48 lg:w-56">
+                        <input v-model="searchQuery"
+                               type="text"
+                               :placeholder="t('common.search') || 'Поиск...'"
+                               class="w-full bg-white/5 border border-white/10 focus:border-emerald-500/50 focus:bg-white/10 focus:ring-1 focus:ring-emerald-500/30 text-white placeholder-white/30 text-xs rounded-lg pl-7 pr-7 py-1.5 transition-all outline-none" />
+                        <div class="absolute inset-y-0 left-2 flex items-center pointer-events-none text-white/30">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                            </svg>
+                        </div>
+                        <button v-if="searchQuery" @click="searchQuery = ''" class="absolute inset-y-0 right-2 flex items-center text-white/40 hover:text-white">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Action Buttons (Under Search Box, icons only <= 1440px, text on > 1440px) -->
+                    <div class="flex items-center gap-1.5 flex-wrap justify-start sm:justify-end">
+                        <button v-if="selectedItem && selectedTarget" @click="mirrorSelection"
+                                :title="t('market.mirror_trade')"
+                                class="btn-secondary py-1 px-2 sm:px-2.5 text-xs bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all flex items-center gap-1 shrink-0">
+                            <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+                            </svg>
+                            <span class="hidden min-[1441px]:inline">{{ t('market.mirror_trade') }}</span>
+                        </button>
+                        <button v-if="selectedItem && selectedTarget" @click="copyPairLink"
+                                :title="t('market.copy_link')"
+                                class="btn-secondary py-1 px-2 sm:px-2.5 text-xs bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all flex items-center gap-1 shrink-0">
+                            <svg class="w-3.5 h-3.5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
+                            </svg>
+                            <span class="hidden min-[1441px]:inline">{{ t('market.copy_link') }}</span>
+                        </button>
+                        <button v-if="selectedItem || selectedTarget" @click="resetSelection"
+                                :title="t('market.reset_selection')"
+                                class="btn-secondary py-1 px-2 sm:px-2.5 text-xs bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition-all flex items-center gap-1 shrink-0">
+                            <svg class="w-3 h-3 text-red-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                            </svg>
+                            <span class="hidden min-[1441px]:inline">{{ t('market.reset_selection') }}</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -111,7 +152,7 @@
                         <div class="relative">
                             <select v-model="selectedItem" @change="onItemChange" :aria-label="t('market.selling_item')" class="glass-select w-full transition-all duration-300">
                                 <option value="" class="bg-dark-900">{{ t('market.select_selling') }}</option>
-                                <option v-for="good in goods" :key="good.item_id" :value="good.item_id" class="bg-dark-900">
+                                <option v-for="good in filteredGoods" :key="good.item_id" :value="good.item_id" class="bg-dark-900">
                                     {{ getItemName(good.item_name, good.item_id) }} ({{ good.item_id }})
                                 </option>
                             </select>
@@ -129,7 +170,7 @@
                         <div class="relative">
                             <select v-model="selectedTarget" :disabled="!selectedItem" @change="fetchAnalytics" :aria-label="t('market.target_item')" class="glass-select w-full disabled:opacity-40 transition-all duration-300">
                                 <option value="" class="bg-dark-900">{{ t('market.select_target') }}</option>
-                                <option v-for="target in targets" :key="target.target_item_id" :value="target.target_item_id" class="bg-dark-900">
+                                <option v-for="target in filteredTargets" :key="target.target_item_id" :value="target.target_item_id" class="bg-dark-900">
                                     {{ getItemName(target.target_item_name, target.target_item_id) }} ({{ target.target_item_id }})
                                 </option>
                             </select>
@@ -146,7 +187,7 @@
                 <div v-else key="visual" class="space-y-4 sm:space-y-6">
                     <!-- Tab Navigation for Visual steps -->
                     <div class="grid grid-cols-2 gap-2 border-b border-white/10 pb-0 sm:flex sm:items-center sm:gap-6">
-                        <button @click="visualTab = 1"
+                        <button @click="switchVisualTab(1)"
                                 class="flex flex-col sm:flex-row items-center justify-center sm:justify-start pb-2 sm:pb-3 text-[11px] sm:text-xs font-bold uppercase tracking-tight sm:tracking-wider transition-all duration-300 border-b-2 min-w-0 w-full sm:w-auto"
                                 :class="visualTab === 1 ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-white/40 hover:text-white'">
                             <span class="truncate max-w-full sm:max-w-none whitespace-nowrap">{{ t('market.sell_resource') }}</span>
@@ -154,7 +195,7 @@
                                 ({{ selectedItemName }})
                             </span>
                         </button>
-                        <button @click="visualTab = 2"
+                        <button @click="switchVisualTab(2)"
                                 :disabled="!selectedItem"
                                 class="flex flex-col sm:flex-row items-center justify-center sm:justify-start pb-2 sm:pb-3 text-[11px] sm:text-xs font-bold uppercase tracking-tight sm:tracking-wider transition-all duration-300 border-b-2 disabled:opacity-30 disabled:cursor-not-allowed min-w-0 w-full sm:w-auto"
                                 :class="visualTab === 2 ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-white/40 hover:text-white'">
@@ -168,32 +209,32 @@
                     <!-- Step 1: Selling resource grid -->
                     <transition name="smooth-fade" mode="out-in">
                         <div v-if="visualTab === 1" key="step1" class="grid grid-cols-3 xs:grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-1.5 sm:gap-2 max-h-60 overflow-y-auto p-1 scrollbar-thin">
-                            <div v-for="good in allGoods" :key="good.item_id"
+                            <div v-for="good in filteredGoods" :key="good.item_id"
                                  @click="selectVisualItem(good.item_id)"
                                  class="flex flex-col items-center justify-center p-1 sm:p-1.5 rounded-lg border cursor-pointer hover:border-emerald-500/40 hover:bg-white/[0.05] hover:shadow-md hover:shadow-emerald-500/5 text-center select-none transition-all duration-300 ease-out transform hover:-translate-y-0.5"
                                  :class="selectedItem === good.item_id ? 'bg-emerald-500/10 border-emerald-500 shadow-lg shadow-emerald-500/10 scale-[1.02]' : 'bg-white/[0.02] border-white/5 hover:border-emerald-500/30 hover:bg-white/[0.05] hover:shadow-md'"
                                  :style="good.no_offers ? 'opacity:0.4' : ''"
                                  :title="good.no_offers ? t('market.no_offers') : getItemName(good.item_name, good.item_id)">
-                                <img :alt="getItemName(good.item_name, good.item_id)" :src="getResourceIcon(good.item_id)" @error="handleIconError($event, good.item_id)" class="w-5 h-5 sm:w-6 sm:h-6 object-contain mb-1 pointer-events-none transition-transform duration-300 group-hover:scale-110" />
+                                <img :alt="getItemName(good.item_name, good.item_id)" :src="getResourceIcon(good.item_id, good.kind)" @error="handleIconError($event, good.item_id, good.kind)" class="w-5 h-5 sm:w-6 sm:h-6 object-contain mb-1 pointer-events-none transition-transform duration-300 group-hover:scale-110" />
                                 <span class="text-[8px] sm:text-[9px] font-medium text-white/90 truncate w-full text-center" :title="getItemName(good.item_name, good.item_id)">{{ getItemName(good.item_name, good.item_id) }}</span>
                             </div>
-                            <div v-if="allGoods.length === 0 && !loading" class="col-span-full py-8 text-center text-xs text-white/30">
-                                {{ t('market.no_resources_db') }}
+                            <div v-if="filteredGoods.length === 0 && !loading" class="col-span-full py-8 text-center text-xs text-white/30">
+                                {{ searchQuery ? (t('common.no_results') || 'Ничего не найдено') : t('market.no_resources_db') }}
                             </div>
                         </div>
 
                         <!-- Step 2: Buying target resource grid -->
                         <div v-else-if="visualTab === 2" key="step2" class="grid grid-cols-3 xs:grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-1.5 sm:gap-2 max-h-60 overflow-y-auto p-1 scrollbar-thin">
-                            <div v-for="target in targets" :key="target.target_item_id"
+                            <div v-for="target in filteredTargets" :key="target.target_item_id"
                                  @click="selectVisualTarget(target.target_item_id)"
                                  class="flex flex-col items-center justify-center p-1 sm:p-1.5 rounded-lg border cursor-pointer hover:border-emerald-500/40 hover:bg-white/[0.05] hover:shadow-md hover:shadow-emerald-500/5 text-center select-none transition-all duration-300 ease-out transform hover:-translate-y-0.5"
                                  :class="selectedTarget === target.target_item_id ? 'bg-emerald-500/10 border-emerald-500 shadow-lg shadow-emerald-500/10 scale-[1.02]' : 'bg-white/[0.02] border-white/5 hover:border-emerald-500/30 hover:bg-white/[0.05] hover:shadow-md'"
                                  :title="getItemName(target.target_item_name, target.target_item_id)">
-                                <img :alt="getItemName(target.target_item_name, target.target_item_id)" :src="getResourceIcon(target.target_item_id)" @error="handleIconError($event, target.target_item_id)" class="w-5 h-5 sm:w-6 sm:h-6 object-contain mb-1 pointer-events-none transition-transform duration-300 group-hover:scale-110" />
+                                <img :alt="getItemName(target.target_item_name, target.target_item_id)" :src="getResourceIcon(target.target_item_id, target.kind)" @error="handleIconError($event, target.target_item_id, target.kind)" class="w-5 h-5 sm:w-6 sm:h-6 object-contain mb-1 pointer-events-none transition-transform duration-300 group-hover:scale-110" />
                                 <span class="text-[8px] sm:text-[9px] font-medium text-white/90 truncate w-full text-center" :title="getItemName(target.target_item_name, target.target_item_id)">{{ getItemName(target.target_item_name, target.target_item_id) }}</span>
                             </div>
-                            <div v-if="targets.length === 0 && !loadingPairs" class="col-span-full py-8 text-center text-xs text-white/30">
-                                {{ t('market.select_selling_first') }}
+                            <div v-if="filteredTargets.length === 0 && !loadingPairs" class="col-span-full py-8 text-center text-xs text-white/30">
+                                {{ selectedItem ? (targets.length === 0 ? t('market.opposite_trade_not_found') : (t('common.no_results') || 'Ничего не найдено')) : t('market.select_selling_first') }}
                             </div>
                         </div>
                     </transition>
@@ -406,7 +447,7 @@
                         <market-data-table :columns="popularColumns" :rows="popular" :empty-text="t('market.no_data_sync')">
                             <template #cell-item_name="{ row }">
                                 <div class="flex items-center gap-2">
-                                    <img :alt="getItemName(row.item_name, row.item_id)" :src="getResourceIcon(row.item_id)" @error="handleIconError($event, row.item_id)" class="w-5 h-5 object-contain flex-shrink-0" />
+                                    <img :alt="getItemName(row.item_name, row.item_id)" :src="getResourceIcon(row.item_id, row.kind)" @error="handleIconError($event, row.item_id, row.kind)" class="w-5 h-5 object-contain flex-shrink-0" />
                                     <span class="font-semibold text-white truncate">{{ getItemName(row.item_name, row.item_id) }}</span>
                                 </div>
                             </template>
@@ -590,20 +631,30 @@
                             </template>
                             <template #cell-item_name="{ row }">
                                 <div class="flex items-center gap-1.5 justify-end sm:justify-start">
-                                    <img :alt="getItemName(row.item_name, row.item_id)" :src="getResourceIcon(row.item_id)" @error="handleIconError($event, row.item_id)" class="w-4 h-4 sm:w-5 sm:h-5 object-contain flex-shrink-0" />
+                                    <img :alt="getItemName(row.item_name, row.item_id)" :src="getResourceIcon(row.item_id, row.item_kind)" @error="handleIconError($event, row.item_id, row.item_kind)" class="w-4 h-4 sm:w-5 sm:h-5 object-contain flex-shrink-0" />
                                     <span class="font-mono text-white/90 font-semibold whitespace-nowrap">{{ formatVolume(row.amount) }}</span>
                                     <span class="text-[11px] sm:text-xs text-white/40 truncate max-w-[75px] xs:max-w-[85px] sm:max-w-[100px]">{{ getItemName(row.item_name, row.item_id) }}</span>
+                                    <span v-if="row.item_kind && row.item_kind !== 'resource'" class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider" :class="getKindBadgeClass(row.item_kind)">
+                                        {{ getKindLabel(row.item_kind) }}
+                                    </span>
                                 </div>
                             </template>
                             <template #cell-target_item_name="{ row }">
                                 <div class="flex items-center gap-1.5 justify-end sm:justify-start">
-                                    <img :alt="getItemName(row.target_item_name, row.target_item_id)" :src="getResourceIcon(row.target_item_id)" @error="handleIconError($event, row.target_item_id)" class="w-4 h-4 sm:w-5 sm:h-5 object-contain flex-shrink-0" />
-                                    <span class="font-mono text-white/90 font-semibold whitespace-nowrap">{{ formatVolume(row.target_amount) }}</span>
-                                    <span class="text-[11px] sm:text-xs text-white/40 truncate max-w-[75px] xs:max-w-[85px] sm:max-w-[100px]">{{ getItemName(row.target_item_name, row.target_item_id) }}</span>
+                                    <template v-if="row.target_item_id">
+                                        <img :alt="getItemName(row.target_item_name, row.target_item_id)" :src="getResourceIcon(row.target_item_id, row.target_item_kind)" @error="handleIconError($event, row.target_item_id, row.target_item_kind)" class="w-4 h-4 sm:w-5 sm:h-5 object-contain flex-shrink-0" />
+                                        <span class="font-mono text-white/90 font-semibold whitespace-nowrap">{{ formatVolume(row.target_amount) }}</span>
+                                        <span class="text-[11px] sm:text-xs text-white/40 truncate max-w-[75px] xs:max-w-[85px] sm:max-w-[100px]">{{ getItemName(row.target_item_name, row.target_item_id) }}</span>
+                                        <span v-if="row.target_item_kind && row.target_item_kind !== 'resource'" class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider" :class="getKindBadgeClass(row.target_item_kind)">
+                                            {{ getKindLabel(row.target_item_kind) }}
+                                        </span>
+                                    </template>
+                                    <span v-else class="text-xs text-white/30 italic">—</span>
                                 </div>
                             </template>
                             <template #cell-price="{ row }">
-                                <span class="text-emerald-400 font-mono font-medium">{{ row.price }}</span>
+                                <span v-if="row.price !== null && row.price !== undefined" class="text-emerald-400 font-mono font-medium">{{ row.price }}</span>
+                                <span v-else class="text-white/30 font-mono text-xs">—</span>
                             </template>
                             <template #cell-lots_remaining="{ row }">
                                 <span class="text-blue-400 font-mono">{{ row.lots_remaining }}</span>
@@ -733,13 +784,74 @@ const router = useRouter();
         // API lists & Translations
         const goods = ref([]);
         const targets = ref([]);
+        const selectedKind = ref('all');
+        const searchQuery = ref('');
+
+        const resolveItemKind = (item, idKey = 'item_id') => {
+            if (item.kind && item.kind !== 'resource') return item.kind;
+            const rawId = String(item[idKey] || '');
+            if (rawId.startsWith('adventure:')) return 'adventure';
+            if (rawId.startsWith('buff:')) return 'buff';
+            if (rawId.startsWith('building:')) return 'building';
+            return item.kind || 'resource';
+        };
+
+        const getKindBadgeClass = (kind) => {
+            switch (kind) {
+                case 'adventure': return 'bg-amber-500/20 text-amber-300 border border-amber-500/30';
+                case 'buff': return 'bg-purple-500/20 text-purple-300 border border-purple-500/30';
+                case 'building': return 'bg-blue-500/20 text-blue-300 border border-blue-500/30';
+                default: return 'bg-white/10 text-white/60';
+            }
+        };
+
+        const getKindLabel = (kind) => {
+            switch (kind) {
+                case 'adventure': return 'ADV';
+                case 'buff': return 'Buff';
+                case 'building': return 'BLD';
+                default: return kind;
+            }
+        };
 
         const allGoods = computed(() => {
             const known = new Set(goods.value.map(g => g.item_id));
             const extras = TRADABLE_RESOURCES
                 .filter(name => !known.has(name))
-                .map(name => ({ item_id: name, item_name: resourceName(name), no_offers: true }));
+                .map(name => ({ item_id: name, item_name: resourceName(name), kind: 'resource', no_offers: true }));
             return [...goods.value, ...extras];
+        });
+
+        const filteredGoods = computed(() => {
+            let list = allGoods.value;
+            if (selectedKind.value !== 'all') {
+                list = list.filter(g => resolveItemKind(g, 'item_id') === selectedKind.value);
+            }
+            const q = searchQuery.value.trim().toLowerCase();
+            if (q) {
+                list = list.filter(g => {
+                    const name = getItemName(g.item_name, g.item_id).toLowerCase();
+                    const id = String(g.item_id || '').toLowerCase();
+                    return name.includes(q) || id.includes(q);
+                });
+            }
+            return list;
+        });
+
+        const filteredTargets = computed(() => {
+            let list = targets.value;
+            if (selectedKind.value !== 'all') {
+                list = list.filter(t => resolveItemKind(t, 'target_item_id') === selectedKind.value);
+            }
+            const q = searchQuery.value.trim().toLowerCase();
+            if (q) {
+                list = list.filter(t => {
+                    const name = getItemName(t.target_item_name, t.target_item_id).toLowerCase();
+                    const id = String(t.target_item_id || '').toLowerCase();
+                    return name.includes(q) || id.includes(q);
+                });
+            }
+            return list;
         });
         const popular = ref([]);
         const history = ref([]);
@@ -983,12 +1095,12 @@ const router = useRouter();
             return val;
         };
 
-        // Resource icon lookup: resources first, then other.
-        const getResourceIcon = (itemId) =>
-            getGameImageUrl('resource', itemId || 'addresource');
+        // Resource icon lookup: buffs/adventures/buildings/resources first, then other.
+        const getResourceIcon = (itemId, kind = null) =>
+            getGameImageUrl(kind || 'resource', itemId || 'addresource');
 
-        const handleIconError = (event, itemId) =>
-            handleGameImageError(event, 'resource', itemId || 'addresource', '/images/resources/addresource.webp');
+        const handleIconError = (event, itemId, kind = null) =>
+            handleGameImageError(event, kind || 'resource', itemId || 'addresource', '/images/resources/addresource.webp');
 
         const formatTimeLeft = (seconds) => {
             if (seconds <= 0) return t('market.expired');
@@ -1207,8 +1319,15 @@ const router = useRouter();
         };
 
         // Visual Browser Handlers
+        const switchVisualTab = (tab) => {
+            if (tab === 2 && !selectedItem.value) return;
+            visualTab.value = tab;
+            searchQuery.value = '';
+        };
+
         const selectVisualItem = async (itemId) => {
             selectedItem.value = itemId;
+            searchQuery.value = '';
             await onItemChange();
             visualTab.value = 2;
         };
@@ -1229,6 +1348,7 @@ const router = useRouter();
             mirroredStats.value = null;
             mirroredHistory.value = null;
             visualTab.value = 1;
+            searchQuery.value = '';
             updateQueryParams();
         };
 
