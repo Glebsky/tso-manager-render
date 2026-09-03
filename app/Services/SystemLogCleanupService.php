@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\BotLog;
+use App\Models\MarketSyncLog;
 use App\Models\Setting;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -53,11 +54,12 @@ class SystemLogCleanupService
 
         $cutoffDate = $now->copy()->subDays($retentionDays);
 
-        $deletedCount = (int) BotLog::where('created_at', '<', $cutoffDate)->delete();
+        $deletedBotLogs = (int) BotLog::where('created_at', '<', $cutoffDate)->delete();
+        $deletedMarketLogs = (int) MarketSyncLog::where('created_at', '<', $cutoffDate)->delete();
 
         Setting::set('last_log_cleanup_at', $now->toIso8601String());
 
-        return $deletedCount;
+        return $deletedBotLogs + $deletedMarketLogs;
     }
 
     /**
@@ -66,6 +68,7 @@ class SystemLogCleanupService
     public function clearAllLogs(): void
     {
         BotLog::truncate();
+        MarketSyncLog::truncate();
     }
 
     /**
