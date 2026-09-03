@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 /*
  * DO NOT EDIT. Generated game translation catalog.
- * Source: en_lang.xml
+ * Source: localization_oasis_en.xml
  * Locale: en
- * Regenerate: php artisan tso:lang:import /path/to/en_lang.xml --locale=en
+ * Regenerate: php artisan tso:lang:import /path/to/localization_oasis_en.xml --locale=en
  */
 
 return [
@@ -42,6 +42,7 @@ return [
         'BarracksLevel7' => 'Have a level 7 barracks',
         'BattleHorseProd' => 'Have a battle horse production of at least 1,500 per 12h',
         'BattleHorseProd_updated' => 'Have a battle horse production of at least 1,200 per 12h',
+        'Birthday2018plus_CompleteLostExpeditionQuestline' => 'Preserve the legacy of Octavianus by completing all the quests of the Lost Expedition questline.',
         'Birthday2018plus_DonateBalloons1' => 'Gather or produce 3,000 balloons',
         'Birthday2018plus_DonateBalloons2' => 'Gather or produce 6,000 balloons',
         'Birthday2018plus_DonateBalloons3' => 'Gather or produce 9,000 balloons',
@@ -726,6 +727,7 @@ return [
         'BarracksLevel7' => 'First-Rate Barracks',
         'BattleHorseProd' => 'Master Breeder',
         'BattleHorseProd_updated' => 'Master Breeder',
+        'Birthday2018plus_CompleteLostExpeditionQuestline' => 'Veni, Vidi, Vici',
         'Birthday2018plus_DonateBalloons1' => 'Benefactor',
         'Birthday2018plus_DonateBalloons2' => 'Dedicated Benefactor',
         'Birthday2018plus_DonateBalloons3' => 'Marvellous Benefactor',
@@ -4004,6 +4006,7 @@ It will replace "{1}".',
         'BlackTree_Green' => 'Blacktree (green)',
         'BlackTree_Purple' => 'Blacktree (purple)',
         'BlackTree_Red' => 'Blacktree (red)',
+        'BlastingCartAid' => 'Blasting Cart',
         'BoatHouse' => 'Boat Residence',
         'Bonechurch' => 'Bone Church',
         'Bonechurch_Deco' => 'Bone Church',
@@ -4149,6 +4152,8 @@ It will replace "{1}".',
         'CollectibleScarecrowBuilding' => 'Scarecrow',
         'CollectibleWickerBasketBuilding' => 'Wicker Basket',
         'CollectibleWineBarrelBuilding' => 'Barrel',
+        'CommandCenter' => 'Command Centre',
+        'CommandCenterAid' => 'Watchpost',
         'Command_Camp_leader' => 'Siege Command Camp',
         'ConcertHall' => 'Concert Hall',
         'Construction' => 'Builder',
@@ -4359,6 +4364,7 @@ It will replace "{1}".',
         'Easter_Event_2015_Buff_Adventure_Building_Stinky_plant' => 'Stinky Plant',
         'Easter_Event_2015_Buff_Adventure_Frightened_chicken' => 'Frightened Chicken',
         'EfficientAdvancedToolmaker' => 'Efficient Advanced Toolmaker',
+        'EfficientCrossbowsmith' => 'Efficient Crossbowsmith',
         'EfficientPlatinumSmelter' => 'Efficient Platinum Smelter',
         'ElderTreeLH' => 'Elder Tree Lighthouse',
         'EliteBarracks' => 'Elite Barracks',
@@ -4658,6 +4664,7 @@ It will replace "{1}".',
         'Ornamentalsmith' => 'Ornamentalsmith',
         'Ostereierbaum' => 'Easter Egg Tree',
         'OutdoorCanteen' => 'Outdoor Canteen',
+        'OutdoorCanteenAid' => 'Cooking Supplies Wagon',
         'PalmTreeDeco01' => 'Palm Tree',
         'PalmTreeDeco02' => 'Palm Tree',
         'PalmTreeDeco03' => 'Palm Tree',
@@ -4755,6 +4762,7 @@ It will replace "{1}".',
         'SmallOrientalTower' => 'Arabian Tower',
         'SmallWatchtower' => 'Watchtower',
         'Smokehouse' => 'Smokehouse',
+        'Smokehouse_Mini' => 'Smokehouse Tribute',
         'SnackStand' => 'Snack Stand',
         'Snowglobe' => 'Giant Snow Globe',
         'Snowman_Deposit' => 'Snowman Decoration',
@@ -6041,16 +6049,12 @@ Effect Target: Quests (Excluding Adventures)',
         'AreaBuffIceSkatingLakeLvl1' => 'Buffs residences within range. Triggers island-wide effects based on the number of residences buffed:
 20 residences: Increases production speed by 25%
 25 residences: Increases production speed by 50%
-
 Duration: 12 hours
-
-Targets: Provision House, Rarity Provision House, Snack Stand, Harbor, Chocolateer, Lazaret, Blacktree, Lover\'s Statue, Balloon Market, Stone Depot, Toy Factory, Candy Factory, Siege Workshop, Artificer Study, Carnival Grounds, Romantic Restaurant, Bookbinder, Adventure Bookbinder, Oil Mill, Oil Refinery, Smokehouse, Stronghold, Laboratory, Coffee Shop, Jewel Crafter Workshop, Prospector Workshop, Witch Coven, Retirement Village, Wedding Chapel',
+Targets: Adventure Bookbinder, Artificer Study, Balloon Market, Blacktree, Bookbinder, Candy Factory, Carnival Grounds, Chocolateer, Coffee Shop, Command Centre, Fluffy Butte Logistics Office, Harbor, Jewel Crafter Workshop, Laboratory, Lazaret, Lover\'s Statue, Oil Mill, Oil Refinery, Prospector Workshop, Provision House, Rarity Provision House, Retirement Village, Romantic Restaurant, Siege Workshop, Smokehouse, Snack Stand, Stone Depot, Stronghold, Toy Factory, Wedding Chapel, Witch Coven',
         'AreaBuffIceSkatingLakeLvl2' => 'Increases production speed by 25%
-
-Targets: Provision House, Rarity Provision House, Snack Stand, Harbor, Chocolateer, Lazaret, Blacktree, Lover\'s Statue, Balloon Market, Stone Depot, Toy Factory, Candy Factory, Siege Workshop, Artificer Study, Carnival Grounds, Romantic Restaurant, Bookbinder, Adventure Bookbinder, Oil Mill, Oil Refinery, Smokehouse, Stronghold, Laboratory, Coffee Shop, Jewel Crafter Workshop, Prospector Workshop, Witch Coven, Retirement Village, Wedding Chapel',
+Targets: Adventure Bookbinder, Artificer Study, Balloon Market, Blacktree, Bookbinder, Candy Factory, Carnival Grounds, Chocolateer, Coffee Shop, Command Centre, Fluffy Butte Logistics Office, Harbor, Jewel Crafter Workshop, Laboratory, Lazaret, Lover\'s Statue, Oil Mill, Oil Refinery, Prospector Workshop, Provision House, Rarity Provision House, Retirement Village, Romantic Restaurant, Siege Workshop, Smokehouse, Snack Stand, Stone Depot, Stronghold, Toy Factory, Wedding Chapel, Witch Coven',
         'AreaBuffIceSkatingLakeLvl3' => 'Increases production speed by 50%
-
-Targets: Provision House, Rarity Provision House, Snack Stand, Harbor, Chocolateer, Lazaret, Blacktree, Lover\'s Statue, Balloon Market, Stone Depot, Toy Factory, Candy Factory, Siege Workshop, Artificer Study, Carnival Grounds, Romantic Restaurant, Bookbinder, Adventure Bookbinder, Oil Mill, Oil Refinery, Smokehouse, Stronghold, Laboratory, Coffee Shop, Jewel Crafter Workshop, Prospector Workshop, Witch Coven, Retirement Village, Wedding Chapel',
+Targets: Adventure Bookbinder, Artificer Study, Balloon Market, Blacktree, Bookbinder, Candy Factory, Carnival Grounds, Chocolateer, Coffee Shop, Command Centre, Fluffy Butte Logistics Office, Harbor, Jewel Crafter Workshop, Laboratory, Lazaret, Lover\'s Statue, Oil Mill, Oil Refinery, Prospector Workshop, Provision House, Rarity Provision House, Retirement Village, Romantic Restaurant, Siege Workshop, Smokehouse, Snack Stand, Stone Depot, Stronghold, Toy Factory, Wedding Chapel, Witch Coven',
         'AreaBuffLoveGardenLvl1' => 'Effect: Buffs residencies, triggering different effects based on the number of residencies buffed
 
 15 residencies: "Heart Lockets Level 1" population zone buff, increases population replenishment rate by 200%
@@ -6491,6 +6495,7 @@ Time home from an expedition island: 30 min',
         'BlackTree_Purple' => 'A tree as black as night. Once the pride and center of a witches\' dance, it mysteriously found its way onto your island. It looks like the tree is swallowing the light around it, in return emitting a diffuse purple light.',
         'BlackTree_Red' => 'A tree as black as night. Once the pride and center of a witches\' dance, it mysteriously found its way onto your island. It looks like the tree is swallowing the light around it, in return emitting a diffuse red light.',
         'BlacktreeExplorer' => 'Always brings back one of the Blacktree buffs from long, very long and prolonged treasure searches.',
+        'BlastingCartAid' => 'A decoration building that increases the Artificer Study and Stone Depot production speed.',
         'BlondeBowman' => 'A bowman with highly advanced skills.',
         'BoatHouse' => 'An old boat turned into a cozy residence. The rocking helps with falling asleep.',
         'BoldExplorer' => '+150% task speed
@@ -6679,6 +6684,10 @@ Duration: 7 days (10.5 days on friend/guild member)',
 Duration: 7 days (10.5 days on friend/guild member)',
         'ChangeColorScheme_tundra' => 'Zone Effect: Cold winds and overcast skies engulf your island!
 Duration: 7 days (10.5 days on friend/guild member)',
+        'ChangeDefaultSkin_Anniversary2026_MayorsHouse_perm' => 'Effect: Changes appearance to "Three Decades Legacy" Mayor\'s House
+Target: Mayor\'s House
+Duration: Permanent
+Reusable: Can be removed and reapplied at any time',
         'ChangeDefaultSkin_ArtMuseum_blue_permanent' => 'Effect: Changes appearance to "Blue"
 Target: Art Museum
 Duration: Permanent
@@ -6833,6 +6842,10 @@ Reusable: Can be removed and reapplied at any time',
 Target: Woodcutter
 Duration: Permanent
 Reusable: Can be removed and reapplied at any time',
+        'ChangeSkin_Anniversary2026_MayorsHouse_long' => 'Effect: Changes appearance to "Three Decades Legacy" Mayor\'s House
+Target: Mayor\'s House
+Duration: 15 days
+Reusable: No',
         'ChangeSkin_BuffAd_Beer' => 'This marvel of brew mastery should convince even the neighbouring bakery guild that grain used on this beverage is in no way wasted.
 
 This is a scenario buff, and is only usable within a certain scenario. It gets deleted when the scenario is no longer active.',
@@ -7191,6 +7204,27 @@ Makes enemy Dune Marksmen, Desert Marksmen and Mounted Bowmen always deal minimu
         'CombatPreview_Fail' => 'You will lose more than 95% of your units or may even be defeated.',
         'CombatPreview_Ok' => 'You will lose between 20% and 50% of your units.',
         'CombatPreview_Perfect' => 'You will lose 20% of your units at most.',
+        'CommandCenter' => 'Before every campaign, military leaders across the lands gather within these halls to devise clever strategies.',
+        'CommandCenterAid' => 'A decoration building that increases the Command Centre\'s production speed.',
+        'CommandCenterBuff1' => 'Target: Recruit, Enemy
+Effect:
+Recruits gain: +300% health, +40% chance of recovering troops
+All Player Units: -80% damage dealt
+Enemy Units: -100% accuracy
+All: Turn duration x2
+Type: Zone Buff
+Duration: 90 seconds',
+        'CommandCenterBuff2' => 'Target: Cannoneers, Defensive Units
+Effect:
+Cannoneers gain: Splash, +50% damage dealt, +10% accuracy
+Defensive Units: -20% health
+Type: Zone Buff
+Duration: 90 seconds',
+        'CommandCenterBuff3' => 'Target: Mounted Swordsmen
+Effect:
+Mounted Swordsmen gain: First Strike, Splash, and Last Strike
+Type: Zone Buff
+Duration: 90 seconds',
         'Command_Camp_leader' => 'A reinforced camp hosting the military leaders of this siege operation.',
         'ConcertHall' => 'Type: Culture
 Effect: Changes background music and activates zone buffs
@@ -7629,6 +7663,7 @@ Target: Epic Forge',
         'EffectBuff_pumpkinfield_02_resurrector' => 'Refills a depleted Common Pumpkin Cemetery with 10 pumpkins.',
         'EffectBuff_pumpkinfield_03_resurrector' => 'Refills a depleted Noble Pumpkin Cemetery with 10 pumpkins.',
         'EfficientAdvancedToolmaker' => 'An alternative engineering of the Advanced tool maker. Trades off a little bit of speed in exchange for resource economy.',
+        'EfficientCrossbowsmith' => 'An alternative engineering of the Crossbowsmith. Trades off a little bit of speed for a better resource economy.',
         'EfficientPlatinumSmelter' => 'An alternative engineering of the Platinum Smelter. Trades off a little bit of speed for resource economy.',
         'ElderTreeLH' => 'A very old tree that teems with magic. Legends say that it is as old as time itself and has the ability to find hidden treasures.',
         'EliteBarracks' => 'Can train elite military units.',
@@ -8633,6 +8668,7 @@ Duration: 2 hours',
         'LevelNewUpgradeChocolateDepot' => 'Increases storage capacity.',
         'LevelNewUpgradeChocolatier' => 'Unlocks a new buff production.',
         'LevelNewUpgradeCoffeeShop' => 'Unlocks a new buff',
+        'LevelNewUpgradeCommandCenter' => 'Unlocks an additional buff.',
         'LevelNewUpgradeDepositorium' => 'Increases storage capacity.',
         'LevelNewUpgradeEliteBarracks' => 'Increases recruiting speed.',
         'LevelNewUpgradeExpeditionWeaponSmith' => 'Increases production speed.',
@@ -9081,6 +9117,7 @@ Important Note:
         'NewUpgradeChocolateDepot' => 'Increases storage capacity.',
         'NewUpgradeChocolatier' => 'Unlocks a new buff production.',
         'NewUpgradeCoffeeShop' => 'Unlocks a new buff',
+        'NewUpgradeCommandCenter' => 'Unlocks an additional buff.',
         'NewUpgradeDepositorium' => 'Increases storage capacity.',
         'NewUpgradeEliteBarracks' => 'Increases recruiting speed by {0}%.',
         'NewUpgradeExpeditionWeaponSmith' => 'Increases production speed by 100% from base value each time you upgrade.',
@@ -9195,6 +9232,7 @@ Duration: 20 hours',
 Only affects explorers first sent while the buff is active, and includes those who return after the buff expires.
 Lasts for 48h.',
         'OutdoorCanteen' => 'Here your troops have the opportunity to fill their bellies with a delicious meal before setting out on adventures. You know what they say: "an army marches on its stomach".',
+        'OutdoorCanteenAid' => 'A decoration building that reduces the Outdoor Canteen\'s cooldown and increases the Smokehouse\'s production speed.',
         'PVEWeaponProductionWeek_DescItem_1' => 'All of your weapon producers (except the combat armoury) and metal smelters will work twice as fastw hile the event lasts!',
         'PVEWeaponProductionWeek_DescItem_2' => 'This event affects all buildings that produce the metals smelted for weapons and swords, horses, bows and firearms of all kind.',
         'PVEWeaponProductionWeek_Description' => 'The king has caught wind that a rival kingdom may be intending to attack soon, and has decreed that all islands under his rule should redouble their efforts on producing weapons.',
@@ -9518,18 +9556,18 @@ Duration: 8 hours (12 hours on friend/guild member)
 Note: This item will be replaced with "Fruits of Hardship" at a ratio of 2:1 after the Anniversary event ends.',
         'ProductivityBuffEW_Refinery' => 'An alchemical concoction powerful enough to fuel the furnaces of the Industrial Ore Refinery.',
         'ProductivityBuffGrandmasDinner' => 'Effect: Increases workyard production output by 100%.
-Duration: 72h
+Duration: 96 hours
 Target: Workyards',
-        'ProductivityBuffHalloween1' => 'Effect: +200% Production Output
-Target: Stone Mason, Marble Mason, Granite Mason
-Duration: 6 hours
+        'ProductivityBuffHalloween1' => 'Effect: +300% Production output and -66% Production input.
+Target: Mason, Marble Mason, Granite Pit
+Duration: 24 hours
 Base Production Time: 24 hours',
-        'ProductivityBuffHalloween2' => 'Effect: Turns Stone, Marble and Salpeter into Granite
+        'ProductivityBuffHalloween2' => 'Effect: Turns Stone, Marble, and Salpeter into Granite
 Target: Mayor\'s House
-Base Production Time: 24 hours',
-        'ProductivityBuffHalloween3' => 'Effect: +200% Production Rate 
+Base Production Time: 2 hours',
+        'ProductivityBuffHalloween3' => 'Effect: +200% Production output and -25% Production input.
 Target: Grout Factory
-Duration: 12 hours
+Duration: 48 hours
 Base Production Time: 24 hours',
         'ProductivityBuffJewelcrafter1' => 'Increases production output by 500%
 Duration: 48h
@@ -9641,6 +9679,9 @@ Duration: 6 hours (9 hours on friend/guild member)',
         'ProductivityBuffLvl300' => 'Effect: +100% output
 Target: Workyard
 Duration: 24 hours (36 hours on friend/guild member)',
+        'ProductivityBuffLvl31' => 'Effect: +600% output
+Duration: 24 hours
+Target: Workyards',
         'ProductivityBuffLvl4' => 'Effect: +200% output
 Target: Workyard
 Duration: 12 hours (18 hours on friend/guild member)',
@@ -9662,6 +9703,9 @@ Duration: 24 hours (36 hours on friend/guild member)',
         'ProductivityBuffLvlIronMine' => 'Effect: +300% output
 Target: Iron Mine
 Duration: 24 hours (36 hours on friend/guild member)',
+        'ProductivityBuffLvl_CommandCenterBoost' => 'Duration: 24 hours
+Effect: +2800% buff production speed
+Target: Command Centre',
         'ProductivityBuffToyFactoryBuff3' => 'Effect: +300% Production Output
 Target: Simple Papermill, Intermediate Papermill, Advanced Papermill
 Duration: 24 hours
@@ -10236,6 +10280,7 @@ Bonus is halved for elite units.',
 +90 Population. Upgrades will increase the population limit further',
         'SmallWatchtower' => 'Can house military units. Will guard a small area.',
         'Smokehouse' => 'A smokery in the style of the Nords. Smokes fish to produce a tasty buff.',
+        'Smokehouse_Mini' => 'This tribute honours the island\'s master smokers. Produces 1 Smoked Fish Steak every day.',
         'SnackStand' => 'Produces a variety of productivity buffs.',
         'Snowglobe' => 'This giant globe and its ever-swirling snow capture the Christmas spirit all year long. Everyone that comes close to it is filled with warm feelings of wonder and joy.',
         'SnowglobeBuff1' => '+300% output, +100% input required, 12x12 area. Duration: 4 hours',
@@ -10730,16 +10775,16 @@ Target: Rabbit Retreat
 Duration: 4 hours',
         'UI_CupidosArrow' => 'A set amount of random units in a camp will be defeated and removed.
 Defeats fewer units than “Rain of Arrows” but more than “Chocolate Covered Arrows”. Use on enemy camps is not limited.',
-        'UI_ProductivityBuffHalloween1' => 'Effect: +200% Production Output
-Target: Stone Mason, Marble Mason, Granite Mason
-Duration: 6 hours
+        'UI_ProductivityBuffHalloween1' => 'Effect: +300% Production output and -66% Production input.
+Target: Mason, Marble Mason, Granite Pit
+Duration: 24 hours
 Base Production Time: 24 hours',
-        'UI_ProductivityBuffHalloween2' => 'Effect: Turns Stone, Marble and Salpeter into Granite
+        'UI_ProductivityBuffHalloween2' => 'Effect: Turns Stone, Marble, and Salpeter into Granite
 Target: Mayor\'s House
-Base Production Time: 24 hours',
-        'UI_ProductivityBuffHalloween3' => 'Effect: +200% Production Rate 
+Base Production Time: 2 hours',
+        'UI_ProductivityBuffHalloween3' => 'Effect: +200% Production output and -25% Production input.
 Target: Grout Factory
-Duration: 12 hours
+Duration: 48 hours
 Base Production Time: 24 hours',
         'UI_SettlerDateLvl1' => 'Zone Effect: +300% population growth
 Target: Mayor\'s House, Village School, Spa, University, Education Tribute
@@ -13072,6 +13117,7 @@ and instantly complete for:',
         'ChangeColorScheme_spooky' => 'Friar\'s Lantern',
         'ChangeColorScheme_tropical' => 'Good Weather Charm',
         'ChangeColorScheme_tundra' => 'Colourful Cold',
+        'ChangeDefaultSkin_Anniversary2026_MayorsHouse_perm' => 'Skin: Mayor\'s House (Three Decades Legacy)',
         'ChangeDefaultSkin_ArtMuseum_blue_permanent' => 'Colour: Art Museum, Blue',
         'ChangeDefaultSkin_ChristmasBarracks_permanent' => 'Skin: Barracks (Christmas)',
         'ChangeDefaultSkin_ChristmasProvisionHouse_permanent' => 'Skin: Provision Houses (Christmas)',
@@ -13116,6 +13162,7 @@ and instantly complete for:',
         'ChangeDefaultSkin_mediterranean_mayourhouse_red_permanent' => 'Skin: Mayor´s House (Noble, Red)',
         'ChangeProduction' => 'Change Production',
         'ChangeSkin' => 'Change Building Skin',
+        'ChangeSkin_Anniversary2026_MayorsHouse_long' => '15-Day Skin: Mayor\'s House (Three Decades Legacy)',
         'ChangeSkin_BuffAd_Bridge_2' => 'Swamp Bridge',
         'ChangeSkin_ChristmasBarracks_short' => 'Barracks Christmas Decoration',
         'ChangeSkin_ChristmasBarracks_temp' => '5 Day Skin: Barracks (Christmas)',
@@ -13232,6 +13279,9 @@ and instantly complete for:',
         'CombatPreview_Ok' => 'Acceptable losses',
         'CombatPreview_Perfect' => 'Complete victory',
         'ComingSoon' => 'Coming soon',
+        'CommandCenterBuff1' => 'Tactic: Diversion',
+        'CommandCenterBuff2' => 'Tactic: Grapeshot',
+        'CommandCenterBuff3' => 'Tactic: Horseback Charge',
         'Commands' => 'Commands',
         'CompareAchievements' => 'Compare Achievements',
         'Complete' => 'Complete',
@@ -13307,7 +13357,7 @@ Nothing to refill.',
         'Donate' => 'Donate',
         'DonateResource' => 'Donate {0}',
         'DummyBuildingCollectibleObsidianShard' => 'Obsidian Shard',
-        'DuplicateBonus' => 'Duplicate Bonus',
+        'DuplicateBonus' => 'Speed Bonus',
         'DuplicatedBuildingsBonus' => 'Speed:',
         'DuplicatedBuildingsOnMap' => 'Buildings: {0}',
         'Duration' => 'Duration',
@@ -14092,7 +14142,9 @@ The Premium time will be added to your remaining Premium days.',
         'ProductivityBuffLvl25' => 'Mr. Croix Sant',
         'ProductivityBuffLvl26' => 'Strength Training',
         'ProductivityBuffLvl28' => 'Bucket of Sweets',
+        'ProductivityBuffLvl31' => 'Gourmet Truffle Stew',
         'ProductivityBuffLvlIronMine' => 'Iron Ore Extractor',
+        'ProductivityBuffLvl_CommandCenterBoost' => 'Decisive Action',
         'ProductivityBuffToyFactoryBuff3' => 'Leftover Wrapping Paper',
         'ProductivityBuffValentinesCard_01' => 'Valentine\'s Card No. 1',
         'ProductivityBuffValentinesCard_02' => 'Valentine\'s Card No. 2',
@@ -15130,6 +15182,7 @@ XP needed for next level: {1}',
         'AllWoodTreasureEvent_started' => 'Treasure Boost',
         'Anniversary2018plus_Content_Started' => 'Anniversary Event',
         'ArchitectureEvent_started' => 'Rare Buildings Sale',
+        'BalloonMarket_miniTTL' => 'Balloon Market Tribute',
         'BarracksWeek_started' => 'Barracks Week started',
         'BarrierErected' => 'Barrier Erected',
         'BeginnerShopEvent2_started' => 'Beginner Offers',
@@ -15176,6 +15229,9 @@ XP needed for next level: {1}',
         'CollectedSpottedMushroomInAdventure' => 'Spotted Mushroom',
         'CollectionReadyForPickup' => 'Production completed',
         'CombatLootBoxFromSkill' => 'Loot Collected',
+        'CommandCenterBuff1Applied' => 'Tactic: Diversion',
+        'CommandCenterBuff2Applied' => 'Tactic: Grapeshot',
+        'CommandCenterBuff3Applied' => 'Tactic: Horseback Charge',
         'ConcertFlyersDelivered' => 'Concert Flyers Distributed',
         'CrisisQuestEvent3_Started' => 'Crisis Quest 3',
         'CrisisQuestEvent4_started' => 'The Bandit\'s Counter-attack',
@@ -15433,6 +15489,7 @@ XP needed for next level: {1}',
         'ServerCallFailed' => 'Server Call Failed',
         'SettlersHistoryCollectionPromotion_started' => 'The Settlers History Collection',
         'SkillpointPickUp' => 'Book added',
+        'SmokeHouse_MiniTTL' => 'Smokehouse Tribute',
         'Soccer2018plus_Content_Started' => 'Football event',
         'Soccer2018plus_Shop_Started' => 'Football event',
         'SomethingCameThrough' => 'Something Came Through!',
@@ -15604,6 +15661,7 @@ XP needed for next level: {1}',
         'AvatarNameErrorInvalidFirstChar' => 'Invalid first character (Your username must begin with a letter.)',
         'AvatarNameErrorInvalidTooLong' => 'Name too long (Your player name must contain no more than 16 characters. Please enter a shorter name.)',
         'AvatarNameErrorInvalidTooShort' => 'Name too short (Your player name must contain at least 4 characters. Please enter a longer name.)',
+        'BalloonMarket_miniMSG' => 'Balloon shipment delivered',
         'BarracksWeek_started' => 'Barracks are currently operating more efficiently.',
         'BarrierErected' => 'You built a barrier to protect against further attacks.',
         'BeginnerShopEvent2_started' => 'The merchant is selling discounted blueprints and other valuable items.',
@@ -15656,6 +15714,9 @@ XP needed for next level: {1}',
         'CollectedSpottedMushroomInAdventure' => 'You collected 5 mushrooms from beneath the tree. They will be transferred to your home island.',
         'CollectionReadyForPickup' => 'Your collection is ready and can be picked up in the Mayor\'s house.',
         'CombatLootBoxFromSkill' => 'Your general returned with the spoils of the battle.',
+        'CommandCenterBuff1Applied' => 'Lead them astray!',
+        'CommandCenterBuff2Applied' => 'Fire at will!',
+        'CommandCenterBuff3Applied' => 'Trample them!',
         'ConcertFlyersDelivered' => 'The townsfolk are very interested in your flyers.',
         'CrisisQuestEvent3_Started' => 'A great evil looms over your island! Will you solve the crisis in time?',
         'CrisisQuestEvent4_started' => '"The Bandit\'s Counter-attack" crisis has started.',
@@ -15962,6 +16023,7 @@ The buff will increase the productivity of your building.',
         'SkinApplied_Ostereierbaum_blue_permanent' => 'Colour: Easter Egg Tree, Blue',
         'SkinApplied_Ostereierbaum_red_permanent' => 'Colour: Easter Egg Tree, Red',
         'SkinApplied_generic_message' => 'Building appearance changed',
+        'SmokeHouse_MiniMSG' => 'Steak has been served. Enjoy!',
         'Soccer2018plus_Content_Started' => 'The Football event has started!',
         'Soccer2018plus_Shop_Started' => 'Last chance to spend leftover footballs!',
         'SomethingCameThrough' => 'Something Came Through!',
@@ -16816,6 +16878,82 @@ There are rewards based on your personal contributions, and even more rewards to
         'Birthday2018plus_Infrastructure_62-80_Main9_Sub2' => 'Good job! Let’s get on to the next point in Dora’s letter.',
         'Birthday2018plus_Infrastructure_62-80_Main9_Sub3' => 'Good job! Let’s get on to the next point in Dora’s letter.',
         'Birthday2018plus_Infrastructure_62-80_Main9_Sub4' => 'Good job!',
+        'Birthday2018plus_LostExpedition_26-35_Following_Main' => 'Piece by piece, the expedition\'s route becomes clearer. The trail has not gone cold – it merely leads farther than anyone ever imagined.',
+        'Birthday2018plus_LostExpedition_26-35_Following_Sub1' => 'The letter confirms the fleet departed well prepared and full of hope. Tinania believes the next clues lie where the ships gathered before their great voyage.',
+        'Birthday2018plus_LostExpedition_26-35_Following_Sub2' => 'The records are complete. Among them is a reference to the fleet\'s first stop after leaving port – a promising lead to follow.',
+        'Birthday2018plus_LostExpedition_26-35_Following_Sub3' => 'The camp was only a temporary refuge. Among the ruins you discover evidence that the fleet continued westward after breaking camp.',
+        'Birthday2018plus_LostExpedition_26-35_Following_Sub4' => 'Hidden inside the lighthouse is another piece of the expedition\'s map. The route is becoming clearer, but one important figure is still missing.',
+        'Birthday2018plus_LostExpedition_26-35_Following_Sub5' => 'The navigator\'s journal reveals a daring course far beyond familiar waters. Tinania fears the greatest challenges still lie ahead.',
+        'Birthday2018plus_LostExpedition_26-35_Hub' => 'Thanks to all you have done, the fate of Octavianus\'s expedition has been revealed. Though his final destination remains a mystery, one truth is now certain: wherever his journey led, he and his companions carried the settlers\' spirit with them, founding new settlements and leaving a legacy that endured long after their ships disappeared beyond the horizon.
+Tinania smiles as she closes the last journal. "For years, I searched for answers. Today, I have found something even greater. His journey was not lost – it lives on in every story, every settlement, and every soul willing to explore the unknown. Thank you for helping me uncover his legacy."',
+        'Birthday2018plus_LostExpedition_26-35_Legacy_Main' => 'The mystery has been solved. Though time has claimed much, the courage of Octavianus and his companions lives on in every settlement they built.',
+        'Birthday2018plus_LostExpedition_26-35_Legacy_Sub1' => 'These ruins were built by Roman hands, but they tell only part of the story. A living settlement awaits beyond them.',
+        'Birthday2018plus_LostExpedition_26-35_Legacy_Sub2' => 'The colonists preserved the expedition\'s history with great care. Among their records is one final journal belonging to Octavianus himself.',
+        'Birthday2018plus_LostExpedition_26-35_Legacy_Sub3' => 'The journal tells of unwavering determination, but its final pages end before the journey itself. One last clue remains.',
+        'Birthday2018plus_LostExpedition_26-35_Legacy_Sub4' => 'Whether Octavianus ever reached the Roman homeland may forever remain a mystery. Yet his greatest achievement was never the destination – it was the settlements he inspired, the people he united, and the legacy that endures to this day. Tinania thanks you, knowing that his story will never be forgotten.',
+        'Birthday2018plus_LostExpedition_26-35_UnknownSeas_Main' => 'The mystery deepens. Though the fleet was scattered, its story did not end in tragedy alone. Survivors carried Octavianus\'s legacy onward.',
+        'Birthday2018plus_LostExpedition_26-35_UnknownSeas_Sub1' => 'The generosity of strangers sustained the Romans when their own supplies grew scarce. Their gratitude is recorded in every page of the journal.',
+        'Birthday2018plus_LostExpedition_26-35_UnknownSeas_Sub2' => 'Many ships were lost, but not all. Survivors regrouped on distant shores, determined to continue despite overwhelming odds.',
+        'Birthday2018plus_LostExpedition_26-35_UnknownSeas_Sub3' => 'These settlements became beacons of hope. From them, the search for the Roman homeland continued.',
+        'Birthday2018plus_LostExpedition_26-35_UnknownSeas_Sub4' => 'Though scarred by countless battles, the standard never fell. It points toward the expedition\'s final march inland.',
+        'Birthday2018plus_LostExpedition_26-35_UnknownSeas_Sub5' => 'Beyond the mountains lies evidence of a much larger settlement. The final chapter of the expedition is close at hand.',
+        'Birthday2018plus_LostExpedition_36-50_Following_Main' => 'Piece by piece, the expedition\'s route becomes clearer. The trail has not gone cold – it merely leads farther than anyone ever imagined.',
+        'Birthday2018plus_LostExpedition_36-50_Following_Sub1' => 'The letter confirms the fleet departed well prepared and full of hope. Tinania believes the next clues lie where the ships gathered before their great voyage.',
+        'Birthday2018plus_LostExpedition_36-50_Following_Sub2' => 'The records are complete. Among them is a reference to the fleet\'s first stop after leaving port – a promising lead to follow.',
+        'Birthday2018plus_LostExpedition_36-50_Following_Sub3' => 'The camp was only a temporary refuge. Among the ruins you discover evidence that the fleet continued westward after breaking camp.',
+        'Birthday2018plus_LostExpedition_36-50_Following_Sub4' => 'Hidden inside the lighthouse is another piece of the expedition\'s map. The route is becoming clearer, but one important figure is still missing.',
+        'Birthday2018plus_LostExpedition_36-50_Following_Sub5' => 'The navigator\'s journal reveals a daring course far beyond familiar waters. Tinania fears the greatest challenges still lie ahead.',
+        'Birthday2018plus_LostExpedition_36-50_Hub' => 'Thanks to all you have done, the fate of Octavianus\'s expedition has been revealed. Though his final destination remains a mystery, one truth is now certain: wherever his journey led, he and his companions carried the settlers\' spirit with them, founding new settlements and leaving a legacy that endured long after their ships disappeared beyond the horizon.
+Tinania smiles as she closes the last journal. "For years, I searched for answers. Today, I have found something even greater. His journey was not lost – it lives on in every story, every settlement, and every soul willing to explore the unknown. Thank you for helping me uncover his legacy."',
+        'Birthday2018plus_LostExpedition_36-50_Legacy_Main' => 'The mystery has been solved. Though time has claimed much, the courage of Octavianus and his companions lives on in every settlement they built.',
+        'Birthday2018plus_LostExpedition_36-50_Legacy_Sub1' => 'These ruins were built by Roman hands, but they tell only part of the story. A living settlement awaits beyond them.',
+        'Birthday2018plus_LostExpedition_36-50_Legacy_Sub2' => 'The colonists preserved the expedition\'s history with great care. Among their records is one final journal belonging to Octavianus himself.',
+        'Birthday2018plus_LostExpedition_36-50_Legacy_Sub3' => 'The journal tells of unwavering determination, but its final pages end before the journey itself. One last clue remains.',
+        'Birthday2018plus_LostExpedition_36-50_Legacy_Sub4' => 'Whether Octavianus ever reached the Roman homeland may forever remain a mystery. Yet his greatest achievement was never the destination – it was the settlements he inspired, the people he united, and the legacy that endures to this day. Tinania thanks you, knowing that his story will never be forgotten.',
+        'Birthday2018plus_LostExpedition_36-50_UnknownSeas_Main' => 'The mystery deepens. Though the fleet was scattered, its story did not end in tragedy alone. Survivors carried Octavianus\'s legacy onward.',
+        'Birthday2018plus_LostExpedition_36-50_UnknownSeas_Sub1' => 'The generosity of strangers sustained the Romans when their own supplies grew scarce. Their gratitude is recorded in every page of the journal.',
+        'Birthday2018plus_LostExpedition_36-50_UnknownSeas_Sub2' => 'Many ships were lost, but not all. Survivors regrouped on distant shores, determined to continue despite overwhelming odds.',
+        'Birthday2018plus_LostExpedition_36-50_UnknownSeas_Sub3' => 'These settlements became beacons of hope. From them, the search for the Roman homeland continued.',
+        'Birthday2018plus_LostExpedition_36-50_UnknownSeas_Sub4' => 'Though scarred by countless battles, the standard never fell. It points toward the expedition\'s final march inland.',
+        'Birthday2018plus_LostExpedition_36-50_UnknownSeas_Sub5' => 'Beyond the mountains lies evidence of a much larger settlement. The final chapter of the expedition is close at hand.',
+        'Birthday2018plus_LostExpedition_51-61_Following_Main' => 'Piece by piece, the expedition\'s route becomes clearer. The trail has not gone cold – it merely leads farther than anyone ever imagined.',
+        'Birthday2018plus_LostExpedition_51-61_Following_Sub1' => 'The letter confirms the fleet departed well prepared and full of hope. Tinania believes the next clues lie where the ships gathered before their great voyage.',
+        'Birthday2018plus_LostExpedition_51-61_Following_Sub2' => 'The records are complete. Among them is a reference to the fleet\'s first stop after leaving port – a promising lead to follow.',
+        'Birthday2018plus_LostExpedition_51-61_Following_Sub3' => 'The camp was only a temporary refuge. Among the ruins you discover evidence that the fleet continued westward after breaking camp.',
+        'Birthday2018plus_LostExpedition_51-61_Following_Sub4' => 'Hidden inside the lighthouse is another piece of the expedition\'s map. The route is becoming clearer, but one important figure is still missing.',
+        'Birthday2018plus_LostExpedition_51-61_Following_Sub5' => 'The navigator\'s journal reveals a daring course far beyond familiar waters. Tinania fears the greatest challenges still lie ahead.',
+        'Birthday2018plus_LostExpedition_51-61_Hub' => 'Thanks to all you have done, the fate of Octavianus\'s expedition has been revealed. Though his final destination remains a mystery, one truth is now certain: wherever his journey led, he and his companions carried the settlers\' spirit with them, founding new settlements and leaving a legacy that endured long after their ships disappeared beyond the horizon.
+Tinania smiles as she closes the last journal. "For years, I searched for answers. Today, I have found something even greater. His journey was not lost – it lives on in every story, every settlement, and every soul willing to explore the unknown. Thank you for helping me uncover his legacy."',
+        'Birthday2018plus_LostExpedition_51-61_Legacy_Main' => 'The mystery has been solved. Though time has claimed much, the courage of Octavianus and his companions lives on in every settlement they built.',
+        'Birthday2018plus_LostExpedition_51-61_Legacy_Sub1' => 'These ruins were built by Roman hands, but they tell only part of the story. A living settlement awaits beyond them.',
+        'Birthday2018plus_LostExpedition_51-61_Legacy_Sub2' => 'The colonists preserved the expedition\'s history with great care. Among their records is one final journal belonging to Octavianus himself.',
+        'Birthday2018plus_LostExpedition_51-61_Legacy_Sub3' => 'The journal tells of unwavering determination, but its final pages end before the journey itself. One last clue remains.',
+        'Birthday2018plus_LostExpedition_51-61_Legacy_Sub4' => 'Whether Octavianus ever reached the Roman homeland may forever remain a mystery. Yet his greatest achievement was never the destination – it was the settlements he inspired, the people he united, and the legacy that endures to this day. Tinania thanks you, knowing that his story will never be forgotten.',
+        'Birthday2018plus_LostExpedition_51-61_UnknownSeas_Main' => 'The mystery deepens. Though the fleet was scattered, its story did not end in tragedy alone. Survivors carried Octavianus\'s legacy onward.',
+        'Birthday2018plus_LostExpedition_51-61_UnknownSeas_Sub1' => 'The generosity of strangers sustained the Romans when their own supplies grew scarce. Their gratitude is recorded in every page of the journal.',
+        'Birthday2018plus_LostExpedition_51-61_UnknownSeas_Sub2' => 'Many ships were lost, but not all. Survivors regrouped on distant shores, determined to continue despite overwhelming odds.',
+        'Birthday2018plus_LostExpedition_51-61_UnknownSeas_Sub3' => 'These settlements became beacons of hope. From them, the search for the Roman homeland continued.',
+        'Birthday2018plus_LostExpedition_51-61_UnknownSeas_Sub4' => 'Though scarred by countless battles, the standard never fell. It points toward the expedition\'s final march inland.',
+        'Birthday2018plus_LostExpedition_51-61_UnknownSeas_Sub5' => 'Beyond the mountains lies evidence of a much larger settlement. The final chapter of the expedition is close at hand.',
+        'Birthday2018plus_LostExpedition_62-80_Following_Main' => 'Piece by piece, the expedition\'s route becomes clearer. The trail has not gone cold – it merely leads farther than anyone ever imagined.',
+        'Birthday2018plus_LostExpedition_62-80_Following_Sub1' => 'The letter confirms the fleet departed well prepared and full of hope. Tinania believes the next clues lie where the ships gathered before their great voyage.',
+        'Birthday2018plus_LostExpedition_62-80_Following_Sub2' => 'The records are complete. Among them is a reference to the fleet\'s first stop after leaving port – a promising lead to follow.',
+        'Birthday2018plus_LostExpedition_62-80_Following_Sub3' => 'The camp was only a temporary refuge. Among the ruins you discover evidence that the fleet continued westward after breaking camp.',
+        'Birthday2018plus_LostExpedition_62-80_Following_Sub4' => 'Hidden inside the lighthouse is another piece of the expedition\'s map. The route is becoming clearer, but one important figure is still missing.',
+        'Birthday2018plus_LostExpedition_62-80_Following_Sub5' => 'The navigator\'s journal reveals a daring course far beyond familiar waters. Tinania fears the greatest challenges still lie ahead.',
+        'Birthday2018plus_LostExpedition_62-80_Hub' => 'Thanks to all you have done, the fate of Octavianus\'s expedition has been revealed. Though his final destination remains a mystery, one truth is now certain: wherever his journey led, he and his companions carried the settlers\' spirit with them, founding new settlements and leaving a legacy that endured long after their ships disappeared beyond the horizon.
+Tinania smiles as she closes the last journal. "For years, I searched for answers. Today, I have found something even greater. His journey was not lost – it lives on in every story, every settlement, and every soul willing to explore the unknown. Thank you for helping me uncover his legacy."',
+        'Birthday2018plus_LostExpedition_62-80_Legacy_Main' => 'The mystery has been solved. Though time has claimed much, the courage of Octavianus and his companions lives on in every settlement they built.',
+        'Birthday2018plus_LostExpedition_62-80_Legacy_Sub1' => 'These ruins were built by Roman hands, but they tell only part of the story. A living settlement awaits beyond them.',
+        'Birthday2018plus_LostExpedition_62-80_Legacy_Sub2' => 'The colonists preserved the expedition\'s history with great care. Among their records is one final journal belonging to Octavianus himself.',
+        'Birthday2018plus_LostExpedition_62-80_Legacy_Sub3' => 'The journal tells of unwavering determination, but its final pages end before the journey itself. One last clue remains.',
+        'Birthday2018plus_LostExpedition_62-80_Legacy_Sub4' => 'Whether Octavianus ever reached the Roman homeland may forever remain a mystery. Yet his greatest achievement was never the destination – it was the settlements he inspired, the people he united, and the legacy that endures to this day. Tinania thanks you, knowing that his story will never be forgotten.',
+        'Birthday2018plus_LostExpedition_62-80_UnknownSeas_Main' => 'The mystery deepens. Though the fleet was scattered, its story did not end in tragedy alone. Survivors carried Octavianus\'s legacy onward.',
+        'Birthday2018plus_LostExpedition_62-80_UnknownSeas_Sub1' => 'The generosity of strangers sustained the Romans when their own supplies grew scarce. Their gratitude is recorded in every page of the journal.',
+        'Birthday2018plus_LostExpedition_62-80_UnknownSeas_Sub2' => 'Many ships were lost, but not all. Survivors regrouped on distant shores, determined to continue despite overwhelming odds.',
+        'Birthday2018plus_LostExpedition_62-80_UnknownSeas_Sub3' => 'These settlements became beacons of hope. From them, the search for the Roman homeland continued.',
+        'Birthday2018plus_LostExpedition_62-80_UnknownSeas_Sub4' => 'Though scarred by countless battles, the standard never fell. It points toward the expedition\'s final march inland.',
+        'Birthday2018plus_LostExpedition_62-80_UnknownSeas_Sub5' => 'Beyond the mountains lies evidence of a much larger settlement. The final chapter of the expedition is close at hand.',
         'BirthdayBasicsMain' => 'So, you managed to complete the basics of this competition. Congratulations. You know, there are many more ways to obtain these balloons, such as quests, upgrading buildings, etc. etc. etc. You should try to find them all! How? Well, I guess the best way is simply by playing! Tee hee hee…',
         'BirthdayBasicsSub1' => 'See? They\'re beautiful, aren\'t they?! Now, you might wonder where to get them, right? Tee hee hee… There are many ways actually. I\'ll show you!',
         'BirthdayBasicsSub2' => 'Well done! You will not know instantly whether you\'ve created balloons. Every now and then you will get a message detailing the balloons you\'ve gathered, so check your mailbox regularly. Let me show you the next way to collect balloons.',
@@ -17324,6 +17462,7 @@ The refinery stands as a monument to ambition, knowledge, and relentless progres
 The people shall remember this achievement long after we are gone.
 Not merely a refinery.
 A legacy.',
+        'BuiBonus_Smokehouse_MiniStart' => 'Excellent! You received a Smoked Fish Steak from the Smokehouse Tribute. Come back in a day to collect another one.',
         'BuiBonus_WitchCovenUpgrade_Start' => 'Who... Who goes there?! 
 
 Leave us alone! We’re busy here.
@@ -23256,6 +23395,78 @@ Our economy\'s been suffering a bit from all the preparations... I think we have
         'Birthday2018plus_Infrastructure_62-80_Main9_Sub2' => 'We definitely need to balance work and pleasure: for now, you\'re free to go out and seek adventure, lovey!',
         'Birthday2018plus_Infrastructure_62-80_Main9_Sub3' => 'Okay, now we can apply some buffs to strengthen our production chains. Let’s begin with the brewery, yes?',
         'Birthday2018plus_Infrastructure_62-80_Main9_Sub4' => 'Now go ahead and apply a buff on either a bakery or an improved bakery, okay, honey?',
+        'Birthday2018plus_LostExpedition_26-35_Following_Main' => 'Years have passed since Octavianus sailed west in search of the Roman homeland. Though his expedition vanished, scattered clues have begun to surface. I need your help to retrace his journey and uncover the path he took across the sea.',
+        'Birthday2018plus_LostExpedition_26-35_Following_Sub1' => 'A weathered letter bearing Octavianus\'s seal has been discovered in an old merchant\'s storehouse. Restore what remains of its contents; it may reveal where the expedition first sailed.',
+        'Birthday2018plus_LostExpedition_26-35_Following_Sub2' => 'No expedition can survive without supplies. Recreate the provisions listed in Octavianus\'s records to better understand how his fleet prepared for the journey ahead.',
+        'Birthday2018plus_LostExpedition_26-35_Following_Sub3' => 'Explorers have reported the remains of an abandoned Roman camp. Search the area carefully; even the smallest trace could reveal where the expedition went next.',
+        'Birthday2018plus_LostExpedition_26-35_Following_Sub4' => 'An old lighthouse once guided ships through dangerous waters, but it now lies in ruins. Restore it and search for anything the expedition may have left behind.',
+        'Birthday2018plus_LostExpedition_26-35_Following_Sub5' => 'The fleet\'s navigator vanished from the records shortly after departure. Recover his notes – they may explain how the expedition crossed the unknown seas.',
+        'Birthday2018plus_LostExpedition_26-35_Hub' => 'Years ago, Octavianus sailed westward in search of his lost homeland. His fleet vanished beyond the horizon. Recently, strange reports have surfaced – fragments of maps, Roman relics, and tales of survivors. Help his wife, Tinania, to uncover the fate of his expedition!',
+        'Birthday2018plus_LostExpedition_26-35_Legacy_Main' => 'The search is nearly over. Ahead lies the answer I have sought for so many years – not only the fate of my husband, but the legacy he left behind.',
+        'Birthday2018plus_LostExpedition_26-35_Legacy_Sub1' => 'Ancient buildings resemble the architecture of Rome itself. Restore their splendour and search for signs that the expedition finally reached its long-awaited destination.',
+        'Birthday2018plus_LostExpedition_26-35_Legacy_Sub2' => 'A thriving colony has been discovered, founded by survivors of the expedition. Strengthen your own settlement to honour those who carved out a new home so far from Rome.',
+        'Birthday2018plus_LostExpedition_26-35_Legacy_Sub3' => 'Octavianus\'s final journal is incomplete. Gather the resources needed to restore its damaged pages and reveal what became of the expedition\'s leader.',
+        'Birthday2018plus_LostExpedition_26-35_Legacy_Sub4' => 'We gathered every surviving record of the expedition. Complete the final preparations and help preserve Octavianus\'s story for future generations.',
+        'Birthday2018plus_LostExpedition_26-35_UnknownSeas_Main' => 'The expedition ventured into waters no Roman map had ever shown. What happened there? Did Octavianus brave terrible storms, make unexpected discoveries, or even find new allies? Help me find out what shaped the fate of Octavianus and his companions.',
+        'Birthday2018plus_LostExpedition_26-35_UnknownSeas_Sub1' => 'The journal speaks of peaceful encounters with distant peoples. Gather valuable goods to honour the friendships that helped the expedition continue its journey.',
+        'Birthday2018plus_LostExpedition_26-35_UnknownSeas_Sub2' => 'A violent storm scattered the fleet across the open sea. Assemble the resources needed to prepare for such hardships and understand how the expedition endured.',
+        'Birthday2018plus_LostExpedition_26-35_UnknownSeas_Sub3' => 'Reports suggest several crews founded small settlements after the storm. Make your community thrive to honour those who refused to surrender.',
+        'Birthday2018plus_LostExpedition_26-35_UnknownSeas_Sub4' => 'A battered Roman standard has been found, a symbol that the expedition stood its ground even in desperate times. Prepare your forces to preserve its legacy.',
+        'Birthday2018plus_LostExpedition_26-35_UnknownSeas_Sub5' => 'The last known route leads through a mountain pass. Clear the way and gather the materials needed to follow Octavianus beyond the natural barrier.',
+        'Birthday2018plus_LostExpedition_36-50_Following_Main' => 'Years have passed since Octavianus sailed west in search of the Roman homeland. Though his expedition vanished, scattered clues have begun to surface. I need your help to retrace his journey and uncover the path he took across the sea.',
+        'Birthday2018plus_LostExpedition_36-50_Following_Sub1' => 'A weathered letter bearing Octavianus\'s seal has been discovered in an old merchant\'s storehouse. Restore what remains of its contents; it may reveal where the expedition first sailed.',
+        'Birthday2018plus_LostExpedition_36-50_Following_Sub2' => 'No expedition can survive without supplies. Recreate the provisions listed in Octavianus\'s records to better understand how his fleet prepared for the journey ahead.',
+        'Birthday2018plus_LostExpedition_36-50_Following_Sub3' => 'Explorers have reported the remains of an abandoned Roman camp. Search the area carefully; even the smallest trace could reveal where the expedition went next.',
+        'Birthday2018plus_LostExpedition_36-50_Following_Sub4' => 'An old lighthouse once guided ships through dangerous waters, but it now lies in ruins. Restore it and search for anything the expedition may have left behind.',
+        'Birthday2018plus_LostExpedition_36-50_Following_Sub5' => 'The fleet\'s navigator vanished from the records shortly after departure. Recover his notes – they may explain how the expedition crossed the unknown seas.',
+        'Birthday2018plus_LostExpedition_36-50_Hub' => 'Years ago, Octavianus sailed westward in search of his lost homeland. His fleet vanished beyond the horizon. Recently, strange reports have surfaced – fragments of maps, Roman relics, and tales of survivors. Help his wife, Tinania, to uncover the fate of his expedition!',
+        'Birthday2018plus_LostExpedition_36-50_Legacy_Main' => 'The search is nearly over. Ahead lies the answer I have sought for so many years – not only the fate of my husband, but the legacy he left behind.',
+        'Birthday2018plus_LostExpedition_36-50_Legacy_Sub1' => 'Ancient buildings resemble the architecture of Rome itself. Restore their splendour and search for signs that the expedition finally reached its long-awaited destination.',
+        'Birthday2018plus_LostExpedition_36-50_Legacy_Sub2' => 'A thriving colony has been discovered, founded by survivors of the expedition. Strengthen your own settlement to honour those who carved out a new home so far from Rome.',
+        'Birthday2018plus_LostExpedition_36-50_Legacy_Sub3' => 'Octavianus\'s final journal is incomplete. Gather the resources needed to restore its damaged pages and reveal what became of the expedition\'s leader.',
+        'Birthday2018plus_LostExpedition_36-50_Legacy_Sub4' => 'We gathered every surviving record of the expedition. Complete the final preparations and help preserve Octavianus\'s story for future generations.',
+        'Birthday2018plus_LostExpedition_36-50_UnknownSeas_Main' => 'The expedition ventured into waters no Roman map had ever shown. What happened there? Did Octavianus brave terrible storms, make unexpected discoveries, or even find new allies? Help me find out what shaped the fate of Octavianus and his companions.',
+        'Birthday2018plus_LostExpedition_36-50_UnknownSeas_Sub1' => 'The journal speaks of peaceful encounters with distant peoples. Gather valuable goods to honour the friendships that helped the expedition continue its journey.',
+        'Birthday2018plus_LostExpedition_36-50_UnknownSeas_Sub2' => 'A violent storm scattered the fleet across the open sea. Assemble the resources needed to prepare for such hardships and understand how the expedition endured.',
+        'Birthday2018plus_LostExpedition_36-50_UnknownSeas_Sub3' => 'Reports suggest several crews founded small settlements after the storm. Make your community thrive to honour those who refused to surrender.',
+        'Birthday2018plus_LostExpedition_36-50_UnknownSeas_Sub4' => 'A battered Roman standard has been found, a symbol that the expedition stood its ground even in desperate times. Prepare your forces to preserve its legacy.',
+        'Birthday2018plus_LostExpedition_36-50_UnknownSeas_Sub5' => 'The last known route leads through a mountain pass. Clear the way and gather the materials needed to follow Octavianus beyond the natural barrier.',
+        'Birthday2018plus_LostExpedition_51-61_Following_Main' => 'Years have passed since Octavianus sailed west in search of the Roman homeland. Though his expedition vanished, scattered clues have begun to surface. I need your help to retrace his journey and uncover the path he took across the sea.',
+        'Birthday2018plus_LostExpedition_51-61_Following_Sub1' => 'A weathered letter bearing Octavianus\'s seal has been discovered in an old merchant\'s storehouse. Restore what remains of its contents; it may reveal where the expedition first sailed.',
+        'Birthday2018plus_LostExpedition_51-61_Following_Sub2' => 'No expedition can survive without supplies. Recreate the provisions listed in Octavianus\'s records to better understand how his fleet prepared for the journey ahead.',
+        'Birthday2018plus_LostExpedition_51-61_Following_Sub3' => 'Explorers have reported the remains of an abandoned Roman camp. Search the area carefully; even the smallest trace could reveal where the expedition went next.',
+        'Birthday2018plus_LostExpedition_51-61_Following_Sub4' => 'An old lighthouse once guided ships through dangerous waters, but it now lies in ruins. Restore it and search for anything the expedition may have left behind.',
+        'Birthday2018plus_LostExpedition_51-61_Following_Sub5' => 'The fleet\'s navigator vanished from the records shortly after departure. Recover his notes – they may explain how the expedition crossed the unknown seas.',
+        'Birthday2018plus_LostExpedition_51-61_Hub' => 'Years ago, Octavianus sailed westward in search of his lost homeland. His fleet vanished beyond the horizon. Recently, strange reports have surfaced – fragments of maps, Roman relics, and tales of survivors. Help his wife, Tinania, to uncover the fate of his expedition!',
+        'Birthday2018plus_LostExpedition_51-61_Legacy_Main' => 'The search is nearly over. Ahead lies the answer I have sought for so many years – not only the fate of my husband, but the legacy he left behind.',
+        'Birthday2018plus_LostExpedition_51-61_Legacy_Sub1' => 'Ancient buildings resemble the architecture of Rome itself. Restore their splendour and search for signs that the expedition finally reached its long-awaited destination.',
+        'Birthday2018plus_LostExpedition_51-61_Legacy_Sub2' => 'A thriving colony has been discovered, founded by survivors of the expedition. Strengthen your own settlement to honour those who carved out a new home so far from Rome.',
+        'Birthday2018plus_LostExpedition_51-61_Legacy_Sub3' => 'Octavianus\'s final journal is incomplete. Gather the resources needed to restore its damaged pages and reveal what became of the expedition\'s leader.',
+        'Birthday2018plus_LostExpedition_51-61_Legacy_Sub4' => 'We gathered every surviving record of the expedition. Complete the final preparations and help preserve Octavianus\'s story for future generations.',
+        'Birthday2018plus_LostExpedition_51-61_UnknownSeas_Main' => 'The expedition ventured into waters no Roman map had ever shown. What happened there? Did Octavianus brave terrible storms, make unexpected discoveries, or even find new allies? Help me find out what shaped the fate of Octavianus and his companions.',
+        'Birthday2018plus_LostExpedition_51-61_UnknownSeas_Sub1' => 'The journal speaks of peaceful encounters with distant peoples. Gather valuable goods to honour the friendships that helped the expedition continue its journey.',
+        'Birthday2018plus_LostExpedition_51-61_UnknownSeas_Sub2' => 'A violent storm scattered the fleet across the open sea. Assemble the resources needed to prepare for such hardships and understand how the expedition endured.',
+        'Birthday2018plus_LostExpedition_51-61_UnknownSeas_Sub3' => 'Reports suggest several crews founded small settlements after the storm. Make your community thrive to honour those who refused to surrender.',
+        'Birthday2018plus_LostExpedition_51-61_UnknownSeas_Sub4' => 'A battered Roman standard has been found, a symbol that the expedition stood its ground even in desperate times. Prepare your forces to preserve its legacy.',
+        'Birthday2018plus_LostExpedition_51-61_UnknownSeas_Sub5' => 'The last known route leads through a mountain pass. Clear the way and gather the materials needed to follow Octavianus beyond the natural barrier.',
+        'Birthday2018plus_LostExpedition_62-80_Following_Main' => 'Years have passed since Octavianus sailed west in search of the Roman homeland. Though his expedition vanished, scattered clues have begun to surface. I need your help to retrace his journey and uncover the path he took across the sea.',
+        'Birthday2018plus_LostExpedition_62-80_Following_Sub1' => 'A weathered letter bearing Octavianus\'s seal has been discovered in an old merchant\'s storehouse. Restore what remains of its contents; it may reveal where the expedition first sailed.',
+        'Birthday2018plus_LostExpedition_62-80_Following_Sub2' => 'No expedition can survive without supplies. Recreate the provisions listed in Octavianus\'s records to better understand how his fleet prepared for the journey ahead.',
+        'Birthday2018plus_LostExpedition_62-80_Following_Sub3' => 'Explorers have reported the remains of an abandoned Roman camp. Search the area carefully; even the smallest trace could reveal where the expedition went next.',
+        'Birthday2018plus_LostExpedition_62-80_Following_Sub4' => 'An old lighthouse once guided ships through dangerous waters, but it now lies in ruins. Restore it and search for anything the expedition may have left behind.',
+        'Birthday2018plus_LostExpedition_62-80_Following_Sub5' => 'The fleet\'s navigator vanished from the records shortly after departure. Recover his notes – they may explain how the expedition crossed the unknown seas.',
+        'Birthday2018plus_LostExpedition_62-80_Hub' => 'Years ago, Octavianus sailed westward in search of his lost homeland. His fleet vanished beyond the horizon. Recently, strange reports have surfaced – fragments of maps, Roman relics, and tales of survivors. Help his wife, Tinania, to uncover the fate of his expedition!',
+        'Birthday2018plus_LostExpedition_62-80_Legacy_Main' => 'The search is nearly over. Ahead lies the answer I have sought for so many years – not only the fate of my husband, but the legacy he left behind.',
+        'Birthday2018plus_LostExpedition_62-80_Legacy_Sub1' => 'Ancient buildings resemble the architecture of Rome itself. Restore their splendour and search for signs that the expedition finally reached its long-awaited destination.',
+        'Birthday2018plus_LostExpedition_62-80_Legacy_Sub2' => 'A thriving colony has been discovered, founded by survivors of the expedition. Strengthen your own settlement to honour those who carved out a new home so far from Rome.',
+        'Birthday2018plus_LostExpedition_62-80_Legacy_Sub3' => 'Octavianus\'s final journal is incomplete. Gather the resources needed to restore its damaged pages and reveal what became of the expedition\'s leader.',
+        'Birthday2018plus_LostExpedition_62-80_Legacy_Sub4' => 'We gathered every surviving record of the expedition. Complete the final preparations and help preserve Octavianus\'s story for future generations.',
+        'Birthday2018plus_LostExpedition_62-80_UnknownSeas_Main' => 'The expedition ventured into waters no Roman map had ever shown. What happened there? Did Octavianus brave terrible storms, make unexpected discoveries, or even find new allies? Help me find out what shaped the fate of Octavianus and his companions.',
+        'Birthday2018plus_LostExpedition_62-80_UnknownSeas_Sub1' => 'The journal speaks of peaceful encounters with distant peoples. Gather valuable goods to honour the friendships that helped the expedition continue its journey.',
+        'Birthday2018plus_LostExpedition_62-80_UnknownSeas_Sub2' => 'A violent storm scattered the fleet across the open sea. Assemble the resources needed to prepare for such hardships and understand how the expedition endured.',
+        'Birthday2018plus_LostExpedition_62-80_UnknownSeas_Sub3' => 'Reports suggest several crews founded small settlements after the storm. Make your community thrive to honour those who refused to surrender.',
+        'Birthday2018plus_LostExpedition_62-80_UnknownSeas_Sub4' => 'A battered Roman standard has been found, a symbol that the expedition stood its ground even in desperate times. Prepare your forces to preserve its legacy.',
+        'Birthday2018plus_LostExpedition_62-80_UnknownSeas_Sub5' => 'The last known route leads through a mountain pass. Clear the way and gather the materials needed to follow Octavianus beyond the natural barrier.',
         'BirthdayBasicsMain' => 'Hello there! Tee hee hee… Have you already heard about the big party coming up? The king himself has sent me to find out which server is the most suitable. So, help your server to become the best. How? Oh, it\'s easy. I will explain! Hee hee…',
         'BirthdayBasicsSub1' => 'It is all about gathering the most balloons! The king loves balloons you know. Tee hee… You can see the number of balloons you have in your mayor\'s house under the new event tab. Feel free to take a look.',
         'BirthdayBasicsSub2' => 'There are actions you can perform, which generate balloons with a certain percentage, for example using buffs. So go ahead - produce some buffs in your provision house and use them.',
@@ -23964,6 +24175,12 @@ The furnace will burn hot enough to soften the stubborn ores that once resisted 
 There are entire techniques missing from its design.',
         'BuiBonus_OreRefinery_Upgrades_02' => 'Several portions of the design remain unfinished, almost deliberately so. Empty chambers. Unused pressure lines. Space reserved for techniques absent from the scrolls we gathered.',
         'BuiBonus_OreRefinery_Upgrades_03' => 'Rumors speak of northern engineers who harness steam pressure, desert metallurgists who separate ore with powdered salts, and distant island artisans who refine steel through repeated folding and purification.',
+        'BuiBonus_Smokehouse_MiniStart' => 'The island\'s master smokers have prepared a special delicacy in your honour. Pay a visit to the Smokehouse Tribute and see what they have waiting for you.
+You can find your Smoked Fish Steak in your Star Menu after visiting the Smokehouse Tribute.',
+        'BuiBonus_Smokehouse_Mini_Loop' => 'Creating the perfect smoked delicacy takes time. The island\'s master smokers never rush their craft and only serve the finest results.
+Come back in a day to collect your next Smoked Fish Steak. Remember: a new one won\'t be prepared until the previous one has been collected.',
+        'BuiBonus_Smokehouse_Mini_Timer' => 'Creating the perfect smoked delicacy takes time. The island\'s master smokers never rush their craft and only serve the finest results.
+Come back in a day to collect your next Smoked Fish Steak. Remember: a new one won\'t be prepared until the previous one has been collected.',
         'BuiBonus_WitchCovenUpgrade_Start' => 'Mayor, have you noticed the odd newcomers?
 
 We should pay them a visit and make sure they don\'t start any trouble with the locals.',
@@ -30297,7 +30514,11 @@ I\'m creating a special Island to celebrate Santa\'s- eh, I mean MY festival! I 
         'Buff_produce_FillDeposit_Hunter' => 'Produce at least {0} Musk Deer Fragrances.',
         'Buff_produce_HalloweenEvent_Ghostbuster' => 'Produce at least {0} Very Strong Light scroll(s).',
         'Buff_produce_HalloweenEvent_Horror' => 'Produce at least {0} Darkness scroll(s).',
+        'Buff_produce_ProductivityBuffCollectibleEW' => 'Produce at least {0} Master\'s Toolkit(s).',
         'Buff_produce_ProductivityBuffLvl1' => 'Produce at least {0} Fish Platter(s).',
+        'Buff_produce_ProductivityBuffLvl100' => 'Produce at least {0} Harvest Ritual(s).',
+        'Buff_produce_ProductivityBuffLvl101' => 'Produce at least {0} Whips & Carrots.',
+        'Buff_produce_ProductivityBuffLvl104' => 'Produce at least {0} Golden Ribbon(s).',
         'Buff_produce_ProductivityBuffLvl2' => 'Produce at least {0} Solid Sandwich(es).',
         'Buff_produce_ProductivityBuffLvl3' => 'Produce at least {0} Aunt Irma\'s Gift Basket(s).',
         'Buff_produce_RecruitingBuffLvl100' => 'Produce at least {0} Drill Sergeant Skunk.',
@@ -30872,6 +31093,7 @@ Each player should destroy those on their own attack path.',
         'PayForQuestFinish_Coal' => 'Pay {0} Coal from your storage.',
         'PayForQuestFinish_Codex' => 'Pay {0} codex (codices) from your storage.',
         'PayForQuestFinish_Coin' => 'Pay {0} Coins from your storage.',
+        'PayForQuestFinish_CollectibleBanner' => 'Pay {0} banner(s) from your storage.',
         'PayForQuestFinish_CollectibleFoodCart' => 'Pay {0} Food Carts from your storage.',
         'PayForQuestFinish_CollectibleHerbs' => 'Pay {0} Herb(s) from your storage.',
         'PayForQuestFinish_CollectibleKettle' => 'Pay {0} Kettle(s) from your storage.',
@@ -31529,6 +31751,8 @@ Each player should destroy those on their own attack path.',
         'RefillBuff_consume_Tool' => 'Add Tools from your star menu to your stock.',
         'RefillBuff_consume_Wood' => 'Add Pinewood from your star menu to your stock.',
         'Resource_ChkResources_Adventure_BanditNest_Granite' => 'Find {0} Granite by completing "Bandit Nest".',
+        'Resource_ChkResources_Adventure_BronzeOre' => 'Obtain {0} copper ore from completed adventures.',
+        'Resource_ChkResources_Adventure_Coin' => 'Obtain {0} coin(s) from completed adventures.',
         'Resource_ChkResources_Adventure_Epic_Coin' => 'Earn {0} Coin(s) through epic adventures.',
         'Resource_ChkResources_Adventure_Epic_GoldOre' => 'Obtain {0} gold ore by completing epic adventures.',
         'Resource_ChkResources_Adventure_Epic_GoldOre_refiller' => 'Obtain {0} gold refiller(s) from epic adventure loot.',
@@ -31539,9 +31763,11 @@ Each player should destroy those on their own attack path.',
         'Resource_ChkResources_Adventure_Fairytale_PlatinumOre' => 'Obtain {0} platinum ore by completing fairytale adventures.',
         'Resource_ChkResources_Adventure_GoldOre_refiller' => 'Store {0} gold ore refiller(s) from completed adventures',
         'Resource_ChkResources_Adventure_Granite' => 'Earn {0} Granite through adventures.',
+        'Resource_ChkResources_Adventure_MahoganyWood' => 'Obtain {0} mahogany wood from completed adventures.',
         'Resource_ChkResources_Adventure_MotherLove_Granite' => 'Find {0} Granite by completing "Motherly Love".',
         'Resource_ChkResources_Adventure_OldFriends_Granite' => 'Find {0} Granite by completing "Old Friends".',
         'Resource_ChkResources_Adventure_Outlaws_Granite' => 'Find {0} Granite by completing "Outlaws".',
+        'Resource_ChkResources_Adventure_PlatinumOre' => 'Obtain {0} platinum ore from completed adventures.',
         'Resource_ChkResources_Adventure_SecludedExperiments_ExoticWood' => 'Find {0} Exotic Wood by completing "Secluded Experiments".',
         'Resource_ChkResources_Adventure_SonsOfTheVeld_TitaniumOre' => 'Find {0} Titanium Ore by completing "Sons Of The Veld".',
         'Resource_ChkResources_Adventure_SurpriseAttack_Granite' => 'Find {0} Granite by completing "Surprise Attack".',
@@ -31591,6 +31817,7 @@ Each player should destroy those on their own attack path.',
         'Resource_geDelta_Archebuse' => 'Acquire at least {0} Arquebus(es).',
         'Resource_geDelta_BattleHorse' => 'Acquire at least {0} battle horse(s).',
         'Resource_geDelta_Beer' => 'Acquire at least {0} Brew.',
+        'Resource_geDelta_BookFitting' => 'Acquire at least {0} Book Fitting(s).',
         'Resource_geDelta_Bow' => 'Acquire at least {0} Bow(s).',
         'Resource_geDelta_Bread' => 'Acquire at least {0} Bread.',
         'Resource_geDelta_BronzeOre' => 'Acquire at least {0} Copper Ore.',
@@ -31616,10 +31843,13 @@ Each player should destroy those on their own attack path.',
         'Resource_geDelta_Horse' => 'Acquire at least {0} Horses.',
         'Resource_geDelta_IronOre' => 'Acquire at least {0} Iron Ore.',
         'Resource_geDelta_IronSword' => 'Acquire at least {0} Iron Swords.',
+        'Resource_geDelta_Letter' => 'Acquire at least {0} Printing Press Letter(s).',
         'Resource_geDelta_MagicBean' => 'Acquire at least {0} Magic Beans.',
         'Resource_geDelta_Marble' => 'Acquire at least {0} Marble.',
         'Resource_geDelta_Meat' => 'Acquire at least {0} Meat.',
         'Resource_geDelta_Mortar' => 'Acquire at least {0} mortar(s).',
+        'Resource_geDelta_Nib' => 'Acquire at least {0} Nib(s).',
+        'Resource_geDelta_Oil' => 'Acquire at least {0} Oil.',
         'Resource_geDelta_Platinum' => 'Acquire at least {0} platinum.',
         'Resource_geDelta_PlatinumOre' => 'Acquire at least {0} platinum ore.',
         'Resource_geDelta_PlatinumSword' => 'Acquire at least {0} platinum sword(s).',
@@ -32329,6 +32559,7 @@ Each player should destroy those on their own attack path.',
         'completequestlist_HW2016Golems3' => 'Defeat 5 ancient golems on your home island.',
         'completequestlist_HW2016Golems4' => 'Defeat 5 supreme golems on your home island.',
         'completequestlist_LostCityActivateAll' => 'Liberate one of the altars and activate it with the proper offering.',
+        'completequestlist_LostExpedition' => 'Complete the quest chain "The Lost Expedition of Octavianus".',
         'completequestlist_PartyCrasherWin' => 'Deal with the party crashers by peaceful or forceful means.',
         'completequestlist_SoccerInfrastructureAchievement' => 'Complete the quest chain "A Host of Responsibilities"',
         'completequestlist_SoccerInfrastructureBandits' => 'Either defeat 1 bandit leader camp, or have defeated 3 of them in the past.',
@@ -33246,6 +33477,78 @@ Each player should destroy those on their own attack path.',
         'Birthday2018plus_Infrastructure_62-80_Main9_Sub2' => 'Play a Venture',
         'Birthday2018plus_Infrastructure_62-80_Main9_Sub3' => 'Brewery Buffs',
         'Birthday2018plus_Infrastructure_62-80_Main9_Sub4' => 'Bakery Buffs',
+        'Birthday2018plus_LostExpedition_26-35_Following_Main' => 'Following the Wake',
+        'Birthday2018plus_LostExpedition_26-35_Following_Sub1' => 'A Letter Never Delivered',
+        'Birthday2018plus_LostExpedition_26-35_Following_Sub2' => 'Provisioning the Fleet',
+        'Birthday2018plus_LostExpedition_26-35_Following_Sub3' => 'Traces on the Shore',
+        'Birthday2018plus_LostExpedition_26-35_Following_Sub4' => 'The Broken Lighthouse',
+        'Birthday2018plus_LostExpedition_26-35_Following_Sub5' => 'The Missing Navigator',
+        'Birthday2018plus_LostExpedition_26-35_Hub' => 'The Lost Expedition of Octavianus',
+        'Birthday2018plus_LostExpedition_26-35_Legacy_Main' => 'The Legacy of Octavianus',
+        'Birthday2018plus_LostExpedition_26-35_Legacy_Sub1' => 'Echoes of Home',
+        'Birthday2018plus_LostExpedition_26-35_Legacy_Sub2' => 'The Forgotten Colony',
+        'Birthday2018plus_LostExpedition_26-35_Legacy_Sub3' => 'Octavianus\'s Fate',
+        'Birthday2018plus_LostExpedition_26-35_Legacy_Sub4' => 'Legacy of the Explorer',
+        'Birthday2018plus_LostExpedition_26-35_UnknownSeas_Main' => 'Across Unknown Seas',
+        'Birthday2018plus_LostExpedition_26-35_UnknownSeas_Sub1' => 'Friends Among Strangers',
+        'Birthday2018plus_LostExpedition_26-35_UnknownSeas_Sub2' => 'The Storm Sea',
+        'Birthday2018plus_LostExpedition_26-35_UnknownSeas_Sub3' => 'Survivors',
+        'Birthday2018plus_LostExpedition_26-35_UnknownSeas_Sub4' => 'The Roman Standard',
+        'Birthday2018plus_LostExpedition_26-35_UnknownSeas_Sub5' => 'The Gate in the Mountains',
+        'Birthday2018plus_LostExpedition_36-50_Following_Main' => 'Following the Wake',
+        'Birthday2018plus_LostExpedition_36-50_Following_Sub1' => 'A Letter Never Delivered',
+        'Birthday2018plus_LostExpedition_36-50_Following_Sub2' => 'Provisioning the Fleet',
+        'Birthday2018plus_LostExpedition_36-50_Following_Sub3' => 'Traces on the Shore',
+        'Birthday2018plus_LostExpedition_36-50_Following_Sub4' => 'The Broken Lighthouse',
+        'Birthday2018plus_LostExpedition_36-50_Following_Sub5' => 'The Missing Navigator',
+        'Birthday2018plus_LostExpedition_36-50_Hub' => 'The Lost Expedition of Octavianus',
+        'Birthday2018plus_LostExpedition_36-50_Legacy_Main' => 'The Legacy of Octavianus',
+        'Birthday2018plus_LostExpedition_36-50_Legacy_Sub1' => 'Echoes of Home',
+        'Birthday2018plus_LostExpedition_36-50_Legacy_Sub2' => 'The Forgotten Colony',
+        'Birthday2018plus_LostExpedition_36-50_Legacy_Sub3' => 'Octavianus\'s Fate',
+        'Birthday2018plus_LostExpedition_36-50_Legacy_Sub4' => 'Legacy of the Explorer',
+        'Birthday2018plus_LostExpedition_36-50_UnknownSeas_Main' => 'Across Unknown Seas',
+        'Birthday2018plus_LostExpedition_36-50_UnknownSeas_Sub1' => 'Friends Among Strangers',
+        'Birthday2018plus_LostExpedition_36-50_UnknownSeas_Sub2' => 'The Storm Sea',
+        'Birthday2018plus_LostExpedition_36-50_UnknownSeas_Sub3' => 'Survivors',
+        'Birthday2018plus_LostExpedition_36-50_UnknownSeas_Sub4' => 'The Roman Standard',
+        'Birthday2018plus_LostExpedition_36-50_UnknownSeas_Sub5' => 'The Gate in the Mountains',
+        'Birthday2018plus_LostExpedition_51-61_Following_Main' => 'Following the Wake',
+        'Birthday2018plus_LostExpedition_51-61_Following_Sub1' => 'A Letter Never Delivered',
+        'Birthday2018plus_LostExpedition_51-61_Following_Sub2' => 'Provisioning the Fleet',
+        'Birthday2018plus_LostExpedition_51-61_Following_Sub3' => 'Traces on the Shore',
+        'Birthday2018plus_LostExpedition_51-61_Following_Sub4' => 'The Broken Lighthouse',
+        'Birthday2018plus_LostExpedition_51-61_Following_Sub5' => 'The Missing Navigator',
+        'Birthday2018plus_LostExpedition_51-61_Hub' => 'The Lost Expedition of Octavianus',
+        'Birthday2018plus_LostExpedition_51-61_Legacy_Main' => 'The Legacy of Octavianus',
+        'Birthday2018plus_LostExpedition_51-61_Legacy_Sub1' => 'Echoes of Home',
+        'Birthday2018plus_LostExpedition_51-61_Legacy_Sub2' => 'The Forgotten Colony',
+        'Birthday2018plus_LostExpedition_51-61_Legacy_Sub3' => 'Octavianus\'s Fate',
+        'Birthday2018plus_LostExpedition_51-61_Legacy_Sub4' => 'Legacy of the Explorer',
+        'Birthday2018plus_LostExpedition_51-61_UnknownSeas_Main' => 'Across Unknown Seas',
+        'Birthday2018plus_LostExpedition_51-61_UnknownSeas_Sub1' => 'Friends Among Strangers',
+        'Birthday2018plus_LostExpedition_51-61_UnknownSeas_Sub2' => 'The Storm Sea',
+        'Birthday2018plus_LostExpedition_51-61_UnknownSeas_Sub3' => 'Survivors',
+        'Birthday2018plus_LostExpedition_51-61_UnknownSeas_Sub4' => 'The Roman Standard',
+        'Birthday2018plus_LostExpedition_51-61_UnknownSeas_Sub5' => 'The Gate in the Mountains',
+        'Birthday2018plus_LostExpedition_62-80_Following_Main' => 'Following the Wake',
+        'Birthday2018plus_LostExpedition_62-80_Following_Sub1' => 'A Letter Never Delivered',
+        'Birthday2018plus_LostExpedition_62-80_Following_Sub2' => 'Provisioning the Fleet',
+        'Birthday2018plus_LostExpedition_62-80_Following_Sub3' => 'Traces on the Shore',
+        'Birthday2018plus_LostExpedition_62-80_Following_Sub4' => 'The Broken Lighthouse',
+        'Birthday2018plus_LostExpedition_62-80_Following_Sub5' => 'The Missing Navigator',
+        'Birthday2018plus_LostExpedition_62-80_Hub' => 'The Lost Expedition of Octavianus',
+        'Birthday2018plus_LostExpedition_62-80_Legacy_Main' => 'The Legacy of Octavianus',
+        'Birthday2018plus_LostExpedition_62-80_Legacy_Sub1' => 'Echoes of Home',
+        'Birthday2018plus_LostExpedition_62-80_Legacy_Sub2' => 'The Forgotten Colony',
+        'Birthday2018plus_LostExpedition_62-80_Legacy_Sub3' => 'Octavianus\'s Fate',
+        'Birthday2018plus_LostExpedition_62-80_Legacy_Sub4' => 'Legacy of the Explorer',
+        'Birthday2018plus_LostExpedition_62-80_UnknownSeas_Main' => 'Across Unknown Seas',
+        'Birthday2018plus_LostExpedition_62-80_UnknownSeas_Sub1' => 'Friends Among Strangers',
+        'Birthday2018plus_LostExpedition_62-80_UnknownSeas_Sub2' => 'The Storm Sea',
+        'Birthday2018plus_LostExpedition_62-80_UnknownSeas_Sub3' => 'Survivors',
+        'Birthday2018plus_LostExpedition_62-80_UnknownSeas_Sub4' => 'The Roman Standard',
+        'Birthday2018plus_LostExpedition_62-80_UnknownSeas_Sub5' => 'The Gate in the Mountains',
         'BirthdayBasicsMain' => 'The big party',
         'BirthdayBasicsSub1' => 'Balloons',
         'BirthdayBasicsSub2' => 'How to get balloons',
@@ -33643,6 +33946,9 @@ Part II',
         'BuiBonus_OreRefinery_Upgrades_01' => 'Deep Knowledge',
         'BuiBonus_OreRefinery_Upgrades_02' => 'Deeper Knowledge',
         'BuiBonus_OreRefinery_Upgrades_03' => 'Deepest Knowledge',
+        'BuiBonus_Smokehouse_MiniStart' => 'A tribute to the Smokehouse',
+        'BuiBonus_Smokehouse_Mini_Loop' => 'The next delicacy is being prepared',
+        'BuiBonus_Smokehouse_Mini_Timer' => 'The next delicacy is being prepared',
         'BuiBonus_WitchCovenUpgrade_Start' => 'Strange New Neighbors',
         'BuiBonus_WitchCovenUpgrade_Upgrade1' => 'Curiosity Killed the Cat',
         'BuiBonus_WitchCovenUpgrade_Upgrade2' => 'Some Questions are Better Left Unanswered',
@@ -37415,8 +37721,6 @@ Part II',
         'XMASEventCookieAdv_Military' => 'Frog Phobia',
     ],
     'RES' => [
-        'ChangeSkin_Anniversary2026_MayorsHouse_long' => 'Skin: Mayor\'s House (Three Decades Legacy)',
-        'ProductivityBuffLvl_CommandCenterBoost' => 'Tactic: Grapeshot',
         'AddBuildingLimit' => 'Building License',
         'AddRecipe_AddResourceCodex' => 'Recipe: Codex',
         'AddRecipe_AddResourceManuscript' => 'Recipe: Manuscript',
@@ -37747,6 +38051,7 @@ Part II',
         'Beer' => 'Brew',
         'Besieger' => 'Besieger',
         'BirthdayShaman' => 'Mystical Shaman',
+        'BlastingCartAid' => 'Blasting Cart',
         'BlondeBowman' => 'Blonde Bowman',
         'Board' => 'Used banquet board',
         'BoatHouse' => 'Boat Residence',
@@ -37846,6 +38151,7 @@ Part II',
         'ChangeColorScheme_spooky' => 'Friar\'s Lantern',
         'ChangeColorScheme_tropical' => 'Good Weather Charm',
         'ChangeColorScheme_tundra' => 'Colourful Cold',
+        'ChangeDefaultSkin_Anniversary2026_MayorsHouse_perm' => 'Skin: Mayor\'s House (Three Decades Legacy)',
         'ChangeDefaultSkin_ArtMuseum_blue_permanent' => 'Colour: Art Museum, Blue',
         'ChangeDefaultSkin_ChristmasBarracks_permanent' => 'Skin: Barracks (Christmas)',
         'ChangeDefaultSkin_ChristmasProvisionHouse_permanent' => 'Skin: Provision Houses (Christmas)',
@@ -37892,6 +38198,7 @@ Part II',
         'ChangeDefaultSkin_retro_mason_permanent' => 'Skin: Mason (Retro)',
         'ChangeDefaultSkin_retro_well_permanent' => 'Skin: Well (Retro)',
         'ChangeDefaultSkin_retro_woodcutter_permanent' => 'Skin: Woodcutter (Retro)',
+        'ChangeSkin_Anniversary2026_MayorsHouse_long' => '15-Day Skin: Mayor\'s House (Three Decades Legacy)',
         'ChangeSkin_BuffAd_Beer' => 'Special Brew',
         'ChangeSkin_BuffAd_Bread' => 'Tasty Bread',
         'ChangeSkin_BuffAd_Bridge' => 'Auxiliary Bridge',
@@ -38049,6 +38356,11 @@ Part II',
         'CombatBuffLostCityStone' => 'Favour of Stone',
         'CombatBuffLostCityWater' => 'Favour of Water',
         'CombatBuffLostCityWind' => 'Favour of Wind',
+        'CommandCenter' => 'Command Centre',
+        'CommandCenterAid' => 'Watchpost',
+        'CommandCenterBuff1' => 'Tactic: Diversion',
+        'CommandCenterBuff2' => 'Tactic: Grapeshot',
+        'CommandCenterBuff3' => 'Tactic: Horseback Charge',
         'CompositeBow' => 'Attack Bow',
         'ConstructionWorkerJourneyman' => 'Journeyman Construction Worker',
         'ConstructionWorkerMaster' => 'Expert Construction Worker',
@@ -38244,6 +38556,7 @@ Part II',
         'EffectBuff_pumpkinfield_02_resurrector' => 'Fertilizer: Common Pumpkin Cemetery',
         'EffectBuff_pumpkinfield_03_resurrector' => 'Fertilizer: Noble Pumpkin Cemetery',
         'EfficientAdvancedToolmaker' => 'Efficient Advanced Toolmaker',
+        'EfficientCrossbowsmith' => 'Efficient Crossbowsmith',
         'EfficientPlatinumSmelter' => 'Efficient Platinum Smelter',
         'ElderTreeLH' => 'Elder Tree Lighthouse',
         'EliteGuildBanner_Deco' => 'Elite Guild Fest Banner',
@@ -38438,7 +38751,7 @@ Part II',
         'GuildFestBundle1' => 'Gold Guild Fest Bundle',
         'GuildFestBundle2' => 'Silver Guild Fest Bundle',
         'GuildFestBundle3' => 'Bronze Guild Fest Bundle',
-        'GuildFestCommendation' => 'Guild Fest Commendation',
+        'GuildFestCommendation' => 'Commendation',
         'GuildFestTentI' => 'Cushy Guild Fest Accommodation',
         'GuildFestTentII' => 'Comfy Guild Fest Accommodation',
         'GuildFestTentIII' => 'Cozy Guild Fest Accommodation',
@@ -38758,6 +39071,7 @@ Certificate',
         'OrientalStoneStatue1' => 'Large Stone Statue',
         'OrientalStoneStatue2' => 'Mossy Stone Statue',
         'OstereierbaumBuff' => 'Egg Hunt',
+        'OutdoorCanteenAid' => 'Cooking Supplies Wagon',
         'PageOfSheetMusic' => 'Page of Sheet Music',
         'Paper' => 'Paper',
         'PartyCrasherBoss1' => 'Denis the Delinquent',
@@ -38896,6 +39210,7 @@ Certificate',
         'ProductivityBuffLvl29' => 'Smoked Fish Steak',
         'ProductivityBuffLvl3' => 'Aunt Irma\'s Gift Basket',
         'ProductivityBuffLvl300' => 'Aunt Irma\'s Feast',
+        'ProductivityBuffLvl31' => 'Gourmet Truffle Stew',
         'ProductivityBuffLvl4' => 'Exotic Fruit Basket',
         'ProductivityBuffLvl5' => 'Red Flying Settler',
         'ProductivityBuffLvl6' => 'Rabbit Lucky Charm',
@@ -38903,6 +39218,7 @@ Certificate',
         'ProductivityBuffLvl8' => 'Cookies',
         'ProductivityBuffLvl9' => 'The Fermentation Accelerator',
         'ProductivityBuffLvlIronMine' => 'Iron Ore Extractor',
+        'ProductivityBuffLvl_CommandCenterBoost' => 'Decisive Action',
         'ProductivityBuffSunflowerFertilizer' => 'Sunflower Fertilizer',
         'ProductivityBuffToyFactoryBuff3' => 'Leftover Wrapping Paper',
         'ProductivityBuffValentinesCard_01' => 'Valentine Card no. 1',
@@ -39060,6 +39376,7 @@ Certificate',
         'ShuffleCollectibles' => 'Fairy Dust',
         'SimplePaper' => 'Simple Paper',
         'SlickBanditBoss' => 'Slick Bandit Boss',
+        'Smokehouse_Mini' => 'Smokehouse Tribute',
         'SnowglobeBuff1' => 'Eversnow Lvl 1',
         'SnowglobeBuff2' => 'Eversnow Lvl 2',
         'SnowglobeBuff3' => 'Eversnow Lvl 3',
@@ -39206,6 +39523,7 @@ Certificate',
         'UnemployedBuilder' => 'Unemployed Builder',
         'Units' => 'units',
         'UnityBurning' => 'XL-R8 Universal Production Enhancer',
+        'UnityEvent_Residence' => 'Portable Research and Living Facility',
         'UnityEvent_Trophy' => 'Togetherness Memoir',
         'UnityZoneRefresh' => 'Zone Refresher',
         'Unlimited' => 'Unlimited',
@@ -39543,6 +39861,9 @@ She lives in a poisonous swamp and is believed to have the ugliest face you can 
         'AnniversaryBundle2025_Large' => 'Oh yeah! It\'s that time of the year. Happy people come together to celebrate we are still running laps around the Sun. A-Mazing!',
         'AnniversaryBundle2025_Medium' => 'Oh yeah! It\'s that time of the year. Happy people come together to celebrate we are still running laps around the Sun. A-Mazing!',
         'AnniversaryBundle2025_Small' => 'Oh yeah! It\'s that time of the year. Happy people come together to celebrate we are still running laps around the Sun. A-Mazing!',
+        'AnniversaryBundle2026_Large' => 'A chest with goods 30 years in the making.',
+        'AnniversaryBundle2026_Medium' => 'A box with goods 30 years in the making.',
+        'AnniversaryBundle2026_Small' => 'A bag with goods 30 years in the making.',
         'ArchebusesLvl1' => 'The arquebus is the pinnacle of ranged warfare! Almost like a hand-held cannon, its sheer power is immense. However, its high production cost and the unique training required to use and maintain it, limit its application to a select few elite marksmen.',
         'ArcheologistGeologist' => 'A geologist with a penchant for soccer and archeology. As he enjoys more than just looking for resources, he also has a chance of finding great treasures on certain searches deep underground. He\'s also twice as fast as standard geologists.',
         'ArcticTitaniumMine' => 'A titanium mine built to operate at optimal capacity in cold weather. Works just fine in other weather too.',
@@ -39609,6 +39930,7 @@ Just standing beside such a tree, you can feel its arcane power permeate through
         'BlackTree_Red' => 'A seed that lets you plant a tree as black as night. Once the pride and center of a witch\'s dance, this seed mysteriously found its way into your hands. The tree that springs from this seed will swallow the light surrounding it, and in return emit a diffuse, arcane red light.
 Just standing beside such a tree, you can feel its arcane power permeate through you. You feel a strong urge to get as many of these trees on your island as possible, and wonder if this is part of its magic.',
         'BlacktreeExplorer' => 'The Blacktree Explorer is obsessed by the Blacktree. She loves all variations of it. She is so committed to the Blacktree that when she returns from exploring, she always brings one of the famous Blacktree buffs back with her.',
+        'BlastingCartAid' => 'A decoration building that increases the Artificer Study and Stone Depot production speed.',
         'BoatHouse' => 'An old boat turned into a cozy residence. The rocking helps with falling asleep.',
         'BoldExplorer' => 'He\'s every bit as bold as his looks suggest. He absolutely loves to go on a treasure search, and usually brings home 50% more rewards due to his boldness. Whether on treasure or adventure searches, rumor has it he hasn’t come home without a buff yet. Impressive, isn’t it?',
         'BonabertiBusiness' => 'One of the Bonaberti family’s belongings, a beautiful untouched island in the far south, has been overrun by unknown bandits. The Bonabertis, though incredibly wealthy, are not exactly experienced in warfare. Therefore, they\'ve trustingly turned to you for help: could you please eradicate the hostiles on the island? The rewards will definitely be worth it!',
@@ -39964,6 +40286,8 @@ Don\'t you know it\'s just an illusion? I know a hermit who will gladly teach yo
         'CoinsLvl1' => 'The dream of every explorer, peasant or king. A big chest of shiny gold coins. What more can you ask for?',
         'CollectibleFoodCartGuildShop' => 'Need loads of food? Then these food carts are for you!',
         'CollectibleMysteryBox' => 'A beautiful collection of all the collectibles you could ever wish for, including Adamantium Ore and Food Carts.',
+        'CommandCenter' => 'Before every campaign, military leaders across the lands gather within these halls to devise clever strategies.',
+        'CommandCenterAid' => 'A decoration building that increases the Command Centre\'s production speed.',
         'ConcertHall' => 'Grant yourself some high culture and build the wonderful Concert Hall. This building lets you change your background music, while at the same time benefiting from some very powerful zone buffs.
 Cooldown: 24 hours, can be reduced by additional buildings of the same type.',
         'ConscientiousGeologist' => 'Young geologists are always looking for that big find, and sometimes miss the forest for the trees. Diligent experts know that checking twice often yields twice the gains.',
@@ -40137,6 +40461,7 @@ NOTE: This item only works on the ruins of a common pumpkin cemetery.',
         'EffectBuff_pumpkinfield_03_resurrector' => 'Did your pumpkin cemetery run out? Don\'t worry! This fertilizer will bring it back to full health with 10 pumpkins, so it can continue its production. Just make sure it doesn\'t run out again!
 NOTE: This item only works on the ruins of a noble pumpkin cemetery.',
         'EfficientAdvancedToolmaker' => 'An alternative engineering of the Advanced tool maker. Trades off a little bit of speed in exchange for resource economy.',
+        'EfficientCrossbowsmith' => 'An alternative engineering of the Crossbowsmith. Trades off a little bit of speed for a better resource economy.',
         'EfficientPlatinumSmelter' => 'An alternative engineering of the Platinum Smelter. Trades off a little bit of speed for resource economy.',
         'EggLvl1' => 'A mysterious rabbit in a dark alley is secretly selling Easter eggs. If you say the password "Easter" to him, you\'ll be able to buy some.',
         'ElderTreeLH' => 'A very old tree that teems with magic. Legends say that it is as old as time itself and has the ability to find hidden treasures.',
@@ -40441,6 +40766,7 @@ He can help you gain building space by demolishing certain rock formations and s
         'OrePackage' => 'A nice compilation of basic ores to speed up production.',
         'Ostereierbaum' => 'A tree with eggs on it? What’s next? A steak tree? Cows made out of lettuce?',
         'OutdoorCanteen' => 'Here your troops have the opportunity to fill their bellies with a delicious meal before setting out on adventures. You know what they say: "an army marches on its stomach".',
+        'OutdoorCanteenAid' => 'A decoration building that reduces the Outdoor Canteen\'s cooldown and increases the Smokehouse\'s production speed.',
         'PalmTreeDeco01' => 'A very beautiful palm tree, which can be placed on your island to prettify it.',
         'PalmTreeDeco02' => 'A very beautiful palm tree, which can be placed on your island to prettify it.',
         'PalmTreeDeco03' => 'A very beautiful palm tree, which can be placed on your island to prettify it.',
@@ -40493,6 +40819,7 @@ You can give Gold Fever to your miners! You can also offer it to your friends!',
         'ProductivityBuffEW3' => 'The experience of long, hard fights against the Jötnar will help your workers boost their productivity.',
         'ProductivityBuffEWBalloonsLv2' => 'Many famous bakers were needed to get this cake done. It is a must have for any celebration in the Festival Hall.',
         'ProductivityBuffLvl12' => 'No-one knows where it comes from - but it certainly boosts productivity!',
+        'ProductivityBuffLvl22' => 'Oils machinery to prevent gears from grinding and ensure peak production',
         'ProductivityBuffLvl25' => 'A refined and exotic baker that is willing to lend a hand to improve your bakeries with his methods.',
         'ProductivityBuffLvl27' => 'He may have no head, but this man knows his way around his horses! While he\'s usually somewhat less than co-operative, he\'s actually surprisingly willing to help tend to our horses.',
         'ProductivityBuffLvl28' => 'The sticky and half-molten sweets serve as an inspiration to all smelters... or so they claim. They probably just have a sweet tooth.',
@@ -40569,6 +40896,8 @@ It\'s a little silly, but our military instructors have found it to make excelle
         'ScenarioBundle1' => 'An impressive bundle to help any and all settlers.',
         'ScenarioBundle2' => 'An awesome and exclusive Scenario Adventure Season bundle.',
         'ScenarioBundle3' => 'Get yourself some refillers, resources and flaming arrows with this time-limited bundle.',
+        'Settlers2HQDeco' => 'Increases the population limit.
+Functions as a storehouse entry point for production buildings.',
         'SettlersHQ' => 'The Settlers Headquarters, based on the old design from The Settlers 2',
         'ShamanBundle' => 'Make preparations for the end of the world with this time-limited and event-exclusive bundle.',
         'ShopBookbinderBuffLvl2' => 'This resin seems a bit gooey but don\'t let it fool you! It\'s every bit as effective as it is gooey!',
@@ -40597,6 +40926,7 @@ This magnificent and unique winter residence is a must under every Christmas Tre
         'SmallHalloweenBundle2024' => 'Oh no, look at this bag! It comes right from a nightmare. Don\'t close your eyes or it will haunt you in your precious dreams.',
         'SmallHalloweenBundle2025' => 'A bag made of a ghoulish leather, full of Halloween themed goodness. Hopefully the contents are worth bearing the smell.',
         'Smokehouse' => 'A smokery in the style of the Nords. Smokes fish to produce a tasty buff.',
+        'Smokehouse_Mini' => 'This tribute honours the island\'s master smokers. Produces 1 Smoked Fish Steak every day.',
         'Snowglobe' => 'This giant globe and its ever-swirling snow capture the Christmas spirit all year long. Everyone that comes close to it is filled with warm feelings of wonder and joy.',
         'SnowyExplorer' => 'When he\'s not passing the time by admiring the Gingerbread House, this explorer really likes going on treasure hunts. In fact, there’s only one thing he likes more - and that\'s presents. He\'ll always bring home 4 times the amount of event resources during events.',
         'SnowyExplorerGems' => 'When he\'s not passing the time by admiring the Gingerbread House, this explorer really likes going on treasure hunts. In fact, there’s only one thing he likes more - and that\'s presents. He\'ll always bring home 4 times the amount of event resources during events.',
@@ -40683,6 +41013,7 @@ Though not made for fighting, he can transport larger armies in a shorter amount
         'TransporterGeneralBjoern' => 'Bjoern is a very friendly general. People gather around him and want to follow him. This leads to him being a non-combative general who’s more focused on the well-being of his troops. He’s also capable of hiring recruits during his travels.',
         'TribesmanBundle' => 'Make preparations for the end of the world with this time-limited and event-exclusive bundle.',
         'TunnelOfLove' => 'A place were couples usually go on a first date. Also, most first kisses happen here too. It\'s said that bonds that begin here last for a lifetime.',
+        'UnityEvent_Residence' => 'Somehow it can hold 100 people AND 1,000 units of storage. Impressive!',
         'Valentine2024_LargeBundle' => 'A huge bundle filled with love and other useful things.',
         'Valentine2024_MediumBundle' => 'A bundle filled with love and other useful things.',
         'Valentine2024_SmallBundle' => 'A small bundle filled with love and other useful things.',
@@ -40893,6 +41224,9 @@ Get this event-exclusive bundle to prove your love to - ahem - yourself.',
         'AnniversaryBundle2025_Large' => '"Don\'t drink too much. I expect you back next year"',
         'AnniversaryBundle2025_Medium' => '"Don\'t drink too much. I expect you back next year"',
         'AnniversaryBundle2025_Small' => '"Don\'t drink too much. I expect you back next year"',
+        'AnniversaryBundle2026_Large' => '"A toast for another 3 decades."',
+        'AnniversaryBundle2026_Medium' => '"A toast for another 3 decades."',
+        'AnniversaryBundle2026_Small' => '"A toast for another 3 decades."',
         'ArchebusesLvl1' => '"Bang!"',
         'ArcheologistGeologist' => '"Oh, look what I found under this rubble!"',
         'ArcticTitaniumMine' => '"Labeling something as titanium always makes seem better"',
@@ -40943,6 +41277,7 @@ Get this event-exclusive bundle to prove your love to - ahem - yourself.',
         'BlackTree_Purple' => '"Utterly dark, but still shining"',
         'BlackTree_Red' => '"Utterly dark, but still shining"',
         'BlacktreeExplorer' => '"Can we get more Blacktrees?"',
+        'BlastingCartAid' => '"I would not light that pipe close to it if I were you…"',
         'BoatHouse' => '"If you don\'t like the neighbors, you can always sail away"',
         'BoldExplorer' => '"He’s as bold as brass!"',
         'BonabertiBusiness' => '“Family Bonaberti needs your help!”',
@@ -41279,6 +41614,8 @@ Get this event-exclusive bundle to prove your love to - ahem - yourself.',
         'CoinsLvl1' => '"Money has no smell."',
         'CollectibleFoodCartGuildShop' => '"A sea of food"',
         'CollectibleMysteryBox' => '"Collect them all!"',
+        'CommandCenter' => '"If you know the enemy and know yourself, you need not fear the result of a hundred battles."',
+        'CommandCenterAid' => '"All quiet on this front."',
         'ConcertHall' => '“A blessing to your ears!”',
         'ConscientiousGeologist' => '"Yippee! Yippee!"',
         'ConversionBattleBuffBomb_random_units' => '"A true hail of bullets."',
@@ -41443,6 +41780,7 @@ Get this event-exclusive bundle to prove your love to - ahem - yourself.',
         'EffectBuff_pumpkinfield_02_resurrector' => '"Remember to refill it!"',
         'EffectBuff_pumpkinfield_03_resurrector' => '"Try pausing its production so it doesn\'t run dry!"',
         'EfficientAdvancedToolmaker' => '"According to my calculations, this is more efficient. Trust me, dear brother"',
+        'EfficientCrossbowsmith' => '"These marvels of ingenuity can do the work of 3 apprentices and not complain about splinters in the process."',
         'EfficientPlatinumSmelter' => '"Steam power allows the workers of this shop express their true lazy selves."',
         'EggLvl1' => '“Psst... don\'t tell anybody.”',
         'ElderTreeLH' => '"The way is made clear when seen from above"',
@@ -41720,6 +42058,7 @@ Get this event-exclusive bundle to prove your love to - ahem - yourself.',
         'OrePackage' => '"Should I take ore or ore?"',
         'Ostereierbaum' => '“Think eggs don’t grow on trees? Watch this!”',
         'OutdoorCanteen' => '"Mmm... So tasty!"',
+        'OutdoorCanteenAid' => '"Nothing keeps a kitchen running like steady supplies."',
         'PalmTreeDeco01' => '“Beautiful palm trees!”',
         'PalmTreeDeco02' => '“Beautiful palm trees!”',
         'PalmTreeDeco03' => '“Beautiful palm trees!”',
@@ -41762,6 +42101,7 @@ Get this event-exclusive bundle to prove your love to - ahem - yourself.',
         'ProductivityBuffEW3' => '"They have earned it"',
         'ProductivityBuffEWBalloonsLv2' => '"Sooo sweet"',
         'ProductivityBuffLvl12' => '"Is this some kind of magic?"',
+        'ProductivityBuffLvl22' => '"Made out of every greasy thing we could find."',
         'ProductivityBuffLvl25' => '"Because who doesn\'t loaf freshly baked bread?"',
         'ProductivityBuffLvl27' => '"..."',
         'ProductivityBuffLvl28' => '"Sugar rush!"',
@@ -41835,6 +42175,7 @@ Get this event-exclusive bundle to prove your love to - ahem - yourself.',
         'ScenarioBundle1' => '“Get it now!”',
         'ScenarioBundle2' => '“Only for a limited time!”',
         'ScenarioBundle3' => '“Incredible!”',
+        'Settlers2HQDeco' => '"After 30 years, it still looks as good as new."',
         'SettlersHQ' => '"Might be old, but it\'s still good"',
         'ShamanBundle' => '“The end is nigh!”',
         'ShopBookbinderBuffLvl2' => '"Buff the books."',
@@ -41861,6 +42202,7 @@ Get this event-exclusive bundle to prove your love to - ahem - yourself.',
         'SmallHalloweenBundle2024' => '"Don\'t close your eyes..."',
         'SmallHalloweenBundle2025' => '"Wash your hands after handling that"',
         'Smokehouse' => '"The best type of fish"',
+        'Smokehouse_Mini' => '"Good things come to those who wait."',
         'Snowglobe' => '"Winter joy, 24-7, all year round"',
         'SnowyExplorer' => '"I love winter!"',
         'SnowyExplorerGems' => '"I love winter!"',
@@ -41940,6 +42282,7 @@ Can be exchanged at the Mayor\'s house for a tome.',
         'TransporterGeneralBjoern' => '"We will never give up!"',
         'TribesmanBundle' => '“The end is nigh!”',
         'TunnelOfLove' => '"Would you be my valentine?"',
+        'UnityEvent_Residence' => '"The latest breakthrough in portable housing."',
         'Valentine2024_LargeBundle' => '"This chest smells like roses!"',
         'Valentine2024_MediumBundle' => '"This box smells like roses!"',
         'Valentine2024_SmallBundle' => '"This bag smells like roses!"',
@@ -42781,6 +43124,54 @@ Note: Can be combined with other animal-replacing buffs. Takes priority over eve
 1x Farming & Hunting Guide 
 1x Rock Mining Guide 
 1x Wood Cutting Guide',
+        'AnniversaryBundle2026_Large' => 'Contains:
+Rina the Explorer
+Wondrous Celebration Residence
+Oil Mill Tribute
+Scouting Post
+600 Grout
+300 Oil
+6x Enormous Birthday Cake
+8x Rain of Flaming Arrows
+1x Prestigious Friend Buff
+3x Recruitment Guide
+3x Weapon Crafting Guide
+3x Paperwork Guide
+3x Mining Guide
+3x Farming & Hunting Guide
+3x Rock Mining Guide
+3x Wood Cutting Guide',
+        'AnniversaryBundle2026_Medium' => 'Contains:
+Sophisticated Geologist
+Older Gemini General
+Adventure Bookbinder
+400 Grout
+200 Oil
+4x Enormous Birthday Cake
+6x Rain of Flaming Arrows
+1x Prestigious Friend Buff
+2x Recruitment Guide
+2x Weapon Crafting Guide
+2x Paperwork Guide
+2x Mining Guide
+2x Farming & Hunting Guide
+2x Rock Mining Guide
+2x Wood Cutting Guide',
+        'AnniversaryBundle2026_Small' => 'Contains:
+Thatched Cottage
+General Tremble Beard
+200 Grout
+100 Oil
+2x Enormous Birthday Cake
+4x Rain of Flaming Arrows
+1x Prestigious Friend Buff
+1x Recruitment Guide
+1x Weapon Crafting Guide
+1x Paperwork Guide
+1x Mining Guide
+1x Farming & Hunting Guide
+1x Rock Mining Guide
+1x Wood Cutting Guide',
         'ArcheologistGeologist' => 'Has a chance of finding treasure when successfully discovering a deposit. This can be a deposit refiller, a buff or even a book.',
         'ArcticTitaniumMine' => 'Mines 5 Titanium Ore every 12 minutes.',
         'ArmillarySphere' => '1x1, decoration',
@@ -43158,6 +43549,12 @@ Base Production time: 36 hours. Upgrade Costs: 3,000 Exotic Wood Planks, 2,750 P
 
 Choose your favorite color(s)!',
         'BlacktreeExplorer' => 'Always returns with one of the Blacktree buffs from long, very long, and prolonged treasure searches.',
+        'BlastingCartAid' => 'Type: Support Decoration, recurring
+Effect: +20% Artificer Study production speed
+Effect: +20% Stone Depot production speed
+
+Levels: 1
+Size: 1x1',
         'BoatHouse' => 'Effect: Increases population by 60
 Size: 1x1 
 Placeable on water
@@ -44519,6 +44916,18 @@ Target: Workyards (own only)',
 • 50 Food Carts',
         'CollectibleMysteryBox' => 'Open:
 • Get a random collectible resource',
+        'CommandCenter' => 'Type: Buff Producer, recurring
+Buffs produced:
+Diversion
+Grapeshot
+Horseback Charge
+
+Levels: 3
+Size: 2x2',
+        'CommandCenterAid' => 'Type: Support Decoration, recurring
+Effect: +15% Command Centre production speed
+Levels: 1
+Size: 1x1',
         'ConcertHall' => 'Type: Culture, recurring
 Effect: Sheet music buffs allow you to change background music while also applying a strong zone buff
 Size: 3x2
@@ -45038,6 +45447,11 @@ Can also be used on friends\' islands.',
         'EfficientAdvancedToolmaker' => 'Type: Workyard, recurring
 Effect: Produces 2 Advanced Tools. Costs 3 Titanium + 12 Tools
 Duration: 45 min.
+Size: 2x2',
+        'EfficientCrossbowsmith' => 'Type: Workyard, recurring
+Effect: Turns 9 Titanium and 24 Exotic Wood into 2 Crossbows
+Production time: 43 minutes
+Levels: 4
 Size: 2x2',
         'EfficientPlatinumSmelter' => 'Type: Workyard, recurring
 Effect: Produces 2 Platinum
@@ -45817,15 +46231,12 @@ Size: 1x1',
 Effect: Buffs residences in a 15x15 area around it
 Cooldown: 120 hours, reduced by additional buildings
 Size: 4x4
-
-Winter Jolly: 
-Duration: 12 hours
- 
-Buffs residences in range. Triggers island-wide effects based on the number of residences buffed:
+Winter Jolly:
+Buffs residences within range. Triggers island-wide effects based on the number of residences buffed:
 20 residences: Increases production speed by 25%
 25 residences: Increases production speed by 50%
-
-Targets: Provision House, Rarity Provision House, Snack Stand, Harbor, Chocolateer, Lazaret, Blacktree, Lover\'s Statue, Balloon Market, Stone Depot, Toy Factory, Candy Factory, Siege Workshop, Artificer Study, Carnival Grounds, Romantic Restaurant, Bookbinder, Adventure Bookbinder, Oil Mill, Oil Refinery, Smokehouse, Stronghold, Laboratory, Coffee Shop, Jewel Crafter Workshop, Prospector Workshop, Witch Coven, Retirement Village, Wedding Chapel',
+Duration: 12 hours
+Targets: Adventure Bookbinder, Artificer Study, Balloon Market, Blacktree, Bookbinder, Candy Factory, Carnival Grounds, Chocolateer, Coffee Shop, Command Centre, Fluffy Butte Logistics Office, Harbor, Jewel Crafter Workshop, Laboratory, Lazaret, Lover\'s Statue, Oil Mill, Oil Refinery, Prospector Workshop, Provision House, Rarity Provision House, Retirement Village, Romantic Restaurant, Siege Workshop, Smokehouse, Snack Stand, Stone Depot, Stronghold, Toy Factory, Wedding Chapel, Witch Coven',
         'IglooStorehouse' => 'Stores up to 40,000 of each resource.
 Size: 2x2',
         'ImprovedBakery' => 'Type: Workyard, recurring
@@ -46386,6 +46797,11 @@ Size 2x2',
         'OutdoorCanteen' => 'Culture Building
 Applies a buff that makes units stronger on adventures.
 Size: 2x2',
+        'OutdoorCanteenAid' => 'Type: Support Decoration, recurring
+Effect: +20% Outdoor Canteen cooldown reduction
+Effect: +20% Smokehouse production speed
+Levels: 1
+Size: 1x1',
         'PalmTreeDeco01' => 'Type: Decoration, recurring
 Size: 1x1',
         'PalmTreeDeco02' => 'Type: Decoration, recurring
@@ -46589,6 +47005,9 @@ Duration: 96 hours',
         'ProductivityBuffLvl17' => 'Effect: +200% output
 Target: Gold Mine
 Duration: 16 hours (24 hours on friend/guild member)',
+        'ProductivityBuffLvl22' => 'Effect: +400% output
+Target: Workyard
+Duration: 6 hours (9 hours on friend/guild member)',
         'ProductivityBuffLvl25' => 'Effect: +200% output
 Target: Bakery, Improved Bakery
 Duration: 24 hours (36 hours on friend/guild member)',
@@ -47039,6 +47458,10 @@ Books ≈ 13.8%',
 • 500 Grout',
         'Settlers2HQ' => '+100 Population
 Is used as a warehouse entrance point by production buildings',
+        'Settlers2HQDeco' => 'Type: Residence
+Effect: +220 population, storehouse entry point
+Size: 2x3
+Upgrades: 4, which increase the population limit further',
         'ShamanBundle' => 'This bundle contains the following items:
 
 • 1x Romantic Explorer
@@ -47187,6 +47610,10 @@ Size: 2x2
 Production time reduced by additional buildings
 
 Smoked Fish Steak: +100% output, 72 hours on Workyards',
+        'Smokehouse_Mini' => 'Type: Tribute
+Effect: Produces 1 Smoked Fish Steak every day
+Levels: 1
+Size: 1x1',
         'Snowglobe' => 'Produces an area buff that increases the production of neighboring buildings.',
         'SnowyExplorer' => '+100% task speed
 +100% rewards on treasure searches (including rarity and artifact searches)
@@ -47324,27 +47751,23 @@ Additionally, successful Coal, Gold, Titanium, Saltpeter, and Granite searches h
 
 • Get 1000 Stone',
         'StoneDepot' => 'Type: Provisioner, recurring.
-Effect: Produces a variety of rock goods related buffs.
+Effect: Produces a variety of buffs related to rock goods.
 Size: 2x2
 3 Upgrades
-
 Sharpened Pickaxes
-Effect: +200% Production Speed
-Target: Stone Mason, Marble Mason, Granite Mason
-Duration: 6 hours
+Effect: +300% Production output
+Target: Mason, Marble Mason, Granite Pit
+Duration: 24 hours
 Base Production Time: 24 hours
-
 Rock Transmutation
-Effect: Turns Stone, Marble and Saltpeter into Granite
+Effect: Turns Stone, Marble, and Saltpetre into Granite
 Target: Mayor\'s House
-Base Production Time: 24 hours
-
+Base Production Time: 2 hours
 Stone Rollers
-Effect: +200% Production Speed
+Effect: +200% Production output and -25% Production input.
 Target: Grout Factory
-Duration: 12 hours
+Duration: 48 hours
 Base Production Time: 24 hours
-
 Base production time can be reduced by additional buildings of the same type.',
         'StoneLvl1' => 'You get:
 • 100 Stone',
@@ -47659,6 +48082,12 @@ Cost: 1 Gold Coin
 Duration: 12 h.
 Size: 2x2
 Upgrades: 2',
+        'UnityEvent_Residence' => 'Type: Special Residence
+Size: 2x2
+Level: 1
+Effect:
++100 population
++1,000 storage',
         'Valentine2024_LargeBundle' => 'You get: 
 
 1x Scouting Post
@@ -48442,6 +48871,9 @@ Amount: 3',
         'AnniversaryBundle2025_Large' => 'Party Hard Chest',
         'AnniversaryBundle2025_Medium' => 'Party Hard Box',
         'AnniversaryBundle2025_Small' => 'Party Hard Bag',
+        'AnniversaryBundle2026_Large' => 'Three-Decade-Old Chest',
+        'AnniversaryBundle2026_Medium' => 'Three-Decade-Old Box',
+        'AnniversaryBundle2026_Small' => 'Three-Decade-Old Bag',
         'ArchebusesLvl1' => 'Arquebuses',
         'ArcheologistGeologist' => 'Archeological Geologist',
         'ArcticTitaniumMine' => 'Arctic Titanium Mine',
@@ -48492,6 +48924,7 @@ Amount: 3',
         'BlackTree_Purple' => 'Blacktree Seed (purple)',
         'BlackTree_Red' => 'Blacktree Seed (red)',
         'BlacktreeExplorer' => 'Blacktree Explorer',
+        'BlastingCartAid' => 'Blasting Cart',
         'BoatHouse' => 'Boat Residence',
         'BoldExplorer' => 'Bold Explorer',
         'BonabertiBusiness' => 'Bonaberti Business',
@@ -48828,6 +49261,8 @@ Amount: 3',
         'CoinsLvl1' => 'Treasure Chest',
         'CollectibleFoodCartGuildShop' => 'Food Carts',
         'CollectibleMysteryBox' => 'Collectible Mystery Box',
+        'CommandCenter' => 'Command Centre',
+        'CommandCenterAid' => 'Watchpost',
         'ConcertHall' => 'Concert Hall',
         'ConscientiousGeologist' => 'Conscientious Geologist',
         'ConversionBattleBuffBomb_random_units' => 'Ranged support',
@@ -48993,6 +49428,7 @@ Amount: 3',
         'EffectBuff_pumpkinfield_02_resurrector' => 'Fertilizer: Common Pumpkin Cemetery',
         'EffectBuff_pumpkinfield_03_resurrector' => 'Fertilizer: Noble Pumpkin Cemetery',
         'EfficientAdvancedToolmaker' => 'Efficient Advanced Toolmaker',
+        'EfficientCrossbowsmith' => 'Efficient Crossbowsmith',
         'EfficientPlatinumSmelter' => 'Efficient Platinum Smelter',
         'EggLvl1' => 'Eggs',
         'ElderTreeLH' => 'Elder Tree Lighthouse',
@@ -49275,6 +49711,7 @@ Certificate',
         'OrePackage' => 'Basic Ore Package',
         'Ostereierbaum' => 'Easter Egg Tree',
         'OutdoorCanteen' => 'Outdoor Canteen',
+        'OutdoorCanteenAid' => 'Cooking Supplies Wagon',
         'PalmTreeDeco01' => 'Deco Palm Tree 1',
         'PalmTreeDeco02' => 'Deco Palm Tree 2',
         'PalmTreeDeco03' => 'Deco Palm Tree 3',
@@ -49317,6 +49754,7 @@ Certificate',
         'ProductivityBuffEW3' => 'Fruits of Hardship',
         'ProductivityBuffEWBalloonsLv2' => 'Enormous Birthday Cake',
         'ProductivityBuffLvl12' => 'Bag of Rainbow Snow',
+        'ProductivityBuffLvl22' => 'Machine Oil',
         'ProductivityBuffLvl25' => 'Mr. Croix Sant',
         'ProductivityBuffLvl27' => 'The Headless Horseman',
         'ProductivityBuffLvl28' => 'Bucket of Sweets',
@@ -49390,6 +49828,7 @@ Certificate',
         'ScenarioBundle2' => 'Scenario Bundle II',
         'ScenarioBundle3' => 'Scenario Bundle III',
         'Settlers2HQ' => 'Settlers Headquarters',
+        'Settlers2HQDeco' => 'Settlers Headquarters',
         'ShamanBundle' => 'Shaman Bundle',
         'ShopBookbinderBuffLvl2' => 'Wilderwood Resin',
         'ShopIslandDeed_FreeIsland' => 'Sector Deed',
@@ -49415,6 +49854,7 @@ Certificate',
         'SmallHalloweenBundle2024' => 'Bag from a Nightmare',
         'SmallHalloweenBundle2025' => 'Leathery Bag',
         'Smokehouse' => 'Smokehouse',
+        'Smokehouse_Mini' => 'Smokehouse Tribute',
         'Snowglobe' => 'Giant Snow Globe',
         'SnowyExplorer' => 'Snowy Explorer',
         'SnowyExplorerGems' => 'Snowy Explorer',
@@ -49495,6 +49935,7 @@ Certificate',
         'TransporterGeneralBjoern' => 'Quartermaster Bjoern',
         'TribesmanBundle' => 'Tribesman Bundle',
         'TunnelOfLove' => 'Tunnel of Love',
+        'UnityEvent_Residence' => 'Portable Research and Living Facility',
         'Valentine2024_LargeBundle' => 'Chest of Love',
         'Valentine2024_MediumBundle' => 'Box of Love',
         'Valentine2024_SmallBundle' => 'Bag of Love',
@@ -50153,6 +50594,9 @@ Duration: 7 days (10.5 days on friend/guild member)',
         'AnniversaryBundle2025_Large' => 'A small Anniversary-themed bundle',
         'AnniversaryBundle2025_Medium' => 'A medium Anniversary-themed bundle',
         'AnniversaryBundle2025_Small' => 'A great Anniversary-themed bundle',
+        'AnniversaryBundle2026_Large' => 'A large Anniversary-themed bundle',
+        'AnniversaryBundle2026_Medium' => 'A medium Anniversary-themed bundle',
+        'AnniversaryBundle2026_Small' => 'A small Anniversary-themed bundle',
         'ArcheologistGeologist' => 'Has a chance of finding treasure upon discovering certain deposits.',
         'ArcticTitaniumMine' => 'A Titanium Mine that works at 5x.',
         'ArmillarySphere' => '1x1, decoration',
@@ -50246,6 +50690,7 @@ Note: The enemies on the island change each time the adventure is started, while
         'BlackTree_Red' => 'Produces a variety of unique and powerful buffs in exchange for resoures, after upgrading with pumpkins.',
         'Blacktree Explorer' => 'Always returns with one of the Blacktree buffs from treasure searches.',
         'BlacktreeExplorer' => 'Always brings back one of the Blacktree buffs from long, very long and prolonged treasure searches.',
+        'BlastingCartAid' => '1x1 Support Decoration',
         'BoatHouse' => 'Water residence, which increases population by up to 180',
         'BoldExplorer' => '+150% task speed
 Boldness: +50% rewards on treasure searches. Guaranteed to find a buff on treasure and adventure searches.',
@@ -51315,6 +51760,8 @@ Upgrades: 5, which increase output further',
 • 50 Food Carts',
         'CollectibleMysteryBox' => 'Open:
 • Get a random collectible resource',
+        'CommandCenter' => '2x2 Buff Producer',
+        'CommandCenterAid' => '1x1 Support Decoration',
         'ConcertHall' => 'Type: Culture, recurring
 Effect: Sheet music buffs allow you to change background music, and also apply a strong zone buff.
 Size: 3x2',
@@ -51655,6 +52102,7 @@ Duration: 7 days (10.5 days on friend/guild member)',
         'EffectBuff_pumpkinfield_02_resurrector' => 'Refills a depleted common pumpkin cemetery with 10 pumpkins.',
         'EffectBuff_pumpkinfield_03_resurrector' => 'Refills a depleted noble pumpkin cemetery with 10 pumpkins.',
         'EfficientAdvancedToolmaker' => 'Workyard 2x2',
+        'EfficientCrossbowsmith' => '2x2 Workyard',
         'EfficientPlatinumSmelter' => 'Workyard, 2x2',
         'EggLvl1' => 'Get 40 eggs',
         'ElderTreeLH' => 'Special culture building which applies Fairy Fire. In addition, increases population by 80',
@@ -52248,6 +52696,7 @@ Size 2x2',
         'OutdoorCanteen' => 'Culture Building
 Applies a buff that makes units stronger on adventures.
 Size: 2x2',
+        'OutdoorCanteenAid' => '1x1 Support Decoration',
         'PalmTreeDeco01' => 'Type: Decoration, recurring
 Size: 1x1',
         'PalmTreeDeco02' => 'Type: Decoration, recurring
@@ -52364,6 +52813,9 @@ Note: This item will be replaced with "Fruits of Hardship" at a ratio of 2:1 aft
         'ProductivityBuffLvl12' => 'Effect: +300% output
 Target: Workyard
 Duration: 96 hours',
+        'ProductivityBuffLvl22' => 'Effect: +400% output
+Target: Workyard
+Duration: 6 hours (9 hours on friend/guild member)',
         'ProductivityBuffLvl25' => 'A renowned baker from a distant land!
 
 Effect: +200% output
@@ -52542,6 +52994,7 @@ Upgrades: 2',
 • 500 Oil
 • 500 Advanced Tools
 • 500 Grout',
+        'Settlers2HQDeco' => '2x3 Residence',
         'ShamanBundle' => '• 1x Romantic Explorer
 • 1x Loner General
 • 1x Improved Deerstalker Hut
@@ -52599,6 +53052,7 @@ Size: 2x2
 Production time reduced by additional buildings
 
 Smoked Fish Steak: +100% output, 72 hours on workyards',
+        'Smokehouse_Mini' => '1x1 Tribute',
         'Snowglobe' => 'Buffs the production of nearby buildings.',
         'SnowyExplorer' => 'An explorer that\'s very keen on event resources.',
         'SnowyExplorerGems' => 'An explorer that is very keen on event resources.',
@@ -52833,6 +53287,7 @@ Cost: 1 Gold Coin
 Duration: 12 h.
 Size: 2x2
 Upgrades: 2',
+        'UnityEvent_Residence' => '2x2 Special Residence',
         'Valentine2024_LargeBundle' => 'A huge chest with a lof of love inside.',
         'Valentine2024_MediumBundle' => 'A great box with a lot of love inside.',
         'Valentine2024_SmallBundle' => 'A small bag with a lot of love inside.',
@@ -53186,9 +53641,9 @@ You\'ve placed this building\'s expansion on your island {0} times, so its produ
         'DuplicatedBuildingCultureTip' => 'This building\'s cooldown times are reduced for every copy of it on your island.
 
 You\'ve placed this building on your island {0} times, so its cooldown speed is at {1}% of the base value.',
-        'DuplicatedBuildingSimpleProductionTip' => 'This building\'s production speed increases with every copy of it on your island.
+        'DuplicatedBuildingSimpleProductionTip' => 'This building\'s production speed increases with every copy of the building\'s expansion you place on your island.
 
-You have placed this building on your island {0} times, so its production speed is at {1}% of the base value.',
+You\'ve placed this building\'s expansion on your island {0} times, so its production speed is at {1}% of the base value.',
         'DuplicatedBuildingTimedProductionTip' => 'Additional expansion buildings can increase your recruitment/production speed. The current production speed is {1}%',
         'EffectBuffFlowerBouquet' => 'Effect: Condition requirement
 Target: Population Building

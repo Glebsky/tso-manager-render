@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 /*
  * DO NOT EDIT. Generated game translation catalog.
- * Source: ru_lang.xml
+ * Source: localization_oasis.xml
  * Locale: ru
- * Regenerate: php artisan tso:lang:import /path/to/ru_lang.xml --locale=ru
+ * Regenerate: php artisan tso:lang:import /path/to/localization_oasis.xml --locale=ru
  */
 
 return [
@@ -42,6 +42,7 @@ return [
         'BarracksLevel7' => 'Станьте владельцем казарм уровня 7',
         'BattleHorseProd' => 'Добейтесь производства как минимум 1500 боевых коней за 12 ч.',
         'BattleHorseProd_updated' => 'Добейтесь производства как минимум 1200 боевых коней за 12 ч.',
+        'Birthday2018plus_CompleteLostExpeditionQuestline' => 'Сохраните наследие Октавиана, выполнив все задания сюжетной линии «Потерянная экспедиция».',
         'Birthday2018plus_DonateBalloons1' => 'Соберите или произведите 3000 воздушных шаров',
         'Birthday2018plus_DonateBalloons2' => 'Соберите или произведите 6000 воздушных шаров',
         'Birthday2018plus_DonateBalloons3' => 'Соберите или произведите 9000 воздушных шаров',
@@ -255,6 +256,9 @@ return [
         'ElChupacabra1hours' => 'Пройдите затею "Чупакабра" менее чем за 1 час.',
         'EliteBarracksLevel7' => 'Станьте владельцем элитных казарм уровня 7',
         'EpicAdventures' => 'Завершите все эпические миссии хотя бы один раз',
+        'EpicWorkyardRefinery_Upgrade1' => 'Откройте все производства 1-го уровня для промышленного рудоперерабатывающего завода.',
+        'EpicWorkyardRefinery_Upgrade2' => 'Откройте все производства 2-го уровня для промышленного рудоперерабатывающего завода.',
+        'EpicWorkyardRefinery_Upgrade3' => 'Откройте все производства 3-го уровня для промышленного рудоперерабатывающего завода.',
         'EventDecoBuildings' => 'Постройте на карте 20 декоративных зданий, связанных с событиями',
         'ExpeditionWeaponSmithLevel7' => 'Станьте владельцем арсенала уровня 7',
         'ExplorerAdventure' => 'Максимизируйте для исследователей все навыки, улучшающие поиски приключений.',
@@ -291,39 +295,6 @@ return [
         'GetBuffed_2' => 'Добейтесь, чтобы друзья наложили усиление на 100 ваших зданий',
         'GrandDiscovery' => 'Откройте весь остров',
         'GraniteDeposits' => 'Довести 6 залежей гранита как минимум до 600 ед.',
-        'GuildFestEvent2024plus_Adventures' => 'NT: Complete all of the adventures from the following list',
-        'GuildFestEvent2024plus_Buff1A' => 'NT: Use Cheer! 5 times',
-        'GuildFestEvent2024plus_Buff1B' => 'NT: Use Cheer! 50 times',
-        'GuildFestEvent2024plus_Buff1C' => 'NT: Use Cheer! 100 times',
-        'GuildFestEvent2024plus_Buff1D' => 'NT: Use Cheer! 200 times',
-        'GuildFestEvent2024plus_Buff1OtherA' => 'NT: Use Cheer! 5 times on friends or guild mates',
-        'GuildFestEvent2024plus_Buff1OtherB' => 'NT: Use Cheer! 50 times on friends or guild mates',
-        'GuildFestEvent2024plus_Buff1OtherC' => 'NT: Use Cheer! 100 times on friends or guild mates',
-        'GuildFestEvent2024plus_Buff1OtherD' => 'NT: Use Cheer! 200 times on friends or guild mates',
-        'GuildFestEvent2024plus_Buff2A' => 'NT: Use Cheer Harder! 5 times',
-        'GuildFestEvent2024plus_Buff2B' => 'NT: Use Cheer Harder! 25 times',
-        'GuildFestEvent2024plus_Buff2C' => 'NT: Use Cheer Harder! 75 times',
-        'GuildFestEvent2024plus_Buff2D' => 'NT: Use Cheer Harder! 150 times',
-        'GuildFestEvent2024plus_Buff2OtherA' => 'NT: Use Cheer Harder! 5 times on friends or guild mates',
-        'GuildFestEvent2024plus_Buff2OtherB' => 'NT: Use Cheer Harder! 25 times on friends or guild mates',
-        'GuildFestEvent2024plus_Buff2OtherC' => 'NT: Use Cheer Harder! 75 times on friends or guild mates',
-        'GuildFestEvent2024plus_Buff2OtherD' => 'NT: Use Cheer Harder! 150 times on friends or guild mates',
-        'GuildFestEvent2024plus_PlacementA' => 'NT: End Guild Fest with your guild in 1st place',
-        'GuildFestEvent2024plus_PlacementB' => 'NT: End Guild Fest as a Gold rank guild',
-        'GuildFestEvent2024plus_PlacementC' => 'NT: End Guild Fest as a Silver rank guild',
-        'GuildFestEvent2024plus_PlacementD' => 'NT: End Guild Fest as a Bronze rank guild',
-        'GuildFestEvent2024plus_PointsA' => 'NT: Get 1000 Guild Fest Tokens',
-        'GuildFestEvent2024plus_PointsB' => 'NT: Get 5000 Guild Fest Tokens',
-        'GuildFestEvent2024plus_PointsC' => 'NT: Get 10000 Guild Fest Tokens',
-        'GuildFestEvent2024plus_TentA' => 'NT: Acquire the Cushy Guild Fest accommodations',
-        'GuildFestEvent2024plus_TentB' => 'NT: Acquire the Comfy Guild Fest accommodations',
-        'GuildFestEvent2024plus_TentC' => 'NT: Acquire the Cozy Guild Fest accommodations',
-        'GuildFestTowerlvl2' => 'NT: Unlocks Tower of Bragging Rights level 2',
-        'GuildFestTowerlvl3' => 'NT: Unlocks Tower of Bragging Rights level 3',
-        'GuildFestTowerlvl4' => 'NT: Unlocks Tower of Bragging Rights level 4',
-        'GuildFestTowerlvl5' => 'NT: Unlocks Tower of Bragging Rights level 5',
-        'GuildFestTowerlvl6' => 'NT: Unlocks Tower of Bragging Rights level 6',
-        'GuildFestTowerlvl7' => 'NT: Unlocks Tower of Bragging Rights level 7',
         'GunpowderCavalryless' => 'Завершите приключение "Порох", не используя кавалерию.',
         'GunpowderFast' => 'Завершите приключение "Порох" менее чем за 40 часов.',
         'GunpowderLosses' => 'Завершите приключение "Порох", потеряв менее 500 новобранцев.',
@@ -389,7 +360,6 @@ return [
         'HWEvent_2017plus_Trick_1' => 'Разыграйте друга.',
         'HWEvent_2017plus_Trick_2' => 'Разыграйте друзей 50 раз.',
         'HWEvent_2017plus_Trick_3' => 'Разыграйте друзей 100 раз.',
-        'HWEvent_2025_CollectPages' => 'NT: Collect all of the Witchy Grimoire Pages listed below',
         'HardwoodProd' => 'Добейтесь производства как минимум 1000 дубовых досок за 12 ч.',
         'HaveAFriend' => 'Добавьте первого друга в свой список друзей',
         'HaveActiveGuild' => 'Будьте в гильдии с более чем 10 активными членами',
@@ -723,6 +693,7 @@ return [
         'BarracksLevel7' => 'Первоклассные казармы',
         'BattleHorseProd' => 'Мастер-коневод',
         'BattleHorseProd_updated' => 'Мастер-коневод',
+        'Birthday2018plus_CompleteLostExpeditionQuestline' => 'Veni, Vidi, Vici',
         'Birthday2018plus_DonateBalloons1' => 'Меценат',
         'Birthday2018plus_DonateBalloons2' => 'Убежденный меценат',
         'Birthday2018plus_DonateBalloons3' => 'Щедрый меценат',
@@ -962,6 +933,9 @@ return [
         'ElChupacabra1hours' => 'Чу-чу-упакабра',
         'EliteBarracksLevel7' => 'Первоклассные элитные казармы',
         'EpicAdventures' => 'Эпохальные сражения',
+        'EpicWorkyardRefinery_Upgrade1' => 'Промышленный рудоперерабатывающий завод',
+        'EpicWorkyardRefinery_Upgrade2' => 'Промышленный рудоперерабатывающий завод (улучшенный)',
+        'EpicWorkyardRefinery_Upgrade3' => 'Промышленный рудоперерабатывающий завод (совершенный)',
         'EventDecoBuildings' => 'Праздник!',
         'Events' => 'Достижения в событии',
         'ExcelsiorCompleteDetailedTravelGuides' => 'Странник',
@@ -1026,42 +1000,6 @@ return [
         'GrandDiscovery' => 'Великое открытие',
         'GraniteDeposits' => 'Бурые горы',
         'Guild' => 'Гильдия',
-        'GuildFestEvent' => 'NT: Guild Fest Events',
-        'GuildFestEvent2024' => 'NT: Guild Fest Season 1',
-        'GuildFestEvent2024plus_Adventures' => 'NT: What a crazy ride it has been',
-        'GuildFestEvent2024plus_Buff1A' => 'NT: Raising Spirits',
-        'GuildFestEvent2024plus_Buff1B' => 'NT: Raising Spirits Higher',
-        'GuildFestEvent2024plus_Buff1C' => 'NT: Raising Spirits Even Higher',
-        'GuildFestEvent2024plus_Buff1D' => 'NT: Raising Spirits Highest',
-        'GuildFestEvent2024plus_Buff1OtherA' => 'NT: Raising Spirits, Elsewhere',
-        'GuildFestEvent2024plus_Buff1OtherB' => 'NT: Raising Spirits Higher, Elsewhere',
-        'GuildFestEvent2024plus_Buff1OtherC' => 'NT: Raising Spirits Even Higher, Elsewhere',
-        'GuildFestEvent2024plus_Buff1OtherD' => 'NT: Raising Spirits Highest, Elsewhere',
-        'GuildFestEvent2024plus_Buff2A' => 'NT: Crowd Pleasing',
-        'GuildFestEvent2024plus_Buff2B' => 'NT: Crowd Pleasing Harder',
-        'GuildFestEvent2024plus_Buff2C' => 'NT: Crowd Pleasing Even Harder',
-        'GuildFestEvent2024plus_Buff2D' => 'NT: Crowd Pleasing Hardest',
-        'GuildFestEvent2024plus_Buff2OtherA' => 'NT: Crowd Pleasing, Elsewhere',
-        'GuildFestEvent2024plus_Buff2OtherB' => 'NT: Crowd Pleasing Harder, Elsewhere',
-        'GuildFestEvent2024plus_Buff2OtherC' => 'NT: Crowd Pleasing Even Harder, Elsewhere',
-        'GuildFestEvent2024plus_Buff2OtherD' => 'NT: Crowd Pleasing Hardest, Elsewhere',
-        'GuildFestEvent2024plus_PlacementA' => 'NT: We are the champions, my friends!',
-        'GuildFestEvent2024plus_PlacementB' => 'NT: Second best',
-        'GuildFestEvent2024plus_PlacementC' => 'NT: Gold is too pretentious',
-        'GuildFestEvent2024plus_PlacementD' => 'NT: At least we gave it our all',
-        'GuildFestEvent2024plus_PointsA' => 'NT: Guild Hoard',
-        'GuildFestEvent2024plus_PointsB' => 'NT: Guild Hoard-er',
-        'GuildFestEvent2024plus_PointsC' => 'NT: Guild Hoard-est',
-        'GuildFestEvent2024plus_TentA' => 'NT: Settlers B&B',
-        'GuildFestEvent2024plus_TentB' => 'NT: Settlers All-Inclusive',
-        'GuildFestEvent2024plus_TentC' => 'NT: Settlers Settling in... For a bit',
-        'GuildFestEvent2025' => 'NT: Guild Fest Season 1',
-        'GuildFestTowerlvl2' => 'NT: Don\'t get cocky, kid I',
-        'GuildFestTowerlvl3' => 'NT: Don\'t get cocky, kid II',
-        'GuildFestTowerlvl4' => 'NT: Don\'t get cocky, kid III',
-        'GuildFestTowerlvl5' => 'NT: Don\'t get cocky, kid IV',
-        'GuildFestTowerlvl6' => 'NT: Don\'t get cocky, kid V',
-        'GuildFestTowerlvl7' => 'NT: Don\'t get cocky, kid VI',
         'Gunpowder' => 'Порох',
         'GunpowderCavalryless' => 'Напуганные кони',
         'GunpowderFast' => 'Взрывной характер',
@@ -1128,8 +1066,6 @@ return [
         'HWEvent_2017plus_Trick_1' => 'Плутишка',
         'HWEvent_2017plus_Trick_2' => 'Надоедливый сорванец',
         'HWEvent_2017plus_Trick_3' => 'Легендарный проказник',
-        'HWEvent_2025_CollectPages' => 'NT: Collect them all',
-        'HWEvent_2025_WitchCovenUpgrade' => 'NT: Thick spell book',
         'HalloweenEvent' => 'События Хэллоуина',
         'HalloweenEvent2015' => 'Хэллоуин 2015',
         'HalloweenEvent2016' => 'Хэллоуин 2016',
@@ -3502,8 +3438,6 @@ return [
         'ConfirmStartExpedition' => 'Начать экспедицию?',
         'ConfirmStepDown' => 'Вы уверены, что хотите уйти со своего поста, после чего главой гильдии станет {0}?
 {0} может принять ваше предложение или передать его следующему в очереди наследования игроку.',
-        'ConfirmTearDownBuff_BoatHouse' => 'NT: Are you sure you want to demolish the Boat Residence? 
-It will be transferred to your star menu.',
         'ConfirmTeardown' => 'Вы действительно хотите разрушить это здание со всеми действующими усилителями? В качестве компенсации вы получите:',
         'ConfirmTeardownArcticIronMine' => 'Вы действительно хотите снести арктический железный рудник?
 
@@ -3524,8 +3458,6 @@ It will be transferred to your star menu.',
         'ConfirmTeardownBuffZoneBuffs_GiantTreeOfHope' => 'Вы действительно хотите снести огромное дерево надежды?',
         'ConfirmTeardownBuffZoneBuffs_GrandFieldHospital' => 'Вы действительно хотите снести полевой госпиталь?',
         'ConfirmTeardownBuffZoneBuffs_HoliFestivalGrounds' => 'Вы действительно хотите снести площадку фестиваля Холи?',
-        'ConfirmTeardownBuffZoneBuffs_IceSkatingLake' => 'NT: Are you sure you want to demolish the Ice Skating Lake? 
-It will be transferred to your star menu.',
         'ConfirmTeardownBuffZoneBuffs_LoveGarden' => 'Вы действительно хотите снести этот сад любви?
 
 Вы не получите никакой компенсации!',
@@ -3534,10 +3466,6 @@ It will be transferred to your star menu.',
         'ConfirmTeardownBuffZoneBuffs_Snowglobe' => 'Вы действительно хотите снести этот огромный снежный шар?
 
 Тогда вы потеряете все улучшения, а здание будет перемещено в ваше звездное меню.',
-        'ConfirmTeardownBuffZoneBuffs_TowerOfBraggingRights' => 'NT: Are you sure you want to demolish the Tower of Bragging Rights? Stored resources will be lost.
-It will be transferred to your star menu.',
-        'ConfirmTeardownBuff_ArtMuseum' => 'NT: Are you sure you want to demolish the Art Museum? 
-It will be transferred to your star menu.',
         'ConfirmTeardownBuff_BlackTree_Blue' => 'Вы действительно хотите снести это черное дерево?
 
 Тогда вы потеряете все улучшения.
@@ -3580,11 +3508,7 @@ It will be transferred to your star menu.',
 Тогда вы потеряете все улучшения.
 
 Вы не получите никакой компенсации!',
-        'ConfirmTeardownBuff_CoffeeShop' => 'NT: Are you sure you want to demolish the Coffee Shop? 
-It will be transferred to your star menu.',
         'ConfirmTeardownBuff_FloatingStorehouse' => 'Вы действительно хотите снести склад на воде? Ресурсы, которые хранятся там, пропадут.',
-        'ConfirmTeardownBuff_LevitatingHauntedWarehouse' => 'NT: Are you sure you want to demolish this Levitating Haunted Warehouse?
-It will be transferred to your star menu.',
         'ConfirmTeardownBuff_LoveGarden' => 'Вы действительно хотите снести сад любви? Он будет перемещен в звездное меню, а все улучшения пропадут.',
         'ConfirmTeardownBuff_LoveTree' => 'Вы действительно хотите снести это дерево любви?
 
@@ -3629,6 +3553,8 @@ It will be transferred to your star menu.',
         'ConfirmUnlimitLots' => 'Хотите снять ограничение на количество лотов за {0} самоцветов? Максимальное количество лотов - 16.',
         'ConfirmUseHalfSizeGraphicsOption' => 'Хотите загрузить графику в половинном размере? Это может повысить производительность игры.
 Чтобы изменение вступило в силу, необходимо перезагрузить игру. Поэтому вы будете перенаправлены на домашнюю страницу при подтверждении этого изменения.',
+        'ConfirmteardownBuff_OffshoreLighthouse' => 'Вы действительно хотите уничтожить маяк у побережья?
+Здание будет перемещено в ваше звездное меню.',
         'ConnectionLost' => 'Нажмите кнопку "ОК", чтобы обновить браузер.',
         'ContentGeneratorGemRoll' => 'Вы действительно хотите потратить самоцветы, чтобы возместить нехватку кристаллов?',
         'DeleteTrade' => 'Вы действительно хотите удалить это предложение?',
@@ -3674,6 +3600,7 @@ It will be transferred to your star menu.',
         'ItemPurchaseSwitchToBuyGems' => 'Недостаточно самоцветов.
 Вы хотите их приобрести в интернет-магазине?',
         'ItemPurchased' => 'Этот предмет помещен в ваше звездное меню.',
+        'KrampusPitBonusMSG' => 'Крампус счастлив быть наедине со своей киркой и дарит вам обсидиан.',
         'MailAbandonDraft' => 'Если закроете окно, черновик будет удален. Продолжить?',
         'MailBodyCharacterLimit' => 'Слишком длинное сообщение. Максимум символов в сообщении - {0}.',
         'MailMaxRecipientsLimit' => 'Количество выбранных получателей превысило максимум, равный {0}. Сообщение не будет отправлено.',
@@ -3718,7 +3645,6 @@ It will be transferred to your star menu.',
 Это может занять несколько минут.',
         'TemporarySkinActive' => 'Сейчас на здании действует временный вид. Постоянный вид будет доступен, когда закончится временный.',
         'UpgradeBuilding' => 'Вы действительно хотите затратить указанное количество ресурсов и улучшить здание за указанное время?',
-        'WitchCovenFamineMSG' => 'NT: Famine!',
         'ZoneShutdownAnnouncement' => 'Ваша зона скоро будет отключена.',
         'ZoneTimedBuff' => 'Вы действительно хотите использовать в этой зоне усилитель "{0}"?',
         'ZoneTimedBuffCannotReplace' => 'Похожий усилитель уже используется в принадлежащей вашему другу зоне.',
@@ -3783,7 +3709,6 @@ It will be transferred to your star menu.',
         'ConfirmStartAdventure' => 'Начать приключение',
         'ConfirmStartExpedition' => 'Начать экспедицию',
         'ConfirmStepDown' => 'Уйти с поста',
-        'ConfirmTearDown_BoatHouse' => 'NT: Tear down Boat Residence?',
         'ConfirmTeardown' => 'Разрушить здание',
         'ConfirmTeardownArcticIronMine' => 'Снесите арктический железный рудник.',
         'ConfirmTeardownGemPit' => 'Снести залежь самоцветов',
@@ -3800,14 +3725,11 @@ It will be transferred to your star menu.',
         'ConfirmTeardown_Chocolatier' => 'Снести шоколадную фабрику',
         'ConfirmTeardown_ChristmasBakery' => 'Снести рождественскую пекарню',
         'ConfirmTeardown_ChristmasMarket_Player' => 'Снести рождественскую ярмарку',
-        'ConfirmTeardown_CoffeeShop' => 'NT: Tear down Coffee Shop?',
         'ConfirmTeardown_FloatingStorehouse' => 'Снести склад на воде?',
         'ConfirmTeardown_FlowerFarmDepleted' => 'Снести цветочную ферму',
         'ConfirmTeardown_GiantTreeOfHope' => 'Снести огромное дерево надежды?',
         'ConfirmTeardown_GrandFieldHospital' => 'После разрушения здание вернется в звездное меню, при этом все улучшения будут потеряны.',
         'ConfirmTeardown_HoliFestivalGrounds' => 'Снести площадку фестиваля Холи?',
-        'ConfirmTeardown_IceSkatingLake' => 'NT: Tear down Ice Skating lake?',
-        'ConfirmTeardown_LevitatingHauntedWarehouse' => 'NT: Tear down Levitating Haunted Warehouse?',
         'ConfirmTeardown_LoveGarden' => 'Снести сад любви',
         'ConfirmTeardown_LoveTree' => 'Снести дерево любви',
         'ConfirmTeardown_LoversStatue' => 'Снести статую влюбленных?',
@@ -3818,13 +3740,13 @@ It will be transferred to your star menu.',
         'ConfirmTeardown_SiegeWorkshop' => 'После разрушения здание вернется в звездное меню, при этом все улучшения будут потеряны.',
         'ConfirmTeardown_Snowglobe' => 'Снести огромный снежный шар?',
         'ConfirmTeardown_StoneDepot' => 'Снести камнебазу?',
-        'ConfirmTeardown_TowerOfBraggingRights' => 'NT: Tear down Tower of Bragging Rights?',
         'ConfirmTeardown_ToyFactory' => 'Снести фабрику игрушек?',
         'ConfirmTeardown_UnityEvent_Trophy' => 'Снести здание "Чудесное единство"?',
         'ConfirmTradeCoolDown' => 'Подтвердите очистку времени ослабления торговли',
         'ConfirmTransaction' => 'Подтвердить покупку',
         'ConfirmUnlimitLots' => 'Подтвердите снятие ограничения',
         'ConfirmUseHalfSizeGraphicsOption' => 'Графика в половинном размере',
+        'Confirmteardown_OffshoreLighthouse' => 'Снести маяк у побережья?',
         'ConnectionLost' => 'Соединение с сервером потеряно',
         'DeleteTrade' => 'Удалить предложение',
         'DiscardAllPvPTargets' => 'Избавиться от имеющихся находок',
@@ -3898,7 +3820,6 @@ It will be transferred to your star menu.',
         'StartTravel' => 'Отправить генерала на другой остров?',
         'TemporarySkinActive' => 'Временный вид активен',
         'UpgradeBuilding' => 'Улучшить здание',
-        'WitchCovenFamineTTL' => 'NT: Curse',
         'ZoneShutdownAnnouncement' => 'Зона отключена',
         'ZoneTimedBuff' => 'Подтверждение усиления',
         'ZoneTimedBuffCannotPlace' => 'Применить усилитель не удалось',
@@ -3933,6 +3854,7 @@ It will be transferred to your star menu.',
         'ArtificerStudy' => 'Кабинет мастера',
         'AssassinGeneralGarrison' => 'Гарнизон скрытного генерала',
         'AuctionAchievement' => 'Трофей богатея',
+        'AuroraTower' => 'Башня Авроры',
         'Bakery' => 'Пекарня',
         'Bakery_Mini' => 'Воздаяние пекарне',
         'BalloonMarket' => 'Ярмарка воздушных шаров',
@@ -3979,14 +3901,13 @@ It will be transferred to your star menu.',
         'BesiegedOrientalResidence' => 'Осажденное здание',
         'BigWatchtower' => 'Каменная сторожевая башня',
         'BigWatchtower_Closed' => 'Запертая каменная сторожевая башня',
-        'BioFarm' => 'NT: Bio Farm',
         'BlackMarshalGarrison' => 'Гарнизон',
         'BlackTree_Blue' => 'Черное дерево (синее)',
         'BlackTree_Gold' => 'Черное дерево (золотое)',
         'BlackTree_Green' => 'Черное дерево (зеленое)',
         'BlackTree_Purple' => 'Черное дерево (фиолетовое)',
         'BlackTree_Red' => 'Черное дерево (красное)',
-        'BoatHouse' => 'NT: Boat Residence',
+        'BlastingCartAid' => 'Взрывная телега',
         'Bonechurch' => 'Церковь из костей',
         'Bonechurch_Deco' => 'Церковь из костей',
         'Bonechurch_Pop' => 'Гостеприимная костяная церковь',
@@ -3999,7 +3920,6 @@ It will be transferred to your star menu.',
         'Bowmaker' => 'Оружейная (луки)',
         'Brewery' => 'Пивоварня',
         'BreweryEndless' => 'Величественная пивоварня',
-        'BrohmannGarrison' => 'NT: Brohmann\'s Garrison',
         'BronzeMine' => 'Медный рудник',
         'BronzeMineEndless' => 'Неисчерпаемый медный рудник',
         'BronzeMine_Mini' => 'Воздаяние медному руднику',
@@ -4082,22 +4002,28 @@ It will be transferred to your star menu.',
         'ChangeDefaultSkin_ChristmasStorehouse_permanent' => 'Вид: склады (рождественские)',
         'Cherry_Tree' => 'Вишня',
         'Cherry_Tree_spawnasdeco' => 'Вишневое дерево',
+        'ChocolateDepot' => 'Склад шоколада',
         'Chocolatier' => 'Шоколадная фабрика',
         'ChristmasBakery' => 'Рождественская пекарня',
         'ChristmasMarket_Player' => 'Рождественская ярмарка',
         'ChristmasTreeBig' => 'Новогодняя елка (большая)',
         'ChristmasTreeSmall' => 'Новогодняя елка (маленькая)',
         'Christmas_Bench' => 'Зимняя скамья',
+        'Christmas_Bench_Deposit' => 'Украшение «Рождественская скамья»',
         'Christmas_Hut' => 'Рождественская хижина',
         'Christmas_Lantern' => 'Фонарь-леденец',
+        'Christmas_Lantern_Deposit' => 'Украшение «Рождественский фонарь»',
         'Christmas_Nutcracker' => 'Памятник Щелкунчику',
+        'Christmas_Nutcracker_Deposit' => 'Украшение «Рождественский щелкунчик»',
         'Christmas_Presents' => 'Куча подарков',
+        'Christmas_Presents_Deposit' => 'Украшение «Рождественские подарки»',
         'Christmas_Pyramid' => 'Рождественская пирамида',
+        'Christmas_Pyramid_Deposit' => 'Украшение «Рождественская пирамида»',
+        'Christmastree_Deposit' => 'Украшение «Рождественское дерево»',
         'Church' => 'Церковь',
         'ClassyHotel' => 'Шикарная гостиница',
         'CoalMine' => 'Угольная шахта',
         'CoalMineEndless' => 'Неисчерпаемая угольная шахта',
-        'CoffeeShop' => 'NT: Coffee Shop',
         'Coinage' => 'Монетный двор',
         'Coinage_Mini' => 'Воздаяние монетному двору',
         'Coinage_Mini_Gold' => 'Воздаяние золотому монетному двору',
@@ -4124,6 +4050,8 @@ It will be transferred to your star menu.',
         'CollectibleScarecrowBuilding' => 'Пугало',
         'CollectibleWickerBasketBuilding' => 'Плетеная корзина',
         'CollectibleWineBarrelBuilding' => 'Бочка',
+        'CommandCenter' => 'Командный пункт',
+        'CommandCenterAid' => 'Дозорный пост',
         'Command_Camp_leader' => 'Лагерь командования осадных войск',
         'ConcertHall' => 'Концертный зал',
         'Construction' => 'Дом строителя',
@@ -4160,6 +4088,7 @@ It will be transferred to your star menu.',
         'DeerstalkerHut' => 'Хижина охотника',
         'DefenseModeGhostGarrison' => 'Участок под застройку',
         'DeleteBuilding' => 'Удалить здание',
+        'Depositorium' => 'Депозиторий',
         'DestroyableMountain_Mines_01' => 'Скала (разрушаемая)',
         'DestroyableMountain_Mines_02' => 'Скала (разрушаемая)',
         'DestroyableMountain_Mines_03' => 'Валун (разрушаемый)',
@@ -4167,7 +4096,6 @@ It will be transferred to your star menu.',
         'DestroyableMountain_Mountain_BIG_sw02' => 'Гора (разрушаемая)',
         'DestroyableMountain_Mountain_BIG_sw03' => 'Скала (разрушаемая)',
         'DestroyableMountain_stonepile_05' => 'Скала (разрушаемая)',
-        'DimensionalRift' => 'NT: Otherworldly Shack',
         'DummyBuildingCollectibleClue' => 'Улика',
         'DummyBuildingCollectibleClue_EpicResidence' => 'Величественная резиденция',
         'DummyBuildingCollectibleFurs2' => 'Ценный мех',
@@ -4183,6 +4111,11 @@ It will be transferred to your star menu.',
         'EMFlowerbed_Scotland' => 'Клумба в виде флага',
         'EMFlowerbed_UN' => 'Клумба в виде флага',
         'EMFlowerbed_Unionjack' => 'Клумба в виде флага',
+        'EMFlowerbed_canada' => 'Клумба в виде флага Канады',
+        'EMFlowerbed_capverdi' => 'Клумба в виде флага Кабо-Верде',
+        'EMFlowerbed_curacao' => 'Клумба в виде флага Кюрасао',
+        'EMFlowerbed_drcongo' => 'Клумба в виде флага Демократической Республики Конго',
+        'EMFlowerbed_ecuador' => 'Клумба в виде флага Эквадора (без герба)',
         'EMFlowerbed_flag_01' => 'Клумба в виде флага',
         'EMFlowerbed_flag_02' => 'Клумба в виде флага',
         'EMFlowerbed_flag_03' => 'Клумба в виде флага',
@@ -4238,6 +4171,15 @@ It will be transferred to your star menu.',
         'EMFlowerbed_flag_53' => 'Клумба в виде флага',
         'EMFlowerbed_flag_54' => 'Клумба в виде флага',
         'EMFlowerbed_flag_55' => 'Клумба в виде флага',
+        'EMFlowerbed_haiti' => 'Клумба в виде флага Гаити',
+        'EMFlowerbed_iraq' => 'Клумба в виде флага Ирака',
+        'EMFlowerbed_joradan' => 'Клумба в виде флага Иордании',
+        'EMFlowerbed_newzealand' => 'Клумба в виде флага Новой Зеландии',
+        'EMFlowerbed_norway' => 'Клумба в виде флага Норвегии',
+        'EMFlowerbed_paraguay' => 'Клумба в виде флага Парагвая',
+        'EMFlowerbed_qatar' => 'Клумба в виде флага Катара',
+        'EMFlowerbed_southafrica' => 'Клумба в виде флага ЮАР',
+        'EMFlowerbed_uzbekistan' => 'Клумба в виде флага Узбекистана',
         'EMSoccerCamp' => 'Лагерь турнира',
         'EMSoccerCamp01_b' => 'Лагерь турнира',
         'EMSoccerCamp01_d' => 'Лагерь турнира',
@@ -4283,6 +4225,11 @@ It will be transferred to your star menu.',
         'EW_Balloons_TitaniumSword' => 'Праздничный зал',
         'EW_Balloons_Water' => 'Праздничный зал',
         'EW_Balloons_Wheel' => 'Праздничный зал',
+        'EW_Refinery_BronzeOre' => 'Переработка меди',
+        'EW_Refinery_GoldOre' => 'Переработка золота',
+        'EW_Refinery_IronOre' => 'Переработка железа',
+        'EW_Refinery_PlatinumOre' => 'Переработка платины',
+        'EW_Refinery_TitaniumOre' => 'Переработка титана',
         'EW_Wood_ExoticWoodToExoticPlank' => 'Грандиозная лесопилка (красное дерево)',
         'EW_Wood_SeedToWood' => 'Грандиозный домик лесника (сосна)',
         'Easter2016_wildlife_cave_1' => 'Пещера с животными',
@@ -4305,19 +4252,16 @@ It will be transferred to your star menu.',
         'EasterEvent2022_Residence' => 'Пасхальная корзина (2022)',
         'EasterEvent2023_Residence' => 'Пасхальная корзина (2023)',
         'EasterEvent2024_Residence' => 'Пасхальная корзина (2024)',
-        'EasterEvent2025_Residence' => 'NT: The Easter Basket (2025)',
+        'EasterEvent2026_Residence' => 'Пасхальная корзина (2026)',
         'EasterGeneralGarrison' => 'Гарнизон',
         'Easter_Event_2015_Buff_Adventure_Building_Frightened_chicken' => 'Испуганная курица',
         'Easter_Event_2015_Buff_Adventure_Building_Full_Fitch' => 'Гнездо',
         'Easter_Event_2015_Buff_Adventure_Building_Full_Nest' => 'Гнездо с наседкой',
         'Easter_Event_2015_Buff_Adventure_Building_Stinky_plant' => 'Вонючее растение',
         'Easter_Event_2015_Buff_Adventure_Frightened_chicken' => 'Испуганная курица',
-        'EfficientAdvancedToolmaker' => 'NT: Efficient Advanced Toolmaker',
-        'EfficientPlatinumSmelter' => 'NT: Efficient Platinum Smelter',
-        'ElderTreeLH' => 'NT: Elder Tree Lighthouse',
+        'EfficientCrossbowsmith' => 'Эффективная оружейная (арбалеты)',
         'EliteBarracks' => 'Элитные казармы',
         'EliteForge' => 'Богатая кузница',
-        'EliteGuildBanner_Deco' => 'NT: Elite Guild Fest Banner',
         'EliteStable' => 'Элитная конюшня',
         'EliteTrainingGrounds' => 'Элитная тренировочная площадка',
         'EnchantedCastle' => 'Заколдованный замок',
@@ -4331,6 +4275,7 @@ It will be transferred to your star menu.',
         'EpicWorkyardBalloons' => 'Праздничный зал',
         'EpicWorkyardCorn' => 'Грандиозный фермерский двор',
         'EpicWorkyardOre' => 'Грандиозная кузница',
+        'EpicWorkyardRefinery' => 'Промышленный рудоперерабатывающий завод',
         'EpicWorkyardWood' => 'Грандиозный лесной склад',
         'EraseStreet' => 'Удалить дорогу',
         'EspionageBuilding' => 'Пост разведчиков',
@@ -4387,6 +4332,7 @@ It will be transferred to your star menu.',
         'FlowerFarmDeco' => 'Декоративная цветочная ферма',
         'FlowerFarmDepleted' => 'Цветочная ферма',
         'FlowerbedHeart' => 'Клумба в виде сердца',
+        'FluffyLogistics' => 'Логистический офис Пухлохолмса',
         'FlyingHouse' => 'Праздничный штаб',
         'FoodCart_spawnasdeco' => 'Телега с едой',
         'Forester' => 'Домик лесника (сосна)',
@@ -4395,7 +4341,6 @@ It will be transferred to your star menu.',
         'FortifiedWarehouse_leader' => 'Укрепленный склад',
         'ForwardGuard_leader' => 'Командир передовой стражи',
         'Foundry' => 'Литейная мастерская',
-        'FrankenHouse' => 'NT: Dr Totenstein Dwellings',
         'Friary' => 'Монашеское братство',
         'Friary_Mini' => 'Воздаяние братству',
         'FrostyGeneralGarrison' => 'Морозный гарнизон',
@@ -4430,13 +4375,10 @@ It will be transferred to your star menu.',
         'GranitePit_Mini' => 'Воздаяние гранитному карьеру',
         'GroutFactory' => 'Фабрика растворов',
         'GroutFactory_Mini' => 'Воздаяние раствору',
-        'GuildBanner_Deco' => 'NT: Guild Fest Banner',
-        'GuildBanner_Event' => 'NT: Guild Fest Banner',
         'GuildFestGrounds' => 'Площадка фестиваля гильдий',
         'GuildFestTentI' => 'Достойное жилье при фестивале гильдий',
         'GuildFestTentII' => 'Удобное жилье при фестивале гильдий',
         'GuildFestTentIII' => 'Уютное жилье при фестивале гильдий',
-        'GuildHouse_Mini' => 'NT: Guild Office Tribute',
         'Halloween2019Garrison' => 'Гарнизон младшего генерала-близнеца',
         'HalloweenGeneralDraculGarrison' => 'Гарнизон',
         'HalloweenGeneralGarrison' => 'Гарнизон',
@@ -4448,6 +4390,7 @@ It will be transferred to your star menu.',
         'HoW_dead_heart_tree' => 'Сердцедерево',
         'HoW_dead_tree' => 'Старое дерево',
         'HoliFestivalGrounds' => 'Площадка фестиваля Холи',
+        'HoneygladeResidence' => 'Резиденция «Медовая опушка»',
         'Hunter' => 'Охотничий домик',
         'HunterHut_leader' => 'Охотничий домик',
         'Hunter_Mini_Gold' => 'Воздаяние охотникам',
@@ -4455,7 +4398,6 @@ It will be transferred to your star menu.',
         'Huntsman_leader' => 'Хижина главы охотников',
         'IcePalace' => 'Ледяной дворец',
         'IceSculpture' => 'Ледяная скульптура',
-        'IceSkatingLake' => 'NT: Ice Skating Lake',
         'IglooStorehouse' => 'Иглу-склад',
         'ImprovedBakery' => 'Улучшенная пекарня',
         'ImprovedBronzeWeaponsmith' => 'Улучшенная оружейная (бронза)',
@@ -4478,17 +4420,16 @@ It will be transferred to your star menu.',
         'IronMine_Mini' => 'Воздаяние железному руднику',
         'IronSmelter' => 'Металлоплавильня',
         'IronWeaponsmith' => 'Оружейная (железо)',
-        'Jewelcrafter' => 'NT: Jewel Crafter Workshop',
         'Kettle_spawnasdeco' => 'Чайник',
+        'KrampusPit' => 'Яма Крампуса',
         'Laboratory' => 'Лаборатория',
         'Laboratory_leader' => 'Лаборатория',
         'LargeRiverhouse1' => 'Большой домик на воде',
         'LargeRiverhouse2' => 'Особняк на воде',
         'Lettersmith' => 'Лавка печатника',
         'Lettersmith_Mini' => 'Воздаяние лавке печатника',
-        'LevitatingHauntedWarehouse' => 'NT: Levitating Haunted Warehouse',
-        'LoggingHut' => 'NT: Logging Hut',
         'Logistics' => 'Торговый дом',
+        'LonelyHeartInn' => 'Таверна «Одинокое сердце»',
         'LonerGeneralGarrison' => 'Гарнизон генерала-одиночки',
         'LongboatStorehouse' => 'Судно-склад',
         'Longbowmaker' => 'Оружейная (длинные луки)',
@@ -4501,6 +4442,7 @@ It will be transferred to your star menu.',
         'MagicLamp' => 'Волшебная лампа',
         'MagicalPavilion' => 'Волшебная беседка',
         'MahoganySawmill' => 'Лесопилка (махагониевое дерево)',
+        'Mahogany_Tree' => 'Махагониевый сад',
         'MajorGeneralGarrison' => 'Гарнизон',
         'ManEatingPlant' => 'Растение-антропофаг Отри III',
         'Manor' => 'Поместье',
@@ -4524,6 +4466,7 @@ It will be transferred to your star menu.',
         'Miller' => 'Мельница',
         'MineDepletedDepositBronzeOre' => 'Выработанная шахта',
         'MineDepletedDepositBronzeOreIndustrial' => 'Выработанная шахта',
+        'MineDepletedDepositChristmasResource' => 'Растаявшее украшение',
         'MineDepletedDepositCoal' => 'Выработанная шахта',
         'MineDepletedDepositCoalIndustrial' => 'Выработанная шахта',
         'MineDepletedDepositCorn' => 'Истощенное поле',
@@ -4557,9 +4500,9 @@ It will be transferred to your star menu.',
         'MineDepletedDepositWater_04' => 'Иссякший колодец',
         'MiniatureGolemDeco' => 'Статуя миниатюрного голема',
         'MiraculousGeneral' => 'Чудесный генерал',
-        'MountainClanColossus' => 'NT: Mountain Clan Colossus',
         'MountainStronghold_leader' => 'Крепость в горе',
         'MoveBuilding' => 'Переместить здание',
+        'NarcissisticGeneralGarrison' => 'Самолюбивый генерал',
         'NobleResidence' => 'Особняк',
         'NordsResidence' => 'Дом северян',
         'NusalaGarrison' => 'Гарнизон: чемпион Нусала',
@@ -4567,6 +4510,7 @@ It will be transferred to your star menu.',
         'OasisLeaderCamp_leader' => 'Лагерь хозяина оазиса',
         'OasisResidence' => 'Жилище в оазисе',
         'Observatory' => 'Обсерватория',
+        'OffshoreLighthouse' => 'Маяк у побережья',
         'OilMill_Mini' => 'Воздаяние маслобойне',
         'OilRefinery' => 'Маслозавод',
         'Oilmill' => 'Маслобойня',
@@ -4600,6 +4544,7 @@ It will be transferred to your star menu.',
         'Ornamentalsmith' => 'Лавка художника',
         'Ostereierbaum' => 'Пасхальное дерево',
         'OutdoorCanteen' => 'Открытая столовая',
+        'OutdoorCanteenAid' => 'Телега с запасами для готовки',
         'PalmTreeDeco01' => 'Пальма',
         'PalmTreeDeco02' => 'Пальма',
         'PalmTreeDeco03' => 'Пальма',
@@ -4622,6 +4567,7 @@ It will be transferred to your star menu.',
         'PirateResidence' => 'Дом пиратов',
         'PlatinumSmelter' => 'Плавильня (платина)',
         'PlatinumWeaponsmith' => 'Оружейная (платина)',
+        'Platinum_Shack' => 'Платиновая жила',
         'PlayerCavExpeditionCampLvl01' => 'Лагерь для кавалерии',
         'PlayerCavExpeditionCampLvl02' => 'Укрепленный лагерь для кавалерии',
         'PlayerCavExpeditionCampLvl03' => 'Крепость для кавалерии',
@@ -4638,7 +4584,6 @@ It will be transferred to your star menu.',
         'PohutukawaTree' => 'Рождественская похутукава',
         'Powderhut' => 'Пороховой склад',
         'PrintPress' => 'Типография',
-        'Prospector' => 'NT: Prospector Workshop',
         'ProvisionHouse' => 'Универсальная мастерская',
         'ProvisionHouse2' => 'Универсальная мастерская редкостей',
         'PumpkinFieldDeco' => 'Декоративное кладбище с тыквами',
@@ -4656,13 +4601,13 @@ It will be transferred to your star menu.',
         'ResoluteGeneralGarrison' => 'Решительный гарнизон',
         'Retail1GeneralGarrison' => 'Гарнизон',
         'Retail2GeneralGarrison' => 'Гарнизон',
+        'RetirementHome' => 'Деревня престарелых',
+        'RetirementHomeAid' => 'Почтовый ящик Санты',
         'RetroFarm' => 'Ферма',
         'Riverhouse' => 'Домик на воде',
         'RomanticRestaurant' => 'Романтический ресторан',
         'RoseArbor' => 'Арка с розами',
         'RoseTrellis' => 'Шпалера с розами',
-        'RosyIronMine' => 'NT: Rosy Iron Mine',
-        'RosyStorage' => 'NT: Rosy Storage',
         'RuinedResidence_leader' => 'Разрушенный дом',
         'S4Barracks' => 'Старомодные казармы',
         'S4Lazaret' => 'Лазарет',
@@ -4676,6 +4621,7 @@ It will be transferred to your star menu.',
         'SantaGarrison' => 'Рождественский гарнизон',
         'Sawmill' => 'Лесопилка (сосна)',
         'School_Mini' => 'Воздаяние образованию',
+        'Seedoil_Deposit' => 'Участок с подсолнухом',
         'Settlers2HQDeco' => 'Штаб поселенцев',
         'Shepard' => 'Усадьба',
         'Shepherd' => 'Хижина пастуха',
@@ -4693,8 +4639,10 @@ It will be transferred to your star menu.',
         'SmallOrientalTower' => 'Восточная башня',
         'SmallWatchtower' => 'Сторожевая башня',
         'Smokehouse' => 'Коптильня',
+        'Smokehouse_Mini' => 'Воздаяние коптильне',
         'SnackStand' => 'Прилавок с закусками',
         'Snowglobe' => 'Огромный снежный шар',
+        'Snowman_Deposit' => 'Украшение «Снеговик»',
         'SoccerChampionTrophy_2016' => 'Приз чемпиона по футболу 2016 года',
         'SoccerChampionTrophy_2018' => 'Приз чемпиона по футболу 2018 года',
         'SoccerChampionTrophy_2019' => 'Приз чемпиона по футболу 2019 года',
@@ -4703,11 +4651,6 @@ It will be transferred to your star menu.',
         'SoccerChampionTrophy_2022' => 'Приз чемпиона по футболу 2022 года',
         'SoccerChampionTrophy_2023' => 'Приз чемпиона по футболу 2023 года',
         'SoccerChampionTrophy_2024' => 'Приз чемпиона по футболу 2024 года',
-        'SoccerChampionTrophy_2025' => 'NT: Champion\'s Trophy 2025',
-        'SoccerChampionTrophy_2026' => 'NT: Champion\'s Trophy 2026',
-        'SoccerChampionTrophy_2027' => 'NT: Champion\'s Trophy 2027',
-        'SoccerChampionTrophy_2028' => 'NT: Champion\'s Trophy 2028',
-        'SoccerChampionTrophy_2029' => 'NT: Champion\'s Trophy 2029',
         'SoccerField' => 'Футбольная площадка',
         'SoccerParticipantTrophy_2016' => 'Приз футбольного турнира 2016 года',
         'Spa' => 'Купальня',
@@ -4763,7 +4706,6 @@ It will be transferred to your star menu.',
         'SteelForge' => 'Плавильня (сталь)',
         'SteelWeaponsmith' => 'Оружейная (сталь)',
         'StoneDepot' => 'Камнебаза',
-        'StorageBasket' => 'NT: Storage Basket',
         'StorageTower' => 'Башня-склад',
         'StormPreventionSystem' => 'Система защиты от бури',
         'Stronghold' => 'Крепость',
@@ -4776,7 +4718,6 @@ It will be transferred to your star menu.',
         'Tavern' => 'Таверна',
         'Taylor' => 'Мастерская портного',
         'TheFrozenManor' => 'Замерзшее имение',
-        'TheSmugglerGarrison' => 'NT: The Secret Stash',
         'TikiStorehouse' => 'Тики-склад',
         'TipiResidenceColor1' => 'Цветной вигвам',
         'TipiResidenceColor2' => 'Украшенный цветной вигвам',
@@ -4790,7 +4731,6 @@ It will be transferred to your star menu.',
         'TokenCoinage' => 'Жетонный двор',
         'Toolmaker' => 'Мастерская инструментов',
         'TopiarySettler' => 'Дерево в форме поселенца',
-        'TowerOfBraggingRights' => 'NT: Tower of Bragging Rights',
         'ToyFactory' => 'Фабрика игрушек',
         'Tracks' => 'Следы',
         'TrainingGrounds' => 'Тренировочная площадка',
@@ -4902,6 +4842,8 @@ It will be transferred to your star menu.',
         'WatermillEndless' => 'Величественная водяная мельница',
         'WeatherStation' => 'Станция управления погодой',
         'Weaver' => 'Ткацкая мастерская',
+        'WeddingChapel' => 'Венчальная часовня',
+        'WeddingChapelAid' => 'Шарик-сердечко',
         'Well' => 'Колодец',
         'Well_02' => 'Артезианский колодец',
         'Well_03' => 'Глубокий колодец',
@@ -4909,8 +4851,6 @@ It will be transferred to your star menu.',
         'Wheelmaker' => 'Колесная мастерская',
         'WhiteCastle' => 'Сказочный замок',
         'WinterGarden' => 'Зимний сад',
-        'WitchCoven' => 'NT: Witch Coven',
-        'WitchCovenAid' => 'NT: Witches\' Effigy',
         'WitchTower' => 'Башня ведьмы',
         'WitchTower_Deco' => 'Башня ведьмы',
         'WitchTower_Gate-Left_01' => 'Врата горгульи (северные)',
@@ -4934,7 +4874,6 @@ It will be transferred to your star menu.',
         'Xmas_ResidenceMedium' => 'Средний рождественский дом',
         'Xmas_ResidenceSmall' => 'Маленький рождественский дом',
         'YuleGoat' => 'Йольский козел',
-        'ZombieCrypt' => 'NT: Invading Zombie Crypt',
         'a_bush_01' => 'Куст',
         'a_cave_01' => 'Пещера',
         'a_cave_01_camp' => 'Скрытая пещера',
@@ -5484,7 +5423,6 @@ It will be transferred to your star menu.',
     'DES' => [
         'A special treated soil needed to fill and counteract the contamination of an Otherworldly Glowing Crater.' => 'Специально выведенный вид семян, способный прижиться и дать всходы на странной почве.',
         'A special treated soil needed to fill and counteract the contamination of an Uncanny Glowing Crater.' => 'Специально обработанная почва для заполнения потусторонних светящихся кратеров. Способна нейтрализовать загрязнение.',
-        'AAAAGeology' => 'NT: Has a chance of returning from successful Stone, Marble, Coal, and Granite searches with an adventure. But it takes 3 times as much time.',
         'ActivateArchipelago' => 'Посетите остров-колонию, чтобы сделать его активным приключением.',
         'AddBuildingLimit' => 'Используйте на Ратуше, чтобы увеличить максимальное количество разрешений на строительство на {0}.',
         'AddRecipe_AddResourceCodex' => 'При использовании на универсальной мастерской редкостей этот рецепт открывает возможность производства предмета:
@@ -5593,9 +5531,6 @@ It will be transferred to your star menu.',
 Эффект зоны: +700% к производительности
 Объект: оружейная (бронза, железо, сталь, булат, платина), грандиозная оружейная (бронза, железо, сталь, булат, платина), мастерская луков, длинных луков, арбалетов и аркебуз, пушечный завод, литейная мастерская, конюшня, элитная конюшня, грандиозная конюшня
 Продолжительность: 60 минут',
-        'AddRecipe_Tower_Unlock_Upgrade2' => 'NT: When you are so good, that a gigantic trophy shaped tower is not quite pompous enough.
-
-Here is a guide to make it even more glorious.',
         'AddRecipe_WeaponsmithBoost' => 'При использовании на универсальной мастерской редкостей данный рецепт открывает возможность производства следующего предмета:
 
 Двойной темп
@@ -5911,16 +5846,6 @@ Here is a guide to make it even more glorious.',
         'AllWoodTreasureEvent_Description' => 'По местным лесам бродило множество бобров, однако затем этим животные почему-то потеряли интерес к подточенным деревьям. Похоже, вы можете свободно забрать весь сваленный ими лес.',
         'AllWoodTreasureEvent_Title' => 'Увеличение добычи сокровищ: дерево',
         'AncientOrientalTemple' => 'Этот храм, даже будучи давно заброшенным, сумел сохранить свою красоту.',
-        'AnimalBuff_DimensionalRiftBuff1' => 'NT: Turns island animals into Zombies.
-Duration 2h',
-        'AnimalBuff_DimensionalRiftBuff2' => 'NT: Turns island animals into Living Armor.
-Duration 2h',
-        'AnimalBuff_DimensionalRiftBuff3' => 'NT: Turns island animals into Ghosts.
-Duration 2h',
-        'AnimalBuff_DimensionalRiftBuff4' => 'NT: Turns island animals into Rabbids.
-Duration 2h',
-        'AnimalBuff_DimensionalRiftBuff6' => 'NT: Turns island animals into Unicorns.
-Duration 2h',
         'AnimalBuff_Unity_Event_zombies' => 'Да что здесь опасного?',
         'AnimalBuff_blackknights' => 'Эффект зоны: заменяет диких животных на черных рыцарей
 Продолжительность: 7 дней (10,5 дней для друга/члена гильдии)',
@@ -5972,19 +5897,13 @@ Duration 2h',
         'ArcticGoldMine' => 'Золотой рудник уровня 6.',
         'ArcticIronMine' => 'В этой ледяной шахте сокрыта залежь редкого железа.',
         'ArcticTitaniumMine' => 'Титановый рудник, приспособленный для эффективной добычи при низких температурах. При других погодных условиях работает ничуть не хуже.',
-        'AreaBuffIceSkatingLakeLvl1' => 'NT: Buffs residencies in range. Triggers island-wide effects based on the number of residencies buffed:
-20 residencies: Increases production speed by 25%
-25 residencies: Increases production speed by 50%
-
-Duration: 12 hours
-
-Targets: Provision House, Rarity Provision House, Snack Stand, Harbor, Chocolateer, Lazaret, Blacktree, Lover\'s Statue, Balloon Market, Stone Depot, Toy Factory, Candy Factory, Siege Workshop, Artficer Study, Carnival Grounds, Romantic Restaurant, Bookbinder, Adventure Bookbinder, Oil Mill, Oil Refinery, Smokehouse, Stronghold, Laboratory, Coffee Shop',
-        'AreaBuffIceSkatingLakeLvl2' => 'NT: Increases production speed by 25%
-
-Targets: Provision House, Rarity Provision House, Snack Stand, Harbor, Chocolateer, Lazaret, Blacktree, Lover\'s Statue, Balloon Market, Stone Depot, Toy Factory, Candy Factory, Siege Workshop, Artficer Study, Carnival Grounds, Romantic Restaurant, Bookbinder, Adventure Bookbinder, Oil Mill, Oil Refinery, Smokehouse, Stronghold, Laboratory, Coffee Shop',
-        'AreaBuffIceSkatingLakeLvl3' => 'NT: Increases production speed by 50%
-
-Targets: Provision House, Rarity Provision House, Snack Stand, Harbor, Chocolateer, Lazaret, Blacktree, Lover\'s Statue, Balloon Market, Stone Depot, Toy Factory, Candy Factory, Siege Workshop, Artficer Study, Carnival Grounds, Romantic Restaurant, Bookbinder, Adventure Bookbinder, Oil Mill, Oil Refinery, Smokehouse, Stronghold, Laboratory, Coffee Shop',
+        'AreaBuffFluffyLogistics1' => 'Длительность: 24 ч
+Эффект: Увеличивает количество ресурсов за приключения на 10%.
+Цель эффекта: Приключения',
+        'AreaBuffFluffyLogistics2' => 'Эффект: Увеличивает опыт за задания на 10%.
+Цель эффекта: Задания (не считая приключения).',
+        'AreaBuffFluffyLogistics3' => 'Эффект: Увеличивает количество ресурсов за задания на 10%.
+Цель эффекта: Задания (не считая приключения).',
         'AreaBuffLoveGardenLvl1' => 'Эффект: усиливает дома, накладывая различные эффекты в зависимости от количества усиленных домов
 
 15 домов: усилитель населения зоны "Кулоны-сердечки ур. 1", который ускоряет прирост населения на 200%
@@ -6009,6 +5928,8 @@ Targets: Provision House, Rarity Provision House, Snack Stand, Harbor, Chocolate
         'Artisan' => 'Этот конструктор специализируется на разработке прочных деталей. А еще они красивые. Для работы ему нужны дорогие инструменты.',
         'AssassinGeneral' => 'Замаскировавшись вместе со своим гарнизоном под разбойников, может совершать внезапные нападения и даже ослаблять своих противников до начала боя, что делает его очень эффективным в сражениях с боссами.',
         'AuctionAchievement' => 'Престижная награда, символ состоявшегося дельца.',
+        'AuroraBuff' => 'Исследователи выполняют поиск сокровищ и поиск приключений на 15% быстрее.',
+        'AuroraTower' => 'Бесплотная башня, на которой собираются старые мудрецы, чтобы передать свои легенды новым поколениям.',
         'Bakery' => 'Производит хлеб',
         'Bakery_Mini' => 'Воздаяние трудам всех пекарей острова. Давайте же поблагодарим этих "ранних пташек", которые встают ни свет ни заря, чтобы испечь для нас ароматный, теплый хлеб.',
         'BalancedGeologist' => 'Находит залежи, используя вдвое меньше времени, и пополняет залежи другого ресурса.',
@@ -6408,7 +6329,6 @@ Targets: Provision House, Rarity Provision House, Snack Stand, Harbor, Chocolate
         'Besieger' => 'Дорогой в обучении элитный боец, атакующий последним, но с крайне разрушительным эффектом. У него исключительный уровень НУ, который может быть обрушен на несколько целей. Наносит двойной урон при разрушении лагерей. Но при этом у него посредственный запас здоровья.',
         'BewitchingExplorer' => 'Возвращается с заданий по поиску сокровищ с удвоенной добычей и максимально возможным количеством ресурсов.',
         'BigWatchtower' => 'Здесь можно расквартировывать бойцов регулярных войск. Будут охранять большую территорию.',
-        'BioFarm' => 'NT: Produces Wheat without using a wheat field.',
         'BirthdayShaman' => 'Таинственный человек, который любит баловаться с темной магией.',
         'BlackMarketAuctionOutbidMailBody' => 'Игрок {0} сделал ставку выше вашей: {1}.
 Ресурсы вернутся на ваши склады.',
@@ -6421,9 +6341,8 @@ Targets: Provision House, Rarity Provision House, Snack Stand, Harbor, Chocolate
         'BlackTree_Green' => 'Дерево чернее ночи. Символ гордости ведьм, вокруг которого когда-то они устраивали свои пляски, загадочным образом попавший на ваш остров. Кажется, будто дерево поглощает окружающий его свет, а затем испускает неясное зеленое свечение.',
         'BlackTree_Purple' => 'Дерево чернее ночи. Символ гордости ведьм, вокруг которого когда-то они устраивали свои пляски, загадочным образом попавший на ваш остров. Кажется, будто дерево поглощает окружающий его свет, а затем испускает неясное фиолетовое свечение.',
         'BlackTree_Red' => 'Дерево чернее ночи. Символ гордости ведьм, вокруг которого когда-то они устраивали свои пляски, загадочным образом попавший на ваш остров. Кажется, будто дерево поглощает окружающий его свет, а затем испускает неясное красное свечение.',
-        'BlacktreeExplorer' => 'NT: Always brings back one of the Blacktree buffs from long, very long and prolonged treasure searches.',
+        'BlastingCartAid' => 'Декоративное здание, повышающее скорость производства кабинета мастера и камнебазы.',
         'BlondeBowman' => 'Лучник с первоклассными навыками.',
-        'BoatHouse' => 'NT: And old boat turn into a cozy residence. The rocking helps falling asleep.',
         'BoldExplorer' => '+150% к скорости заданий
 Дерзость: приносит на +50% больше наград, когда занимается поиском сокровищ. Всегда находит усилитель во время поиска приключений и сокровищ.',
         'Bonechurch' => 'Здание, где совершаются мрачные ритуалы.',
@@ -6449,6 +6368,9 @@ Targets: Provision House, Rarity Provision House, Snack Stand, Harbor, Chocolate
         'BookbinderBuffLvl6' => 'Эффект: +300% к скорости производства
 Объект: переплетчик
 Продолжительность: 18 часов (27 часов для друга)',
+        'BookbinderBuffLvl_ChristmasStories' => 'Эти истории воодушевляют каждого поселенца, тем самым сокращая время производства переплётчика на 300%.
+Цель: друг
+Длительность: 6 часов.',
         'Bookbinder_Mini_Gold' => 'Дань уважения знаниям воодушевляет ваших поселенцев писать собственные книги.',
         'Bookbinder_Mini_Special' => 'Дань особого уважения всем алчущим знаний. Превозношение этой профессии воодушевляет ваших поселенцев создавать собственные книги.
 Эффект: производит 1 рукопись
@@ -6457,27 +6379,15 @@ Targets: Provision House, Rarity Provision House, Snack Stand, Harbor, Chocolate
         'BorisGeneralGarrison' => 'Военный лагерь вашего генерала',
         'Bowmaker' => 'Производит луки',
         'Bowman' => 'Дешевые бойцы, которые могут нанести много урона, но здоровье у них очень низкое.',
-        'BraggingRights1' => 'NT: Zone buff. Combines the effects and targets of all "Guide" style buffs, but at a +400% factor.
-Duration: 2 hours.',
-        'BraggingRights2' => 'NT: Zone buff. Combines the effects and targets of all "Guide" style buffs, but at a +400% factor.
-Duration: 2 hours 20 min.',
-        'BraggingRights3' => 'NT: Zone buff. Combines the effects and targets of all "Guide" style buffs, but at a +400% factor.
-Duration: 2 hours 40 min.',
-        'BraggingRights4' => 'NT: Zone buff. Combines the effects and targets of all "Guide" style buffs, but at a +400% factor.
-Duration: 3 hours.',
-        'BraggingRights5' => 'NT: Zone buff. Combines the effects and targets of all "Guide" style buffs, but at a +400% factor.
-Duration: 3 hours 20 min.',
-        'BraggingRights6' => 'NT: Zone buff. Combines the effects and targets of all "Guide" style buffs, but at a +400% factor.
-Duration: 3 hours 40 min.',
-        'BraggingRights7' => 'NT: Zone buff. Combines the effects and targets of all "Guide" style buffs, but at a +400% factor.
-Duration: 4 hours.',
         'Brewery' => 'Производит квас',
         'BreweryEndless' => 'Производит квас с невероятной скоростью.',
-        'Brohmann' => 'NT: An aggressive warlord that only knows one direction: Forward.
-He prefers the aid of a small reliable horsemen to get the job done. After his enemies are vanquished he will return home with coffers full of loot.',
         'BronzeMine' => 'Добывает медную руду.',
         'BronzeMineEndless' => 'Дает неограниченное количество медной руды.',
         'BronzeMine_Mini' => 'Дань уважения всем шахтерам в медных рудниках.',
+        'BronzeOreKnowledge1' => 'Найденные в далеких землях записи, которые содержат секреты обработки меди.
+Можно обменять в ратуше на рукопись.',
+        'BronzeOreKnowledge2' => 'Найденные в далеких землях записи, которые содержат строгие секреты обработки меди.
+Можно обменять в ратуше на фолиант.',
         'BronzeSmelter' => 'Производит бронзу.',
         'BronzeWeaponsmith' => 'Производит бронзовые мечи',
         'BuffAd_BarredGate' => 'Замок защищала не только магия. Вам потребуется таран, чтобы пробиться внутрь.',
@@ -6602,6 +6512,10 @@ He prefers the aid of a small reliable horsemen to get the job done. After his e
 Продолжительность: 7 дней (10,5 дней для друга/члена гильдии)',
         'ChangeColorScheme_tundra' => 'Эффект зоны: на вашем острове пасмурная погода и дуют холодные ветра!
 Продолжительность: 7 дней (10,5 дней для друга/члена гильдии)',
+        'ChangeDefaultSkin_Anniversary2026_MayorsHouse_perm' => 'Эффект: устанавливает вид ратуши «Наследие трёх десятилетий»
+Цель: ратуша
+Длительность: постоянно
+Повторное применение: можно убрать и вновь установить в любой момент',
         'ChangeDefaultSkin_ArtMuseum_blue_permanent' => 'Эффект: устанавливает вид "Синий"
 Объект: музей искусств
 Продолжительность: постоянно
@@ -6671,9 +6585,6 @@ He prefers the aid of a small reliable horsemen to get the job done. After his e
 Объект: склад размера 2x2
 Продолжительность: постоянно
 Повторное применение: можно убрать и вновь установить в любой момент',
-        'ChangeDefaultSkin_GuildFestTentIII_Residence' => 'NT: Makes your residences look like Guild Fest Accommodations',
-        'ChangeDefaultSkin_GuildFestTentII_Residence' => 'NT: Makes your residences look like Guild Fest Accommodations',
-        'ChangeDefaultSkin_GuildFestTentI_Residence' => 'NT: Makes your residences look like Guild Fest Accommodations',
         'ChangeDefaultSkin_InflatableResidence_blue_permanent' => 'Эффект: устанавливает вид "Надувной дом, синий"
 Объект: наземные дома размера 2x2
 Продолжительность: постоянно
@@ -6722,10 +6633,6 @@ He prefers the aid of a small reliable horsemen to get the job done. After his e
 Объект: рождественская ярмарка
 Продолжительность: постоянно
 Повторное применение: можно убрать и вновь установить в любой момент',
-        'ChangeDefaultSkin_guild_building_GF_bronze_perm' => 'NT: Skin: Guild House (Guild Fest, Bronze)',
-        'ChangeDefaultSkin_guild_building_GF_gold_perm' => 'NT: Skin: Guild House (Guild Fest, Gold)',
-        'ChangeDefaultSkin_guild_building_GF_plat_perm' => 'NT: Skin: Guild House (Guild Fest, Platinum)',
-        'ChangeDefaultSkin_guild_building_GF_silver_perm' => 'NT: Skin: Guild House (Guild Fest, Silver)',
         'ChangeDefaultSkin_reset' => 'Посмотрите сквозь иллюзию!
 Используйте на здании, чтобы отменить действующий на него усилитель смены вида.
 - Постоянный вид будет перемещен в звездное меню.
@@ -6750,6 +6657,10 @@ He prefers the aid of a small reliable horsemen to get the job done. After his e
 Объект: домик дровосека
 Продолжительность: постоянно
 Повторное применение: можно убрать и вновь установить в любой момент',
+        'ChangeSkin_Anniversary2026_MayorsHouse_long' => 'Эффект: устанавливает вид ратуши «Наследие трёх десятилетий»
+Цель: ратуша
+Длительность: 15 дней
+Повторное применение: нет',
         'ChangeSkin_BuffAd_Beer' => 'Шедевр квасоварения может убедить даже гильдию пекарей. Зерно, пущенное на него, потрачено не зря.
 
 Этот сценарный усилитель можно использовать лишь тут. Когда сценарий заканчивается, он пропадает.',
@@ -6823,8 +6734,12 @@ He prefers the aid of a small reliable horsemen to get the job done. After his e
         'ChangeSkin_BuffAd_woodhealing' => 'Порошок из плодов сердцедерева может избавить лес от любого проклятья или болезни.
 
 Этот сценарный усилитель можно использовать лишь тут. Когда сценарий заканчивается, он пропадает.',
+        'ChangeSkin_ChristmasBarracks_short' => 'Рождественские украшения для казарм; длительность: 1 час (2 часа для друга)',
         'ChangeSkin_ChristmasBarracks_temp' => 'Украсьте свой остров праздничным декором и привнесите дух Рождества на улочки поселения!',
+        'ChangeSkin_ChristmasMayorhouse_short' => 'Рождественские украшения для мэрии; длительность: 1 час (2 часа для друга)',
+        'ChangeSkin_ChristmasProvisionHouse_short' => 'Рождественские украшения для универсальной мастерской; длительность: 1 час (2 часа для друга)',
         'ChangeSkin_ChristmasProvisionHouse_temp' => 'Украсьте свой остров праздничным декором и привнесите дух Рождества на улочки поселения!',
+        'ChangeSkin_ChristmasStorehouse_short' => 'Рождественские украшения для склада; длительность: 1 час (2 часа для друга)',
         'ChangeSkin_ChristmasStorehouse_temp' => 'Украсьте свой остров праздничным декором и привнесите дух Рождества на улочки поселения!',
         'ChangeSkin_Crystal_Barracks_temp' => 'Изысканный фасад, выполненный из множества упавших звезд.
 
@@ -6962,6 +6877,7 @@ He prefers the aid of a small reliable horsemen to get the job done. After his e
 Объект: наземные дома размера 2x2
 Продолжительность: постоянно
 Повторное применение: можно убрать и вновь установить в любой момент',
+        'ChangeSkin_Xmas_ResidenceMedium_short' => 'Рождественские украшения для дома; длительность: 1 час (2 часа для друга)',
         'ChangeSkin_Xmas_ResidenceSmall_long' => 'Эффект: устанавливает вид "Рождественский"
 Объект: наземные дома размера 2x2
 Продолжительность: 15 дней
@@ -7014,11 +6930,15 @@ He prefers the aid of a small reliable horsemen to get the job done. After his e
 Объект: домик дровосека
 Продолжительность: 15 дней
 Повторное применение: недоступно',
+        'Changeloopmusic_Christmas_Jingle' => 'Хор, поющий на заднем плане рождественскую песню Jingle Bells. Длительность: 30 минут',
+        'Changeloopmusic_Christmas_Merry' => 'Группа, поющая на заднем плане рождественскую песню We wish you am merry Christmas. Длительность: 30 минут',
+        'Changeloopmusic_Christmas_Silent' => 'Певцы, поющие на заднем плане рождественскую песню Silent Night. Длительность: 30 минут',
         'Changeskin_Elari_Workshop_temp' => 'Эффект: устанавливает вид "Универсальная мастерская элари"
 Объект: универсальная мастерская, универсальная мастерская редкостей
 Продолжительность: 15 дней
 Повторное применение: недоступно',
         'Cherry_Tree' => 'Декоративный предмет',
+        'ChocolateDepot' => 'Склад, принадлежащий тому же человеку, кто владеет шоколадной фабрикой. Он тот ещё сладкоежка.',
         'Chocolatier' => 'Из шоколада можно сделать столько вкусностей!',
         'ChristmasAThousandSnowflakes' => 'Использование:
 Домашняя зона станет заснеженной на 7 дней.
@@ -7047,18 +6967,22 @@ He prefers the aid of a small reliable horsemen to get the job done. After his e
         'ChristmasTreeBig' => 'Декоративный предмет',
         'ChristmasTreeSmall' => 'Декоративный предмет',
         'Christmas_Bench' => 'Декоративный предмет',
+        'Christmas_Bench_Deposit' => 'Приятная на вид рождественская скамья, которую можно использовать в качестве украшения.',
         'Christmas_Hut' => 'Декоративный предмет',
         'Christmas_Lantern' => 'Декоративный предмет',
+        'Christmas_Lantern_Deposit' => 'Приятный на вид рождественский фонарь, который можно использовать в качестве украшения.',
         'Christmas_Nutcracker' => 'Декоративный предмет',
+        'Christmas_Nutcracker_Deposit' => 'Приятный на вид рождественский щелкунчик, который можно использовать в качестве украшения.',
         'Christmas_Presents' => 'Декоративный предмет',
+        'Christmas_Presents_Deposit' => 'Приятные на вид рождественские подарки, которые можно использовать в качестве украшения.',
         'Christmas_Pyramid' => 'Декоративный предмет',
-        'ChummyExplorer' => 'NT: Chummy Geologist\'s sibling. Always in a good mood. Always quiet. Will return with chocolaty goodness after a search.',
+        'Christmas_Pyramid_Deposit' => 'Приятная на вид рождественская пирамида, которую можно использовать в качестве украшения.',
+        'Christmastree_Deposit' => 'Приятное на вид рождественское дерево, которое можно использовать в качестве украшения.',
         'ChummyGeologist' => 'Подружиться с вами - главная цель дружелюбного геолога. Чтобы порадовать вас, он очень быстро находит залежи и возвращается с вкусным шоколадом почти из каждого второго продолжительного поиска.',
         'ChupacabraBoss' => 'Чудовище из легенд - Чупакабра. Выглядит оно как лохматая собака, но на самом деле это невероятно злобное и могучее существо.',
         'ClassyHotel' => 'Роскошное, мегапопулярное и дорогое во всех смыслах место отдыха. Номер здесь стоит каждого потраченного камушка.',
         'CoalMine' => 'Добывает уголь',
         'CoalMineEndless' => 'Дает неограниченное количество угля. Никогда не исчерпывается.',
-        'CoffeeShop' => 'NT: The place to get a sip or two of that bittersweet productivity burnt bean juice.',
         'Coinage' => 'Производит монеты',
         'Coinage_Mini' => 'Следите за монетой, а сокровище само о себе позаботится!',
         'Coinage_Mini_Gold' => 'Следите за монетами, а сокровища сами о себе позаботятся!',
@@ -7084,6 +7008,27 @@ He prefers the aid of a small reliable horsemen to get the job done. After his e
         'CombatPreview_Fail' => 'Вы потеряете более 95% бойцов или даже потерпите поражение.',
         'CombatPreview_Ok' => 'Вы потеряете от 20 до 50 процентов бойцов.',
         'CombatPreview_Perfect' => 'Вы потеряете максимум 20% бойцов.',
+        'CommandCenter' => 'Военачальники со всех земель собираются в этих залах перед каждой кампанией с целью разработать хитрые стратегии.',
+        'CommandCenterAid' => 'Декоративное здание, повышающее скорость производства командного пункта.',
+        'CommandCenterBuff1' => 'Цель: Новобранец, враг
+Эффект:
+Новобранцы получают: +300% здоровья, +40% шанс восстановления войск.
+Все бойцы игрока: –80% наносимого урона.
+Вражеские бойцы: –100% точности.
+Все: Длительность хода х2
+Тип: усиление зоны
+Длительность: 90 секунд',
+        'CommandCenterBuff2' => 'Цель: канониры, оборонительные отряды
+Эффект:
+канониры получают: урон по области, +50% наносимого урона, +10Й% точности.
+Оборонительные отряды: –20% здоровья.
+Тип: усиление зоны
+Длительность: 90 секунд',
+        'CommandCenterBuff3' => 'Цель: конные мечники
+Эффект:
+конные мечники получают: первый удар, урон по области, последний удар.
+Тип: усиление зоны
+Длительность: 90 секунд',
         'Command_Camp_leader' => 'Укрепленный лагерь, в котором живут командиры, руководящие этой осадой.',
         'ConcertHall' => 'Тип: культура
 Эффект: изменение фоновой музыки и активация усилителей зоны
@@ -7178,6 +7123,7 @@ He prefers the aid of a small reliable horsemen to get the job done. After his e
         'DepositExoticWoodTip' => 'Запасы красного дерева находятся в определенном здании. В вашей домашней зоне их не бывает.',
         'DepositWoodTip' => 'Объем лесозаготовок может колебаться, потому что иногда лесникам приходится ухаживать за деревьями, которые находятся далеко, что увеличивает продолжительность транспортировки.
 Среднее производство составляет',
+        'Depositorium' => 'Депозиторий — это не просто склад, а место, в котором можно находить тайны. Предметы здесь не просто хранятся, а скорее ждут, пока их найдут.',
         'DestroyableMountain_Mines_01' => 'Средняя разрушаемая гора. Можно убрать, наняв взрывника.',
         'DestroyableMountain_Mines_02' => 'Средняя разрушаемая гора. Можно убрать, наняв взрывника.',
         'DestroyableMountain_Mines_03' => 'Маленькая разрушаемая гора. Можно убрать, наняв взрывника.',
@@ -7199,7 +7145,6 @@ He prefers the aid of a small reliable horsemen to get the job done. After his e
 гранит - 75%
 
 Если и находит сокровище, то всегда сразу 2.',
-        'DimensionalRift' => 'NT: A tiny storage shack that uses dark rituals to be able to store more goods that seem physically possible.',
         'DisabledFunctionTip' => 'Эта функция неприменима к особому контенту текущего события.',
         'DragonBoss' => 'Дракон поистине страшный враг. Его огненное дыхание может истребить значительную часть вашей армии, прежде чем вы вообще сможете атаковать',
         'EMBoss1' => 'Вам придется придумать что-то более серьезное, чем наилучшие побуждения и фланговая атака, чтобы обойти эту глыбу.',
@@ -7212,6 +7157,11 @@ He prefers the aid of a small reliable horsemen to get the job done. After his e
         'EMFlowerbed_Scotland' => 'Клумба цветов флага.',
         'EMFlowerbed_UN' => 'Клумба цветов флага.',
         'EMFlowerbed_Unionjack' => 'Клумба цветов флага.',
+        'EMFlowerbed_canada' => 'Украсьте остров цветами команды, за которую болеете! Речь буквально о цветочных клумбах, так что придется повозиться в земле. А если ваша команда проиграет, из этих цветов хотя бы получится красивый утешительный венок.',
+        'EMFlowerbed_capverdi' => 'Украсьте остров цветами команды, за которую болеете! Речь буквально о цветочных клумбах, так что придется повозиться в земле. А если ваша команда проиграет, из этих цветов хотя бы получится красивый утешительный венок.',
+        'EMFlowerbed_curacao' => 'Украсьте остров цветами команды, за которую болеете! Речь буквально о цветочных клумбах, так что придется повозиться в земле. А если ваша команда проиграет, из этих цветов хотя бы получится красивый утешительный венок.',
+        'EMFlowerbed_drcongo' => 'Украсьте остров цветами команды, за которую болеете! Речь буквально о цветочных клумбах, так что придется повозиться в земле. А если ваша команда проиграет, из этих цветов хотя бы получится красивый утешительный венок.',
+        'EMFlowerbed_ecuador' => 'Украсьте остров цветами команды, за которую болеете! Речь буквально о цветочных клумбах, так что придется повозиться в земле. А если ваша команда проиграет, из этих цветов хотя бы получится красивый утешительный венок.',
         'EMFlowerbed_flag_01' => 'Клумба в цветах флага.',
         'EMFlowerbed_flag_02' => 'Клумба цветов флага.',
         'EMFlowerbed_flag_03' => 'Клумба цветов флага.',
@@ -7268,6 +7218,15 @@ He prefers the aid of a small reliable horsemen to get the job done. After his e
         'EMFlowerbed_flag_54' => 'Клумба цветов флага.',
         'EMFlowerbed_flag_55' => 'Клумба цветов флага.',
         'EMFlowerbed_flag_pirate' => 'Клумба в виде пиратского флага',
+        'EMFlowerbed_haiti' => 'Украсьте остров цветами команды, за которую болеете! Речь буквально о цветочных клумбах, так что придется повозиться в земле. А если ваша команда проиграет, из этих цветов хотя бы получится красивый утешительный венок.',
+        'EMFlowerbed_iraq' => 'Украсьте остров цветами команды, за которую болеете! Речь буквально о цветочных клумбах, так что придется повозиться в земле. А если ваша команда проиграет, из этих цветов хотя бы получится красивый утешительный венок.',
+        'EMFlowerbed_joradan' => 'Украсьте остров цветами команды, за которую болеете! Речь буквально о цветочных клумбах, так что придется повозиться в земле. А если ваша команда проиграет, из этих цветов хотя бы получится красивый утешительный венок.',
+        'EMFlowerbed_newzealand' => 'Украсьте остров цветами команды, за которую болеете! Речь буквально о цветочных клумбах, так что придется повозиться в земле. А если ваша команда проиграет, из этих цветов хотя бы получится красивый утешительный венок.',
+        'EMFlowerbed_norway' => 'Украсьте остров цветами команды, за которую болеете! Речь буквально о цветочных клумбах, так что придется повозиться в земле. А если ваша команда проиграет, из этих цветов хотя бы получится красивый утешительный венок.',
+        'EMFlowerbed_paraguay' => 'Украсьте остров цветами команды, за которую болеете! Речь буквально о цветочных клумбах, так что придется повозиться в земле. А если ваша команда проиграет, из этих цветов хотя бы получится красивый утешительный венок.',
+        'EMFlowerbed_qatar' => 'Украсьте остров цветами команды, за которую болеете! Речь буквально о цветочных клумбах, так что придется повозиться в земле. А если ваша команда проиграет, из этих цветов хотя бы получится красивый утешительный венок.',
+        'EMFlowerbed_southafrica' => 'Украсьте остров цветами команды, за которую болеете! Речь буквально о цветочных клумбах, так что придется повозиться в земле. А если ваша команда проиграет, из этих цветов хотя бы получится красивый утешительный венок.',
+        'EMFlowerbed_uzbekistan' => 'Украсьте остров цветами команды, за которую болеете! Речь буквально о цветочных клумбах, так что придется повозиться в земле. А если ваша команда проиграет, из этих цветов хотя бы получится красивый утешительный венок.',
         'EMIncreaseMaxBuildings' => 'Для толп болельщиков, которых вы обрели во время чемпионата, необходимо жилище. Поэтому стоит подумать, где их разместить. Лучше предупредить соседей о возможном шуме в ближайшие дни.',
         'EMLongbow' => 'Он является основой всех вражеских формирований. И он наносит удары от всего сердца.',
         'EMMilitia' => 'Этот спортсмен-аристократ - воплощение боевого духа; он драчлив и избалован.',
@@ -7291,6 +7250,11 @@ He prefers the aid of a small reliable horsemen to get the job done. After his e
         'EMSoccerGate_d' => 'Целевой лагерь турнира',
         'EMSpeedUpPopulationGrowth' => 'Праздничное настроение, похоже, произвело необычный эффект на репродуктивное поведение вашего сообщества. Неистовство соревнований и побед сблизило людей.',
         'EMTrophy' => 'Трофей футбольного турнира',
+        'EW_Refinery_BronzeOre' => 'Перерабатывает медную руду, увеличивая количество получаемой руды.',
+        'EW_Refinery_GoldOre' => 'Перерабатывает золотую руду, увеличивая количество получаемой руды.',
+        'EW_Refinery_IronOre' => 'Перерабатывает железную руду, увеличивая количество получаемой руды.',
+        'EW_Refinery_PlatinumOre' => 'Перерабатывает платиновую руду, увеличивая количество получаемой руды.',
+        'EW_Refinery_TitaniumOre' => 'Перерабатывает титановую руду, увеличивая количество получаемой руды.',
         'Easter2015TransporterAdmiral' => 'Многообещающий молодой человек, чья храбрость достойна внимания. Передвигается быстрее обычного маршала.',
         'Easter2016_Content_DescItem_1' => 'Встречайте нового искателя приключений - бесстрашного исследователя!',
         'Easter2016_Content_DescItem_2' => 'Улучшайте пасхальный склад, получая достижения!',
@@ -7344,7 +7308,7 @@ He prefers the aid of a small reliable horsemen to get the job done. After his e
         'EasterEvent2022_Residence' => 'Уникальная резиденция в честь Пасхи-2022.',
         'EasterEvent2023_Residence' => 'Уникальная резиденция в честь Пасхи-2023.',
         'EasterEvent2024_Residence' => 'Уникальная резиденция в честь Пасхи-2024.',
-        'EasterEvent2025_Residence' => 'NT: A special residence from Easter 2025',
+        'EasterEvent2026_Residence' => 'Уникальная резиденция в честь Пасхи-2026.',
         'EasterExplorer' => 'Этот исследователь выглядит опытным, и это действительно так. Он молниеносно находит сокровища и карты в заданных районах.',
         'EasterGeneral' => 'Гарнизон ветерана отличается повышенной вместимостью. Потому этот генерал может повести в бой больше войск.',
         'EasterGeneralGarrison' => 'Военный лагерь вашего генерала',
@@ -7370,6 +7334,9 @@ He prefers the aid of a small reliable horsemen to get the job done. After his e
 Объект: жилое здание
 Продолжительность: 3 часа (22 часа для друга/члена гильдии)
 Условия: 5 штук активируют усилитель населения зоны "Кулоны-сердечки", 10 штук - усилитель найма зоны "День семьи"',
+        'EffectBuffFluffyLogistics1' => 'Длительность: 24 ч
+Эффект: Примените усилитель как минимум к 12 домам друзей или членов гильдии, чтобы запустить для них логистическую сеть пасхальных яиц.
+Цель эффекта: Дома',
         'EffectBuffScratchingPost' => 'Когтеточка из разных пород дерева. Дуб ценится выше других!
 
 При необходимости используйте на ратуше для достижения прогресса в задании "Ларсийская шелковая кошка"',
@@ -7497,11 +7464,8 @@ He prefers the aid of a small reliable horsemen to get the job done. After his e
         'EffectBuff_pumpkinfield_01_resurrector' => 'Восстанавливает 10 тыкв на истощенном небольшом кладбище с тыквами.',
         'EffectBuff_pumpkinfield_02_resurrector' => 'Восстанавливает 10 тыкв на истощенном обычном кладбище с тыквами.',
         'EffectBuff_pumpkinfield_03_resurrector' => 'Восстанавливает 10 тыкв на истощенном большом кладбище с тыквами.',
-        'EfficientAdvancedToolmaker' => 'NT: An alternative engineering of the Advanced tool maker. Trades off a little bit of speed for resource economy.',
-        'EfficientPlatinumSmelter' => 'NT: An alternative engineering of the Platinum Smelter. Trades off a little bit of speed for resource economy.',
-        'ElderTreeLH' => 'NT: A very old tree that teems with magic. Legends says that it is as old as time itself and has the ability of finding hidden treasures.',
+        'EfficientCrossbowsmith' => 'Альтернативное производство оружейной (арбалеты). Немного снижает скорость в обмен на дополнительную экономию ресурсов.',
         'EliteBarracks' => 'Позволяют обучать элитных бойцов.',
-        'EliteGuildBanner_Deco' => 'NT: A memorabilia from the festivities to keep around on you island for the best.',
         'EliteSoldier' => 'Высокое здоровье и порядочный уровень наносимого урона, но и затраты на производство высокие.',
         'EliteStable' => 'Тренирует боевых коней.',
         'EliteTrainingGrounds' => '+50% к скорости найма новобранцев для элитных бойцов.',
@@ -7671,6 +7635,7 @@ He prefers the aid of a small reliable horsemen to get the job done. After his e
         'EpicWorkyardBalloons' => 'Отпразднуйте годовщину открытия родного острова, обменяв ресурсы на воздушные шарики.',
         'EpicWorkyardCorn' => 'Может с повышенной эффективностью работать с производственными цепочками, связанными с пшеницей.',
         'EpicWorkyardOre' => 'Может с повышенной эффективностью работать с производственными цепочками, связанными с мечами.',
+        'EpicWorkyardRefinery' => 'Перерабатывает металлические руды, увеличивая количество получаемой руды. Для работы требуется топливо.',
         'EpicWorkyardWood' => 'Может с повышенной эффективностью работать с производственными цепочками, связанными с древесиной.',
         'EraseStreet' => 'Удалить дорогу.',
         'EspionageBuilding' => 'Соберите информацию. Это будет влиять на все начатые вами приключения какое-то время. Каждый последующий пост разведчиков снижает время восстановления.',
@@ -8104,6 +8069,8 @@ He prefers the aid of a small reliable horsemen to get the job done. After his e
         'FlowerbedHeart' => 'Тип: украшение
 Размер: 1x1',
         'FluffyButteExplorer' => 'Благодаря мощным ногам он перепрыгивает с задания на задание в 3 раза быстрее обычных исследователей. А в его чудесном мешке помещается множество волшебных предметов.',
+        'FluffyLogistics' => 'Пухлохолмс неустанно трудится, чтобы своевременно доставлять пасхальные яйца.
+Ни один ребёнок не должен упустить возможности потратить целый день на поиски яиц.',
         'FlyingHouse' => 'Получайте 1 подарок каждый день после последнего сбора. Действует на каждый размещенный штаб.',
         'FoodProductionWeek_DescItem_1' => 'Во время события все здания, производящие пищу, будут работать вдвое быстрее!',
         'FoodProductionWeek_DescItem_2' => 'Это событие влияет на все постройки, которые производят муку, хлеб, колбасу, рыбу и квас.',
@@ -8120,7 +8087,6 @@ He prefers the aid of a small reliable horsemen to get the job done. After his e
         'FortifiedWarehouse_leader' => 'Последний бой разбойников',
         'ForwardGuard_leader' => 'Дом одного из командиров передовой стражи.',
         'Foundry' => 'Производит мортиры.',
-        'FrankenHouse' => 'NT: The home and work place of a "differently minded" man of science who is obsessed with curing death.',
         'Friary' => 'Производит квас.',
         'Friary_Mini' => 'Дань уважения стойкости вашего монашеского братства. Благодаря их мольбам было произведено еще больше кваса. Или просто перед доставкой никто не успел перехватить по паре кружечек?',
         'FriendGarrison' => 'Гарнизон союзников',
@@ -8160,8 +8126,6 @@ He prefers the aid of a small reliable horsemen to get the job done. After his e
 Продолжительность: 4 часа
 Примечание: усилитель действует только во время одиночного приключения.',
         'GeneralSpeedBuff_TMC_A' => 'Ваши генералы утопают в снегу, и потому их скорость снижается на 50%.',
-        'GeneralSpeedBuff_Witchcoven_Speed1' => 'NT: You generals move 500% faster for 1h. After they will move 50% slower and their accuracy is reduced by 50% for 3h',
-        'GeneralSpeedBuff_Witchcoven_Speed2' => 'NT: Generals move 50% slower and their accuracy is reduced by 50% for 3h',
         'GeneralTrembleBeard' => 'В 2 раза быстрее перемещается к приключениям.
 В 2 раза быстрее восстанавливается после поражения. Может вести в бой до 160 бойцов.',
         'GeneralVargus' => 'Наемник из земель Антерии. Защитный стиль его боя уменьшает урон, входящий по вашим войскам, и уберегает их от обхода с фланга.',
@@ -8170,7 +8134,6 @@ He prefers the aid of a small reliable horsemen to get the job done. After his e
         'GeologistDepositSizeEvent_Description' => 'Вашему геологу подсказали, где искать большие залежи.',
         'GeologistDepositSizeEvent_Title' => 'Размер залежей',
         'GeologistOnVacation' => 'Геологу требуется в 2 раза больше времени на задания, но он может принести фрагменты карты или усилители, а найденные им залежи на 50% больше. Кроме того, во время событий он всегда приносит ресурсы события.',
-        'GhostExplorer' => 'NT: An explorer from a bygone age who keeps diligently working on his tasks.',
         'GhostGeneral' => 'Некогда непреклонная аристократка, преданная наемниками-пиратами. Ныне призрак, жаждущий возмездия.',
         'GhostLantern' => 'Притягательный источник света и дом для заблудших душ.',
         'GiantBarrel' => 'Склад, сделанный из гигантской бочки. Кто приложил руку к строительству - неизвестно, как и то, что именно там хранилось. По-моему, это перебор…',
@@ -8184,9 +8147,14 @@ He prefers the aid of a small reliable horsemen to get the job done. After his e
         'GingerbreadResidence' => 'Увеличивает предел населения.',
         'GingerbreadStorage' => 'Все товары хранятся здесь, доставляются сюда и берутся отсюда.
 Вмещает до 18 000 ед. ресурсов.',
+        'GloryExploriExplorer' => 'Обожающая лошадей исследовательница, которую до сих пор преследует прошлое. Она всегда ищет необычные приключения ради острых ощущений.',
         'GoToTargetTip' => 'Быстрый переход к месту события.',
         'GoldMine' => 'Добывает золотую руду',
         'GoldMineEndless' => 'Дает неограниченное количество золотой руды.',
+        'GoldOreKnowledge1' => 'Найденные в далеких землях записи, которые содержат секреты обработки золота.
+Можно обменять в ратуше на рукопись.',
+        'GoldOreKnowledge2' => 'Найденные в далеких землях записи, которые содержат строгие секреты обработки золота.
+Можно обменять в ратуше на фолиант.',
         'GoldOreTreasureEvent_DescItem_1' => 'Исследователи во время поисков сокровищ находят золотой руды вдвое больше обычного!',
         'GoldOreTreasureEvent_DescItem_2' => 'Совет: золотую руду можно найти во время поисков сокровищ (долгих и очень долгих).',
         'GoldOreTreasureEvent_DescItem_3' => 'Шансов обнаружить золотую руду столько же, сколько раньше.',
@@ -8222,22 +8190,6 @@ He prefers the aid of a small reliable horsemen to get the job done. After his e
         'GuildApplyMailBody' => '{0} подает заявку на вступление в вашу гильдию {1}. Принимаете заявку?
 
 {2}',
-        'GuildBanner_Deco' => 'NT: Decorative construction',
-        'GuildBanner_Event' => 'NT: Guild Fest Banner',
-        'GuildFest' => 'NT: Join a guild and compete on the Guild Fest leaderboard for rewards. Earn Guild Fest Tokens by crafting them in the Guild Fest Grounds and completing quests to boost your guild’s rank. Work together with your guild members and show the rest of the world that your guild is the best!',
-        'GuildFestBundle1' => 'NT: Gold Guild Fest Bundle',
-        'GuildFestBundle2' => 'NT: Silver Guild Fest Bundle',
-        'GuildFestBundle3' => 'NT: Bronze Guild Fest Bundle',
-        'GuildFestEventWindow' => 'NT: Welcome to Guild Fest, where friendships collide, in a blend of teamwork and friendly pride.
-
-Join and unite with your guild (1) and compete against others in the Guild Fest leaderboard for fame and exclusive rewards.
-Gather Guild Fest Tokens (2) by crafting them in the Guild Fest Grounds or completing quests.
-
-Raise your guild’s rank (3) by getting more and more Guild Fest Tokens and become the number one in the leaderboard.
-
-In order to be eligible for rewards, players must have an individual contribution of 1.000 Guild Fest Tokens.
-After the tournament concludes (4), claim your rewards and spend your earned Guild Fest Commendations on amazing items in the shop. If your guild secures the top spot, watch your banners proudly fly across all islands in your gameworld—show everyone who\'s the best!',
-        'GuildFestGrounds' => 'NT: Here is were the celebrations take place. Show other guilds what you are made of.',
         'GuildFestTentI' => 'Временное место проживания для наших уважаемых гостей. Жилье оборудовано всеми удобствами и соответствует всем стандартам мероприятия.',
         'GuildFestTentII' => 'Временное место проживания для наших уважаемых гостей. Жилье оборудовано всеми удобствами и соответствует всем стандартам мероприятия.',
         'GuildFestTentIII' => 'Временное место проживания для наших уважаемых гостей. Жилье оборудовано всеми удобствами и соответствует всем стандартам мероприятия.',
@@ -8246,16 +8198,10 @@ After the tournament concludes (4), claim your rewards and spend your earned Gui
         'GuildFest_Content_DescItem_3' => 'В конце события вы получите награды, а также валюту, которую можно потратить на шикарные призы.',
         'GuildFest_Content_Description' => 'Добро пожаловать на фестиваль гильдий! Здесь дружба и взаимопомощь схлестнутся во благо слаженной работы.',
         'GuildFest_Content_Title' => 'Фестиваль гильдий',
-        'GuildFest_Shop_DescItem_1' => 'NT: Claim your rewards in the Guild Fest Panel and check them out in your Star Menu.',
-        'GuildFest_Shop_DescItem_2' => 'NT: Spend your Guild Fest Commendations in the Merchant for even greater rewards.',
-        'GuildFest_Shop_DescItem_3' => 'NT: Celebrate with other people and congratulations to the ultimate winner!',
-        'GuildFest_Shop_Description' => 'NT: Congratulations! Guild Fest is over and now it’s time to celebrate all the guilds who participated.',
-        'GuildFest_Shop_Title' => 'NT: Guild Fest is coming to an End',
         'GuildFillMarble' => 'Тайный запас мрамора
 
 Добавляет 500 ед. мрамора к залежам.',
         'GuildFoundTooltip' => 'Пока что вы не удовлетворяете требованиям, чтобы основать гильдию.',
-        'GuildHouse_Mini' => 'NT: A tiny version of the Guild Office building that passively produces Guild Coins for your convenience.',
         'GuildIncreaseSize' => 'Используйте на здании гильдии, чтобы увеличить максимально допустимое число членов гильдии на 1 человека.',
         'GuildIncreaseSizePay' => 'Используйте на здании гильдии, чтобы увеличить максимально допустимое число членов гильдии на 2 человек.',
         'GuildInviteDeclineMailBody' => '{0} отклонил приглашение в вашу гильдию {1}.',
@@ -8334,7 +8280,6 @@ After the tournament concludes (4), claim your rewards and spend your earned Gui
         'HalloweenGeneralDracul' => 'На поле боя лорд Дракул впадает в ярость. И хотя это не самый надежный союзник, вам пригодятся его стремительные и смертоносные атаки.',
         'HalloweenGeneralDraculGarrison' => 'Военный лагерь вашего генерала',
         'HalloweenGeneralGarrison' => 'Военный лагерь вашего генерала',
-        'HalloweenZombieInvader' => 'NT: No brain, all bite.',
         'HalveTimeTip' => 'Вдвое сократите время выполнения задания вашим специалистом! {0}',
         'HappyHour_DescItem_1' => 'Ни в чем себе не отказывайте!',
         'HappyHour_Description' => 'Предложение "Счастливый час" сейчас активно. Вы получите больше самоцветов за каждый набор. Нажмите на кнопку внизу, чтобы перейти на страницу онлайн-магазина.',
@@ -8359,21 +8304,19 @@ After the tournament concludes (4), claim your rewards and spend your earned Gui
 Цель: Гарнизон на острове приключения
 Эффект: Добавляет дополнительных бойцов в гарнизон
 Обратите внимание: бойцы будут наняты только для выполнения одного приключения и не будут перемещены на основной остров после окончания приключения.',
-        'HiredMilitaryReaninmatedArmy' => 'NT: Creates 50 Mercenary Soldiers at a blazing speed with a dark ritual. Performing this ritual will cause apply Famine in your island for 6h.',
         'HiredMilitary_Militia50' => 'Дополнительный отряд ополченцев',
         'HiredMilitary_Recruit50' => 'Дополнительный отряд новобранцев',
         'HiredMilitary_Soldiers50' => 'Наемные солдаты для приключений.',
         'HoW_dead_heart_tree' => 'Огромное дерево, в ветвях которого поет ветер.',
         'HoW_dead_tree' => 'Величественное дерево, ему очень много лет.',
         'HoliFestivalGrounds' => 'Активирует усилитель, который увеличивает производительность соседних производственных зданий.',
+        'HoneygladeResidence' => 'Идеальный дом для тех, кто считает, что благополучие — это сладкая жизнь, стабильность и упоение цветами.',
         'HumbleExplorer' => 'Скромный исследователь довольствуется поисками поблизости и отлично справляется с задачей: во время быстрых и средних поисков сокровищ приносит в 6 раз больше наград.',
         'Hunter' => 'Заготавливает мясо',
         'Hunter_Mini_Gold' => 'Дань уважения всем охотникам. Восхваление их мастерства повышает их продуктивность и дает вам больше бесплатного мяса.',
         'Hunting_Camp_leader' => 'В этом хорошо защищенном лагере находится основная часть охотников.',
         'IcePalace' => 'Великолепный дворец из волшебного вечного льда. Кстати, вид отсюда открывается чудесный!',
         'IceSculpture' => 'Утонченная скульптура, выполненная изо льда. Жаль, красота ее растает с приходом тепла.',
-        'IceSkatingLake' => 'NT: A favorite recreational attraction of the cold times of the year.
-After spending the day here Settlers return home with warm hearts.',
         'IdleState' => 'Потери рассчитываются. Подождите…',
         'IglooStorehouse' => 'Склад, построенный в лучших традициях инуитов. Отлично подходит для хранения скоропортящихся продуктов. М-м-морозная свежесть!',
         'ImprovedBakery' => 'Производит хлеб втрое быстрее обычной пекарни.',
@@ -8408,6 +8351,10 @@ After spending the day here Settlers return home with warm hearts.',
         'IronMine' => 'Производит железную руду. Нужно поместить на залежи железа.',
         'IronMineEndless' => 'Дает неограниченное количество железной руды.',
         'IronMine_Mini' => 'Воздаяние в честь печально знаменитого железного рудника!',
+        'IronOreKnowledge1' => 'Найденные в далеких землях записи, которые содержат секреты обработки железа.
+Можно обменять в ратуше на рукопись.',
+        'IronOreKnowledge2' => 'Найденные в далеких землях записи, которые содержат строгие секреты обработки железа.
+Можно обменять в ратуше на фолиант.',
         'IronOreTreasureEvent_DescItem_1' => 'Исследователи во время поисков сокровищ находят железной руды вдвое больше обычного!',
         'IronOreTreasureEvent_DescItem_2' => 'Совет: железную руду можно найти во время средних поисков сокровищ и редкостей.',
         'IronOreTreasureEvent_DescItem_3' => 'Шансов обнаружить железную руду столько же, сколько раньше.',
@@ -8417,10 +8364,6 @@ After spending the day here Settlers return home with warm hearts.',
         'IronWeaponsmith' => 'Производит железные мечи',
         'IronWilledGeologist' => 'Находит залежи железной руды вдвое большего размера, время поиска сокращается на 50%.',
         'Irrigation water infused with nutrients needed to encourage the growth of an Otherworldly Sapling.' => 'Удобрение, созданное по специальной формуле для выгонки плодов странного дерева.',
-        'Jewelcrafter' => 'NT: A humble workshop focused on handcrafted jewel products.',
-        'JewelcrafterAdventureBuff1' => 'NT: Reducers enemy accuracy by 50%
-Duration: 5m
-Target: Adventures zones',
         'KeenerExplorer' => 'Она снова и снова страдала ради своих любимых, но даже не думала сдаваться. Напротив, это сделало ее сильнее, ловче и безудержнее любого другого исследователя.',
         'KingdomBoss1' => 'За молниеносную скорость, беспощадную точность и крепкое телосложение его называют королем разбойников.',
         'KingdomBoss2' => 'Эта гигантская пушка одним выстрелом сносит целые батальоны кавалерии.',
@@ -8440,6 +8383,7 @@ Target: Adventures zones',
 • Небоевой персонаж',
         'KingdomSoldier' => 'Когда-то он был достойным солдатом славной королевской армии. Теперь он сражается только за свои интересы. За все эти годы он немного утратил былую точность.',
         'Knight' => 'Сравнительно дешевый в обучении элитный боец, способный атаковать первым, однако обладающий при этом посредственным запасом здоровья и уровнем наносимого урона.',
+        'KrampusPit' => 'Очень глубокая угольная шахта. Она до сих пор работает, но вырытые помещения отлично подходят для хранения самых разных продуктов. Более того, никто даже не посмеет воровать ваши вещи, пока их охраняет Крампус.',
         'Laboratory' => 'Преобразует различные ресурсы при помощи силы науки!',
         'LargeRiverhouse1' => 'Увеличивает предел населения.
 +60 населения. При улучшении увеличится вместимость.',
@@ -8484,17 +8428,16 @@ Target: Adventures zones',
         'LevelNewUpgradeBookbinder' => 'Повышение скорости производства.',
         'LevelNewUpgradeCandyFactory' => 'Открывает дополнительный усилитель.',
         'LevelNewUpgradeCarnivalGrounds' => 'Открывает дополнительный усилитель.',
+        'LevelNewUpgradeChocolateDepot' => 'Увеличивает вместимость склада.',
         'LevelNewUpgradeChocolatier' => 'Открывает производство нового усилителя.',
-        'LevelNewUpgradeCoffeeShop' => 'NT: Unlocks a new buff',
+        'LevelNewUpgradeCommandCenter' => 'Открывает дополнительный усилитель.',
+        'LevelNewUpgradeDepositorium' => 'Увеличивает вместимость склада.',
         'LevelNewUpgradeEliteBarracks' => 'Повышение скорости найма.',
         'LevelNewUpgradeExpeditionWeaponSmith' => 'Повышение скорости производства.',
         'LevelNewUpgradeExpeditionWeaponSmith2' => 'Повышение скорости производства.',
         'LevelNewUpgradeGrandFieldHospital' => 'Открывает дополнительный усилитель.',
         'LevelNewUpgradeHarbour' => 'Повышение скорости производства.',
-        'LevelNewUpgradeJewelcrafter' => 'NT: Unlocks a new buff',
-        'LevelNewUpgradeLongboatStorehouse' => 'NT: Increases storage capacity',
         'LevelNewUpgradeLoversStatue' => 'Открывает производство новых усилителей.',
-        'LevelNewUpgradeProspector' => 'NT: Unlocks a new buff',
         'LevelNewUpgradeProvisionhouse' => 'Повышение скорости производства.',
         'LevelNewUpgradeResidence' => 'Увеличивает предел населения',
         'LevelNewUpgradeSiegeWorkshop' => 'Открывает дополнительный усилитель.',
@@ -8503,13 +8446,12 @@ Target: Adventures zones',
         'LevelNewUpgradeStoneDepot' => 'Открывает дополнительный усилитель',
         'LevelNewUpgradeToyFactory' => 'Открывает дополнительный усилитель.',
         'LevelNewUpgradeWarehouse' => 'Увеличение вместительности склада.',
-        'LevelNewUpgradeWitchCoven' => 'NT: Unlocks a new buff',
+        'LevelNewUpgradeWeddingChapel' => 'Открывает новую свадебную историю',
         'LevelNewUpgradeWorkyard' => 'Открывает дополнительный усилитель',
         'LevelNewUpgradeWorkyardDeposit' => 'Увеличение выпуска продукции.',
         'LevelNewUpgradeWorkyardInput' => 'Увеличение выпуска продукции.',
         'LevelNewUpgradeWorkyardNoInput' => 'Увеличение выпуска продукции.',
         'LevelUp' => 'Поздравляем! Вам удалось поднять свой уровень. На новом уровне вы разблокировали следующее:',
-        'LevitatingHauntedWarehouse' => 'NT: This warehouse is flying! It\'s unbelievable. It\'s so haunted that it started to levitate. This is our opportunity to place it in the water!',
         'LightingBlackAndWhite' => 'Эффект зоны: окрашивает ваш остров в черно-белые цвета
 Продолжительность: 7 дней (10,5 дней для друга/члена гильдии)',
         'LoadingMails' => 'Выполняется загрузка писем, на которые вы отвечаете. Это может занять несколько минут.',
@@ -8518,8 +8460,8 @@ Target: Adventures zones',
         'LoadingMessage03' => 'Загрузка карты',
         'LoadingMessage04' => 'Инициализация экономики',
         'LocaLootMailMailBody' => 'Ваш опытный специалист вернулся из поиска с дополнительным сокровищем.',
-        'LoggingHut' => 'NT: A cozy vacation home, far away from everything. Perfect to relax and knit ugly winter sweaters.',
         'Logistics' => 'Обеспечивает торговлю между людьми',
+        'LonelyHeartInn' => 'Таверна, которая странным образом превратилась в излюбленное место для страдальцев с разбитым сердцем, которым хочется утопить свои печали.',
         'LonerGeneral' => 'Генерал-одиночка очень высокого о себе мнения, и ему есть чем гордиться: он отлично командует войсками и проводит отменные атаки.',
         'LongboatStorehouse' => 'Некогда это судно служило пиратам и повидало немало рейдов, а теперь в нем хранятся несметные награбленные богатства.',
         'Longbowmaker' => 'Производит длинные луки',
@@ -8532,8 +8474,29 @@ Target: Adventures zones',
         'Loottable_ChristmasDecorationsBox2015' => 'Набор из трех случайных украшений рождественской тематики.',
         'Loottable_ChristmasMysteryBoxDeco' => 'Используйте на Ратуше и получите случайное декоративное здание, включая башню и темный замок.',
         'Loottable_ChristmasMysteryBoxResource' => 'Откройте коробку и получите произвольный ресурс, это может быть даже восстановление золота или кроличья лапка.',
+        'Loottable_Christmas_Bench_MysteryBox_b' => 'Содержит украшение «Рождественская скамья» х6',
+        'Loottable_Christmas_Bench_MysteryBox_m' => 'Содержит украшение «Рождественская скамья» х4',
+        'Loottable_Christmas_Bench_MysteryBox_s' => 'Содержит украшение «Рождественская скамья» х2',
+        'Loottable_Christmas_Christmastree_MysteryBox_b' => 'Содержит украшение «Рождественское дерево» х6',
+        'Loottable_Christmas_Christmastree_MysteryBox_m' => 'Содержит украшение «Рождественское дерево» х4',
+        'Loottable_Christmas_Christmastree_MysteryBox_s' => 'Содержит украшение «Рождественское дерево» х2',
+        'Loottable_Christmas_Lantern_MysteryBox_b' => 'Содержит украшение «Рождественский фонарь» х6',
+        'Loottable_Christmas_Lantern_MysteryBox_m' => 'Содержит украшение «Рождественский фонарь» х4',
+        'Loottable_Christmas_Lantern_MysteryBox_s' => 'Содержит украшение «Рождественский фонарь» х2',
+        'Loottable_Christmas_Nutcracker_MysteryBox_b' => 'Содержит украшение «Рождественский щелкунчик» х6',
+        'Loottable_Christmas_Nutcracker_MysteryBox_m' => 'Содержит украшение «Рождественский щелкунчик» х4',
+        'Loottable_Christmas_Nutcracker_MysteryBox_s' => 'Содержит украшение «Рождественский щелкунчик» х2',
+        'Loottable_Christmas_Presents_MysteryBox_b' => 'Содержит украшение «Рождественские подарки» х6',
+        'Loottable_Christmas_Presents_MysteryBox_m' => 'Содержит украшение «Рождественские подарки» х4',
+        'Loottable_Christmas_Presents_MysteryBox_s' => 'Содержит украшение «Рождественские подарки» х2',
+        'Loottable_Christmas_Pyramid_MysteryBox_b' => 'Содержит украшение «Рождественская пирамида» х6',
+        'Loottable_Christmas_Pyramid_MysteryBox_m' => 'Содержит украшение «Рождественская пирамида» х4',
+        'Loottable_Christmas_Pyramid_MysteryBox_s' => 'Содержит украшение «Рождественская пирамида» х2',
+        'Loottable_Christmas_Snowman_MysteryBox_b' => 'Содержит украшение «Рождественский снеговик» х6',
+        'Loottable_Christmas_Snowman_MysteryBox_m' => 'Содержит украшение «Рождественский снеговик» х4',
+        'Loottable_Christmas_Snowman_MysteryBox_s' => 'Содержит украшение «Рождественский снеговик» х2',
         'Loottable_CollectibleMysteryBox' => 'Прекрасное собрание всех коллекционных предметов, которые только можно пожелать, включая адамантовую руду и телеги с едой.',
-        'Loottable_CombatLoot_MysteryBox' => 'NT: Contains Brohmann\'s spoils of war.',
+        'Loottable_CombatLoot_MysteryBox334' => 'Содержит сказочные приключения',
         'Loottable_CostumeTimeMysteryBox' => 'Куча поношенных костюмов, в которой можно отыскать коллекционные предметы.',
         'Loottable_Easter2015MysteryBox' => 'Открывайте коробку, чтобы получить произвольный предмет, например приключение "Вторжение северян" или золотой рудник уровня 6.',
         'Loottable_Easter2016MysteryBox' => 'Откройте коробку и получите произвольные усилитель или предмет для пополнения залежи. Это может быть даже мешок радужного снега.',
@@ -8541,7 +8504,6 @@ Target: Adventures zones',
         'Loottable_FlyingHouseMysteryBox' => 'Взгляните на место, отмеченное этим предметом, и получите один или несколько предметов в зависимости от количества парящих над вашим островом летающих домов.',
         'Loottable_GhostLanternMysteryBox' => 'Откройте сундук и получите награду от дружелюбных призрачных спутников. Ее размер зависит от того, сколько фонарей призраков размещено на острове в момент получения.',
         'Loottable_GiftChristmasTreeMysteryBox' => 'Откройте коробку и получите один подарок или даже больше. Все зависит от того, сколько у вас было новогодних елок в момент сбора.',
-        'Loottable_GrimoirePages_MysteryBox' => 'NT: An ancient notebook that might contain useful knowledge.',
         'Loottable_HalloweenMysteryBox' => 'Данный ящик содержит различные приключения, например "Северяне" или "Пиратский остров", и даже эпичные походы, такие как "Портняжка-герой", или совместные приключения, такие как "Грабители могил".',
         'Loottable_ImprovedBuildingBox' => 'Эта необычная коробка содержит случайное улучшенное здание. Откройте и получите одно из следующих зданий:
 1 улучшенный дом на воде
@@ -8565,9 +8527,6 @@ Target: Adventures zones',
 Церковь из костей x1
 Башня ведьмы x1',
         'Loottable_NormalResourceBox' => 'Откройте коробку и получите произвольный ресурс, например, уголь или золотую руду.',
-        'Loottable_ProspectorMysteryBox1' => 'NT: Contains the findings of prospecting Stone.',
-        'Loottable_ProspectorMysteryBox2' => 'NT: Contains the findings of prospecting Marble.',
-        'Loottable_ProspectorMysteryBox3' => 'NT: Contains the findings of prospecting Granite.',
         'Loottable_RefillMysteryBox' => 'Большая прекрасная коллекция различных средств восстановления залежей, включая универсальные, а также относящиеся к золотой руде.',
         'Loottable_RewardBoxCommon' => 'Содержит случайную награду',
         'Loottable_RewardBoxManuscriptRecipe' => 'Шанс получить одну из следующих наград:
@@ -8603,8 +8562,26 @@ Target: Adventures zones',
         'Loottable_UnityMysteryBox' => 'Внутри - все, о чем только можно мечтать. Наверное…',
         'Loottable_ValentineBox' => 'Откройте коробку и получите произвольный предмет, например монеты, усилитель или особое приключение типа "Новые эксперименты в уединении".',
         'Loottable_ValentineCardBox' => 'Эффект: дарит одну случайную валентинку.',
-        'Loottable_Valentines2025DecorationMysteryBox' => 'NT: A box containing a mystery Valentines themes decoration.',
+        'Loottable_WeddingStory' => 'Содержит одно из следующего:
+Свадебная история: лучший друг человека?
+Свадебная история: заносчивая невеста
+Свадебная история: рьяный флорист',
         'Loottable_XmasDecorationMysteryBox' => 'Сундук, внутри которого сокрыто украшение к Рождеству.',
+        'Loottable_XmasSock_MysteryBox' => 'Содержит следующие награды
+Всегда:
+
+Волшебные бобы
+
+А также:
+
+Усилитель «Крампус»
+Усилитель «Печенья»
+Усилитель «Густой горячий шоколад»
+Усилитель «Любовный эликсир»
+Усилитель «Кирка Крампуса»
+Усилитель «Бабушкин ужин»
+Волшебные бобы
+Уголь',
         'LoveGarden' => 'Тип: общественное
 Эффект: активирует усилитель области на домах. Их количество влияет на запуск эффектов зоны и новых материалов.
 Размер: 2x2',
@@ -8626,6 +8603,17 @@ Target: Adventures zones',
         'MahoganyWoodTreasureEvent_DescItem_2' => 'Шансов обнаружить махагониевое дерево столько же, сколько раньше.',
         'MahoganyWoodTreasureEvent_Description' => 'Исследователь обнаружил лес, где много махагониевых деревьев. Права на землю уже заявлены, но пока бумаги не подписаны, добывать дерево не запрещено.',
         'MahoganyWoodTreasureEvent_Title' => 'Увеличение добычи сокровищ: махагониевое дерево',
+        'Mahogany_Tree' => 'Производит махагониевое дерево',
+        'MailPremiumChristmasBuffMailBody' => 'Знак признательности от хорошего друга, который решил, что вам пригодится усиление.
+Не забудьте поблагодарить щедрого благодетеля!
+
+• Все эффекты усиления единичного производства удваиваются!
+• 50% опыта от приключений. Применяется также к усилению опыта с премиум-временем!
+• Время производства в казармах и элитных казармах сокращается вдвое.
+• Время производства в универсальной мастерской и мастерской редкостей сокращается вдвое.
+• Производство оружия (кроме боевого арсенала) ускоряется вдвое.
+• Исследователи и геологи выполняют задачи на 20% быстрее.
+• Длительность: 5 дней.',
         'MailPremiumFriendBuffMailBody' => 'Знак признательности от дорогого друга. Надеемся, вам понравится этот щедрый усилитель.
 Не забудьте поблагодарить своего благодетеля - {0}!
 
@@ -8676,8 +8664,6 @@ Target: Adventures zones',
         'MajorGeneralGarrison' => 'Военный лагерь вашего генерала',
         'ManEatingPlant' => 'Похоже, это растение изголодалось… по вниманию. Покормите Отри III мясом - взамен растение одарит вас волшебными бобами.',
         'Manor' => 'Увеличивает предел населения.',
-        'MarathonGeologist' => 'NT: 3 times faster but deposits are half of their original size
-Chance to bring additional random refiller after successful search.',
         'MarbleMason' => 'Производит мрамор',
         'MarbleTreasureEvent_DescItem_1' => 'Исследователи во время поисков сокровищ находят мрамора вдвое больше обычного!',
         'MarbleTreasureEvent_DescItem_2' => 'Совет: мрамор можно найти во время поисков сокровищ (быстрых, средних).',
@@ -8718,8 +8704,6 @@ Chance to bring additional random refiller after successful search.',
         'MedicGarrison' => 'Военный лагерь вашего генерала',
         'MedicGeneral' => 'Медик, которого повысили до звания генерала. Он очень заботится о своем войске и использует навыки медицины, чтобы подлечить бойцов после битвы.',
         'MediumWatchtower' => 'Здесь можно расквартировывать бойцов регулярных войск. Будут охранять территорию среднего размера.',
-        'MercenaryExplorer' => 'NT: Has a chance of finding additional mercenary themed adventures.
-Has an additional chance of finding Desperate Rich and Sir Robin\'s Revenge on medium adventure search.',
         'MilitaryShopEvent_DescItem_1' => 'Наберите наемников для всех стандартных типов войск.',
         'MilitaryShopEvent_DescItem_2' => 'На время приключения наемники назначаются в гарнизон.',
         'MilitaryShopEvent_DescItem_3' => 'Наемники не будут с вами постоянно! Они будут в составе войска до конца приключения.',
@@ -8730,6 +8714,7 @@ Has an additional chance of finding Desperate Rich and Sir Robin\'s Revenge on m
         'Miller' => 'Производит муку',
         'MineDepletedDepositBronzeOre' => 'Отправьте геолога на поиски новых залежей.',
         'MineDepletedDepositBronzeOreIndustrial' => 'Отправьте геолога на поиски новых залежей.',
+        'MineDepletedDepositChristmasResource' => 'Растаявшее рождественское украшение',
         'MineDepletedDepositCoal' => 'Отправьте геолога на поиски новых залежей.',
         'MineDepletedDepositCoalIndustrial' => 'Отправьте геолога на поиски новых залежей.',
         'MineDepletedDepositCorn' => 'Разместите новое поле, чтобы собирать больше пшеницы.',
@@ -8763,7 +8748,6 @@ Has an additional chance of finding Desperate Rich and Sir Robin\'s Revenge on m
         'MiraculousGeneral' => 'Находится под защитой божественной силы, которая распространяется на всех ее союзников.',
         'MissingResources' => 'Все еще требуются следующие ресурсы:',
         'MotherlyExplorer' => 'Заботливая исследовательница никого не оставляет без внимания, поэтому во время всех поисков сокровищ, диковинок и артефактов приносит в 4 раза больше наград.',
-        'MountainClanColossus' => 'NT: An ancient, massive sculpture carved straight into a mountain by the Mountain Clan. It can produce and store copious amounts of riches.',
         'MountainDemolition_L' => 'Применяйте к горам:
 • Навсегда убирает объект
 • Освобождает место для строительства (до 9 ячеек)',
@@ -8785,6 +8769,45 @@ Has an additional chance of finding Desperate Rich and Sir Robin\'s Revenge on m
 Объект: мастерские
 Продолжительность: 2 часа (3 часа для друга)
 Удвоенный эффект не сочетается с другими усилителями производительности и не может быть применен на грандиозных мастерских.',
+        'MultiplierBuffZone2_PremiumCompensationBuff_1Day' => 'Знак признательности. 
+• Все эффекты усиления единичного производства удваиваются! 
+• +50% опыта от приключений. Применяется также к усилению опыта с премиум-временем!
+• Время производства в казармах и элитных казармах сокращается вдвое!
+• Время производства в универсальной мастерской и универсальной мастерской редкостей сокращается вдвое!
+• Производство оружия (кроме боевого арсенала) ускоряется вдвое.
+• Исследователи и геологи выполняют задачи на 20% быстрее.
+• Длительность: 1 день.
+
+Важно знать:
+• Это усиление можно применить только к собственному острову.
+• Повторное применение усиления сбросит отсчёт времени, т. е. оставшееся время будет потеряно.
+• Удвоение усилений не складывается с другими подобными усилениями и не применяется к грандиозной мастерской.',
+        'MultiplierBuffZone2_PremiumCompensationBuff_3Day' => 'Знак признательности. 
+• Все эффекты усиления единичного производства удваиваются! 
+• +50% опыта от приключений. Применяется также к усилению опыта с премиум-временем!
+• Время производства в казармах и элитных казармах сокращается вдвое!
+• Время производства в универсальной мастерской и универсальной мастерской редкостей сокращается вдвое!
+• Производство оружия (кроме боевого арсенала) ускоряется вдвое.
+• Исследователи и геологи выполняют задачи на 20% быстрее.
+• Длительность: 3 дня.
+
+Важно знать:
+• Это усиление можно применить только к собственному острову.
+• Повторное применение усиления сбросит отсчёт времени, т. е. оставшееся время будет потеряно.
+• Удвоение усилений не складывается с другими подобными усилениями и не применяется к грандиозной мастерской.',
+        'MultiplierBuffZone2_PremiumCompensationBuff_7Day' => 'Знак признательности. 
+• Все эффекты усиления единичного производства удваиваются! 
+• +50% опыта от приключений. Применяется также к усилению опыта с премиум-временем!
+• Время производства в казармах и элитных казармах сокращается вдвое!
+• Время производства в универсальной мастерской и универсальной мастерской редкостей сокращается вдвое!
+• Производство оружия (кроме боевого арсенала) ускоряется вдвое.
+• Исследователи и геологи выполняют задачи на 20% быстрее.
+• Длительность: 7 дней.
+
+Важно знать:
+• Это усиление можно применить только к собственному острову.
+• Повторное применение усиления сбросит отсчёт времени, т. е. оставшееся время будет потеряно.
+• Удвоение усилений не складывается с другими подобными усилениями и не применяется к грандиозной мастерской.',
         'MultiplierBuffZone2_PremiumFriendBuff1Day' => 'Знак признательности дорогому другу.
 • Все одиночные эффекты усилителей производства удваиваются!
 • +50% к опыту от приключений. Применяется к усилению опыта, действующему при наличии премиум-времени!
@@ -8798,6 +8821,19 @@ Has an additional chance of finding Desperate Rich and Sir Robin\'s Revenge on m
 • Нельзя использовать на родном острове - только на острове друга.
 • Повторное применение усилителя перезапустит отсчет времени и не сложится с предыдущим.
 • Удвоенный эффект не сочетается с другими усилителями производительности и не может быть применен на грандиозных мастерских.',
+        'MultiplierBuffZone2_PremiumFriendBuff_Christmas' => 'Знак уважения отличному другу. 
+• Все эффекты усиления единичного производства удваиваются! 
+• +50% опыта от приключений. Применяется также к усилению опыта с премиум-временем!
+• Время производства в казармах и элитных казармах сокращается вдвое!
+• Время производства в универсальной мастерской и универсальной мастерской редкостей сокращается вдвое!
+• Производство оружия (кроме боевого арсенала) ускоряется вдвое.
+• Исследователи и геологи выполняют задачи на 20% быстрее.
+• Длительность: 5 дней.
+
+Важно знать:
+• Это усиление можно применить только к друзьям и нельзя применить к собственному острову.
+• Повторное применение усиления сбросит отсчёт времени, т. е. оставшееся время будет потеряно.
+• Удвоение усилений не складывается с другими подобными усилениями и не применяется к грандиозной мастерской.',
         'MultiplierBuffZone4_PremiumFriendBuffSkills' => '• Все одиночные эффекты усилителей производства удваиваются!
 • +50% к опыту. Складывается с премиум-опытом!
 • +50% к скорости производства в казармах и элитных казармах (сверх других усилителей).
@@ -8806,6 +8842,7 @@ Has an additional chance of finding Desperate Rich and Sir Robin\'s Revenge on m
 • Все задания для специалистов ускорены на 20%.
 • Продолжительность: 30 часов.',
         'MummifiedGeologist' => 'Хотя геолог-мумия и медлителен, упорства ему не занимать. Ему требуется в три раза больше времени при поиске залежей, но он находит залежи в четыре раза крупнее.',
+        'NarcissisticGeneral' => 'Генерал, страдающая от обострённого чувства собственного величия. Она способна превосходно выполнять свою работу, однако в силу её нездорового соперничества с генералами-близнецами с ней просто невозможно работать.',
         'NeutralCavalry' => 'Неприрученное животное и живет в местных лесах появляется только в больших волчьих стаях. Оно всегда голодно и опасно.',
         'NewRecruitsBuffMailBody' => 'Ваш опытный специалист вернулся из путешествия с несколькими новобранцами.',
         'NewUpgradeAchievementWarehouse' => 'Увеличение вместительности склада на {0}.',
@@ -8819,17 +8856,16 @@ Has an additional chance of finding Desperate Rich and Sir Robin\'s Revenge on m
         'NewUpgradeBookbinder' => 'Повышение скорости производства на {0}%.',
         'NewUpgradeCandyFactory' => 'Открывает дополнительный усилитель.',
         'NewUpgradeCarnivalGrounds' => 'Открывает дополнительный усилитель.',
+        'NewUpgradeChocolateDepot' => 'Увеличивает вместимость склада.',
         'NewUpgradeChocolatier' => 'Открывает производство нового усилителя.',
-        'NewUpgradeCoffeeShop' => 'NT: Unlocks a new buff',
+        'NewUpgradeCommandCenter' => 'Открывает дополнительный усилитель.',
+        'NewUpgradeDepositorium' => 'Увеличивает вместимость склада.',
         'NewUpgradeEliteBarracks' => 'Повышение скорости найма на {0} %.',
         'NewUpgradeExpeditionWeaponSmith' => 'Каждое улучшение ускоряет производство на 100% от основного значения.',
         'NewUpgradeExpeditionWeaponSmith2' => 'Повышение скорости производства на {0} %.',
         'NewUpgradeGrandFieldHospital' => 'Открывает дополнительный усилитель.',
         'NewUpgradeHarbour' => 'Повышение скорости производства на 100%.',
-        'NewUpgradeJewelcrafter' => 'NT: Unlocks a new buff',
-        'NewUpgradeLongboatStorehouse' => 'NT: Increases storage capacity',
         'NewUpgradeLoversStatue' => 'Открывает дополнительный усилитель',
-        'NewUpgradeProspector' => 'NT: Unlocks a new buff',
         'NewUpgradeProvisionhouse' => 'Повышение скорости производства на {0} %.',
         'NewUpgradeResidence' => 'Увеличение максимально допустимой численности населения {0}.',
         'NewUpgradeSiegeWorkshop' => 'Открывает дополнительный усилитель.',
@@ -8837,7 +8873,7 @@ Has an additional chance of finding Desperate Rich and Sir Robin\'s Revenge on m
         'NewUpgradeStoneDepot' => 'Открывает дополнительный усилитель',
         'NewUpgradeToyFactory' => 'Открывает дополнительный усилитель.',
         'NewUpgradeWarehouse' => 'Увеличение вместительности склада на {0}.',
-        'NewUpgradeWitchCoven' => 'NT: Unlocks a new buff',
+        'NewUpgradeWeddingChapel' => 'Открывает новую свадебную историю',
         'NewUpgradeWorkyard' => 'Открывает дополнительный усилитель',
         'NewUpgradeWorkyardDeposit' => 'Увеличение выпуска продукции на: {0}. Ускорение добычи на залежах.',
         'NewUpgradeWorkyardInput' => 'Увеличение выпуска продукции на: {1} и затраты на производство на: {0}.',
@@ -8858,6 +8894,7 @@ Has an additional chance of finding Desperate Rich and Sir Robin\'s Revenge on m
         'Observatory' => 'Тип: разведданные
 Эффект: производит звездные карты, сокращающие время передвижения генералов
 Размер: 3x3',
+        'OffshoreLighthouse' => 'Надежный маяк на крошечном острове. Днем в свободное от работы время смотритель маяка ловит рыбу и продает излишки на местном рынке.',
         'OilMill_Mini' => 'Дань уважения одному из самых полезных зданий - маслобойне.
 Эффект: производит 4 ед. масла
 Продолжительность: 20 часов',
@@ -8932,6 +8969,7 @@ Has an additional chance of finding Desperate Rich and Sir Robin\'s Revenge on m
 Влияет только на исследователей, которые были отправлены на поиск во время действия усилителя. Включая тех, кто вернется после окончания действия усилителя.
 Действует 48 часов.',
         'OutdoorCanteen' => 'Здесь ваши войска могут подкрепиться перед приключениями. Как говорится: "Война войной, а обед по расписанию!"',
+        'OutdoorCanteenAid' => 'Декоративное здание, снижающее время восстановления уличной столовой и повышающее скорость производства коптильни.',
         'PVEWeaponProductionWeek_DescItem_1' => 'Во время события все изготовители оружия (кроме арсенала) и плавильни будут работать в два раза быстрее!',
         'PVEWeaponProductionWeek_DescItem_2' => 'Это событие влияет на все постройки, которые плавят металл для оружия, производят мечи, лошадей, луки и огнестрельное оружие различных видов.',
         'PVEWeaponProductionWeek_Description' => 'Королю доложили, что соперничающее королевство в ближайшее время может напасть на нас. Поэтому он приказал всем островам под его властью вдвое увеличить производство оружия.',
@@ -8981,12 +9019,17 @@ Has an additional chance of finding Desperate Rich and Sir Robin\'s Revenge on m
         'PirateRecruit' => 'Привыкший постоянно драить палубы, он научился ловкому обращению со шваброй.',
         'PirateResidence' => 'Увеличивает предел населения.
 +50 населения. При улучшении увеличится вместимость.',
+        'PlatinumOreKnowledge1' => 'Найденные в далеких землях записи, которые содержат секреты обработки платины.
+Можно обменять в ратуше на рукопись.',
+        'PlatinumOreKnowledge2' => 'Найденные в далеких землях записи, которые содержат строгие секреты обработки платины.
+Можно обменять в ратуше на фолиант.',
         'PlatinumOreTreasureEvent_DescItem_1' => 'Исследователи во время длительных поисков сокровищ находят платиновой руды вдвое больше обычного!',
         'PlatinumOreTreasureEvent_DescItem_2' => 'Шансов обнаружить платиновую руду столько же, сколько раньше.',
         'PlatinumOreTreasureEvent_Description' => 'У ваших исследователей родилась идея: поискать детали оружия из платины на местах былых сражений, чтобы потом переплавить. Воспользуйтесь ею по полной, пока другие не перехватили!',
         'PlatinumOreTreasureEvent_Title' => 'Увеличение добычи сокровищ: платиновая руда',
         'PlatinumSmelter' => 'Производит платиновые слитки.',
         'PlatinumWeaponsmith' => 'Производит платиновые мечи.',
+        'Platinum_Shack' => 'Производит платиновую руду',
         'PlayerCavExpeditionCampLvl01' => 'Оборонительный лагерь. Возможное число кавалеристов: маленькое.',
         'PlayerCavExpeditionCampLvl02' => 'Оборонительный лагерь. Возможное число кавалеристов: обычное.',
         'PlayerCavExpeditionCampLvl03' => 'Оборонительный лагерь. Возможное число кавалеристов: большое.',
@@ -9110,8 +9153,6 @@ Has an additional chance of finding Desperate Rich and Sir Robin\'s Revenge on m
 Объект: здания, производящие оружие
 Продолжительность: 23 часа
 Изготовители оружия напевают веселые песни во время работы, увеличивая производительность втрое на 23 часа',
-        'ProductivityAreaBuffDimensionalRiftBuff5' => 'NT: Unleashes a soothing storm improving the production output of all Foresters, Sunflower Farm, Flower Farms, Silos, and Improved Silos by 100%.
-Duration 2h',
         'ProductivityAreaBuffGiantTreeOfHope' => 'Дар природы
 Эффект области: +100% к производительности
 Область: 5x5 клеток
@@ -9162,6 +9203,9 @@ Duration 2h',
 Объект: плавильни (бронза, железо, сталь, золото, титан, платина), грандиозная кузница
 Продолжительность: 8 часов (12 часов для друга/члена гильдии)
 Область: 4x4 клетки',
+        'ProductivityAreaBuffLvl_ChristmasJumper' => 'Согревает и воодушевляет работников. Повышает эффективность производства на 300% в области 4х4.
+Цель: друг
+Длительность: 4 часа.',
         'ProductivityAreaBuffRainDance' => 'Увеличивает производительность всех домиков лесника, подсолнечных ферм, цветочных ферм, сеялок и улучшенных сеялок на 100%. Действует 6 часов.
 Усилитель зоны.',
         'ProductivityAreaBuffXmasMarketLvl1' => 'Усилитель рождественской ярмарки ур. 1
@@ -9209,16 +9253,6 @@ Duration 2h',
 Продолжительность: 12 часов',
         'ProductivityBuffCarnivalGrounds1' => 'Увеличивает затраты на производство на 200%. Также увеличивает производительность на 800%. Действует 2 часа.
 Применяется к мастерским.',
-        'ProductivityBuffCoffeeShop0' => 'NT: Completely spent. Production stopped.',
-        'ProductivityBuffCoffeeShop1' => 'NT: Increases production output by 500% but then everyone is exhausted, stopping production.
-Duration: 2h + 30m
-Target: Workyards (Own only)',
-        'ProductivityBuffCoffeeShop2' => 'NT: Increases production output by 500% but then everyone is exhausted, stopping production.
-Duration: 4h + 30m 
-Target: Workyards (Own only)',
-        'ProductivityBuffCoffeeShop3' => 'NT: Increases production by 400%
-Duration: 6h
-Target: Sunflower Farm, Man Eating Plant, Bio Farm, Farm, Improved Farm, Forester, Hardwood Forester, Exotic Forester, Exotic Wood Tree Nursery',
         'ProductivityBuffCollectibleEW' => 'Эффект: +100% к производительности
 Объект: грандиозная мастерская
 Продолжительность: 6 часов (9 часов для друга/члена гильдии)',
@@ -9245,6 +9279,10 @@ Target: Sunflower Farm, Man Eating Plant, Bio Farm, Farm, Improved Farm, Foreste
 Продолжительность: 8 часов (12 часов для друга/члена гильдии)
 
 Примечание: этот предмет будет заменен на "Плоды невзгод" в соотношении 2:1 после завершения события "Годовщина".',
+        'ProductivityBuffEW_Refinery' => 'Алхимическая смесь, мощности которой достаточно, чтобы поддерживать работу печей промышленного рудоперерабатывающего завода.',
+        'ProductivityBuffGrandmasDinner' => 'Эффект: увеличивает производительность мастерской на 100%.
+Длительность: 96 часов
+Цель: мастерская',
         'ProductivityBuffHalloween1' => 'Эффект: +200% к производительности
 Объект: каменная каменоломня, мраморная каменоломня, гранитная каменоломня
 Продолжительность: 6 часов
@@ -9256,12 +9294,10 @@ Target: Sunflower Farm, Man Eating Plant, Bio Farm, Farm, Improved Farm, Foreste
 Объект: фабрика растворов
 Продолжительность: 12 часов
 Базовое время производства: 24 часа',
-        'ProductivityBuffJewelcrafter1' => 'NT: Increases production output by 500%
-Duration: 48h
-Target: Sunflower Farm',
-        'ProductivityBuffJewelcrafter2' => 'NT: Increases production output by 1400%
-Duration: 24h
-Target: Titanium Hen',
+        'ProductivityBuffKrampusPickaxe' => 'Эффект: Увеличивает производительность угольных шахт и промышленных угольных шахт на 400%.
+Снижает затраты на производство на 66%
+Длительность: 48 ч.
+Цель: Угольные шахты, промышленные угольные шахты.',
         'ProductivityBuffLvl1' => 'Эффект: +100% к производительности
 Объект: мастерская
 Продолжительность: 30 минут (45 минут для друга/члена гильдии)',
@@ -9362,6 +9398,9 @@ Target: Titanium Hen',
         'ProductivityBuffLvl300' => 'Эффект: +100% к производительности
 Объект: мастерская
 Продолжительность: 24 часа (36 часов для друга/члена гильдии)',
+        'ProductivityBuffLvl31' => 'Эффект: +600% производительности
+Длительность: 24 часа
+Цель: мастерская',
         'ProductivityBuffLvl4' => 'Эффект: +200% к производительности
 Объект: мастерская
 Продолжительность: 12 часов (18 часов для друга/члена гильдии)',
@@ -9383,6 +9422,9 @@ Target: Titanium Hen',
         'ProductivityBuffLvlIronMine' => 'Эффект: +300% к производительности
 Объект: железный рудник
 Продолжительность: 24 часа (36 часов для друга/члена гильдии)',
+        'ProductivityBuffLvl_CommandCenterBoost' => 'Длительность: 24 часа
+Эффект: +2800% скорости производства усилителей
+Цель: Командный пункт',
         'ProductivityBuffToyFactoryBuff3' => 'Эффект: +300% к производительности
 Объект: бумажная фабрика (I), бумажная фабрика (II), бумажная фабрика (III)
 Продолжительность: 24 часа
@@ -9423,8 +9465,6 @@ Target: Titanium Hen',
 Объект: цветочная ферма
 Продолжительность: 1 час (3 часа для друга/члена гильдии)
 Дополнительный эффект: отправляет милое послание, 3 штуки активируют усилитель зоны "Святой Валентин" для трофеев в приключении',
-        'ProductivityBuffZoneEW_DimensionalRiftBuff6' => 'NT: The presence of Unicorns improves the production output of Epic Workyards by 100%.
-Duration 2h',
         'ProductivityBuffZoneEW_WitchesFamiliars' => 'Эффект зоны: +100% к производительности
 Объект: грандиозные мастерские
 Продолжительность: 4 часа (6 часов для друга/члена гильдии)',
@@ -9461,6 +9501,9 @@ Duration 2h',
 Эффект зоны: +100% к производительности
 Объект: бумажная фабрика (обычная, улучшенная, усовершенствованная), лавка каллиграфа, лавка печатника, улучшенная лавка печатника, лавка художника
 Продолжительность: 6 часов',
+        'ProductivityBuffZoneScienceLvl_Candles' => 'Тепло этих свечей положительно сказывается на работе всех научных зданий. Сокращает время производства на 25% и повышает производительность на 100%.
+Цель: друг
+Длительность: 6 часов.',
         'ProductivityBuffZoneStoneLvl1' => 'Это руководство обучит ваших поселенцев более эффективно производить камень.
 
 Эффект зоны: +200% к производительности
@@ -9476,13 +9519,14 @@ Duration 2h',
 Эффект зоны: +100% к производительности
 Объект: оружейная (бронза, железо, сталь, булат, платина), грандиозная оружейная, мастерская луков, длинных луков, арбалетов и аркебуз, пушечный завод, литейная мастерская, конюшня, элитная конюшня, грандиозная конюшня
 Продолжительность: 4 часа',
-        'ProductivityBuffZoneWitchCovenBloodlust' => 'NT: Shortens the production time of weapons by 80% for 2h but they cost 3 times as much resources.',
-        'ProductivityBuffZoneWitchCovenFamine' => 'NT: Raising the dead increases the cost of producing food by 3 and reduced the output to a third.',
         'ProductivityBuffZoneWoodLvl1' => 'Это руководство обучит ваших поселенцев более эффективно производить древесину.
 
 Эффект зоны: +200% к производительности
 Объект: домик лесника (древесина, древесина из дуба, красное дерево), домик дровосека (древесина, древесина из дуба, красное дерево), лесопилка (древесина, древесина из дуба, красное дерево, махагониевое дерево), питомник для красного дерева, грандиозный лесной склад (домик лесника (сосна), домик лесника (дуб), лесопилка, лесопилка (дуб), лесопилка (красное дерево)) 
 Продолжительность: 4 часа (6 часов для друга/члена гильдии)',
+        'ProductivityBuff_ChristmasCard' => 'Эффект: +300% производительность научных ресурсов
+ Цель: друг
+ Длительность: 3 часа',
         'ProductivityBuff_StarfallStarExtractor_Buff1' => 'Машинное масло, созданное по специальной формуле для улучшения показателей СКРЭБОК I.
 
 Повышает скорость добычи на 100%, а объем добычи - на 50% на 2 часа.',
@@ -9615,9 +9659,6 @@ Duration 2h',
 Длительность: 12 часов',
         'PropagationBuff_EspionageTradeOffenseForXP' => 'Эффект зоны: повышает опыт, полученный в бою, на 5%, но снижает наносимый урон ваших атакующих войск на 20% во всех приключениях, начатых во время действия данного усилителя.
 Длительность: 12 часов',
-        'PropagationBuff_WitchCovenBloodlust' => 'NT: Shortens the production time of weapons by 80% for 2h but they cost 3 times as much resources.
-In addition in any adventures started during the effect, your forces deal 30% more damage, but they have 25% less health, and your enemies deal 15% more damage.',
-        'Prospector' => 'NT: A workshop that thoroughly inspects mined rocks in search of  traces amounts of precious metals and minerals.',
         'ProvisionHouse' => 'Может создавать особые предметы из ресурсов.
 Клавиша P',
         'ProvisionHouse2' => 'Может создавать особые предметы из товаров.',
@@ -9646,12 +9687,9 @@ In addition in any adventures started during the effect, your forces deal 30% mo
 Объект: универсальная мастерская, универсальная мастерская редкостей
 Продолжительность: 4 часа (6 часов для друга/члена гильдии)
 Не всем придется по вкусу такой густой горячий шоколад. Но он надолго повысит производительность универсальных мастерских.',
-        'ProvisionerBuffLvlGuildFestGrounds1' => 'NT: Increase Guild Fest Grounds and Guild Fest Accommodation Buildings production speed by 100%
-
-Duration: 40 min. (60 min. on friends/guild members)',
-        'ProvisionerBuffLvlGuildFestGrounds2' => 'NT: Increase Guild Fest Grounds and Guild Fest Accommodation Buildings production speed by 200%
-
-Duration: 40 min. (60 min. on friends/guild members)',
+        'ProvisionerBuffLvl_ChristmasStollen' => 'Этот деликатес, приготовленный из ценнейших ингредиентов, укрепляет боевой дух поселенцев, тем самым сокращая время производства в универсальной мастерской и универсальной мастерской редкостей в 8 раз.
+Цель: друг
+Длительность: 4 часа.',
         'ProvisionerBuffTravelDocuments' => 'Созданы специально для заядлых путешественников: с такими документами отправиться в отпуск не составит труда.',
         'ProvisionerBuffZoneLvl1' => 'Устраивает великолепный пир для работников универсальных мастерских, улучшая их способность быстрее работать.
 
@@ -9670,6 +9708,7 @@ Duration: 40 min. (60 min. on friends/guild members)',
         'QuestStart_ANewStone' => 'Взгляните на этот чудесный камень. Он так сверкает, и его цвет так красив. Интересно, он ценный? Пока не исследуете камень, не узнаете!
 
 Эффект: начинает задание "Новый драгоценный камень"',
+        'QuestStart_OreRefinery' => 'Эпическое задание, во время которого вам предстоит раскрыть секреты обработки металлов далеких цивилизаций.',
         'QuestStart_SavetheDeers' => 'Вы заметили, что популяция оленей стремительно редеет? Этот инструмент поможет вам выяснить, в чем же тут дело.
 
 Эффект: начинает задание "Спасите оленей!"',
@@ -9678,6 +9717,9 @@ Duration: 40 min. (60 min. on friends/guild members)',
 Эффект: начинает задание "Ларсийская шелковая кошка"
 Это задание по мотивам одноименной истории (Die larsianische Seidenkatze), написанной Julie3, победителем конкурса!',
         'QuestStart_UnlockStarfallShip' => 'Запускает в работу "Предвестник" - новейшую модель экспериментального исследовательского судна.',
+        'QuestStart_WeddingStory1' => 'Начинает задание: Свадебная история: лучший друг человека?',
+        'QuestStart_WeddingStory2' => 'Начинает задание: Свадебная история: заносчивая невеста',
+        'QuestStart_WeddingStory3' => 'Начинает задание: Свадебная история: рьяный флорист',
         'QuestStart_WolfPuppy' => 'Девочка играла в лесу и нашла маленького раненого волчонка. Помогите ей вылечить его.
 
 Эффект: начинает задание "Волчонок!"',
@@ -9794,6 +9836,9 @@ Duration: 40 min. (60 min. on friends/guild members)',
         'RecruitingBuffLvl9' => 'Эффект: +200% к скорости найма
 Объект: казармы, элитная казарма
 Продолжительность: 24 часа',
+        'RecruitingBuffLvl_LittleDrummer' => 'Будоражащий бой этого барабана сокращает время найма во всех казармах на 300%.
+Цель: друг
+Длительность: 4 часа.',
         'RecruitingBuffValentineZoneConditional' => 'Эффект зоны: +200% к скорости найма
 Объект: казармы, элитные казармы
 Продолжительность: пока выполняются условия
@@ -9823,6 +9868,8 @@ Duration: 40 min. (60 min. on friends/guild members)',
         'RetailBox2General' => 'Дружелюбный генерал, популярный в рядах армии. Он может вести в бой чуть больше войск, чем обычно.',
         'RetailBoxGeneral' => 'Визитная карточка этого генерала - его устрашающий шлем, к сожалению, абсолютно бесполезный в бою. Тем не менее опыт помогает этому полководцу быстро выполнять задачи.',
         'RetaliationMailBody' => '{0} совершил против вас диверсию.',
+        'RetirementHome' => 'Производитель усилений, использующий шерсть для создания Бабушкиных вязаных рождественских чулок, набитых подарками.',
+        'RetirementHomeAid' => 'Почтовый ящик, письма из которого отправляют напрямую Санте. Дети часто посещают их после того, как побывали у бабушки с дедушкой.',
         'RevealCollectiblesBuff01' => 'Эффект зоны: указывает на все коллекционные предметы на вашем родном острове при помощи синей стрелки
 Продолжительность: 5 минут',
         'RevealCollectiblesBuff02' => 'Эффект зоны: указывает на все коллекционные предметы на острове приключения при помощи желтой стрелки
@@ -9839,13 +9886,6 @@ Duration: 40 min. (60 min. on friends/guild members)',
         'RomanticRestaurant' => 'От одного взгляда на аппетитные блюда начинают течь слюнки. Здесь каждому найдется яство по душе. А кроме того, в этом месте так приятно встретиться со своей половинкой!',
         'RoseArbor' => 'Декоративная конструкция',
         'RoseTrellis' => 'Декоративная конструкция',
-        'RosyIronMine' => 'NT: Type: Workyard
-Effect: Produces Iron (12) without the need of Coal and with halved deposit consumption (6)
-Size: 2x2',
-        'RosyStorage' => 'NT: Type: Storage, recurring
-Effect: +40.000 storage
-Size: 2x2
-Upgrades: No',
         'RoyalExplorer' => 'Королевский исследователь поистине королевский. Он невероятно быстр и порой при поиске приключений находит жетоны, которые просто обожает, но потом всегда отдает их вам.',
         'S4Barracks' => 'Повышают эффективность казарм и элитных казарм на 50%.',
         'S4Lazaret' => 'Найденный старый рецепт позволяет вновь производить аптечки.',
@@ -9875,6 +9915,7 @@ Upgrades: No',
         'ScienceResourceEvent_DescItem_2' => 'Все соответствующие товары можно найти в разделе "Спецпредложения".',
         'ScienceResourceEvent_Description' => 'Переплетчик с соседнего острова недавно слег с болезнью и временно прекратил работать. И, кстати, наши соседи распродают постепенно накапливающиеся у них запасы материалов для переплетной мастерской по очень низким ценам.',
         'ScienceResourceEvent_Title' => 'Скидки на товары для переплетчиков',
+        'Seedoil_Deposit' => 'Производит маслосемена',
         'SellSpareParts' => 'Мы нашли отличное применение "запасным деталям", которые остались у Тимми.',
         'SendMailTip' => 'Хотите поприветствовать друга? Отправьте ему письмо - он будет рад весточке от вас.',
         'SetTaskGroupTip' => 'Откройте панель специалистов и выберите то же задание, на которое отправится свободный {0}.',
@@ -9939,11 +9980,13 @@ Upgrades: No',
 +90 населения. При улучшении увеличится вместимость.',
         'SmallWatchtower' => 'Здесь можно расквартировывать бойцов регулярных войск. Будут охранять небольшую территорию.',
         'Smokehouse' => 'Коптильня в стиле северян. Тут вы сможете закоптить рыбу и получить вкусный усилитель.',
+        'Smokehouse_Mini' => 'Это воздаяние отдаёт дань уважения лучшим мастерам копчения на острове. Производит 1 копченый рыбный стейк каждый день.',
         'SnackStand' => 'Производит разные усилители производительности.',
         'Snowglobe' => 'В этом снежном шаре заключен дух Рождества. Вечная вьюга, зима, снег, даже когда на дворе лето. При виде снежного шара сердце каждого из нас наполняется теплом и предвкушением чуда.',
         'SnowglobeBuff1' => '+300% к производительности, +100% к затратам, область 12x12. Продолжительность: 4 часа',
         'SnowglobeBuff2' => '+400% к производительности, +50% к затратам, область 14x14. Продолжительность: 5 часов',
         'SnowglobeBuff3' => '+500% к производительности, без дополнительных затрат, область 18x18. Продолжительность: 6 часов',
+        'Snowman_Deposit' => 'Милый снеговик, который можно использовать в качестве украшения.',
         'SnowyExplorer' => 'Помимо праздного времяпрепровождения в пряничном доме, этот исследователь просто обожает охоту за сокровищами. Он всегда привозит из событий в четыре раза больше ресурсов.',
         'Soccer2018plus_Content_DescItem_1' => 'Информацию о предстоящих играх и наградах можно найти в списке матчей.',
         'Soccer2018plus_Content_DescItem_2' => 'Собирайте ресурсы и производите усилители, которые помогут вам побеждать.',
@@ -9965,10 +10008,6 @@ Upgrades: No',
         'SoccerChampionTrophy_2022' => 'Декоративный предмет',
         'SoccerChampionTrophy_2023' => 'Декоративный предмет',
         'SoccerChampionTrophy_2024' => 'Декоративный предмет',
-        'SoccerChampionTrophy_2025' => 'NT: Decorative Object',
-        'SoccerChampionTrophy_2026' => 'NT: Decorative Object',
-        'SoccerChampionTrophy_2027' => 'NT: Decorative Object',
-        'SoccerChampionTrophy_2028' => 'NT: Decorative Object',
         'SoccerEventWindow' => 'Добро пожаловать на чемпионат Settlers по футболу! Во время этого турнира, который продлится 3 недели, вы сможете выиграть потрясающие награды. Правда, на пути к главному трофею соревнования вам придется одолеть множество соперников!
 Во время события вы получите в приключениях в два раза больше добычи и в три раза больше опыта!
 
@@ -10060,6 +10099,9 @@ Upgrades: No',
 Объект: ратуша, деревенская школа, университет, купальня
 Продолжительность: пока выполняются условия
 Условие: 5 активных букетов цветов',
+        'SpeedUpPopulationGrowth_MulledWine' => 'Это вкусное горячее вино повышает настроение поселенцев и увеличивает прирост населения на 400%.
+Цель: друг
+Длительность: 4 часа.',
         'SpeedUpPopulationGrowth_Tourism1' => 'Эффект зоны: +100% к приросту населения или производительности
 Объект: ратуша, деревенская школа, университет, купальня
 Примечание: эффект действует только во время футбольного турнира.',
@@ -10182,6 +10224,9 @@ Upgrades: No',
         'StarfallUnitfruit2' => 'Так и хочется попробовать кусочек, только вот последствия немного пугают.',
         'StarfallUnitfruit3' => 'Так и хочется попробовать кусочек, только вот последствия немного пугают.',
         'StarfallUnitfruit4' => 'Так и хочется попробовать кусочек, только вот последствия немного пугают.',
+        'StargazingGeologist' => 'Одержимый звёздами геолог Он мечтает изучать редкие камни, которые падают с неба. Эта одержимость даёт ему способность находить Осколки звёзд.',
+        'Stargazinggeology' => 'Позволяет находить залежи, которые вдвое богаче, но поиски длятся на 50% медленнее.
+Также при успешной находке угля, золота, титана, селитры и гранита есть шанс найти осколки звёзд.',
         'StatueLion' => 'Декоративная конструкция',
         'Statue_Griffin' => 'Декоративная конструкция',
         'Statue_MagicalHero' => 'Декоративная конструкция',
@@ -10198,7 +10243,6 @@ Upgrades: No',
         'StoneTreasureEvent_DescItem_2' => 'Шансов обнаружить камень столько же, сколько раньше.',
         'StoneTreasureEvent_Description' => 'Ваши исследователи обнаружили район с множеством разрушенных зданий. Хороший источник для пополнения каменных блоков, пока их не растащили.',
         'StoneTreasureEvent_Title' => 'Увеличение добычи сокровищ: камень',
-        'StorageBasket' => 'NT: A special storehouse that matches the Easter Basket Residence',
         'StorageTower' => 'Все товары хранятся здесь, доставляются сюда и берутся отсюда.
 Максимальная вместимость - 28 000 ед. Размер всего 1x1!',
         'StrongBuilder' => 'Этот здоровяк сделает самую трудную работу и даже не подумает жаловаться. Обычные инструменты в его руках ломаются - понадобятся более прочные.',
@@ -10244,7 +10288,6 @@ Upgrades: No',
         'TheMountainClan' => 'Соберите этот текст, чтобы сгенерировать первую затею в следующей кампании: "Горный клан"
 Уровень: 65+
 Награда за успешную кампанию: очки опыта, грандиозная кузница (x1), дополнительные чертежи и вероятность получить уникальные здания в каждой затее. Чертежи открывают или улучшают эпические производственные цепочки для грандиозной кузницы.',
-        'TheSmuggler' => 'NT: A transporter general with the ability to smuggle in weapons and gold with every trip.',
         'ThoroughGeologist' => 'Он не успокоится, пока не перевернет каждый камень. И хотя поиск идет в три раза дольше, скрупулезность приносит плоды — каждая найденная залежь втрое больше обычной.',
         'TikiStorehouse' => 'Не обращайте внимания на жуткие маски! Место это гостеприимное, к тому же просторное.',
         'TipOfTheDay01' => 'Население растет автоматически, и ему нужно жилье. Следите за пределом населения при расширении города.',
@@ -10269,8 +10312,13 @@ Upgrades: No',
         'TipiResidenceWhite2' => 'Увеличивает предел населения.
 +50 населения. При улучшении увеличится вместимость.',
         'TitanHen' => 'Производит титановую руду.',
+        'TitanicGeologist' => 'Выдающийся геолог, который занимается изучением титана. Очень гордится результатами своей работы.',
         'TitaniumMine' => 'Добывает титановую руду',
         'TitaniumMine_Mini' => 'Воздаяние титаническим трудам шахтеров. Восхвалим всех работников титановых рудников троекратным "гип-гип-кирка-а-а"!',
+        'TitaniumOreKnowledge1' => 'Найденные в далеких землях записи, которые содержат секреты обработки титана.
+Можно обменять в ратуше на рукопись.',
+        'TitaniumOreKnowledge2' => 'Найденные в далеких землях записи, которые содержат строгие секреты обработки титана.
+Можно обменять в ратуше на фолиант.',
         'TitaniumOreTreasureEvent_DescItem_1' => 'Исследователи во время поисков сокровищ находят титановой руды вдвое больше обычного!',
         'TitaniumOreTreasureEvent_DescItem_2' => 'Совет: титановую руду можно найти во время поисков сокровищ (долгих и очень долгих).',
         'TitaniumOreTreasureEvent_DescItem_3' => 'Шансов обнаружить титановую руду столько же, сколько раньше.',
@@ -10281,7 +10329,6 @@ Upgrades: No',
         'TokenCoinage' => 'При попытках создать уникальный металл был открыт новый способ производства жетонов.',
         'Toolmaker' => 'Производит инструменты.',
         'TopiarySettler' => 'Декоративная конструкция',
-        'TowerOfBraggingRights' => 'NT: A trophy awarded to the mightiest guilds in the realm. Processing one if testament to the cooperative prowess of the members.',
         'ToyFactory' => 'Здесь на свет появляются игрушки. И каждая из них создана с любовью. Помните, подарок зависит от поведения. Интересно, что достанется вам?',
         'ToyFactoryBuff2' => 'Эффект: преобразует булатные мечи и аркебузы в 10 отличных инструментов
 Объект: ратуша
@@ -10302,17 +10349,14 @@ Upgrades: No',
         'TradingIntroduction' => 'Выберите товары, которыми вы хотите торговать, и нажмите кнопку "Сделать предложение".',
         'TradingIntroductionPlayer' => 'Выберите товары, которыми вы хотите торговать, и нажмите кнопку "Сделать предложение".',
         'TrainingGrounds' => '+50% к скорости найма новобранцев для обычных бойцов.',
-        'TraitChummyExplorer' => 'NT: Has a chance to return with a Chocolate Rabbit, Chocolate Pralines, Viscous Drinking Chocolate or Chocolate Covered Arrows from Long, Very Long and Prolonged treasure searches.',
         'Trait_Anniversary2019General' => 'Его сердце еще добрее отцовского: он восстанавливает 20% потерянных войск после каждого сражения.',
         'Trait_Anslem' => 'Точность войск врага уменьшается до 0%.',
         'Trait_AssassinGeneral' => 'Снижает здоровье боссов и защитных войск на 25%. Снижает урон боссов на 25%.',
+        'Trait_Aurora' => 'Исследователи выполняют поиск сокровищ и поиск приключений на 15% быстрее.',
         'Trait_BenevolentExplorer' => 'Из очень долгих и длительных поисков сокровищ она всегда приносит дополнительный усилитель, а иногда и аптечку.',
         'Trait_BewitchingExplorer' => 'Всегда возвращается с заданий по поиску сокровищ с удвоенной добычей и максимально возможным количеством ресурсов.',
-        'Trait_BlacktreeExplorer' => 'NT: Always brings back one of the Blacktree buffs.',
         'Trait_BoldExplorer' => 'Приносит на 50% больше наград, когда занимается поиском сокровищ. Всегда находит усилитель во время поиска приключений и сокровищ.',
         'Trait_Boris' => 'Повышает урон ваших быстрых войск на 50% и так же снижает урон войск противника. +50% боевого опыта.',
-        'Trait_Brohmann' => 'NT: Cavalry and Knights get +30 damage. Knights also get Flanking.
-Defeating enemies in battle have a chance of bring coffers with weapons or gold.',
         'Trait_CandidExplorer' => '+3 броска в заданиях по поиску сокровищ.',
         'Trait_CorageousExplorer' => '+100% к скорости заданий. +1 бросок в заданиях по поиску сокровищ.',
         'Trait_EmphaticExplorer' => '+2 броска в заданиях по поиску сокровищ.',
@@ -10324,7 +10368,9 @@ Defeating enemies in battle have a chance of bring coffers with weapons or gold.
 Восстанавливает 20% потерянных войск после каждого сражения.',
         'Trait_GetHiredMilitary' => 'Дружелюбие Бьерна располагает людей: в путешествиях наемники с радостью вступают в ряды интенданта. Помощь новобранцев пригодится в боях во время приключений.',
         'Trait_GhostGeneral' => 'Здоровье бойцов +20%, точность врагов -50%, скорость перемещения x3, восстановление x4, восстанавливает 20% потерянных войск. 1 дополнительная жизнь, не сочетается с другими навыками.',
-        'Trait_Ghostlyloot' => 'NT: Brings coffers with Halloween themed buffs',
+        'Trait_GloryExploriExplorer' => '+100% к скорости поиска приключений.
+-25% к скорости поиска сокровищ.
+Небольшой шанс найти дополнительное особое приключение во время долгих и очень долгих поисков приключений.',
         'Trait_Halloween2019General' => 'Разбойная охрана: защитные войска получают способность "Обход с фланга" и повышенную на 10% точность.',
         'Trait_HumbleExplorer' => 'Во время быстрых и средних поисков сокровищ приносит в 6 раз больше наград.',
         'Trait_IntrepidExplorer' => '+100% к скорости заданий. +1 бросок в заданиях по поиску приключений.',
@@ -10337,12 +10383,14 @@ Defeating enemies in battle have a chance of bring coffers with weapons or gold.
         'Trait_MadScientist' => 'Увеличивает наносимый урон ваших тяжелых войск на 100%.',
         'Trait_MaryDoubleXP' => 'Увеличивает опыт, полученный за победу этой армии над вражеским войском, на 100%.',
         'Trait_MedicResurrectLosses' => 'Восстанавливает 30% потерянных войск после каждого сражения.',
-        'Trait_MercenaryExplorer' => 'NT: Can find additional mercenary themed adventures.
-Can also find Desperate Rich and Sir Robin\'s Revenge on medium adventure search.',
         'Trait_Miraculous' => '1 дополнительная жизнь
 
 Восстанавливает 45% потерянных войск после каждого сражения.',
         'Trait_MotherlyExplorer' => 'Приносит на 300% больше наград при всех поисках сокровищ, диковинок и артефактов.',
+        'Trait_NarcissisticGeneral' => 'У вражеских боссов на 25% меньше здоровья.
+Естественная доп. жизнь.
+Победы над врагами приносят дополнительные рассказы о приключениях.
+Опыт от убийства врагов снижен на 80%.',
         'Trait_Nusala' => 'Ваши атакующие войска получают способности "Урон по области" и "Обход с фланга".',
         'Trait_Nutcracker' => '+30% к здоровью войска.
 Восстанавливает 20% потерянных войск после каждого сражения.',
@@ -10358,7 +10406,6 @@ Can also find Desperate Rich and Sir Robin\'s Revenge on medium adventure search
 Приносит в 12 раз больше наград, когда занимается долгими, очень долгими и длительными поисками сокровищ.',
         'Trait_RoyalCollector' => 'При поиске приключений может найти жетоны.',
         'Trait_ScaredExplorer' => 'Ему требуется в 4 раза больше времени на любые поиски. Он приносит в 4 раза больше добычи из всех поисков сокровищ. Благодаря чувствительной натуре у трусливого исследователя есть небольшой шанс найти во время каждого поиска сокровищ нечто невероятное (например, кристаллы, предметы, дающие премиум-время, или ценные книги). Бонусы к добыче не распространяются на поиски артефактов, диковинок и приключений.',
-        'Trait_Smuggling' => 'NT: Brings coffers with weapons or gold after completing a trip',
         'Trait_SnowyExplorer' => 'Приносит на 100% больше наград, когда занимается поиском сокровищ (включая поиски артефактов и диковинок)
 Приносит на 300% больше наград за ресурсы события',
         'Trait_Soccer2019Explorer' => '+300% к скорости заданий
@@ -10416,16 +10463,16 @@ Can also find Desperate Rich and Sir Robin\'s Revenge on medium adventure search
 Продолжительность: 4 часа',
         'UI_CupidosArrow' => 'Устраняет определенное количество случайных бойцов в лагере.
 Поражает меньше целей, чем ливень из стрел, но больше, чем стрелы в шоколаде. Можно использовать на вражеские лагеря неограниченное количество раз.',
-        'UI_ProductivityBuffHalloween1' => 'Эффект: +200% к производительности
-Объект: каменная каменоломня, мраморная каменоломня, гранитная каменоломня
-Продолжительность: 6 часов
+        'UI_ProductivityBuffHalloween1' => 'Эффект: +300% к производительности и –66% к затратам на производство.
+Цель эффекта: каменоломня, мраморная каменоломня, гранитная каменоломня
+Продолжительность: 24 часа
 Базовое время производства: 24 часа',
         'UI_ProductivityBuffHalloween2' => 'Эффект: преобразует камень, мрамор и селитру в гранит
-Объект: ратуша
-Базовое время производства: 24 часа',
-        'UI_ProductivityBuffHalloween3' => 'Эффект: +200% к производительности
-Объект: фабрика растворов
-Продолжительность: 12 часов
+Цель: Ратуша
+Базовое время производства: 2 часа',
+        'UI_ProductivityBuffHalloween3' => 'Эффект +200% производительности и –25% затрат на производство.
+Цель: фабрика растворов
+Длительность: 48 часов
 Базовое время производства: 24 часа',
         'UI_SettlerDateLvl1' => 'Эффект зоны: +300% к приросту населения
 Объект: ратуша, деревенская школа, купальня, университет, воздаяние образованию
@@ -10520,7 +10567,6 @@ Can also find Desperate Rich and Sir Robin\'s Revenge on medium adventure search
         'ValentinesTransporterGeneral' => 'У него самое большое сердце среди полководцев - неудивительно, что каждый солдат мечтает поступить в его полк. Со временем из-за притока новобранцев и своей исключительной доброты он стал перевозить больше бойцов, чем любой другой интендант. Но по этой же причине он решил никогда не сражаться сам.',
         'ValorRateBonus' => 'Позволяет получать на {0} больше очков доблести.',
         'VersedGeologist' => 'В два раза быстрее обычного находит залежи на 50% крупнее. Может найти дополнительную залежь с шансом в 50%. Действует на все типы залежей!',
-        'VesyGeologist' => 'NT: In his aimless, adventurous, amateur, attempts in the search of gold, all areas are acceptable for prospecting. It is indeed an arbitrary and absurdly ambitious approach, because he actively avoids actual advice. However, from time to time, and against all odds, he manages to strike gold.',
         'VillageSchool' => 'Увеличивает население',
         'VisitZoneTip' => 'Проверьте, как проходит это приключение.',
         'WM1on1Defense' => 'От этих защитников не отделаться - такие они цепкие! Отдайте пас свободному игроку своей команды либо освободите себе немного места с помощью нарушения.
@@ -10630,6 +10676,8 @@ Can also find Desperate Rich and Sir Robin\'s Revenge on medium adventure search
         'WeaponsResourceEvent_Title' => 'Распродажа оружия',
         'WeatherStation' => 'Лишь самые мудрые и храбрые готовы отправиться в приключение при таких погодных условиях. Они вызваны тем, что кто-то развеял в воздухе волшебный порошок.',
         'Weaver' => 'Производит ткань.',
+        'WeddingChapel' => 'Производитель усилителей, создающий усилители для запуска коротких заданий в тематике свадебных историй.',
+        'WeddingChapelAid' => 'Декоративное здание, повышающее скорость производства венчальной часовни.',
         'WelcomeText' => 'Приветствую Вас, {0}!
 По Вашему желанию я подобрал для Вас остров. Его обитателям нужен правитель. Кроме того, им угрожают разбойники, которые находятся неподалеку. Поэтому Ваша задача - не только четко наладить хозяйство, но и принять все меры безопасности.
 Поскольку это большая ответственность, а у Вас мало опыта, отправляю Вам своего казначея сэра Оливера. Он будет Вас сопровождать и оказывать необходимую помощь. Он человек чести и заслуживает доверия. Поэтому Вы можете полностью на него положиться.
@@ -10661,10 +10709,6 @@ Can also find Desperate Rich and Sir Robin\'s Revenge on medium adventure search
         'WinConditionBuilding' => 'Ваши войска ближнего боя могут нанести ущерб основному зданию лагеря в битве один на один с войсками врага. Если вы разрушите основное здание, лагерь потерпит поражение.',
         'WinConditionSupply' => 'Ваша кавалерия может украсть запасы в битве один на один с войсками врага. Если вы украдете все запасы, лагерь потерпит поражение.',
         'WinterGarden' => 'Несмотря на ужасные условия, в этом прекрасном саду можно вырастить даже самые привередливые деревья.',
-        'WitchCoven' => 'NT: A group of old ladies seemed to set up a Bakery of sorts. Those are definitely not cake ingredients.',
-        'WitchCovenAid' => 'NT: The old ladies from the new "bakery" are setting up this things everywhere. Apparently is to promote their business or something.',
-        'WitchCovenBloodlustAdventure' => 'NT: Your forces deal 30% more damage, but they have 25% less health, and your enemies deal 15% more damage.
-Duration 1h.',
         'WitchTower' => 'Башня темных ведьм.',
         'WitchTower_Deco' => 'Увеличивает предел населения.
 +100 населения. При улучшении увеличится вместимость.',
@@ -10977,12 +11021,11 @@ Duration 1h.',
         'loadedCart' => 'Декоративный предмет',
         'lootWagon' => 'Находите на {0}% больше гранита при поиске сокровищ (среднем).',
         'loottable_balloonmarket_mini_mysterybox' => 'Откройте сундук и получите случайный усилитель воздушных шаров.',
+        'loottable_depositoriummysterybox' => 'Сделанное в бесконечных залах депозитория открытие, позволяющее получить пополнитель залежей ресурсов. В зависимости от уровня развития строения есть шанс получить пополнители более редких ресурсов.',
         'loottable_xmas2015_calendarbox' => 'Подарочная коробка, содержащая пряничный дом и особый золотой рудник. Это награда за открытие всех дверей в рождественском календаре.',
         'loottable_xmas_calendarbox' => 'Подарочная коробка, содержащая замерзшее имение и арктический железный рудник. Это награда за открытие всех дверей в рождественском календаре.',
         'luckyDetour' => 'Увеличьте шанс найти гранит при поиске сокровищ (среднем) на {0}%.',
         'luckyFind' => '{0}%-й шанс найти на одну залежь железа или мрамора больше допустимого максимума.',
-        'marathon' => 'NT: 3 times faster but deposits are half of their original size
-Brings additional, random refiller after successful search.',
         'melee_camp' => 'Лагерь для войск ближнего боя',
         'mistwalker' => 'Увеличьте шанс найти красное дерево при поиске сокровищ (очень долгом) на {0}%.',
         'mixed_camp' => 'Смешанный лагерь',
@@ -11159,6 +11202,7 @@ Brings additional, random refiller after successful search.',
         'tent_traitors_leader_Deco' => 'Увеличивает предел населения.
 +50 населения. При улучшении увеличится вместимость.',
         'thorough' => 'Выполняет задание в три раза дольше, но находит втрое большие залежи.',
+        'titanicgeology' => 'После успешных поисков с некоторым шансом приносит запасы титановой руды. Кроме того, все обнаруженные им залежи титановой руды в 3 раза больше.',
         'tomb' => 'Декоративный предмет',
         'trait_keenerexplorer' => '+100% к скорости заданий. +2 броска в заданиях по поиску приключений.',
         'travelExpenses' => 'Снижает стоимость поиска приключений на {0}%.',
@@ -11206,7 +11250,7 @@ Brings additional, random refiller after successful search.',
         'xmas2015_content_title' => 'Рождество началось!',
         'xmas2015_shop_descitem_1' => 'Сани интенданта Клауса переносят войска в мгновение ока!',
         'xmas2015_shop_descitem_2' => 'Только посмотрите на технологическое чудо - улучшенную водяную мельницу!',
-        'xmas2015_shop_descitem_3' => ' Усилители, украшения, рецепты! Скорее используйте свои подарки!',
+        'xmas2015_shop_descitem_3' => 'Усилители, украшения, рецепты! Скорее используйте свои подарки!',
         'xmas2015_shop_description' => 'Слышите звон колокольчиков? Пришло время волшебства! Украсьте елку, подготовьте подарки и наслаждайтесь праздниками!',
         'xmas2015_shop_title' => 'Рождественский магазин скоро закрывается!',
         'xmas2017plus_content_descitem_1' => 'Открывайте календарь события, где вас ожидают ежедневные подарки!',
@@ -11235,7 +11279,6 @@ Brings additional, random refiller after successful search.',
         'Seconds' => '{0} с',
         'SecondsShort' => '{0} сек.',
         'ThousandsSeparator' => '.',
-        'Welcometext TSO Forums' => 'Если это ваш первый визит, рекомендуем почитать <a href=faq.php?{sessionurl}" target="_blank"><b> справку </b></a> по работе сайта и форума. Для просмотра сообщений выберите желаемый раздел.',
     ],
     'GML' => [
         'CrisisQuestchain1DaysLeft' => 'Критические задания заканчиваются завтра!',
@@ -11244,6 +11287,7 @@ Brings additional, random refiller after successful search.',
         'CrisisQuestchain7DaysLeft' => 'Критические задания: Осталось 7 дней!',
         'CrisisQuestchainStarted' => 'Началась новая цепочка критических заданий!',
         'EventEoWOpeningMail' => 'Событие: "Конец света"',
+        'MailPremiumChristmasBuff' => '{0} присылает престижный усилитель!',
         'MailPremiumFriendBuff' => '{0} присылает престижный усилитель!',
         'ServerEventResource' => 'Собрано шаров',
         'SirOliver' => 'Сэр Оливер',
@@ -11287,6 +11331,16 @@ Brings additional, random refiller after successful search.',
 Более того, ваш славный поход принес неплохую прибыль!
 
 Ваш игровой мир завершил наибольшее количество приключений! В качестве особой награды вы получаете:',
+        'MailPremiumChristmasBuff' => 'Знак признательности от хорошего друга, который решил, что вам пригодится усиление.
+Не забудьте поблагодарить щедрого благодетеля!
+
+• Все эффекты усиления единичного производства удваиваются!
+• 50% опыта от приключений. Применяется также к усилению опыта с премиум-временем!
+• Время производства в казармах и элитных казармах сокращается вдвое.
+• Время производства в универсальной мастерской и мастерской редкостей сокращается вдвое.
+• Производство оружия (кроме боевого арсенала) ускоряется вдвое.
+• Исследователи и геологи выполняют задачи на 20% быстрее.
+• Длительность: 5 дней.',
         'MailPremiumFriendBuff' => 'Знак признательности от дорогого друга. Надеемся, вам понравится этот щедрый усилитель.
 Не забудьте поблагодарить своего благодетеля - {0}!
 
@@ -12295,7 +12349,6 @@ F11 - полноэкранный режим
         'ScrollUp' => 'ц',
     ],
     'LAB' => [
-        'AAAAGeology' => 'NT: A.A.A.A. Geology',
         'AbandonIsland' => 'Покинуть остров',
         'Abilities' => 'Способности:',
         'Accept' => 'Принять',
@@ -12323,7 +12376,6 @@ F11 - полноэкранный режим
         'AddRecipe_StarfallAirship_Unlock_Bracket3' => 'Блок набора улучшений "Предвестника" III',
         'AddRecipe_StarfallAirship_Unlock_Bracket4' => 'Блок набора улучшений "Предвестника" IV',
         'AddRecipe_TSR_SheetMusic6' => 'The Settlers: Новые союзники - главная тема (ноты)',
-        'AddRecipe_Tower_Unlock_Upgrade2' => 'NT: Tower Remodeling Work Order',
         'AddResource_AdventureCodex' => 'Долгая история приключений',
         'AddResource_AdventureManuscript' => 'Короткая история приключений',
         'AddResource_AdventureTome' => 'Средняя история приключений',
@@ -12412,11 +12464,6 @@ F11 - полноэкранный режим
         'AdventuresStartedLimitReached' => 'Достигнуто максимальное количество приключений, в которых вы можете участвовать одновременно.',
         'AdventuresStartedLimitReachedShort' => 'Достигнуто максимальное количество приключений и экспедиций, в которых вы можете участвовать одновременно.',
         'All' => 'Все',
-        'AnimalBuff_DimensionalRiftBuff1' => 'NT: Something Came Through: The Undead',
-        'AnimalBuff_DimensionalRiftBuff2' => 'NT: Something Came Through: Living Armor',
-        'AnimalBuff_DimensionalRiftBuff3' => 'NT: Something Came Through: Restless Souls',
-        'AnimalBuff_DimensionalRiftBuff4' => 'NT: Something Came Through: Annoying Loud Creatures',
-        'AnimalBuff_DimensionalRiftBuff6' => 'NT: Something Came Through: Benevolent Fae Creatures',
         'AnimalBuff_blackknights' => 'Посвящение в рыцари',
         'AnimalBuff_ghosts_hauntedmansion' => 'Быстрый сеанс',
         'AnimalBuff_reindeer' => 'Приманка для оленей',
@@ -12428,9 +12475,9 @@ F11 - полноэкранный режим
         'ApplyUnits' => 'Подтверждение',
         'Archive' => 'Архив',
         'ArcticTitaniumMine' => 'Арктический титановый рудник',
-        'AreaBuffIceSkatingLakeLvl1' => 'NT: Winter Jolly',
-        'AreaBuffIceSkatingLakeLvl2' => 'NT: Winter sprit I',
-        'AreaBuffIceSkatingLakeLvl3' => 'NT: Winter sprit II',
+        'AreaBuffFluffyLogistics1' => 'Лучшая доставка!',
+        'AreaBuffFluffyLogistics2' => 'Логистическая сеть пасхальных яиц',
+        'AreaBuffFluffyLogistics3' => 'Налаженная логистика пасхальных яиц',
         'AreaBuffLoveGardenLvl1' => 'Усилитель сада любви',
         'ArmillarySphere' => 'Армиллярная сфера',
         'Army' => 'Армия',
@@ -12449,6 +12496,8 @@ F11 - полноэкранный режим
         'AttackerWon' => 'Колония завоевана',
         'AttendingPlayers' => 'Присутствующие игроки',
         'Attributes' => 'Параметры',
+        'AuroraBuff' => 'Время историй',
+        'AuroraTower' => 'Башня Авроры',
         'Availability' => 'Есть в наличии',
         'Available' => 'Доступно:',
         'AvailableTime' => 'Доступное время: {0}',
@@ -12558,8 +12607,8 @@ F11 - полноэкранный режим
         'BlackMarketAuctionWonMailSubject' => 'Теневые сделки - аукцион выигран.',
         'BlockList' => 'Заблокированные игроки',
         'BlockSender' => 'Заблокировать отправителя',
-        'BoatHouse' => 'NT: Boat Residence',
         'BookbinderBuffLvl4' => 'Клейкий сахарный сироп',
+        'BookbinderBuffLvl_ChristmasStories' => 'Рождественские истории',
         'Bought' => 'Куплено',
         'BoughtFromSoldTo' => 'Покупатель / Продавец',
         'BranchOffice' => 'Торговый дом',
@@ -12567,8 +12616,9 @@ F11 - полноэкранный режим
         'BranchOfficeBuy' => 'Торговый дом – купить',
         'BranchOfficeHistory' => 'Торговый дом – история',
         'BranchOfficeSell' => 'Торговый дом - продать',
-        'Brohmann' => 'NT: Brohmann, the raider',
         'BronzeMine_Mini' => 'Воздаяние медному руднику',
+        'BronzeOreKnowledge1' => 'Знания по металлургии: медь I',
+        'BronzeOreKnowledge2' => 'Знания по металлургии: медь II',
         'Buff' => 'Усилитель',
         'BuffAd_BlindWitch' => 'Слепая ведьма',
         'BuffAd_BugA_Unit' => 'Куча ядовитых слизней',
@@ -12627,6 +12677,7 @@ F11 - полноэкранный режим
         'BuffGroup54' => 'Годовщина',
         'BuffGroup6' => 'Горные богатства',
         'BuffGroup60' => 'День святого Валентина',
+        'BuffGroup66' => 'Операция «Праздничное веселье»',
         'BuffGroup7' => 'Сердце леса',
         'BuffGroup70' => 'Город-побратим',
         'BuffGroup8' => 'Близнецы',
@@ -12723,6 +12774,7 @@ F11 - полноэкранный режим
         'ChangeColorScheme_spooky' => 'Блуждающие огни',
         'ChangeColorScheme_tropical' => 'Талисман хорошей погоды',
         'ChangeColorScheme_tundra' => 'Красочный север',
+        'ChangeDefaultSkin_Anniversary2026_MayorsHouse_perm' => 'Облик: ратуша (наследие трёх десятилетий)',
         'ChangeDefaultSkin_ArtMuseum_blue_permanent' => 'Цвет: музей искусств, синий',
         'ChangeDefaultSkin_ChristmasBarracks_permanent' => 'Вид: казармы (рождественские)',
         'ChangeDefaultSkin_ChristmasProvisionHouse_permanent' => 'Вид: универсальные мастерские (рождественские)',
@@ -12740,10 +12792,6 @@ F11 - полноэкранный режим
         'ChangeDefaultSkin_FlowerBlossomsResidence_green_permanent' => 'Вид: дома (цветущий дом, зеленый)',
         'ChangeDefaultSkin_FlowerBlossomsStorehouse_blue_permanent' => 'Вид: склады (цветущий склад, синий)',
         'ChangeDefaultSkin_FlowerBlossomsStorehouse_green_permanent' => 'Вид: склады (цветущий склад, зеленый)',
-        'ChangeDefaultSkin_GuildFestTentIII_Residence' => 'NT: Skin: Residences (Cozy Guild Fest accommodations)',
-        'ChangeDefaultSkin_GuildFestTentII_Residence' => 'NT: Skin: Residences (Comfy Guild Fest accommodations)',
-        'ChangeDefaultSkin_GuildFestTentI_Residence' => 'NT: Skin: Residences (Cushy Guild Fest accommodations)',
-        'ChangeDefaultSkin_HauntedSpiderWarehouse_permanent' => 'NT: Skin: Store Houses (Haunted Spider Warehouse)',
         'ChangeDefaultSkin_InflatableResidence_blue_permanent' => 'Вид: дома (надувной дом, синий)',
         'ChangeDefaultSkin_InflatableResidence_red_permanent' => 'Вид: дома (надувной дом, красный)',
         'ChangeDefaultSkin_InflatableStorehouse_blue_permanent' => 'Вид: склады (надувной склад, синий)',
@@ -12757,19 +12805,20 @@ F11 - полноэкранный режим
         'ChangeDefaultSkin_christmas_mayorhouse_permanent' => 'Вид: ратуша (рождественская)',
         'ChangeDefaultSkin_default_market_permanent' => 'Вид: рождественская ярмарка (по умолчанию)',
         'ChangeDefaultSkin_evil_mayourhouse_permanent' => 'Вид: ратуша (жуткая)',
-        'ChangeDefaultSkin_guild_building_GF_bronze_perm' => 'NT: Skin: Guild House (Guild Fest, Bronze)',
-        'ChangeDefaultSkin_guild_building_GF_gold_perm' => 'NT: Skin: Guild House (Guild Fest, Gold)',
-        'ChangeDefaultSkin_guild_building_GF_plat_perm' => 'NT: Skin: Guild House (Guild Fest, Platinum)',
-        'ChangeDefaultSkin_guild_building_GF_silver_perm' => 'NT: Skin: Guild House (Guild Fest, Silver)',
         'ChangeDefaultSkin_lvl1_mayourhouse_permanent' => 'Вид: ратуша (ностальгия уровня 1)',
         'ChangeDefaultSkin_lvl2_mayourhouse_permanent' => 'Вид: ратуша (ностальгия уровня 2)',
         'ChangeDefaultSkin_mediterranean_mayourhouse_blue_permanent' => 'Вид: ратуша (величественная, синяя)',
         'ChangeDefaultSkin_mediterranean_mayourhouse_red_permanent' => 'Вид: ратуша (величественная, красная)',
         'ChangeProduction' => 'Изменить производство',
         'ChangeSkin' => 'Сменить вид здания',
+        'ChangeSkin_Anniversary2026_MayorsHouse_long' => 'Облик на 15 дней: ратуша (наследие трёх десятилетий)',
         'ChangeSkin_BuffAd_Bridge_2' => 'Болотный мост',
+        'ChangeSkin_ChristmasBarracks_short' => 'Рождественское украшение казарм',
         'ChangeSkin_ChristmasBarracks_temp' => '5-дневный вид: казармы (рождественские)',
+        'ChangeSkin_ChristmasMayorhouse_short' => 'Рождественское украшение мэрии',
+        'ChangeSkin_ChristmasProvisionHouse_short' => 'Рождественское украшение универсальной мастерской',
         'ChangeSkin_ChristmasProvisionHouse_temp' => '5-дневный вид: универсальные мастерские (рождественские)',
+        'ChangeSkin_ChristmasStorehouse_short' => 'Рождественское украшение склада',
         'ChangeSkin_ChristmasStorehouse_temp' => '5-дневный вид: склады (рождественские)',
         'ChangeSkin_Crystal_Barracks_temp' => '3-дневный вид: казармы (кристальные)',
         'ChangeSkin_Crystal_Mayorhouse_temp' => '3-дневный вид: ратуша (кристальная)',
@@ -12784,7 +12833,6 @@ F11 - полноэкранный режим
         'ChangeSkin_FlowerBlossomsResidence_green_temp' => '5-дневный вид: дома (цветущий дом, зеленый)',
         'ChangeSkin_FlowerBlossomsStorehouse_blue_temp' => '5-дневный вид: склады (цветущий склад, синий)',
         'ChangeSkin_FlowerBlossomsStorehouse_green_temp' => '5-дневный вид: склады (цветущий склад, зеленый)',
-        'ChangeSkin_HauntedSpiderWarehouse_temp' => 'NT: 15 Days Skin: Store Houses (Haunted Spider Warehouse)',
         'ChangeSkin_InflatableResidence_blue_temp' => '5-дневный вид: дома (надувной дом, синий)',
         'ChangeSkin_InflatableResidence_red_temp' => '5-дневный вид: дома (надувной дом, красный)',
         'ChangeSkin_InflatableStorehouse_blue_temp' => '5-дневный вид: склады (надувной склад, синий)',
@@ -12809,6 +12857,7 @@ F11 - полноэкранный режим
         'ChangeSkin_Xmas_ResidenceBig_permanent' => 'Вид: дом, особняк (большой рождественский)',
         'ChangeSkin_Xmas_ResidenceMedium_long' => '15-дневный вид: дом, особняк (средний рождественский)',
         'ChangeSkin_Xmas_ResidenceMedium_permanent' => 'Вид: дом, особняк (средний рождественский)',
+        'ChangeSkin_Xmas_ResidenceMedium_short' => 'Рождественское украшение дома',
         'ChangeSkin_Xmas_ResidenceSmall_long' => '15-дневный вид: дом, особняк (маленький рождественский)',
         'ChangeSkin_Xmas_ResidenceSmall_permanent' => 'Вид: дом, особняк (маленький рождественский)',
         'ChangeSkin_christmas_mayorhouse_long' => '15-дневный вид: ратуша (рождественская)',
@@ -12819,6 +12868,9 @@ F11 - полноэкранный режим
         'ChangeSkin_mediterranean_mayourhouse_blue_long' => '15-дневный вид: ратуша (величественная, синяя)',
         'ChangeSkin_mediterranean_mayourhouse_red_long' => '15-дневный вид: ратуша (величественная, красная)',
         'ChangeSortingOrder' => 'Выбор сортировки по возрастанию или убыванию',
+        'Changeloopmusic_Christmas_Jingle' => 'Рождественский хор',
+        'Changeloopmusic_Christmas_Merry' => 'Рождественские пожелания',
+        'Changeloopmusic_Christmas_Silent' => 'Ночные певцы',
         'ChatAutoScroll' => 'Включить/выключить автопрокрутку',
         'ChatDelimiter' => '-',
         'ChatFindcooperation' => 'В поисках группы',
@@ -12836,14 +12888,11 @@ F11 - полноэкранный режим
         'ChatWhisper' => 'Личный',
         'Check' => 'Проверить',
         'ChooseUnitToAttack' => 'Выберите первых бойцов',
-        'ChummyExplorer' => 'NT: Chummy Explorer',
-        'ClaimRewards' => 'NT: Claim Rewards',
         'Close' => 'Закрыть',
         'Close Combat Slot' => 'Закрыть место для боя',
         'CloseAchievementPanel' => 'Закрыть',
         'CloseDetails' => 'Назад',
         'CodexAddResourceRecipe' => 'Кодекс',
-        'CoffeeShop' => 'NT: Coffee Shop',
         'CollectOrDelete' => 'Получить и удалить выбранные сообщения',
         'CollectibleObsidianShard' => 'Обсидиановый осколок',
         'CollectibleRewardsMailSubject' => 'Груз для путешествий',
@@ -12875,6 +12924,9 @@ F11 - полноэкранный режим
         'CombatPreview_Ok' => 'Приемлемые потери',
         'CombatPreview_Perfect' => 'Полная победа',
         'ComingSoon' => 'Скоро будет доступно',
+        'CommandCenterBuff1' => 'Тактика: Диверсия',
+        'CommandCenterBuff2' => 'Тактика: Картечь',
+        'CommandCenterBuff3' => 'Тактика: Конный натиск',
         'Commands' => 'Команды',
         'CompareAchievements' => 'Сравнить достижения',
         'Complete' => 'Завершено',
@@ -12885,13 +12937,6 @@ F11 - полноэкранный режим
         'ConditionsToUnlockChain' => 'Для открытия этой производственной цепочки выполните следующие условия:',
         'ConditionsToUnlockQuest' => 'Для открытия этого задания выполните следующие условия:',
         'Consumption' => 'Потребление',
-        'ContestBest10Percent' => 'NT: Gold',
-        'ContestBest40Percent' => 'NT: Silver',
-        'ContestBest80Percent' => 'NT: Bronze',
-        'ContestPointsGuildFest' => 'NT: Guild Fest Tokens',
-        'ContestRankingTracker' => 'NT: Your Guild\'s Current Rank: {0,LAB}',
-        'ContestTheRest' => 'NT: Good try!',
-        'ContestWinner' => 'NT: Winner',
         'CooperationRequest' => 'Запрос на помощь в приключении:',
         'Cost' => 'Стоимость',
         'Costs' => 'Стоимость:',
@@ -12944,13 +12989,12 @@ F11 - полноэкранный режим
         'DetailsWay3Internal' => 'Чистка',
         'DetailsWay4' => 'Путь 4 (мастерская - склад)',
         'Difficulty' => 'Сложность:',
-        'DisableSelection' => 'NT: Disable Selection',
         'Discard' => 'Отменить',
         'DiscardAllTargets' => 'Отменить все цели',
         'Donate' => 'Пожертвовать',
         'DonateResource' => 'Пожертвовать {0}',
         'DummyBuildingCollectibleObsidianShard' => 'Обсидиановый осколок',
-        'DuplicateBonus' => 'Бонус копий',
+        'DuplicateBonus' => 'Бонус скорости',
         'DuplicatedBuildingsBonus' => 'Скорость:',
         'DuplicatedBuildingsOnMap' => 'Зданий: {0}',
         'Duration' => 'Длительность',
@@ -12968,6 +13012,7 @@ F11 - полноэкранный режим
         'Effect' => 'Эффект усилителя',
         'EffectBuffCatChow' => 'Кошачий корм',
         'EffectBuffFlowerBouquet' => 'Букет цветов',
+        'EffectBuffFluffyLogistics1' => 'Спрятанное пасхальное яйцо',
         'EffectBuffScratchingPost' => 'Когтеточка',
         'EffectBuffSweetTreat' => 'Непревзойденное угощение мистера Круа Сана',
         'EffectBuffTentDecoration' => 'Мраморный бюст',
@@ -13010,11 +13055,7 @@ F11 - полноэкранный режим
         'EffectBuff_easter2016_trucehigh' => 'Отличное предложение перемирия',
         'EffectBuff_easter2016_trucelow' => 'Скромное предложение перемирия',
         'EffectBuff_easter2016_trucemed' => 'Достойное предложение перемирия',
-        'EfficientAdvancedToolmaker' => 'NT: Efficient Advanced Toolmaker',
-        'EfficientPlatinumSmelter' => 'NT: Efficient Platinum Smelter',
         'EfficientTrapsRecipe' => 'Эффективные ловушки',
-        'ElderTreeLH' => 'NT: Elder Tree Lighthouse',
-        'EliteGuildBanner_Deco' => 'NT: Elite Guild Fest Banner',
         'EliteItems' => 'Элита',
         'EliteUnits' => 'Элитные войска',
         'EmptyEffectBuff_BuffAd_Native_Feast' => 'Гигантская подарочная корзина',
@@ -13037,7 +13078,6 @@ F11 - полноэкранный режим
         'EmptyEffectBuff_TwinTown_Gift' => 'Дар городу-побратиму',
         'EmptyEffectBuff_TwinTown_Investigate' => 'Набор для исследования',
         'EmptyProduction' => 'Сейчас нет продукции.',
-        'EnableSelection' => 'NT: Enable Selection',
         'EnterDefenseMode' => 'Построить оборонительные сооружения',
         'EnterFriendsName' => 'Введите имя друга:',
         'EnterFriendsNameAdventure' => 'Введите имя друга или члена гильдии:',
@@ -13228,10 +13268,7 @@ F11 - полноэкранный режим
         'GeneralSpeedBuff_Obsidian' => 'Обсидиановые подковы',
         'GeneralSpeedBuff_Platinum' => 'Платиновые подковы',
         'GeneralSpeedBuff_TMC_A' => 'Глубокий снег',
-        'GeneralSpeedBuff_Witchcoven_Speed1' => 'NT: Dark Ritual: Reckless Speed',
-        'GeneralSpeedBuff_Witchcoven_Speed2' => 'NT: Dark Curse: Crippling Exhaustion',
         'GeologistOnVacation' => 'Геолог на отдыхе',
-        'GhostExplorer' => 'NT: Ghost Explorer',
         'GhostShip' => 'Корабль призраков',
         'GhostShipQuests' => 'Корабль призраков',
         'Gift' => 'Подарок',
@@ -13242,6 +13279,8 @@ F11 - полноэкранный режим
         'GingerbreadGeology' => 'Пряничная геология',
         'GoToProvisionHouse' => 'Перейти в универсальную мастерскую',
         'GoToShop' => 'Перейти к купцу',
+        'GoldOreKnowledge1' => 'Знания по металлургии: золото I',
+        'GoldOreKnowledge2' => 'Знания по металлургии: золото II',
         'GolemNoHeartsLeft' => 'На этого голема больше не нужно расходовать воду, его можно уничтожить в любой момент.',
         'GolemNoHeartsLeft_EventMonster' => 'Этому голему уже достаточно воды. Его можно победить в любое время.',
         'GolemNoHeartsLeft_EventMonster_Ancient' => 'Этому голему уже достаточно воды. Его можно победить в любое время.',
@@ -13314,9 +13353,6 @@ F11 - полноэкранный режим
         'GuildEditBanner' => 'Редактировать герб',
         'GuildEditDetails' => 'Подробно',
         'GuildEditRanks' => 'Редактировать ранги',
-        'GuildFestBundle1' => 'NT: Gold Guild Fest Bundle',
-        'GuildFestBundle2' => 'NT: Silver Guild Fest Bundle',
-        'GuildFestBundle3' => 'NT: Bronze Guild Fest Bundle',
         'GuildFound' => 'Основать гильдию',
         'GuildHelp' => 'Гильдия',
         'GuildHouseRequired' => 'Постройте гильдейский дом, чтобы возглавить гильдию!',
@@ -13396,13 +13432,11 @@ F11 - полноэкранный режим
         'HelpWindow' => 'Архив окон справки',
         'Hidden_way' => 'Загадочная тропа',
         'HideHelp' => 'Отключить окна справки',
-        'HiredMilitaryReaninmatedArmy' => 'NT: Dark Ritual: Risen Army',
         'HiredTroops' => 'Нанятое войско',
         'History' => 'История',
         'IAgree' => 'Я принимаю.',
         'IDisagree' => 'Я не принимаю.',
         'IceSculpture' => 'Ледяная скульптура',
-        'IceSkatingLake' => 'NT: Ice Skating Lake',
         'IdleState' => 'Примечание: подождите ответа сервера.',
         'ImprovedPaperConverterRecipe' => 'Переработка макулатуры',
         'InStock' => 'Запасы',
@@ -13425,13 +13459,13 @@ F11 - полноэкранный режим
         'InvitePlayer' => 'Пригласить игрока',
         'InviteToAdventureMailSubject' => 'Приглашение к участию в приключении',
         'InvitedFriendPurchasedSubject' => 'Маленький подарок',
+        'IronOreKnowledge1' => 'Знания по металлургии: железо I',
+        'IronOreKnowledge2' => 'Знания по металлургии: железо II',
         'IslandDeed_FreeIsland' => 'Лицензия на сектор',
         'IslandDeed_PayIsland' => 'Лицензия на остров',
         'ItemOnCooldown' => 'Чтобы купить другой такой же предмет, вам нужно подождать, пока истечет время восстановления.
 Его вы можете увидеть справа вверху.',
         'ItemTradeAdventureMailSubject' => 'Торговое предложение: приключение "{1,ADN}" для {4} {5,RES}',
-        'Jewelcrafter' => 'NT: Jewel Crafter Workshop',
-        'JewelcrafterAdventureBuff1' => 'NT: Glittering Armor',
         'KeenerExplorer' => 'Безудержный исследователь',
         'KittyBaitRecipe' => 'Приманка для котенка',
         'KnockDown' => 'Разрушить это здание.
@@ -13441,12 +13475,12 @@ F11 - полноэкранный режим
         'KnockDownDisabledMayorhouse' => 'Невозможно удалить. Сектор будет потерян.',
         'KnockDownRecurring' => 'Здание будет снова доступно в звездном меню после разрушения.',
         'KnockDownShopItem' => 'После того как это здание будет разрушено, оно вернется в звездное меню. Обратите внимание, что все усовершенствования для этого здания будут утеряны.',
+        'KrampusPit' => 'Угольная шахта Крампуса',
         'LastPage' => 'На последнюю страницу',
         'LatestChanges' => 'Последние изменения',
         'LazaretRecoverGeneral1' => 'Аптечка',
         'LazaretRecoverGeneral2' => 'Аптечка',
         'LazaretRecoverGeneral3' => 'Аптечка',
-        'Leaderboard' => 'NT: Leaderboard',
         'LeaveAdventure' => 'Покинуть приключение',
         'LeaveIsland' => 'Покиньте остров',
         'LegalTerms' => 'Юридические условия',
@@ -13461,19 +13495,35 @@ F11 - полноэкранный режим
         'LoadingZone' => 'Загрузка карты…',
         'LoadingZonePendingActions' => 'Дождитесь окончания всех действий на этом острове.',
         'LocaLootMailMailSubject' => 'Опытный специалист нашел больше сокровищ',
-        'LoggingHut' => 'NT: Logging Hut',
         'LoginQueueApproxTime' => '(оценка времени)',
         'LoginQueueInit' => 'Инициализация очереди на вход',
         'LoginQueuePosition' => 'Очередь на вход: {0} из {1}',
         'LoginQueueRemainingTime' => 'Осталось времени: {0}',
         'Logout' => 'Выход',
         'LongboatStorehouse' => 'Судно-склад',
+        'Loottable_Christmas_Bench_MysteryBox_b' => 'Большой комплект для удобной сборки рождественской скамьи',
+        'Loottable_Christmas_Bench_MysteryBox_m' => 'Средний комплект для удобной сборки рождественской скамьи',
+        'Loottable_Christmas_Bench_MysteryBox_s' => 'Маленький комплект для удобной сборки рождественской скамьи',
+        'Loottable_Christmas_Christmastree_MysteryBox_b' => 'Большой комплект для удобной сборки рождественского дерева',
+        'Loottable_Christmas_Christmastree_MysteryBox_m' => 'Средний комплект для удобной сборки рождественского дерева',
+        'Loottable_Christmas_Christmastree_MysteryBox_s' => 'Маленький комплект для удобной сборки рождественского дерева',
+        'Loottable_Christmas_Lantern_MysteryBox_b' => 'Большой комплект для удобной сборки рождественского фонаря',
+        'Loottable_Christmas_Lantern_MysteryBox_m' => 'Средний комплект для удобной сборки рождественского фонаря',
+        'Loottable_Christmas_Lantern_MysteryBox_s' => 'Маленький комплект для удобной сборки рождественского фонаря',
+        'Loottable_Christmas_Nutcracker_MysteryBox_b' => 'Большой комплект для удобной сборки рождественского щелкунчика',
+        'Loottable_Christmas_Nutcracker_MysteryBox_m' => 'Средний комплект для удобной сборки рождественского щелкунчика',
+        'Loottable_Christmas_Nutcracker_MysteryBox_s' => 'Маленький комплект для удобной сборки рождественского щелкунчика',
+        'Loottable_Christmas_Presents_MysteryBox_b' => 'Большой комплект для удобной сборки рождественских подарков',
+        'Loottable_Christmas_Presents_MysteryBox_m' => 'Средний комплект для удобной сборки рождественских подарков',
+        'Loottable_Christmas_Presents_MysteryBox_s' => 'Маленький комплект для удобной сборки рождественских подарков',
+        'Loottable_Christmas_Pyramid_MysteryBox_b' => 'Большой комплект для удобной сборки рождественской пирамиды',
+        'Loottable_Christmas_Pyramid_MysteryBox_m' => 'Средний комплект для удобной сборки рождественской пирамиды',
+        'Loottable_Christmas_Pyramid_MysteryBox_s' => 'Маленький комплект для удобной сборки рождественской пирамиды',
+        'Loottable_Christmas_Snowman_MysteryBox_b' => 'Большой комплект для удобной сборки рождественского снеговика',
+        'Loottable_Christmas_Snowman_MysteryBox_m' => 'Средний комплект для удобной сборки рождественского снеговика',
+        'Loottable_Christmas_Snowman_MysteryBox_s' => 'Маленький комплект для удобной сборки рождественского снеговика',
         'Loottable_CostumeTimeMysteryBox' => 'Время преображений',
         'Loottable_GhostLanternMysteryBox' => 'Сундук призраков',
-        'Loottable_GrimoirePages_MysteryBox' => 'NT: Weathered Notebook',
-        'Loottable_ProspectorMysteryBox1' => 'NT: Prospected Stones',
-        'Loottable_ProspectorMysteryBox2' => 'NT: Prospected Marble',
-        'Loottable_ProspectorMysteryBox3' => 'NT: Prospected Granite',
         'Loottable_Starfall_MysteryBox1' => 'Базовый компендиум по открытиям феномена звездопада',
         'Loottable_Starfall_MysteryBox1B' => 'Базовый компендиум по достижениям феномена звездопада',
         'Loottable_Starfall_MysteryBox2' => 'Продвинутый компендиум по открытиям феномена звездопада',
@@ -13487,12 +13537,13 @@ F11 - полноэкранный режим
         'Loottable_Starfall_MysteryBoxRadiator' => 'Ящик с осколками шпиля',
         'Loottable_UnityMysteryBox' => 'Сундук с чудесностями "Чудесное единство"',
         'Loottable_ValentineCardBox' => 'Ящик с валентинками',
-        'Loottable_WitchCovenAchievement1_MysteryBox' => 'NT: Chest of Ghostly Exploeration',
-        'Loottable_WitchCovenAchievement2_MysteryBox' => 'NT: Chest of Ghostly Military',
+        'Loottable_WeddingStory' => 'Свадебная история',
         'Loottable_XmasDecorationMysteryBox' => 'Таинственный сундук с рождественским украшением',
+        'Loottable_XmasSock_MysteryBox' => 'Бабушкин вязаный рождественский чулок',
         'Lot' => 'Лот',
         'LoveGardenQuests' => 'Сад любви',
         'MailContextMenu' => 'Контекстное меню',
+        'MailPremiumChristmasBuffMailSubject' => '{0} отправляет вам щедрое усиление!',
         'MailPremiumFriendBuffMailSubject' => 'Игрок {0} отправляет вам щедрое усиление!',
         'MailReceiverList' => 'Выбрано несколько получателей',
         'MailSenderAnonymous' => 'Аноним',
@@ -13541,7 +13592,6 @@ F11 - полноэкранный режим
         'MissingWorkyardSettler' => 'В этом здании нет поселенцев. Возможно, поселенец еще не дошел, либо отсутствуют свободные поселенцы.',
         'Missing_Resources' => 'Недостающие ресурсы',
         'Mission' => 'Подробности',
-        'MountainClanColossus' => 'NT: Mountain Clan Colossus',
         'Move' => 'Переместить',
         'MoveBuilding' => 'Переместите здание.',
         'MoveBuildingHeadline' => 'Передвинуть здание на другое место.',
@@ -13549,7 +13599,11 @@ F11 - полноэкранный режим
         'MoveMethod1' => 'Метод перемещения 1',
         'MoveMethod2' => 'Метод перемещения 2',
         'MultiplierBuffZone1' => 'Любовная лихорадка',
+        'MultiplierBuffZone2_PremiumCompensationBuff_1Day' => 'Королевская компенсация',
+        'MultiplierBuffZone2_PremiumCompensationBuff_3Day' => 'Королевская компенсация',
+        'MultiplierBuffZone2_PremiumCompensationBuff_7Day' => 'Королевская компенсация',
         'MultiplierBuffZone2_PremiumFriendBuff1Day' => 'Престижный усилитель друзей',
+        'MultiplierBuffZone2_PremiumFriendBuff_Christmas' => 'Рождественский усилитель друга',
         'MultiplierBuffZone4_PremiumFriendBuffSkills' => 'Улучшения престижного усилителя друзей',
         'Mummified' => 'Мумификация',
         'MySettlers' => 'Население',
@@ -13568,7 +13622,6 @@ F11 - полноэкранный режим
         'NextUnit' => 'Следующий боец через: {0}',
         'NoSkillPoints' => 'Книга такого типа недоступна!',
         'NoSlots' => 'Нет свободных мест!',
-        'NoneContestTierName' => 'NT: You must be in a guild to qualify.',
         'NotAvailable' => 'Н/Д',
         'NotAvailableText' => 'Нет в наличии!',
         'OK' => 'ОК',
@@ -13600,6 +13653,8 @@ F11 - полноэкранный режим
         'Pin' => 'Закрепить окно. После этого оно перестанет закрываться автоматически, но его по-прежнему можно будет перемещать.',
         'PlaceOffer' => 'Сделать предложение',
         'PlatinumHorseshoesRecipe' => 'Платиновые подковы',
+        'PlatinumOreKnowledge1' => 'Знания по металлургии: платина I',
+        'PlatinumOreKnowledge2' => 'Знания по металлургии: платина II',
         'PlayersAllowed' => 'Количество игроков: {0}',
         'PleaseSelect' => 'Ресурсы не выбраны.',
         'PohutukawaTree' => 'Рождественская похутукава',
@@ -13654,11 +13709,11 @@ F11 - полноэкранный режим
         'ProductivityAreaBuffChristmasBakeryLvl1' => 'Печенье с молоком',
         'ProductivityAreaBuffChristmasBakeryLvl2' => 'Тайный Санта',
         'ProductivityAreaBuffChristmasBakeryLvl3' => 'Рождественские песни',
-        'ProductivityAreaBuffDimensionalRiftBuff5' => 'NT: Something Came Through: Soothing Rain',
         'ProductivityAreaBuffHoliFestivalGrounds' => 'Фестивальная краска',
         'ProductivityAreaBuffLoveTreeLvl1' => 'Приятные посиделки ур. 1',
         'ProductivityAreaBuffLoveTreeLvl2' => 'Приятные посиделки ур. 2',
         'ProductivityAreaBuffLoveTreeLvl3' => 'Приятные посиделки ур. 3',
+        'ProductivityAreaBuffLvl_ChristmasJumper' => 'Рождественский свитер',
         'ProductivityAreaBuffRainDance' => 'Танец дождя',
         'ProductivityAreaBuffXmasMarketLvl1' => 'Усилитель рождественской ярмарки ур. 1',
         'ProductivityAreaBuffXmasMarketLvl2' => 'Усилитель рождественской ярмарки ур. 2',
@@ -13675,18 +13730,15 @@ F11 - полноэкранный режим
         'ProductivityBuffCandyFactoryBuff2' => 'Сладкое безумие',
         'ProductivityBuffCandyFactoryBuff3' => 'Углеводная кома',
         'ProductivityBuffCarnivalGrounds1' => 'Хохот сквозь хаос',
-        'ProductivityBuffCoffeeShop0' => 'NT: Exhaustion',
-        'ProductivityBuffCoffeeShop1' => 'NT: Espresso',
-        'ProductivityBuffCoffeeShop2' => 'NT: Double Espresso',
-        'ProductivityBuffCoffeeShop3' => 'NT: Leftover Ground Beans',
         'ProductivityBuffEW4' => 'Цветки черного дерева',
         'ProductivityBuffEWBalloonsLv1' => 'Малюсенький праздничный торт',
         'ProductivityBuffEWBalloonsLv2' => 'Громадный праздничный торт',
+        'ProductivityBuffEW_Refinery' => 'Топливо для промышленного рудоперерабатывающего завода',
+        'ProductivityBuffGrandmasDinner' => 'Бабушкин рождественский ужин',
         'ProductivityBuffHalloween1' => 'Заостренные кирки',
         'ProductivityBuffHalloween2' => 'Трансмутация камней',
         'ProductivityBuffHalloween3' => 'Камнедробилка',
-        'ProductivityBuffJewelcrafter1' => 'NT: Infused Sunflower Fertilizer',
-        'ProductivityBuffJewelcrafter2' => 'NT: Titanium Hen Egg Laying Stimulant',
+        'ProductivityBuffKrampusPickaxe' => 'Кирка Крампуса',
         'ProductivityBuffLvl103' => 'Значок "Работник месяца"',
         'ProductivityBuffLvl105' => 'Состязание охотников',
         'ProductivityBuffLvl107' => 'Крик банши',
@@ -13694,7 +13746,9 @@ F11 - полноэкранный режим
         'ProductivityBuffLvl25' => 'Мистер Круа Сан',
         'ProductivityBuffLvl26' => 'Тренировка силы',
         'ProductivityBuffLvl28' => 'Ведро сладостей',
+        'ProductivityBuffLvl31' => 'Изысканное рагу с трюфелем',
         'ProductivityBuffLvlIronMine' => 'Экстрактор железной руды',
+        'ProductivityBuffLvl_CommandCenterBoost' => 'Решительное действие',
         'ProductivityBuffToyFactoryBuff3' => 'Остатки упаковочной бумаги',
         'ProductivityBuffValentinesCard_01' => 'Валентинка №1',
         'ProductivityBuffValentinesCard_02' => 'Валентинка №2',
@@ -13705,7 +13759,6 @@ F11 - полноэкранный режим
         'ProductivityBuffValentinesCard_07' => 'Валентинка №7',
         'ProductivityBuffValentinesCard_08' => 'Валентинка №8',
         'ProductivityBuffValentinesCard_09' => 'Валентинка №9',
-        'ProductivityBuffZoneEW_DimensionalRiftBuff6' => 'NT: Something Came Through: Benevolent Fae Creatures',
         'ProductivityBuffZoneEW_WitchesFamiliars' => 'Фамильяры ведьм',
         'ProductivityBuffZoneFishAndWaterLvl1' => 'Волна',
         'ProductivityBuffZoneFoodLvl1' => 'Руководство по земледелию и охоте',
@@ -13714,12 +13767,12 @@ F11 - полноэкранный режим
         'ProductivityBuffZoneOreLvl2' => 'Побуждение',
         'ProductivityBuffZoneScienceLvl1' => 'Руководство по бумажной работе',
         'ProductivityBuffZoneScienceLvl2' => 'Детские пасхальные рассказы',
+        'ProductivityBuffZoneScienceLvl_Candles' => 'Свечи вдохновения',
         'ProductivityBuffZoneStoneLvl1' => 'Руководство по добыче камня',
         'ProductivityBuffZoneWeaponLvl1' => 'Руководство по производству оружия',
         'ProductivityBuffZoneWeaponLvl2' => 'Пир оружейников',
-        'ProductivityBuffZoneWitchCovenBloodlust' => 'NT: Dark Ritual: Warmongery',
-        'ProductivityBuffZoneWitchCovenFamine' => 'NT: Famine',
         'ProductivityBuffZoneWoodLvl1' => 'Руководство по рубке леса',
+        'ProductivityBuff_ChristmasCard' => 'Рождественская открытка',
         'ProductivityBuff_StarfallStarExtractor_Buff1' => 'Смазка для СКРЭБОК I',
         'ProductivityBuff_StarfallStarExtractor_Buff2' => 'Смазка для СКРЭБОК II',
         'ProductivityBuff_StarfallStarExtractor_Buff3' => 'Смазка для СКРЭБОК III',
@@ -13758,12 +13811,9 @@ F11 - полноэкранный режим
         'PropagationBuff_CantineBuff5' => 'Пир на весь мир',
         'PropagationBuff_EspionageSwiftBoost' => 'Разведданные: тропы разведчиков',
         'PropagationBuff_EspionageTradeOffenseForXP' => 'Разведданные: туманная погода',
-        'PropagationBuff_WitchCovenBloodlust' => 'NT: Dark Ritual: Warmongery',
-        'Prospector' => 'NT: Prospector Workshop',
         'ProvisionerBuffArtificerStudy1' => 'Техническое руководство: осадные орудия',
         'ProvisionerBuffLvl4' => 'Густой горячий шоколад',
-        'ProvisionerBuffLvlGuildFestGrounds1' => 'NT: Cheer!',
-        'ProvisionerBuffLvlGuildFestGrounds2' => 'NT: Cheer harder!',
+        'ProvisionerBuffLvl_ChristmasStollen' => 'Рождественский штоллен',
         'ProvisionerBuffTravelDocuments' => 'Экспресс-документы для путешествий',
         'ProvisionerBuffZoneLvl1' => 'Универсальный банкет',
         'ProvisionerBuffZoneLvl2' => 'Праздник весны',
@@ -13792,9 +13842,13 @@ F11 - полноэкранный режим
         'QuestLootMailSubject' => 'Награда за задание',
         'QuestNew' => 'Новое задание',
         'QuestStart_ANewStone' => 'Блестящий драгоценный камень',
+        'QuestStart_OreRefinery' => 'Задание: экзотическая металлургия',
         'QuestStart_SavetheDeers' => 'Искатель оленей',
         'QuestStart_SilkCat' => 'Изысканный кошачий ошейник',
         'QuestStart_UnlockStarfallShip' => 'Предвестник',
+        'QuestStart_WeddingStory1' => 'Свадебная история: лучший друг человека?',
+        'QuestStart_WeddingStory2' => 'Свадебная история: заносчивая невеста',
+        'QuestStart_WeddingStory3' => 'Свадебная история: Рьяный флорист',
         'QuestStart_WolfPuppy' => 'Потерявшийся волчонок',
         'QuestXPConversionCompensationMailMailSubject' => 'Набор звездных монет в награду за выполненные задания',
         'Quests' => 'Задания',
@@ -13824,6 +13878,7 @@ F11 - полноэкранный режим
         'RareBuffGroup53' => 'Когда земля…',
         'RareBuffGroup54' => 'Годовщина',
         'RareBuffGroup60' => 'День святого Валентина',
+        'RareBuffGroup66' => 'Операция «Праздничное веселье»',
         'RareBuffGroup70' => 'Город-побратим',
         'RarityAreaSmelterBuff' => 'Календарь плавилен',
         'ReachPvPLevelToUnlock' => 'Достигните уровня PvP {0}, чтобы получить награды',
@@ -13833,6 +13888,7 @@ F11 - полноэкранный режим
         'Recipe' => '{0}: рецепт',
         'Recruited' => 'Обучено: {0}/{1}',
         'RecruitingBuffLvl302' => 'Игрушечные солдатики',
+        'RecruitingBuffLvl_LittleDrummer' => 'Барабаны маленького барабанщика',
         'RecruitingBuffValentineZoneConditional' => 'День семьи',
         'RecruitingBuffZoneLvl1' => 'Руководство по вербовке',
         'RecruitingBuffZoneLvl2' => 'Праздник инструкторов',
@@ -13858,6 +13914,8 @@ F11 - полноэкранный режим
         'RestartProduction' => 'Начать производство заново',
         'RetaliationMailSubject' => 'Отомстить сейчас',
         'RetaliationSubject' => 'Хотите отомстить?',
+        'RetirementHome' => 'Деревня престарелых',
+        'RetirementHomeAid' => 'Почтовый ящик Санты',
         'Retreat' => 'Отступить',
         'ReturnHome' => 'Вернуться домой',
         'ReturnToStar' => 'Возвращает генерала/маршала в звездное меню. Текущие назначения войск будут отменены.',
@@ -13935,7 +13993,6 @@ F11 - полноэкранный режим
         'Skill_TransporterTravelSpeed_Silver' => 'Специалист в ориентировании на местности',
         'Skillpoint_Codex' => 'Кодекс
 Отличная книга, которую можно использовать для развития навыка.',
-        'Skillpoint_Collect' => 'NT: Collect produced book',
         'Skillpoint_Manuscript' => 'Рукопись
 Простая книга, которую можно использовать для развития навыка.',
         'Skillpoint_Tome' => 'Фолиант
@@ -14050,6 +14107,7 @@ F11 - полноэкранный режим
         'SpeedUpPopulationGrowthLoveGardenZoneConditionalLvl1' => 'Кулоны-сердечки ур. 1',
         'SpeedUpPopulationGrowthLoveGardenZoneConditionalLvl2' => 'Кулоны-сердечки ур. 2',
         'SpeedUpPopulationGrowthValentineZoneConditional' => 'Кулоны-сердечки',
+        'SpeedUpPopulationGrowth_MulledWine' => 'Глинтвейн',
         'SpeedUpPopulationGrowth_Tourism1' => 'Туризм (уровень 1)',
         'SpeedUpPopulationGrowth_Tourism2' => 'Туризм (уровень 2)',
         'SpeedUpPopulationGrowth_Tourism3' => 'Туризм (уровень 3)',
@@ -14061,6 +14119,8 @@ F11 - полноэкранный режим
         'StarfallSurvey2' => 'Координаты курса "Предвестника" II',
         'StarfallSurvey3' => 'Координаты курса "Предвестника" III',
         'StarfallSurvey4' => 'Координаты курса "Предвестника" IV',
+        'StargazingGeologist' => 'Геолог-астроном',
+        'Stargazinggeology' => 'Звёздная геология',
         'Start' => 'ИГРАТЬ!',
         'StartAdventure' => 'Начать приключение',
         'StartConquering' => 'Начать завоевание',
@@ -14073,7 +14133,6 @@ F11 - полноэкранный режим
         'StoneDepot' => 'Камнебаза',
         'StoneRefillRecipe' => 'Выгодная сделка',
         'StopProduction' => 'Остановить производство',
-        'StorageBasket' => 'NT: Storage Basket',
         'StoryQuests' => 'Основные задания',
         'StoryQuestsEmpty' => 'Нет активных заданий',
         'Subject' => 'Тема',
@@ -14094,7 +14153,6 @@ F11 - полноэкранный режим
         'TaskRecovery' => 'Восстановление: {0}',
         'Tasks' => 'Задачи',
         'TempBuildSlot' => 'Купите место для строительства, чтобы временно расширить очередь на строительство',
-        'TheSmuggler' => 'NT: The Smuggler',
         'Theme_Apocalypse' => 'Конец света',
         'Theme_Christmas' => 'Рождество',
         'Theme_Classical' => 'Классика',
@@ -14109,6 +14167,8 @@ F11 - полноэкранный режим
         'TimeRemaining' => 'Оставшееся время:',
         'TimedInfoPanelOrderBonus' => 'Производство ускорено на {0}%.',
         'TipOfTheDay' => 'Полезный совет',
+        'TitaniumOreKnowledge1' => 'Знания по металлургии: титан I',
+        'TitaniumOreKnowledge2' => 'Знания по металлургии: титан II',
         'To' => 'Кому',
         'ToggleCameraPanel' => 'Включить меню управление камерой',
         'ToggleOptionsPanel' => 'Настройки',
@@ -14134,16 +14194,14 @@ F11 - полноэкранный режим
         'TradeOfferExpireTime' => 'Истекает через: {0}',
         'TradeTabItems' => 'Предметы',
         'TradeTimedOutSubject' => 'Срок сделки истек',
-        'TraitChummyExplorer' => 'NT: Chummy Exploration',
         'Trait_Anniversary2019General' => 'Великодушие',
         'Trait_Anslem' => 'Ослепление',
         'Trait_AssassinGeneral' => 'Засада',
+        'Trait_Aurora' => 'Время историй',
         'Trait_BenevolentExplorer' => 'Безграничная доброта',
         'Trait_BewitchingExplorer' => 'Очарование',
-        'Trait_BlacktreeExplorer' => 'NT: Blacktree Obsession',
         'Trait_BoldExplorer' => 'Дерзость',
         'Trait_Boris' => 'Хитроумный стратег',
-        'Trait_Brohmann' => 'NT: Band of raiders',
         'Trait_CandidExplorer' => 'Искреннее исследование',
         'Trait_CorageousExplorer' => 'Охотник за сокровищами',
         'Trait_EmphaticExplorer' => 'Решительность',
@@ -14153,7 +14211,7 @@ F11 - полноэкранный режим
         'Trait_GeneralJuan' => 'Котик на коленях',
         'Trait_GetHiredMilitary' => 'Располагающее дружелюбие',
         'Trait_GhostGeneral' => 'Призрачность',
-        'Trait_Ghostlyloot' => 'NT: Ghostly Loot',
+        'Trait_GloryExploriExplorer' => 'Фанат острых ощущений',
         'Trait_Halloween2019General' => 'Разбойная охрана',
         'Trait_HumbleExplorer' => 'Скромность',
         'Trait_IntrepidExplorer' => 'Любитель приключений',
@@ -14165,9 +14223,9 @@ F11 - полноэкранный режим
         'Trait_MadScientist' => 'Бомбическая личность',
         'Trait_MaryDoubleXP' => 'Угощайтесь',
         'Trait_MedicResurrectLosses' => 'Военно-полевая хирургия',
-        'Trait_MercenaryExplorer' => 'NT: Focused on Mercenaries',
         'Trait_Miraculous' => 'Чудо возрождения',
         'Trait_MotherlyExplorer' => 'Материнская забота',
+        'Trait_NarcissisticGeneral' => 'Нарцисс',
         'Trait_Nusala' => 'Разрывные снаряды',
         'Trait_Nutcracker' => 'Крепкий орешек',
         'Trait_Ostereierbaum' => 'Охота за яйцами',
@@ -14178,7 +14236,6 @@ F11 - полноэкранный режим
         'Trait_RomanticExplorer' => 'Влюбленность',
         'Trait_RoyalCollector' => 'Королевский сборщик',
         'Trait_ScaredExplorer' => 'Пугливость',
-        'Trait_Smuggling' => 'NT: Special Imports',
         'Trait_SnowyExplorer' => 'Снежность',
         'Trait_Soccer2019Explorer' => 'Риск',
         'Trait_Sylvana' => 'Хитроумный стратег',
@@ -14276,6 +14333,20 @@ F11 - полноэкранный режим
         'UnityZoneRefresh' => 'Обновление зоны',
         'UnlimitLots' => 'Добавьте еще лоты',
         'UnloadUnits' => 'Разгрузить всех',
+        'UnlockEW_Refinery_BronzeOreRank2' => 'Повышает эффективность переработки медной руды до 130%.',
+        'UnlockEW_Refinery_BronzeOreRank3' => 'Повышает эффективность переработки медной руды до 150%.',
+        'UnlockEW_Refinery_GoldOreRank1' => 'Открывает переработку золотой руды с эффективностью 120%.',
+        'UnlockEW_Refinery_GoldOreRank2' => 'Повышает эффективность переработки золотой руды до 130%.',
+        'UnlockEW_Refinery_GoldOreRank3' => 'Повышает эффективность переработки золотой руды до 150%.',
+        'UnlockEW_Refinery_IronOreRank1' => 'Открывает переработку железной руды с эффективностью 120%.',
+        'UnlockEW_Refinery_IronOreRank2' => 'Повышает эффективность переработки железной руды до 130%.',
+        'UnlockEW_Refinery_IronOreRank3' => 'Повышает эффективность переработки железной руды до 150%.',
+        'UnlockEW_Refinery_PlatinumOreRank1' => 'Открывает переработку платиновой руды с эффективностью 120%.',
+        'UnlockEW_Refinery_PlatinumOreRank2' => 'Повышает эффективность переработки платиновой руды до 130%.',
+        'UnlockEW_Refinery_PlatinumOreRank3' => 'Повышает эффективность переработки платиновой руды до 150%.',
+        'UnlockEW_Refinery_TitaniumOreRank1' => 'Открывает переработку титановой руды с эффективностью 120%.',
+        'UnlockEW_Refinery_TitaniumOreRank2' => 'Повышает эффективность переработки титановой руды до 130%.',
+        'UnlockEW_Refinery_TitaniumOreRank3' => 'Повышает эффективность переработки титановой руды до 150%.',
         'UnlockEW_Wood_ExoticWoodToCoalRank1' => 'Эпическая производственная цепочка: красное дерево - уголь, уровень 1',
         'UnlockEW_Wood_ExoticWoodToCoalRank2' => 'Эпическая производственная цепочка: красное дерево - уголь, уровень 2',
         'UnlockEW_Wood_ExoticWoodToExoticPlankRank1' => 'Грандиозная лесопилка (красное дерево)',
@@ -14334,27 +14405,7 @@ F11 - полноэкранный режим
         'WheatfieldsAndWells' => 'Пшеничные поля и колодцы',
         'Whisper' => 'Личное сообщение',
         'WinterGarden' => 'Зимний сад',
-        'WitchCovenBloodlustAdventure' => 'NT: Dark Ritual: Warmongery',
-        'WitchCovenGrimoirePage1' => 'NT: Witchy Grimoire Page I',
-        'WitchCovenGrimoirePage10' => 'NT: Witchy Grimoire Page X',
-        'WitchCovenGrimoirePage11' => 'NT: Witchy Grimoire Page XI',
-        'WitchCovenGrimoirePage12' => 'NT: Witchy Grimoire Page XII',
-        'WitchCovenGrimoirePage13' => 'NT: Witchy Grimoire Page XIII',
-        'WitchCovenGrimoirePage14' => 'NT: Witchy Grimoire Page XIV',
-        'WitchCovenGrimoirePage15' => 'NT: Witchy Grimoire Page XV',
-        'WitchCovenGrimoirePage16' => 'NT: Witchy Grimoire Page XVI',
-        'WitchCovenGrimoirePage17' => 'NT: Witchy Grimoire Page XVII',
-        'WitchCovenGrimoirePage18' => 'NT: Witchy Grimoire Page XVIII',
-        'WitchCovenGrimoirePage19' => 'NT: Witchy Grimoire Page XIX',
-        'WitchCovenGrimoirePage2' => 'NT: Witchy Grimoire Page II',
-        'WitchCovenGrimoirePage20' => 'NT: Witchy Grimoire Page XX',
-        'WitchCovenGrimoirePage3' => 'NT: Witchy Grimoire Page III',
-        'WitchCovenGrimoirePage4' => 'NT: Witchy Grimoire Page IV',
-        'WitchCovenGrimoirePage5' => 'NT: Witchy Grimoire Page V',
-        'WitchCovenGrimoirePage6' => 'NT: Witchy Grimoire Page VI',
-        'WitchCovenGrimoirePage7' => 'NT: Witchy Grimoire Page VII',
-        'WitchCovenGrimoirePage8' => 'NT: Witchy Grimoire Page VIII',
-        'WitchCovenGrimoirePage9' => 'NT: Witchy Grimoire Page IX',
+        'WitchCovenAid' => 'Ведьмовское ваяние',
         'WithdrawResource' => 'Взять ресурсы',
         'Wolf_Cave_leader' => 'Волчья пещера',
         'Worker' => 'Рабочий',
@@ -14368,6 +14419,7 @@ F11 - полноэкранный режим
         'XPNeeded' => 'Всего опыта: {0}
 Необходимо опыта до следующего уровня: {1}',
         'YES' => 'Да',
+        'You' => 'Вы',
         'YouHaveWon' => 'Вы выиграли!',
         'YourAvatar' => 'Ваш аватар',
         'YourColonies' => 'Ваши колонии',
@@ -14412,12 +14464,6 @@ F11 - полноэкранный режим
         'beanAColada' => 'Боб-с-колой',
         'blackmarketauctionover' => 'Этот аукцион закончился.',
         'braggingrights1' => 'Право на хвастовство',
-        'braggingrights2' => 'NT: Bragging Rights II',
-        'braggingrights3' => 'NT: Bragging Rights III',
-        'braggingrights4' => 'NT: Bragging Rights IV',
-        'braggingrights5' => 'NT: Bragging Rights V',
-        'braggingrights6' => 'NT: Bragging Rights VI',
-        'braggingrights7' => 'NT: Bragging Rights VII',
         'buildingupdefences' => 'Режим оборонительных сооружений',
         'builtcampslots' => 'Использовано ячеек для защиты',
         'buriedTreasure' => 'Зарытое сокровище',
@@ -14441,12 +14487,10 @@ F11 - полноэкранный режим
         'congratulations' => 'Поздравляем!',
         'conscientious' => 'Старательный',
         'contentgenerator' => 'Эксельсиор',
-        'contestClosed' => 'NT: Guild Fest is over! Claim your rewards!',
         'cooldown' => 'Восстановление',
         'copperMiningSurplus' => 'Излишки меди',
         'copperMiningSurplusMailSubject' => 'Обнаружены излишки меди',
         'cupreous' => 'Медник',
-        'currentScore' => 'NT: Guild Fest Tokens earned by your guild: {0}',
         'currentplayerlevel' => 'Текущий уровень PvP',
         'damage' => 'Наносимый урон (НУ)',
         'default' => 'По умолчанию',
@@ -14455,7 +14499,6 @@ F11 - полноэкранный режим
         'deservedBonus' => 'Заслуженный бонус',
         'deservedBonusMailSubject' => 'Получен заслуженный бонус',
         'disabled' => 'отменяет',
-        'distanceToContestLeader' => 'NT: Your guild is {0} points from beating "{1}" the current leader',
         'effectbuffancientbrasssword' => 'Копия древнего медного меча',
         'effectbuffarmoredcage' => 'Укрепленная клетка',
         'effectbuffchestkey' => 'Надежный ключ',
@@ -14497,7 +14540,6 @@ F11 - полноэкранный режим
         'guildQuestNotFinishedInfo' => 'Выполните свое задание, чтобы получить общую награду!',
         'guildQuestProgression' => 'Развитие гильдии',
         'guildfest' => 'Фестиваль гильдий',
-        'guildfestpoints' => 'NT: Guild Fest Tokens',
         'heroOre' => 'Руда для героя',
         'hiddenCoalStash' => 'Скрытый запас угля',
         'hiddenCoalStashMailSubject' => 'Обнаружен скрытый запас угля',
@@ -14514,9 +14556,7 @@ F11 - полноэкранный режим
         'iron_willed2' => 'Железная воля',
         'lifetime' => 'Оставшееся время производства',
         'lootWagon' => 'Телега с добычей',
-        'loottable_Valentine2025decorationmysterybox' => 'NT: Rosy Mystery Decoration Box',
         'loottable_balloonmarket_mini_mysterybox' => 'Таинственный сундук создания воздушных шаров',
-        'loottable_guildfest_mysterybox1' => 'NT: Guild Fest Goody Bag',
         'loottable_largedefbuild' => 'Большой набор оборонительных сооружений',
         'loottable_mysterybox_keenerexplorer' => 'Таинственный сундук',
         'loottable_smalldefbuild' => 'Малый набор оборонительных сооружений',
@@ -14534,7 +14574,6 @@ F11 - полноэкранный режим
         'mailGroupRead' => 'Прочитанные сообщения игрока',
         'mailGroupTrade' => 'Сообщения о торговле',
         'mailGroupUnread' => 'Непрочитанные сообщения игрока',
-        'marathon' => 'NT: Fast Runner',
         'matchesplayer' => 'соответствует размеру отряда игрока',
         'maxskillcostreached' => 'Достигнута макс. стоимость',
         'mistwalker' => 'Идущий сквозь туман',
@@ -14612,6 +14651,7 @@ F11 - полноэкранный режим
         'timedproductionGroup90' => 'Награды за исследования "Звездопада"',
         'timelimit' => 'Ограничение по времени:',
         'timeplayed' => 'Время игры',
+        'titanicgeology' => 'Титаническая задача',
         'trait_keenerexplorer' => 'Ловкость',
         'travelExpenses' => 'Путевые расходы',
         'travellingErudite' => 'Знаток путешествий',
@@ -14693,6 +14733,7 @@ F11 - полноэкранный режим
         'AllWoodTreasureEvent_started' => 'Увеличение добычи сокровищ',
         'Anniversary2018plus_Content_Started' => 'Годовщина',
         'ArchitectureEvent_started' => 'Скидки на редкие здания',
+        'BalloonMarket_miniTTL' => 'Воздаяние ярмарке воздушных шаров',
         'BarracksWeek_started' => 'Началась неделя казарм',
         'BarrierErected' => 'Барьер построен',
         'BeginnerShopEvent2_started' => 'Предложения новичкам',
@@ -14712,21 +14753,19 @@ F11 - полноэкранный режим
         'BuildingSkinAppliedTitle' => 'Вид здания применен',
         'CannotReachTarget' => 'Невозможно достичь цели',
         'ChangeSkinBuffApplied' => 'Вид здания',
-        'ChangeSkin_StarfallFertilizer' => 'NT: Fruits grew on the Uncanny Tree',
         'ChangeSkin_StarfallFertilizer_Buff1' => 'На пугающем дереве появляются плоды!',
         'ChangeSkin_StarfallFertilizer_Buff2' => 'На пугающем дереве появляются плоды!',
         'ChangeSkin_StarfallFertilizer_Buff3' => 'На пугающем дереве появляются плоды!',
         'ChangeSkin_StarfallFertilizer_Buff4' => 'На пугающем дереве появляются плоды!',
-        'ChangeSkin_StarfallSeed' => 'NT: An Uncanny Sapling appeared!',
         'ChangeSkin_StarfallSeed_Buff1' => 'Появляется пугающий росток!',
         'ChangeSkin_StarfallSeed_Buff2' => 'Появляется пугающий росток!',
         'ChangeSkin_StarfallSeed_Buff3' => 'Появляется пугающий росток!',
         'ChangeSkin_StarfallSeed_Buff4' => 'Появляется пугающий росток!',
-        'ChangeSkin_StarfallSpecialWater' => 'NT: An Uncanny Tree appeared',
         'ChangeSkin_StarfallSpecialWater_Buff1' => 'Появляется пугающее дерево!',
         'ChangeSkin_StarfallSpecialWater_Buff2' => 'Появляется пугающее дерево!',
         'ChangeSkin_StarfallSpecialWater_Buff3' => 'Появляется пугающее дерево!',
         'ChangeSkin_StarfallSpecialWater_Buff4' => 'Появляется пугающее дерево!',
+        'ChristmasCardApplied' => 'Рождественская открытка доставлена',
         'ClaimedSector' => 'Вы стали владельцем сектора',
         'CollectedCollectibleClueInAdventure' => 'Допрос',
         'CollectedCollectibleFurs2InAdventure' => 'Мех получен!',
@@ -14737,7 +14776,9 @@ F11 - полноэкранный режим
         'CollectedPickupInAdventure' => 'Предмет из приключения',
         'CollectedSpottedMushroomInAdventure' => 'Пятнистый гриб',
         'CollectionReadyForPickup' => 'Производство завершено',
-        'CombatLootBoxFromSkill' => 'NT: Loot Collected',
+        'CommandCenterBuff1Applied' => 'Тактика: Диверсия',
+        'CommandCenterBuff2Applied' => 'Тактика: Картечь',
+        'CommandCenterBuff3Applied' => 'Тактика: Конный натиск',
         'ConcertFlyersDelivered' => 'Концертные буклеты розданы',
         'CrisisQuestEvent3_Started' => 'Критическое задание 3',
         'CrisisQuestEvent4_started' => 'Месть разбойников',
@@ -14791,6 +14832,7 @@ F11 - полноэкранный режим
         'ExplorerStartedFindTreasure' => 'Исследователь начал',
         'ExplorerWeek' => 'Более опытные исследователи',
         'FilterActive' => 'Посланник острова сообщает:',
+        'FishCollected' => 'Маяк у побережья',
         'FlashSale_Content_Started' => 'ГОРЯЧАЯ РАСПРОДАЖА',
         'FlowerBouquetApplied' => 'Букет цветов применен',
         'FlowerFarmResurrected' => 'Цветочная ферма восстановлена',
@@ -14800,7 +14842,6 @@ F11 - полноэкранный режим
         'FriendRequestCooldown' => 'Друг запросил приостановку',
         'FriendRequestSent' => 'Отправлено предложение дружить',
         'FriendZoneBuff' => 'Зона усилена',
-        'GFRecipeAppliedTitle' => 'NT: Order Received',
         'GateBroken' => 'Ворота взломаны',
         'GeneralDidNotFindLandinggrid' => 'Недостаточно зон высадки',
         'GeneralDistracted' => 'Генерал перехвачен',
@@ -14849,9 +14890,6 @@ F11 - полноэкранный режим
         'GuildChangesSaved' => 'Изменения гильдии сохранены',
         'GuildDisbandDisabeldTooltip' => 'Распустить',
         'GuildDisbanded' => 'Гильдия распущена',
-        'GuildFestTokenProduced' => 'NT: Guild Fest token produced',
-        'GuildFest_Content_started' => 'NT: Guild Fest',
-        'GuildFest_Shop_started' => 'NT: Guild Fest',
         'GuildIncreaseSize' => 'Максимально допустимое количество членов гильдии увеличено',
         'GuildIncreaseSizeMail' => 'Ограничение размера гильдии увеличилось',
         'GuildInviteSent' => 'Приглашение в гильдию отправлено',
@@ -14867,11 +14905,11 @@ F11 - полноэкранный режим
         'HiredMilitary_Militia50' => 'Ваш генерал может взять с собой в приключение еще 50 ополченцев.',
         'HiredMilitary_Recruit50' => 'Ваш генерал может взять с собой в приключение еще 50 новобранцев.',
         'HiredMilitary_Soldiers50' => 'Ваш генерал может взять с собой в приключение еще 50 солдат.',
-        'IceSkatingLakeBuff' => 'NT: Ice Skating Begins...',
         'IncreasedMaxBuildings' => 'Получены разрешения на строительство',
         'IncreasedPermanentBuildSlots' => 'Получена новая очередь для постоянных зданий.',
         'InstantCostDiscount_started' => 'Скидка на мгновенное завершение',
         'IronOreTreasureEvent_started' => 'Увеличение добычи сокровищ',
+        'KrampusPitBonusTTL' => 'Крампус доволен!',
         'LastBuildingLicenseUsed' => 'У вас больше нет разрешений на строительство',
         'LastChance_Content_Started' => 'Поторопитесь!',
         'LousyDistractionDelivered' => 'Фейерверк',
@@ -14879,6 +14917,7 @@ F11 - полноэкранный режим
         'LumberSawDelivered' => 'Пила по дереву доставлена',
         'MahoganyWoodTreasureEvent_started' => 'Увеличение добычи сокровищ',
         'MailSent' => 'Сообщение отправлено',
+        'ManuscriptGranted' => 'Обмен знаниями',
         'MarbleTreasureEvent_started' => 'Увеличение добычи сокровищ',
         'MilitaryShopEvent_started' => 'Рынок наемников',
         'MilitaryWeekII_started' => 'Началась военная неделя',
@@ -14948,6 +14987,8 @@ F11 - полноэкранный режим
         'PopulationConditionalBuffApplied' => 'Активирован усилитель "Кулоны-сердечки"',
         'PremiumAccountActivated' => 'Премиум-время активировано',
         'PremiumAccountExpired' => 'Премиум-время закончилось',
+        'PremiumChristmasBuffBoostApplied' => 'Рождественский усилитель друга',
+        'PremiumCompensationBuffBoostApplied' => 'Королевская компенсация',
         'PremiumFriendBuffBoostApplied' => 'Престижный усилитель друзей',
         'ProductionFinished' => 'Усилитель создан',
         'ProductionWeek_started' => 'Началась неделя производства',
@@ -14990,9 +15031,9 @@ F11 - полноэкранный режим
         'ServerCallFailed' => 'Не удалось вызвать сервер',
         'SettlersHistoryCollectionPromotion_started' => 'Вся история The Settlers в одном издании!',
         'SkillpointPickUp' => 'Добавлена книга',
+        'SmokeHouse_MiniTTL' => 'Воздаяние коптильне',
         'Soccer2018plus_Content_Started' => 'Футбольный турнир',
         'Soccer2018plus_Shop_Started' => 'Футбольный турнир',
-        'SomethingCameThrough' => 'NT: Something Came Through!',
         'SpecialistTaskDurationEvent_started' => 'Специалист: событие началось',
         'SpecialistWeek_started' => 'Бонус специалиста активирован',
         'StarCoinsPickedUpFromAdventure' => 'Охотник за головами',
@@ -15028,6 +15069,7 @@ F11 - полноэкранный режим
         'TempBuildSlotRemoved' => 'Время действия временной ячейки очереди на строительство истекло',
         'TheBlackKnightsOnline_started' => 'Черные рыцари Онлайн',
         'TitaniumOreTreasureEvent_started' => 'Увеличение добычи сокровищ',
+        'TomeGranted' => 'Обмен знаниями',
         'TourismApplied' => 'Туризм',
         'TradeAccepted' => 'Сделка принята',
         'TradeAcceptedBuff' => 'Торговое предложение принято',
@@ -15067,7 +15109,6 @@ F11 - полноэкранный режим
         'Valentines2019plus_Shop_started' => 'День святого Валентина',
         'WeaponsResourceEvent_started' => 'Распродажа оружия',
         'WeeklyTaskGained' => 'Еженедельная награда',
-        'WitchCovenFamineTTL' => 'NT: Curse',
         'WoodResourceEvent_started' => 'Распродажа',
         'XMAS2015_Content_started' => 'Рождество',
         'XMAS2015_Shop_started' => 'Рождество',
@@ -15160,6 +15201,7 @@ F11 - полноэкранный режим
         'AvatarNameErrorInvalidFirstChar' => 'Недопустимый первый символ. (Имя пользователя должно начинаться с буквы.)',
         'AvatarNameErrorInvalidTooLong' => 'Слишком длинное имя. (Имя игрока должно состоять не более чем из 16 символов. Введите более короткое имя.)',
         'AvatarNameErrorInvalidTooShort' => 'Слишком короткое имя. (Имя игрока должно состоять не менее чем из 4 символов. Введите более длинное имя.)',
+        'BalloonMarket_miniMSG' => 'Воздушные шары доставлены',
         'BarracksWeek_started' => 'Повышена эффективность производства для казарм.',
         'BarrierErected' => 'Вы построили барьер для защиты от нападений.',
         'BeginnerShopEvent2_started' => 'Купец продает со скидкой чертежи и другие ценные предметы.',
@@ -15185,21 +15227,19 @@ F11 - полноэкранный режим
         'ChangeColorScheme_tropical' => 'Ощущения почти как в тропиках.',
         'ChangeColorScheme_tundra' => 'На вашем острове теперь гуляют холодные ветра и светит зимнее солнце!',
         'ChangeSkinBuffApplied' => 'Вид строения "{0,BUI}" был изменен.',
-        'ChangeSkin_StarfallFertilizer' => 'NT: The tree is now full with fruits!',
         'ChangeSkin_StarfallFertilizer_Buff1' => 'Дерево приносит плоды!',
         'ChangeSkin_StarfallFertilizer_Buff2' => 'Дерево приносит плоды!',
         'ChangeSkin_StarfallFertilizer_Buff3' => 'Дерево приносит плоды!',
         'ChangeSkin_StarfallFertilizer_Buff4' => 'Дерево приносит плоды!',
-        'ChangeSkin_StarfallSeed' => 'NT: The seeds became a sapling!',
         'ChangeSkin_StarfallSeed_Buff1' => 'Семя превращается в росток!',
         'ChangeSkin_StarfallSeed_Buff2' => 'Семя превращается в росток!',
         'ChangeSkin_StarfallSeed_Buff3' => 'Семя превращается в росток!',
         'ChangeSkin_StarfallSeed_Buff4' => 'Семя превращается в росток!',
-        'ChangeSkin_StarfallSpecialWater' => 'NT: The sapling evolved into a tree!',
         'ChangeSkin_StarfallSpecialWater_Buff1' => 'Росток превращается в дерево!',
         'ChangeSkin_StarfallSpecialWater_Buff2' => 'Росток превращается в дерево!',
         'ChangeSkin_StarfallSpecialWater_Buff3' => 'Росток превращается в дерево!',
         'ChangeSkin_StarfallSpecialWater_Buff4' => 'Росток превращается в дерево!',
+        'ChristmasCardApplied' => 'Вы отправили рождественскую открытку.',
         'ClaimedSector' => 'Вы получаете во владение новый сектор!',
         'CollectedCollectibleClueInAdventure' => 'Побежденный лидер выдал важные сведения. Улика будет перенесена на ваш родной остров.',
         'CollectedCollectibleFurs2InAdventure' => 'Этот шикарный мех выглядит дорого.',
@@ -15210,7 +15250,9 @@ F11 - полноэкранный режим
         'CollectedPickupInAdventure' => 'Собранные предметы будут отправлены вам на почту после завершения приключения.',
         'CollectedSpottedMushroomInAdventure' => 'Под деревом вы нашли 5 грибов. Они будут перенесены на ваш родной остров.',
         'CollectionReadyForPickup' => 'Ваша коллекция собрана, и ее можно взять в ратуше.',
-        'CombatLootBoxFromSkill' => 'NT: Your general returned with the spoils of the battle.',
+        'CommandCenterBuff1Applied' => 'Не дайте им пройти!',
+        'CommandCenterBuff2Applied' => 'Стрелять по готовности!',
+        'CommandCenterBuff3Applied' => 'Разотрите их в порошок!',
         'ConcertFlyersDelivered' => 'Буклеты очень заинтересовали горожан.',
         'CrisisQuestEvent3_Started' => 'Великое зло нависло над вашим островом! Сумеете ли вы вовремя разрешить кризис?',
         'CrisisQuestEvent4_started' => 'Началось критическое задание "Месть разбойников".',
@@ -15287,6 +15329,7 @@ F11 - полноэкранный режим
         'ExplorerStartedFindTreasureShort' => 'Ваш исследователь начал поиск сокровищ (быстрый).',
         'ExplorerStartedFindTreasureTravellingErudite' => 'Ваш исследователь начал поиск артефактов.',
         'ExplorerWeek' => 'Ваши исследователи могут найти доп. добычу за ограниченное время.',
+        'FishCollected' => 'Радушный рыбак поделился своим уловом.',
         'FlashSale_Content_started' => 'Не пропустите скидки!',
         'FlowerBouquetApplied' => 'Вы применили букет цветов на доме.',
         'FlowerFarmResurrected' => 'Началось восстановление цветочной фермы.',
@@ -15296,7 +15339,6 @@ F11 - полноэкранный режим
         'FriendRequestCooldown' => 'Вы не можете отправить этому игроку повторное предложение дружбы. Повторите попытку позже.',
         'FriendRequestSent' => 'Ваше предложение дружить отправлено и должно быть принято получателем',
         'FriendZoneBuff' => 'Кто-то из ваших друзей использовал на вашем острове ресурс "{0,RES}".',
-        'GFRecipeApplied_generic_message' => 'NT: Order received. Ready to upgrade!',
         'GateBroken' => 'Ворота открыты. Теперь можно напасть на замок!',
         'GeneralCannotAttack' => 'Генерал не может нападать без войск.',
         'GeneralDidNotFindLandinggrid' => 'На выбранном острове недостаточно зон высадки. Ваш генерал вернулся в звездное меню, а его войска остались неназначенными.',
@@ -15344,9 +15386,6 @@ F11 - полноэкранный режим
         'GroutTreasureEvent_started' => 'Поиски сокровищ дают вдвое больше раствора!',
         'GuildChangesSaved' => 'Изменение параметров гильдии успешно сохранено.',
         'GuildDisbanded' => 'Вы успешно распустили свою гильдию.',
-        'GuildFestTokenProduced' => 'NT: Guild Fest token production complete',
-        'GuildFest_Content_started' => 'NT: Guild Fest has started!',
-        'GuildFest_Shop_started' => 'NT: Check the shop for useful items!',
         'GuildIncreaseSize' => 'Максимальное количество членов вашей гильдии увеличено на {0}.',
         'GuildIncreaseSizeMail' => 'Предмет отправлен вашему другу.',
         'GuildInviteSent' => 'Ваше приглашение в гильдию отправлено.',
@@ -15359,11 +15398,11 @@ F11 - полноэкранный режим
         'HarbourMiniEvent_started' => 'Всем игрокам уровня 10 и выше доступна новая цепочка заданий "Гавань".',
         'HealedMayaCamp' => 'Вы вылечили туземцев в этом лагере. Они более не враждебны.',
         'HiredMilitaryFromSkill' => 'Новобранцы-наемники ({1} чел.) были добавлены в ваше звездное меню.',
-        'IceSkatingLakeBuff' => 'NT: Winter Jolly is the air...',
         'IncreasedMaxBuildings' => 'Вы получили еще {0} разрешений на строительство.',
         'IncreasedPermanentBuildSlots' => 'Вы получили 1 дополнительное место в очереди на строительство.',
         'InstantCostDiscount_started' => 'Стоимость мгновенного завершения некоторых действий временно снижена!',
         'IronOreTreasureEvent_started' => 'Поиски сокровищ дают вдвое больше железной руды!',
+        'KrampusPitBonusMSG' => 'Крампус счастлив быть наедине со своей киркой и дарит вам обсидиан.',
         'LastBuildingLicenseUsed' => 'Вы использовали свое последнее разрешение на строительство.
 Получите во владение новый сектор или посетите магазин, чтобы получить еще разрешения на строительство.',
         'LastChance_Content_started' => 'Совсем скоро предметы покинут ассортимент!',
@@ -15383,6 +15422,7 @@ F11 - полноэкранный режим
         'MaleGeneralWonAndReturns' => 'Ваш генерал – одержал победу! Теперь он вернется в свой гарнизон.',
         'MaleGeneralWonAndReturnsViewer' => 'Генерал друга одержал победу! Теперь он вернется в свой гарнизон.',
         'MaleNewGeneral' => 'На службу явился новый генерал. Вы найдете его в своем звездном меню.',
+        'ManuscriptGranted' => 'Рукопись получена.',
         'MarbleTreasureEvent_started' => 'Поиски сокровищ дают вдвое больше мрамора!',
         'MilitaryShopEvent_started' => 'Купец выступает посредником при найме войск.',
         'MilitaryWeekII_started' => 'В магазине в ограниченном количестве предлагаются предметы на военную тематику.',
@@ -15455,6 +15495,8 @@ F11 - полноэкранный режим
         'PopulationConditionalBuffApplied' => 'Вы активировали усилитель "Кулоны-сердечки", увеличив прирост населения.',
         'PremiumAccountActivated' => 'Премиум-время добавлено к вашей учетной записи. Премиум-бонусы будут действительны, пока премиум-время не закончится.',
         'PremiumAccountExpired' => 'Премиум закончился. Бонусы отключены. Для их  активации продлите премиум.',
+        'PremiumChristmasBuffBoostApplied' => 'Активирован рождественский усилитель друзей. Он принесёт огромную выгоду!',
+        'PremiumCompensationBuffBoostApplied' => 'Активирована Королевская компенсация. Она принесёт огромную выгоду!',
         'PremiumFriendBuffBoostApplied' => 'Активирован престижный усилитель друзей. Он принесет огромную выгоду!',
         'ProductionFinished' => 'Вы найдете созданные усилители в своем звездном меню.',
         'ProductionWeek_started' => 'Производство в некоторых зданиях в настоящее время повышено.',
@@ -15510,15 +15552,9 @@ F11 - полноэкранный режим
         'SkinApplied_Ostereierbaum_blue_permanent' => 'Цвет: пасхальное дерево, синее',
         'SkinApplied_Ostereierbaum_red_permanent' => 'Цвет: пасхальное дерево, красное',
         'SkinApplied_generic_message' => 'Внешний вид здания изменен',
+        'SmokeHouse_MiniMSG' => 'Стейк подан. Приятного аппетита!',
         'Soccer2018plus_Content_Started' => 'Футбольный турнир начался!',
         'Soccer2018plus_Shop_Started' => 'Последний шанс потратить оставшиеся футбольные мячи!',
-        'SomethingCameThrough' => 'NT: Something Came Through!',
-        'SomethingCameThrough1' => 'NT: The Undead',
-        'SomethingCameThrough2' => 'NT: Living Armor',
-        'SomethingCameThrough3' => 'NT: Restless Souls',
-        'SomethingCameThrough4' => 'NT: Annoying Loud Creatures',
-        'SomethingCameThrough5' => 'NT: Raging Storm',
-        'SomethingCameThrough6' => 'NT: Benevolent Fae Creatures',
         'SpecialistTaskDurationEvent_started' => 'Началось событие, временно дающее преимущества определенному специалисту.',
         'SpecialistWeek_started' => 'Ваш маршал перемещается в другую зону.',
         'StarCoinsPickedUpFromAdventure' => 'Ваш генерал получил звездные монеты - {0} шт.',
@@ -15554,6 +15590,7 @@ F11 - полноэкранный режим
         'TempBuildSlotRemoved' => 'Время действия временной ячейки очереди на строительство истекло.',
         'TheBlackKnightsOnline_started' => 'Играйте в "Черные рыцари Онлайн"',
         'TitaniumOreTreasureEvent_started' => 'Поиски сокровищ дают вдвое больше титановой руды!',
+        'TomeGranted' => 'Фолиант получен.',
         'TourismApplied' => 'На ваш остров хлынула волна туристов, увеличив прирост населения.',
         'TradeAccepted' => 'Вы согласились на сделку. Товар был отправлен на ваш склад.',
         'TradeAcceptedBuff' => 'Вы совершили сделку. Товар был отправлен в ваше звездное меню.',
@@ -15594,7 +15631,6 @@ F11 - полноэкранный режим
         'Valentines2019plus_Shop_started' => 'Последний шанс потратить оставшиеся цветы.',
         'WeaponsResourceEvent_started' => 'Купец продает оружие и верховых животных со скидкой!',
         'WeeklyTaskGained' => 'Еженедельная награда от следопыта помещена на ваш склад!',
-        'WitchCovenFamineMSG' => 'NT: Famine!',
         'WoodResourceEvent_started' => 'Купец продает дерево и доски со скидкой!',
         'XMAS2015_Content_started' => 'Рождество началось.',
         'XMAS2015_Shop_started' => 'Последний шанс потратить оставшиеся подарки.',
@@ -15627,10 +15663,6 @@ F11 - полноэкранный режим
         'stageDelivered' => 'Концертная сцена готова к выступлению.',
         'tentDecorationDelivered' => 'Вы разместили мраморный бюст прямо перед палаткой Сони.',
         'weddingCakeDelivered' => 'Вы доставили торт.',
-    ],
-    'NPD' => [
-    ],
-    'NPL' => [
     ],
     'NTL' => [
         'SpecialistTask0' => 'Поиск залежи ресурса {0,RES}',
@@ -15806,11 +15838,6 @@ F11 - полноэкранный режим
         'Adv_TreasureWisdom_Q1' => 'Побежденные грабители пытаются вызвать помощь, но вы быстро пресекаете все их попытки. Вскоре они признаются, что им поручили отвлекающий маневр, пока остальные головорезы занимались разорением окрестных могил, надеясь найти в них ценные сокровища. Немного отдохнув, вы отправляетесь разыскивать их.',
         'Adv_TreasureWisdom_Q2' => 'Грабители могил направились в свои немногочисленные оставшиеся лагеря. На вершине горы вы замечаете храм с бросающейся в глаза защитной системой. Теперь, когда цель достигнута, ничто не мешает вам спокойно этим заняться.',
         'Adv_TreasureWisdom_Q3' => 'Разобравшись с защитной системой храма, вы начинаете исследовать его в поисках сокровищ. Никаких материальных богатств в нем не оказывается, однако к вам в руки попадает весьма полезная находка - летописи с информацией о древней расе, некогда жившей в этих местах. Накопленная ими мудрость намного ценнее золота или украшений, которые вы могли бы найти.',
-        'AdventureSeasonMercenary_LevelRequirement26' => 'NT: Perfect. Now, you can continue. There are some news from some scouts. Hear them out!',
-        'AdventureSeasonMercenary_Main' => 'NT: Perfect. The mercenaries are retreating and you collected many of those Adventure Relics. Use them to go on more adventures as long as your can!',
-        'AdventureSeasonMercenary_Sub1' => 'NT: Great, this a perfect start for further investigations on the Adventure Relics. Try collecting more!',
-        'AdventureSeasonMercenary_Sub2' => 'NT: Our investigators are making progress with each Adventure Relic. Please go on!',
-        'AdventureSeasonMercenary_Sub3' => 'NT: Well done. Additionally, we found out that these Adventure Relics are absolutely worthless. We store them for you and you can grab some other nice things for your effort collecting all of that.',
         'BAUMP1' => 'Раз уж все спасены, нам нужно кое-что обсудить.
 
 Поговорим на вашем острове.',
@@ -16367,6 +16394,82 @@ F11 - полноэкранный режим
         'Birthday2018plus_Infrastructure_62-80_Main9_Sub2' => 'Отличная работа! А теперь перейдем к следующему заданию из письма Доры.',
         'Birthday2018plus_Infrastructure_62-80_Main9_Sub3' => 'Отличная работа! А теперь перейдем к следующему заданию из письма Доры.',
         'Birthday2018plus_Infrastructure_62-80_Main9_Sub4' => 'Отличная работа!',
+        'Birthday2018plus_LostExpedition_26-35_Following_Main' => 'Шаг за шагом маршрут экспедиции становится всё более ясным. Их след не остыл — просто он уходит дальше, чем кто-либо мог себе представить.',
+        'Birthday2018plus_LostExpedition_26-35_Following_Sub1' => 'В письме подтверждается, что при отплытии флот был хорошо подготовлен, а всего его участники бодры духом. Тинания полагает, что следующие улики можно найти у места, где все корабли собрались перед великим плаванием.',
+        'Birthday2018plus_LostExpedition_26-35_Following_Sub2' => 'Записи готовы. Среди них найдено упоминание о первом причаливании флота после выхода из порта — многообещающая зацепка, которую стоит проверить.',
+        'Birthday2018plus_LostExpedition_26-35_Following_Sub3' => 'Этот лагерь служил лишь временным убежищем. Среди руин вы обнаруживаете свидетельства того, что флот продолжил движение на запад, прежде чем свернуть лагерь.',
+        'Birthday2018plus_LostExpedition_26-35_Following_Sub4' => 'Внутри маяка спрятан ещё один фрагмент карты экспедиции. Маршрут теперь проглядывается все четче, но одна важная деталь по-прежнему отсутствует.',
+        'Birthday2018plus_LostExpedition_26-35_Following_Sub5' => 'Дневник штурмана свидетельствует о решительном курсе, пролегающем далеко за пределами знакомых вод. Тинания опасается, что самые сложные испытания еще впереди.',
+        'Birthday2018plus_LostExpedition_26-35_Hub' => 'Благодаря вашим стараниям нам удалось узнать о судьбе экспедиции Октавиана. И хотя его конечная цель по-прежнему остается загадкой, одно не вызывает сомнений: куда бы их ни привело странствие, он и его спутники несли в сердцах дух поселенцев — они основали новые поселения и оставили для будущих поколений наследие, которое нисколько не угасло даже спустя многие годы, после того как они впервые отправились за горизонт.
+Закрывая последний журнал, Тинания улыбается. «Годами я искала ответы. Сегодня я нашла нечто ещё более ценное. Его путешествие не прошло даром — оно продолжает жить в каждом рассказе, в каждом поселении и в каждом человеке, который готов отправиться навстречу неизведанному. Спасибо вам за то, что помогли мне узнать о его наследии.»',
+        'Birthday2018plus_LostExpedition_26-35_Legacy_Main' => 'Тайна раскрыта. Хотя время многое от нас скрыло, мужество Октавиана и его соратников продолжает жить в каждом основанном ими поселении.',
+        'Birthday2018plus_LostExpedition_26-35_Legacy_Sub1' => 'Эти руины некогда были зданиями, построенными римлянами, но они рассказывают лишь часть истории. За ними раскинулось оживленное поселение.',
+        'Birthday2018plus_LostExpedition_26-35_Legacy_Sub2' => 'Колонисты бережно сохранили историю экспедиции. Среди архивов экипажа найден дневник, принадлежащий самому Октавиану.',
+        'Birthday2018plus_LostExpedition_26-35_Legacy_Sub3' => 'Журнал рассказывает о непоколебимой решимости, но его последние страницы заканчиваются на моменте ещё до начала самого путешествия. Остается лишь одна зацепка.',
+        'Birthday2018plus_LostExpedition_26-35_Legacy_Sub4' => 'Достиг ли Октавиан римской родины? Возможно, мы об этом уже никогда не узнаем. Однако его величайшим достижением никогда не была конечная точка приключения — напротив, им стали поселения, для которых он послужил вдохновением, люди, которых он сплотил, а также сохранившееся до наших дней наследие. Тинания благодарит вас. Она уверена, что эту историю потомки никогда не забудут.',
+        'Birthday2018plus_LostExpedition_26-35_UnknownSeas_Main' => 'Завеса тайны сгущается. Хотя флот и распался, его судьба не закончилась безнадежной трагедией. Выжившие продолжили дело Октавиана.',
+        'Birthday2018plus_LostExpedition_26-35_UnknownSeas_Sub1' => 'Щедрость чужеземцев помогла римлянам пережить время, когда их собственные запасы начали иссякать. Их признательность отражена на каждой странице дневника.',
+        'Birthday2018plus_LostExpedition_26-35_UnknownSeas_Sub2' => 'Многие корабли утонули, но некоторые все же остались. Выжившие собрались на неизвестных берегах, полные решимости продолжать борьбу за жизнь, несмотря на все сложности.',
+        'Birthday2018plus_LostExpedition_26-35_UnknownSeas_Sub3' => 'Их поселения стали символами надежды. Оттуда поиски римской родины продолжались.',
+        'Birthday2018plus_LostExpedition_26-35_UnknownSeas_Sub4' => 'Несмотря на то что знамя было изрезано шрамами от бесчисленных сражений, оно устояло. Это указывает на финальный поход экспедиции вглубь материка.',
+        'Birthday2018plus_LostExpedition_26-35_UnknownSeas_Sub5' => 'За горами обнаружены следы гораздо более крупного поселения. Завершающий этап экспедиции уже совсем близок.',
+        'Birthday2018plus_LostExpedition_36-50_Following_Main' => 'Шаг за шагом маршрут экспедиции становится всё более ясным. Их след не остыл — просто он уходит дальше, чем кто-либо мог себе представить.',
+        'Birthday2018plus_LostExpedition_36-50_Following_Sub1' => 'В письме подтверждается, что при отплытии флот был хорошо подготовлен, а всего его участники бодры духом. Тинания полагает, что следующие улики можно найти у места, где все корабли собрались перед великим плаванием.',
+        'Birthday2018plus_LostExpedition_36-50_Following_Sub2' => 'Записи готовы. Среди них найдено упоминание о первом причаливании флота после выхода из порта — многообещающая зацепка, которую стоит проверить.',
+        'Birthday2018plus_LostExpedition_36-50_Following_Sub3' => 'Этот лагерь служил лишь временным убежищем. Среди руин вы обнаруживаете свидетельства того, что флот продолжил движение на запад, прежде чем свернуть лагерь.',
+        'Birthday2018plus_LostExpedition_36-50_Following_Sub4' => 'Внутри маяка спрятан ещё один фрагмент карты экспедиции. Маршрут теперь проглядывается все четче, но одна важная деталь по-прежнему отсутствует.',
+        'Birthday2018plus_LostExpedition_36-50_Following_Sub5' => 'Дневник штурмана свидетельствует о решительном курсе, пролегающем далеко за пределами знакомых вод. Тинания опасается, что самые сложные испытания еще впереди.',
+        'Birthday2018plus_LostExpedition_36-50_Hub' => 'Благодаря вашим стараниям нам удалось узнать о судьбе экспедиции Октавиана. И хотя его конечная цель по-прежнему остается загадкой, одно не вызывает сомнений: куда бы их ни привело странствие, он и его спутники несли в сердцах дух поселенцев — они основали новые поселения и оставили для будущих поколений наследие, которое нисколько не угасло даже спустя многие годы, после того как они впервые отправились за горизонт.
+Закрывая последний журнал, Тинания улыбается. «Годами я искала ответы. Сегодня я нашла нечто ещё более ценное. Его путешествие не прошло даром — оно продолжает жить в каждом рассказе, в каждом поселении и в каждом человеке, который готов отправиться навстречу неизведанному. Спасибо вам за то, что помогли мне узнать о его наследии.»',
+        'Birthday2018plus_LostExpedition_36-50_Legacy_Main' => 'Тайна раскрыта. Хотя время многое от нас скрыло, мужество Октавиана и его соратников продолжает жить в каждом основанном ими поселении.',
+        'Birthday2018plus_LostExpedition_36-50_Legacy_Sub1' => 'Эти руины некогда были зданиями, построенными римлянами, но они рассказывают лишь часть истории. За ними раскинулось оживленное поселение.',
+        'Birthday2018plus_LostExpedition_36-50_Legacy_Sub2' => 'Колонисты бережно сохранили историю экспедиции. Среди архивов экипажа найден дневник, принадлежащий самому Октавиану.',
+        'Birthday2018plus_LostExpedition_36-50_Legacy_Sub3' => 'Журнал рассказывает о непоколебимой решимости, но его последние страницы заканчиваются на моменте ещё до начала самого путешествия. Остается лишь одна зацепка.',
+        'Birthday2018plus_LostExpedition_36-50_Legacy_Sub4' => 'Достиг ли Октавиан римской родины? Возможно, мы об этом уже никогда не узнаем. Однако его величайшим достижением никогда не была конечная точка приключения — напротив, им стали поселения, для которых он послужил вдохновением, люди, которых он сплотил, а также сохранившееся до наших дней наследие. Тинания благодарит вас. Она уверена, что эту историю потомки никогда не забудут.',
+        'Birthday2018plus_LostExpedition_36-50_UnknownSeas_Main' => 'Завеса тайны сгущается. Хотя флот и распался, его судьба не закончилась безнадежной трагедией. Выжившие продолжили дело Октавиана.',
+        'Birthday2018plus_LostExpedition_36-50_UnknownSeas_Sub1' => 'Щедрость чужеземцев помогла римлянам пережить время, когда их собственные запасы начали иссякать. Их признательность отражена на каждой странице дневника.',
+        'Birthday2018plus_LostExpedition_36-50_UnknownSeas_Sub2' => 'Многие корабли утонули, но некоторые все же остались. Выжившие собрались на неизвестных берегах, полные решимости продолжать борьбу за жизнь, несмотря на все сложности.',
+        'Birthday2018plus_LostExpedition_36-50_UnknownSeas_Sub3' => 'Их поселения стали символами надежды. Оттуда поиски римской родины продолжались.',
+        'Birthday2018plus_LostExpedition_36-50_UnknownSeas_Sub4' => 'Несмотря на то что знамя было изрезано шрамами от бесчисленных сражений, оно устояло. Это указывает на финальный поход экспедиции вглубь материка.',
+        'Birthday2018plus_LostExpedition_36-50_UnknownSeas_Sub5' => 'За горами обнаружены следы гораздо более крупного поселения. Завершающий этап экспедиции уже совсем близок.',
+        'Birthday2018plus_LostExpedition_51-61_Following_Main' => 'Шаг за шагом маршрут экспедиции становится всё более ясным. Их след не остыл — просто он уходит дальше, чем кто-либо мог себе представить.',
+        'Birthday2018plus_LostExpedition_51-61_Following_Sub1' => 'В письме подтверждается, что при отплытии флот был хорошо подготовлен, а всего его участники бодры духом. Тинания полагает, что следующие улики можно найти у места, где все корабли собрались перед великим плаванием.',
+        'Birthday2018plus_LostExpedition_51-61_Following_Sub2' => 'Записи готовы. Среди них найдено упоминание о первом причаливании флота после выхода из порта — многообещающая зацепка, которую стоит проверить.',
+        'Birthday2018plus_LostExpedition_51-61_Following_Sub3' => 'Этот лагерь служил лишь временным убежищем. Среди руин вы обнаруживаете свидетельства того, что флот продолжил движение на запад, прежде чем свернуть лагерь.',
+        'Birthday2018plus_LostExpedition_51-61_Following_Sub4' => 'Внутри маяка спрятан ещё один фрагмент карты экспедиции. Маршрут теперь проглядывается все четче, но одна важная деталь по-прежнему отсутствует.',
+        'Birthday2018plus_LostExpedition_51-61_Following_Sub5' => 'Дневник штурмана свидетельствует о решительном курсе, пролегающем далеко за пределами знакомых вод. Тинания опасается, что самые сложные испытания еще впереди.',
+        'Birthday2018plus_LostExpedition_51-61_Hub' => 'Благодаря вашим стараниям нам удалось узнать о судьбе экспедиции Октавиана. И хотя его конечная цель по-прежнему остается загадкой, одно не вызывает сомнений: куда бы их ни привело странствие, он и его спутники несли в сердцах дух поселенцев — они основали новые поселения и оставили для будущих поколений наследие, которое нисколько не угасло даже спустя многие годы, после того как они впервые отправились за горизонт.
+Закрывая последний журнал, Тинания улыбается. «Годами я искала ответы. Сегодня я нашла нечто ещё более ценное. Его путешествие не прошло даром — оно продолжает жить в каждом рассказе, в каждом поселении и в каждом человеке, который готов отправиться навстречу неизведанному. Спасибо вам за то, что помогли мне узнать о его наследии.»',
+        'Birthday2018plus_LostExpedition_51-61_Legacy_Main' => 'Тайна раскрыта. Хотя время многое от нас скрыло, мужество Октавиана и его соратников продолжает жить в каждом основанном ими поселении.',
+        'Birthday2018plus_LostExpedition_51-61_Legacy_Sub1' => 'Эти руины некогда были зданиями, построенными римлянами, но они рассказывают лишь часть истории. За ними раскинулось оживленное поселение.',
+        'Birthday2018plus_LostExpedition_51-61_Legacy_Sub2' => 'Колонисты бережно сохранили историю экспедиции. Среди архивов экипажа найден дневник, принадлежащий самому Октавиану.',
+        'Birthday2018plus_LostExpedition_51-61_Legacy_Sub3' => 'Журнал рассказывает о непоколебимой решимости, но его последние страницы заканчиваются на моменте ещё до начала самого путешествия. Остается лишь одна зацепка.',
+        'Birthday2018plus_LostExpedition_51-61_Legacy_Sub4' => 'Достиг ли Октавиан римской родины? Возможно, мы об этом уже никогда не узнаем. Однако его величайшим достижением никогда не была конечная точка приключения — напротив, им стали поселения, для которых он послужил вдохновением, люди, которых он сплотил, а также сохранившееся до наших дней наследие. Тинания благодарит вас. Она уверена, что эту историю потомки никогда не забудут.',
+        'Birthday2018plus_LostExpedition_51-61_UnknownSeas_Main' => 'Завеса тайны сгущается. Хотя флот и распался, его судьба не закончилась безнадежной трагедией. Выжившие продолжили дело Октавиана.',
+        'Birthday2018plus_LostExpedition_51-61_UnknownSeas_Sub1' => 'Щедрость чужеземцев помогла римлянам пережить время, когда их собственные запасы начали иссякать. Их признательность отражена на каждой странице дневника.',
+        'Birthday2018plus_LostExpedition_51-61_UnknownSeas_Sub2' => 'Многие корабли утонули, но некоторые все же остались. Выжившие собрались на неизвестных берегах, полные решимости продолжать борьбу за жизнь, несмотря на все сложности.',
+        'Birthday2018plus_LostExpedition_51-61_UnknownSeas_Sub3' => 'Их поселения стали символами надежды. Оттуда поиски римской родины продолжались.',
+        'Birthday2018plus_LostExpedition_51-61_UnknownSeas_Sub4' => 'Несмотря на то что знамя было изрезано шрамами от бесчисленных сражений, оно устояло. Это указывает на финальный поход экспедиции вглубь материка.',
+        'Birthday2018plus_LostExpedition_51-61_UnknownSeas_Sub5' => 'За горами обнаружены следы гораздо более крупного поселения. Завершающий этап экспедиции уже совсем близок.',
+        'Birthday2018plus_LostExpedition_62-80_Following_Main' => 'Шаг за шагом маршрут экспедиции становится всё более ясным. Их след не остыл — просто он уходит дальше, чем кто-либо мог себе представить.',
+        'Birthday2018plus_LostExpedition_62-80_Following_Sub1' => 'В письме подтверждается, что при отплытии флот был хорошо подготовлен, а всего его участники бодры духом. Тинания полагает, что следующие улики можно найти у места, где все корабли собрались перед великим плаванием.',
+        'Birthday2018plus_LostExpedition_62-80_Following_Sub2' => 'Записи готовы. Среди них найдено упоминание о первом причаливании флота после выхода из порта — многообещающая зацепка, которую стоит проверить.',
+        'Birthday2018plus_LostExpedition_62-80_Following_Sub3' => 'Этот лагерь служил лишь временным убежищем. Среди руин вы обнаруживаете свидетельства того, что флот продолжил движение на запад, прежде чем свернуть лагерь.',
+        'Birthday2018plus_LostExpedition_62-80_Following_Sub4' => 'Внутри маяка спрятан ещё один фрагмент карты экспедиции. Маршрут теперь проглядывается все четче, но одна важная деталь по-прежнему отсутствует.',
+        'Birthday2018plus_LostExpedition_62-80_Following_Sub5' => 'Дневник штурмана свидетельствует о решительном курсе, пролегающем далеко за пределами знакомых вод. Тинания опасается, что самые сложные испытания еще впереди.',
+        'Birthday2018plus_LostExpedition_62-80_Hub' => 'Благодаря вашим стараниям нам удалось узнать о судьбе экспедиции Октавиана. И хотя его конечная цель по-прежнему остается загадкой, одно не вызывает сомнений: куда бы их ни привело странствие, он и его спутники несли в сердцах дух поселенцев — они основали новые поселения и оставили для будущих поколений наследие, которое нисколько не угасло даже спустя многие годы, после того как они впервые отправились за горизонт.
+Закрывая последний журнал, Тинания улыбается. «Годами я искала ответы. Сегодня я нашла нечто ещё более ценное. Его путешествие не прошло даром — оно продолжает жить в каждом рассказе, в каждом поселении и в каждом человеке, который готов отправиться навстречу неизведанному. Спасибо вам за то, что помогли мне узнать о его наследии.»',
+        'Birthday2018plus_LostExpedition_62-80_Legacy_Main' => 'Тайна раскрыта. Хотя время многое от нас скрыло, мужество Октавиана и его соратников продолжает жить в каждом основанном ими поселении.',
+        'Birthday2018plus_LostExpedition_62-80_Legacy_Sub1' => 'Эти руины некогда были зданиями, построенными римлянами, но они рассказывают лишь часть истории. За ними раскинулось оживленное поселение.',
+        'Birthday2018plus_LostExpedition_62-80_Legacy_Sub2' => 'Колонисты бережно сохранили историю экспедиции. Среди архивов экипажа найден дневник, принадлежащий самому Октавиану.',
+        'Birthday2018plus_LostExpedition_62-80_Legacy_Sub3' => 'Журнал рассказывает о непоколебимой решимости, но его последние страницы заканчиваются на моменте ещё до начала самого путешествия. Остается лишь одна зацепка.',
+        'Birthday2018plus_LostExpedition_62-80_Legacy_Sub4' => 'Достиг ли Октавиан римской родины? Возможно, мы об этом уже никогда не узнаем. Однако его величайшим достижением никогда не была конечная точка приключения — напротив, им стали поселения, для которых он послужил вдохновением, люди, которых он сплотил, а также сохранившееся до наших дней наследие. Тинания благодарит вас. Она уверена, что эту историю потомки никогда не забудут.',
+        'Birthday2018plus_LostExpedition_62-80_UnknownSeas_Main' => 'Завеса тайны сгущается. Хотя флот и распался, его судьба не закончилась безнадежной трагедией. Выжившие продолжили дело Октавиана.',
+        'Birthday2018plus_LostExpedition_62-80_UnknownSeas_Sub1' => 'Щедрость чужеземцев помогла римлянам пережить время, когда их собственные запасы начали иссякать. Их признательность отражена на каждой странице дневника.',
+        'Birthday2018plus_LostExpedition_62-80_UnknownSeas_Sub2' => 'Многие корабли утонули, но некоторые все же остались. Выжившие собрались на неизвестных берегах, полные решимости продолжать борьбу за жизнь, несмотря на все сложности.',
+        'Birthday2018plus_LostExpedition_62-80_UnknownSeas_Sub3' => 'Их поселения стали символами надежды. Оттуда поиски римской родины продолжались.',
+        'Birthday2018plus_LostExpedition_62-80_UnknownSeas_Sub4' => 'Несмотря на то что знамя было изрезано шрамами от бесчисленных сражений, оно устояло. Это указывает на финальный поход экспедиции вглубь материка.',
+        'Birthday2018plus_LostExpedition_62-80_UnknownSeas_Sub5' => 'За горами обнаружены следы гораздо более крупного поселения. Завершающий этап экспедиции уже совсем близок.',
         'BirthdayBasicsMain' => 'Так вам удалось освоить азы этого состязания. Мои поздравления. Знаете ли, вообще-то, есть множество способов получать эти шары - выполнять задания, улучшать здания и так далее и тому подобное. Попробуйте найти все возможные способы! Как? Ну, мне кажется, для этого нужно просто играть! Привет, привет, привет...',
         'BirthdayBasicsSub1' => 'Посмотрите, как они прекрасны! Теперь вам, должно быть, интересно, где их достать, верно? Привет, привет, привет... Существует целый ряд способов, знаете ли. Сейчас покажу!',
         'BirthdayBasicsSub2' => 'Славная работа! Нельзя сразу понять, заработали вы шары или нет. Периодически вы будете получать сообщение о том, сколько шаров вы накопили. Так что не забывайте проверять почту. А я пока познакомлю вас еще с одним способом зарабатывать шары.',
@@ -16733,6 +16836,21 @@ F11 - полноэкранный режим
         'BuffQuestVigilante_Sub5' => 'Генералы наперебой ее хвалят. Они говорят, что ей даже удалось разработать хитрую стратегию боя так, чтобы не потерять ни единого солдата! Поэтому она будет отличным генералом, и они готовы найти для нее место в своих рядах.',
         'BuffQuestWeddingCake' => 'Это самый грандиозный торт из всех, что я видел в жизни. Уверен, и король, и гости будут в полном восторге. Как думаете, они заметят, если я сейчас съем маленький кусочек?',
         'BuffQuestWeddingInvitation' => 'Какая прекрасная церемония! О, пожалуйста, не волнуйтесь, я всегда плачу на свадьбах… Король доволен нашими стараниями и желает отблагодарить нас. Сегодня мы заключили прочный союз.',
+        'BuffQuestWeddingStory1_A' => 'Клянусь вам, эта история не вымысел!
+И я ещё не закончил.',
+        'BuffQuestWeddingStory1_B' => 'В конце концов кольцо так и не нашли, и пришлось заказывать ещё одно.
+Так случилось, что ювелиру не хватало необходимого металла, из-за чего жених и его друзья взялись за лопаты и кирки, чтобы самим добыть нужные минералы.',
+        'BuffQuestWeddingStory1_C' => 'Затем ко всеобщему удивлению собака сама вышла и положила потерянное кольцо к ногам невесты. Таким образом извлечённые из недр земли богатства удалось сохранить и приберечь на будущее, что стало неожиданной милостью судьбы.',
+        'BuffQuestWeddingStory2_A' => 'Клянусь вам, эта история не вымысел!
+И я ещё не закончил.',
+        'BuffQuestWeddingStory2_B' => 'Таким образом, определился порядок: сначала нужно подготовить ткань, затем высадить деревья и только после этого вплести полотно в ветви, чтобы воплотить задуманное в жизнь.',
+        'BuffQuestWeddingStory2_C' => 'Лишь в самом конце всем стало ясно, что у молодых саженцев ещё даже нет ветвей, которые можно было бы заплести. 
+Но к тому времени деревья уже крепко стояли в земле, ткань подготовлена, и невеста была абсолютно довольна планами того, как всё будет выглядеть в один прекрасный день.',
+        'BuffQuestWeddingStory3_A' => 'Клянусь вам, эта история не вымысел!
+И я ещё не закончил.',
+        'BuffQuestWeddingStory3_B' => 'Жнецы были отправлены в поле и на луг с чёткими указаниями, но вернулись лишь с охапками подсолнухов.',
+        'BuffQuestWeddingStory3_C' => 'Раз так вышло, цветы решили использовать с большей пользой.
+Их семена отжали для получения масла, а необходимые букеты сделали из других цветов.',
         'BuffQuestWolfPuppy' => 'Маленький волчонок и девочка уже привыкли друг к другу. Волчонок уже не сможет выжить в дикой природе. Полагаю, он станет отличным спутником для девочки!',
         'BuffQuestWolfPuppy_Sub1' => 'Ему становится лучше. Тепла от камина достаточно, чтобы согреть малыша.',
         'BuffQuestWolfPuppy_Sub2' => 'Очистить раны и наложить на них повязки было хорошей идеей. Маленькому волчонку теперь просто нужно отдохнуть.',
@@ -16746,12 +16864,20 @@ F11 - полноэкранный режим
         'Buff_Adv_StormRecovery_SubQuest04' => 'Отличная работа! В этих развалинах давно нужно было навести порядок!',
         'Buff_Adv_StormRecovery_SubQuest05' => 'Жители деревни в восторге от новых построек. Говорят, они намного лучше прежних.',
         'Buff_Adv_StormRecovery_SubQuest06' => 'Жители деревни в восторге от новых построек. Говорят, они намного лучше прежних.',
+        'BuiBonus_AuroraTower_Repeatable' => 'Ничто так не зажигает огонь в молодых сердцах, как проникновенная история.',
+        'BuiBonus_AuroraTower_Timer_Loop1026' => 'Ничто так не зажигает огонь в молодых сердцах, как проникновенная история.',
+        'BuiBonus_AuroraTower_Timer_Loop1080' => 'Ничто так не зажигает огонь в молодых сердцах, как проникновенная история.',
+        'BuiBonus_AuroraTower_Timer_Loop864' => 'Ничто так не зажигает огонь в молодых сердцах, как проникновенная история.',
+        'BuiBonus_AuroraTower_Timer_Loop918' => 'Ничто так не зажигает огонь в молодых сердцах, как проникновенная история.',
+        'BuiBonus_AuroraTower_Timer_Loop972' => 'Ничто так не зажигает огонь в молодых сердцах, как проникновенная история.',
         'BuiBonus_BalloonMarket_miniStart' => 'Ура! Поздравляем! Вы получаете случайный усилитель воздушных шаров за воздаяние ярмарке воздушных шаров. Возвращайтесь за новым усилителем через неделю.',
         'BuiBonus_BalloonMarket_mini_Timer' => 'Вы вовремя! Мастер закончил создавать воздушный шар. Перейдите к воздаянию ярмарке воздушных шаров, а потом воспользуйтесь звездным меню.',
         'BuiBonus_BalloonMarket_mini_Timer_Loop' => 'Вы вовремя! Мастер закончил создавать воздушный шар. Перейдите к воздаянию ярмарке воздушных шаров, а потом воспользуйтесь звездным меню.',
-        'BuiBonus_DimensionalRift_Start' => 'NT: Oh dear!
-
-We should nail down that quicky window with planks or something.',
+        'BuiBonus_Depositorium_Start' => 'Чудесно! Теперь закройте это окно, и ваша находка появится в звёздном меню. И не забывайте, что если не забрать найденные ящики, вы не сможете отправиться на поиски новых ящиков. Совершайте прогулку каждые пару дней, чтобы сбрасывать время ожидания.',
+        'BuiBonus_Depositorium_Timer' => 'Пришло время для прогулки по депозиторию. Просто нажмите на строение и заберите находку! И не забудьте после этого проверить звёздное меню!',
+        'BuiBonus_Depositorium_Timer_Loop' => 'Пришло время для прогулки по депозиторию. Просто нажмите на строение и заберите находку! И не забудьте после этого проверить звёздное меню!',
+        'BuiBonus_FluffyLogistics_Loop' => 'Все яйца доставлены...
+Наконец-то можно снять этот костюм и расслабиться.',
         'BuiBonus_FlyingHouse_Start' => 'Отлично, теперь можно закрыть окно задания и получить найденное через звездное меню. Не забудьте поговорить с дозорным, иначе новые поиски всяких классных штуковин не начнутся.',
         'BuiBonus_FlyingHouse_Timer' => 'Ого, дозорный опять что-то нашел! Хотите узнать, что именно? Тогда нанесите ему визит, а потом воспользуйтесь звездным меню.',
         'BuiBonus_FlyingHouse_Timer_Loop' => 'Ого, дозорный опять что-то нашел! Хотите узнать, что именно? Тогда нанесите ему визит, а потом воспользуйтесь звездным меню.',
@@ -16798,26 +16924,58 @@ We should nail down that quicky window with planks or something.',
         'BuiBonus_GiftGhostShip_Start' => 'Спасибо, что загляну-у-ули! Надеюсь, моя команда не очень вас напугала. А эта прядка всегда была седой? Ха-ха, я так шучу-у-у!
 Мы еще не раз вернемся сюда, постараемся быть на месте каждую неделю. Но что требовать от существ, которые постоянно исчезают?',
         'BuiBonus_HauntedMansion_Start' => 'Ох... действительно обитают. Вы потревожили призраков, и теперь они наводнили весь остров. К счастью, эти существа дружелюбны.',
-        'BuiBonus_WitchCovenUpgrade_Start' => 'NT: Who... Who goes there?! 
+        'BuiBonus_Offshorelighthouse_Start' => 'Не забывайте навещать его каждый день, иначе пропустите улов.',
+        'BuiBonus_OreRefinery_Bronze_02' => 'Посмотрите, как блестят эти слитки.
+Улучшение, возможно, простое, но оно доказывает, что даже саму переработку можно улучшить.',
+        'BuiBonus_OreRefinery_Bronze_03' => 'Отличная работа, мэр.
+Теперь медь льётся из печи как вода, а рабочие получают вдвое больше слитков при куда меньших усилиях.',
+        'BuiBonus_OreRefinery_Gold_01' => 'Прелестно.
+Наше золото настолько отполированное, что в нем даже отражается свет от свечей.
+Торговцы, которые прежде насмехались над нашим перерабатывающим заводом, теперь сами спешат заключить с нами контракты.',
+        'BuiBonus_OreRefinery_Gold_02' => 'Великолепно.
+Потери резко сократились, а чистота каждого золотого слитка превосходит все прошлые результаты.',
+        'BuiBonus_OreRefinery_Gold_03' => 'Теперь перерабатывающий завод производит золото с такой скоростью и точностью, о которых всего несколько сезонов назад нельзя было и мечтать.
+На этом месте раньше был пустырь со строительными лесами. Сейчас это центр благополучия всего города.',
+        'BuiBonus_OreRefinery_Iron_01' => 'Прочное железо, годное уже не для простых крестьянских инструментов, а для оружия и доспехов. Городская охрана уже хвалится, что следующие клинки выкуют из железа с перерабатывающего завода.
+Ваши вложения начинают укреплять мощь этого города.',
+        'BuiBonus_OreRefinery_Iron_02' => 'Пламя горит жарче и ровнее, чем когда-либо.
+Процесс производства железа перестал быть опасным и дает стабильные результаты.',
+        'BuiBonus_OreRefinery_Iron_03' => 'Теперь перерабатывающий завод работает почти без отходов. Мы стабильно получаем железо даже из руды низкого качества, а склады пополняются значительно быстрее.
+Мэр, вы добились того, чтобы обычные опыты с переработкой превратились в настоящее мастерство.',
+        'BuiBonus_OreRefinery_Platinum_01' => 'Платина сияет бледным блеском, не похожим на блеск золота или серебра. Даже небольшое количество платины ценится не меньше, чем целые повозки обычных металлов.
+Перерабатывающий завод достиг высот, которые прежде казались невозможными.',
+        'BuiBonus_OreRefinery_Platinum_02' => 'Перерабатывающий завод начал стабильно справляться с переработкой платины. Чистота слитков на выходе поражает.
+Слава о наших достижениях разносится далеко за пределы соседних земель.',
+        'BuiBonus_OreRefinery_Platinum_03' => 'Наконец-то... Вот оно, совершенство.
+Пламя чистое и ровное, механизмы не дают ни малейшего сбоя, а в дело идет каждая крупица руды и каждая искра топлива.
+Когда-то у нас были лишь разрозненные свитки да смутные догадки. Теперь перед нами величайший перерабатывающий завод, какой знали эти земли.',
+        'BuiBonus_OreRefinery_Titanium_01' => 'Титан оказался легче железа, но прочнее стали. Даже лучшие кузнецы не могли до конца поверить, что держат в руках такой диковинный материал.
+Мы стоим на пороге новой эпохи ремесла.',
+        'BuiBonus_OreRefinery_Titanium_02' => 'Раньше механизмы постоянно выходили из строя под нагрузкой, а теперь работают без сбоев. И это до сих пор кажется невероятным.
+Рабочие говорят о перерабатывающем заводе с уважением и опаской, словно об огромном механическом звере, которого вам удалось укротить.',
+        'BuiBonus_OreRefinery_Titanium_03' => 'Переработка титана идет с такой эффективностью, о которой никто не мог даже мечтать.
+Город стал образцом промышленного мастерства.',
+        'BuiBonus_OreRefinery_Unlock_01' => 'Поразительно... Эти отметки, эти схемы...
+Для такого сооружения понадобятся каменный фундамент, большие чаны, мехи, трубы и рабочие руки.
+Начнем строительство, пока в их голову не закрались сомнения.',
+        'BuiBonus_OreRefinery_Unlock_02' => 'Ха! Слышите этот грохот? Так звучит прогресс. Жаль только, что печь горит слишком слабо.
+Уж не знаю, чем питаются те великие перерабатывающие заводы в дальних краях, но обычных дров явно недостаточно.
+Зверь создан, мэр. Осталось выяснить, чем его кормить.',
+        'BuiBonus_OreRefinery_Unlock_03' => 'Так вот что это за вещество... Густое, с резким запахом – а горит жарче любого сухого дуба.
+Этим механизмам явно требуется что-то более продвинутое, чем обычное пламя и примитивные заменители топлива. Похоже, этот завод был рассчитан на какое-то особое топливо, принцип работы которого нам еще предстоит понять.',
+        'BuiBonus_OreRefinery_Unlock_04' => 'Поразительно. Печи горят ровнее. Количество получаемой руды растет.
+Но мне все же кажется, что мы лишь в начале пути к настоящей промышленности.',
+        'BuiBonus_OreRefinery_Upgrades_01' => 'Невероятно. Дробилки вращаются без сбоев, тигли выдерживают жар, а над крышами тянутся ровные струйки дыма.
+На краткий миг мне даже показалось, что мы полностью овладели этим ремеслом.',
+        'BuiBonus_OreRefinery_Upgrades_02' => 'Было время, когда этот город знал лишь дым простых кузниц да звон изношенных молотов.
+Взгляните на него теперь. Здесь день и ночь грохочут огромные печи.',
+        'BuiBonus_OreRefinery_Upgrades_03' => 'Ученые, торговцы и кузнецы приходят сюда издалека, чтобы своими глазами увидеть, как работает перерабатывающий завод.
 
-Leave us alone. We are busy here.
-
-Come back when you have something meaning to say or trade.',
-        'BuiBonus_WitchCovenUpgrade_Upgrade1' => 'NT: Ah yes. These will do nicely.
-
-Lots of new recipes and conjurations.
-
-Stop by our coven whenever you are in need of our services.
-
-We would gladly provide aid... For a price...',
-        'BuiBonus_WitchCovenUpgrade_Upgrade2' => 'NT: Bwahaha! My sisters will make good use of these.
-
-Visit our coven if when you are ready to harvest the rewards of your work.',
-        'BuiBonus_WitchCoven_CancelBLoodustA' => 'NT: Always a pleasure doing business with you Mayor... Bwahahaha',
-        'BuiBonus_WitchCoven_CancelBLoodustB' => 'NT: Always a pleasure doing business with you Mayor... Bwahahaha',
-        'BuiBonus_WitchCoven_CancelRisenArmyA' => 'NT: Always a pleasure doing business with you Mayor... Bwahahaha',
-        'BuiBonus_WitchCoven_CancelRisenArmyB' => 'NT: Always a pleasure doing business with you Mayor... Bwahahaha',
-        'BuiBonus_WitchCoven_PageReward_Repeatable' => 'NT: Always a pleasure doing with business with you...',
+Он стал памятником смелым устремлениям, знаниям и неизбежному прогрессу.
+Народ будет помнить это достижение еще долго после того, как нас не станет.
+Ведь это не просто перерабатывающий завод,
+а наследие, которое мы оставим после себя.',
+        'BuiBonus_Smokehouse_MiniStart' => 'Превосходно! Вы получили копченый рыбный стейк от воздаяния коптильне. Возвращайтесь через день, чтобы забрать следующий.',
         'CQ1M1_FourWinds_Tcl1' => 'Все позади! Мы пережили ураган! Спокойное течение жизни было нарушено, и наши люди еще не скоро смогут оправиться от такого потрясения. Но, тем не менее, вы отлично поработали. Король Дэмьен будет очень вам благодарен, не сомневайтесь!',
         'CQ1M1_FourWinds_Tcl2' => 'Все позади! Мы пережили ураган! Спокойное течение жизни было нарушено, и наши люди еще не скоро смогут оправиться от такого потрясения. Но, тем не менее, вы отлично поработали. Король Дэмьен будет очень вам благодарен, не сомневайтесь!',
         'CQ1M1_FourWinds_Tcl3' => 'Все позади! Мы пережили ураган! Спокойное течение жизни было нарушено, и наши люди еще не скоро смогут оправиться от такого потрясения. Но, тем не менее, вы отлично поработали. Король Дэмьен будет очень вам благодарен, не сомневайтесь!',
@@ -17312,7 +17470,6 @@ Visit our coven if when you are ready to harvest the rewards of your work.',
         'DaiANewTreasure' => 'Вы смогли собрать всю карту. Но в этот раз вашему кузену придется искать сокровища самостоятельно.',
         'DaiASignOfEsteem' => 'Поселенцы и представить себе не могли такую щедрость. Они счастливы, что попали к вам.',
         'DaiASignOfPeace' => 'Король высоко оценил ваше участие. Он надеется, что и другие последуют вашему положительному примеру, и шлет вам благодарности.',
-        'DaiAdventureSeasonMercenary' => 'NT: This is not the end. There might be more Adventure Relics to collect but take some rest and continue your adventure tomorrow.',
         'DaiAdventures' => 'Многочисленные новые истории, которые ваши бойцы смогут рассказывать друг другу, немного ободрят их.',
         'DaiAlienation' => 'Наши войска будут представлять остров! Король будет счастлив!',
         'DaiAnimalMarket' => 'Ваш кузен очень благодарен за помощь. В знак благодарности он отправил вам несколько безделушек. Ну, лучше, чем ничего.',
@@ -18093,8 +18250,6 @@ Visit our coven if when you are ready to harvest the rewards of your work.',
         'ExpDefeatMeleeCamp' => 'Одержите первую победу над лагерем разбойников',
         'ExpDefeatSectorBoss' => 'Отлично! Наша тактика сработала! Предводитель этого сектора побежден!',
         'ExpUseDistract' => 'Смотрите! Они бегут! Отличная работа. В секторе не осталось врагов, и наши маршалы могут двигаться дальше.',
-        'FinalGuildFest_OpenPanel2' => 'NT: Guild Fest is over for now, take a bow,
-Until the next time, we’ll rise somehow.',
         'GarrunQ1' => 'Первый этап нашей атаки завершен. Пора нанести последний удар!',
         'GarrunQ2' => 'Побежденный Гаррун в вашей власти. Пора освободить пушистых пленников.',
         'GuiDaiANobleArgument' => 'Мы сделали все возможное, и, кажется, нам удалось успокоить духов. Думаю, мы отлично поработали, и нам стоит подумать о создании команды по управлению эмоциями... Правда?',
@@ -18796,16 +18951,7 @@ Until the next time, we’ll rise somehow.',
 Шедевр стоит и радует прохожих. С ним даже день становится погожим!',
         'GuildFest_Day9_Turnin' => 'Фабрика застыла, не бежит конвейер. Можно сделать выдох - и махнуть на север.
 Задание выполнено, товары готовы. Стоят и ждут рядами трехметровыми!',
-        'GuildFest_ExtraBuilding' => 'NT: Now that guests are settled and well cared too, Guild Fest ignites, with an extra queue. Guilds come together, in friendly fight, competing with passion from morning to night.',
-        'GuildFest_ExtraBuilding2' => 'NT: You’ve conquered the quest, what a brilliant feat,
-Extra accommodations have made it sweet.
-Tokens are flowing, you’ve proven your worth,
-Guild Fest shines thanks to your hard work!',
-        'GuildFest_GuildSize2' => 'NT: You’ve joined a guild, and made it complete,
-With two members or more, the challenge you’ll beat.',
         'GuildFest_OpenPanel' => 'А вот и славная награда. Дары отменные, что надо. И если постараться, заполучить их сможете. Не вздумайте сдаваться.',
-        'GuildFest_Tutorial_Main' => 'NT: No longer lonely, you’ve found where you belong,
-Together you’ll rise, where friendships are strong!',
         'HQ1_ThePumpkinMaster' => 'Да, отлично. У нас достаточно тыкв, чтобы продолжить подготовку к бою с Полым Человеком. Вот, я как раз нашел для вас тыквы.',
         'HQ1h_TendingTheSpookyCrops' => 'Отлично, теперь тыковки вырастут быстрее! Вот, я нашел для вас еще тыквы - оставьте их себе.',
         'HQ2_TricksAndTreats' => 'Надеюсь, ваш друг не рассердится. Это же всего лишь испытания! Впрочем, очень даже успешные. Теперь мы знаем истинную силу темноты. Мы на шаг ближе к победе над Полым Человеком. О, смотрите, что я нашел! Возьмите эти тыквы себе.',
@@ -19027,9 +19173,6 @@ Together you’ll rise, where friendships are strong!',
         'HW2017plus_ThePumpkinMasterMain' => 'Отлично! Вы поняли, как устроен Хэллоуин. Эти знания помогут вам собрать очень много тыкв. Удачи!',
         'HW2017plus_ThePumpkinMasterSub1' => 'Да, эти кладбища именно то, что нужно. Отличный способ добывать тыквы. Только знайте: вы можете купить лишь определенное количество кладбищ. Они не бесконечны.',
         'HW2017plus_ThePumpkinMasterSub2' => 'Ух ты, у вас получилось! Все тыквы собраны. Теперь можете обменять их у купца на предметы или приобрести за них дорогие ресурсы у других игроков. Вам решать.',
-        'HW2017plus_ZombieInvaders_Intro1' => 'NT: What are these creatures and where do the come from?',
-        'HW2017plus_ZombieInvaders_Reach50' => 'NT: Unholy structures have materialized our of nowhere, and monstrosities are crawling out from them.',
-        'HW2017plus_ZombieInvaders_Repeatable_Timer' => 'NT: It is just as a I feared... They just keep coming.',
         'HWCampaign1_Adv1_Main' => 'Итак, вы решили проблему.
 У меня нехорошее предчувствие. Мне кажется, что не стоит уходить сейчас, но не могу понять, в чем дело. Нам здесь больше нечего делать, так что давайте попрощаемся с горожанами и отправимся в путь.',
         'HWCampaign1_Adv1_Sub1' => 'Вот это битва! Но нельзя терять времени. Нужно действовать, пока не появились големы!',
@@ -19160,7 +19303,6 @@ Together you’ll rise, where friendships are strong!',
         'NPCQuestSub2' => 'Как щедро с вашей стороны! Не терпится увидеть это в деле! Вернусь, когда закончу со вспашкой и посевом.',
         'NPCQuestSub3' => 'Время пришло: пшеница выросла, и можно собирать урожай. Я очень благодарен вам за помощь. Я знал, что на вас можно рассчитывать.',
         'NPCQuestSub4' => 'Что ж, думаю, этого достаточно. Нам должно хватить пшеницы, чтобы пережить зиму и даже немного больше.',
-        'Once again we must continue our valiant effort to prevent these vermin from spreading into mainland' => 'NT: Will this madness ever end?',
         'PremiumSub1' => 'Видите? Все просто. Теперь, когда у вас есть премиум-статус, у вас появились определенные преимущества. Дайте-ка я подробно расскажу о них.',
         'PremiumSub2' => 'Здорово, правда? Ваши друзья будут вас обожать! Конечно, это срабатывает и в том случае, если усиление вам предоставляет один из друзей с активным премиум-статусом.',
         'PremiumSub3' => 'Ну, что скажете? Неплохо, а? Премиум-статус - вещь выгодная, особенно если отправляетесь в трудные приключения. Но и за завершение легких приключений вполне хорошая награда.',
@@ -19575,6 +19717,84 @@ Together you’ll rise, where friendships are strong!',
         'Soccer2018plus_Sub12' => 'Мы в финале! Я не могу в это поверить! Мы дошли до финала! Вот это игра! Мне всегда казалось, что с этой командой мы добьемся отличных результатов, но видеть это своими глазами… Я так волнуюсь!',
         'Soccer2018plus_Sub13' => 'Какой матч! Какой турнир! Противник был невероятно силен, но нам удалось выбиться в лидеры и получить титул чемпиона!
 Фанаты еще долго будут помнить этот день.',
+        'Soccer2018plus_VictoryByDesign_26-46_Application_Main' => 'Прием заявок завершен. К сожалению, наши усилия не увенчались успехом, и нас не выбрали для проведения игр. Однако теперь мы можем полностью сосредоточиться на победе.',
+        'Soccer2018plus_VictoryByDesign_26-46_Application_Sub1' => 'Усилия принесли плоды, и агитационная кампания прошла успешно. Теперь народ поддерживает нашу заявку.',
+        'Soccer2018plus_VictoryByDesign_26-46_Application_Sub2' => 'У нас получилось! Заявка готова и вышла весьма удачной.',
+        'Soccer2018plus_VictoryByDesign_26-46_Application_Sub3' => 'Презентация прошла как нельзя лучше! Комитет был впечатлен. Остается лишь дождаться официального подтверждения нашего статуса принимающей стороны – это, скорее всего, будет чистой формальностью.',
+        'Soccer2018plus_VictoryByDesign_26-46_Application_Sub4' => 'Нашу заявку отклонили. Победил соперник с более слабой заявкой. Какое разочарование. Теперь нужно прийти в себя после неудачи и понять, что пошло не так.',
+        'Soccer2018plus_VictoryByDesign_26-46_Determination_MainA' => 'Наши агенты действовали быстро и без колебаний. Они позаботились о том, чтобы ничто не помешало команде одержать решающую победу на играх. Как говорится, цель оправдывает средства.',
+        'Soccer2018plus_VictoryByDesign_26-46_Determination_MainB' => 'Мы разоблачили махинации вокруг игр, а команда с честью, решимостью и настоящим мастерством пробилась к заслуженной победе в финале.',
+        'Soccer2018plus_VictoryByDesign_26-46_Determination_Sub1A' => 'Подкуп сработал, и должностное лицо незаметно повлияло на несколько решений в нашу пользу. Победы были не вполне заслуженными, но зато команда быстро поднялась в рейтинге и заняла куда более высокое место в играх.',
+        'Soccer2018plus_VictoryByDesign_26-46_Determination_Sub1B' => 'Наши расследователи нашли зацепки, указывающие на тайную сеть, которая может стоять за махинациями вокруг игр. Стоит продолжить расследование.',
+        'Soccer2018plus_VictoryByDesign_26-46_Determination_Sub2A' => 'Наши агенты нашли компромат на нескольких несговорчивых должностных лиц и использовали его, чтобы склонить их на нашу сторону. Противники замолчали, препятствия исчезли, а команда получила решающее преимущество в состязании.',
+        'Soccer2018plus_VictoryByDesign_26-46_Determination_Sub2B' => 'Наши агенты успешно внедрились в тайную сеть и собрали неопровержимые доказательства подкупа, шантажа и саботажа во время игр. Теперь осталось понять, как лучше использовать эти сведения против мошенников.',
+        'Soccer2018plus_VictoryByDesign_26-46_Determination_Sub3A' => 'Наши агенты вмешались в снабжение нескольких команд соперников, и те выступили слабее. Благодаря этому наша команда одержала несколько побед и поднялась в рейтинге еще выше.',
+        'Soccer2018plus_VictoryByDesign_26-46_Determination_Sub3B' => 'Тайная сеть раскрыта, а те, кто стоял за махинациями вокруг игр, ответят за свои поступки. Ваша решимость и доказательства, собранные нашими агентами, помогли вернуть играм справедливость и прозрачность.',
+        'Soccer2018plus_VictoryByDesign_26-46_Determination_Sub4A' => 'Подозрительно действенный заряд энергии сделал свое дело: наши спортсмены одержали победу и принесли поселению чемпионский титул!',
+        'Soccer2018plus_VictoryByDesign_26-46_Determination_Sub4B' => 'Команда получила лучшее снаряжение и безоговорочную поддержку поселения, блестяще выступила и одержала победу благодаря их мастерству и честной борьбе.',
+        'Soccer2018plus_VictoryByDesign_26-46_Hub' => 'Дружеские состязания подошли к концу. Несмотря на неудачи, трудности и непростые решения, наше королевство одержало победу. Теперь пора забрать награду.',
+        'Soccer2018plus_VictoryByDesign_26-46_Participation_Main' => 'Несмотря на все усилия, команда не заняла место, на которое мы рассчитывали. Именно в этот момент поступило сомнительное предложение, и вы решили действовать. Путь выбран, и теперь придется пройти его до конца.',
+        'Soccer2018plus_VictoryByDesign_26-46_Participation_Sub1' => 'Специалисты проанализируют выступление нашей команды и, надеемся, выяснят причины таких разочаровывающих результатов.',
+        'Soccer2018plus_VictoryByDesign_26-46_Participation_Sub2' => 'Наша группа расследователей уже изучает тревожные события вокруг игр. Будем верить, что их отчет прольет свет на нарушения и поможет вернуть доверие к состязаниям.',
+        'Soccer2018plus_VictoryByDesign_26-46_Participation_Sub3a' => 'Мы заключили сделку и внесли требуемую плату. Теперь те, кто действует за кулисами, помогут нам подняться в рейтинге и добиться победы.',
+        'Soccer2018plus_VictoryByDesign_26-46_Participation_Sub3b' => 'Мы отказались от предложения и отправили группу расследователей, чтобы собрать больше сведений о закулисных силах. Мы разоблачим их и добьемся победы честным путем.',
+        'Soccer2018plus_VictoryByDesign_26-46_Preparation_Main' => 'Подготовка завершена. Наша команда отлично подготовлена и обладает всей необходимой поддержкой. Игры должны пройти гладко. Пора побеждать!',
+        'Soccer2018plus_VictoryByDesign_26-46_Preparation_Sub1' => 'Команда собрана. Лучшие из лучших готовы продемонстрировать свои способности.',
+        'Soccer2018plus_VictoryByDesign_26-46_Preparation_Sub2' => 'Благодаря упорным тренировкам и строгой дисциплине команда готова выступить на высшем уровне и этим прославить наше поселение.',
+        'Soccer2018plus_VictoryByDesign_26-46_Preparation_Sub3' => 'Благодаря вашим усилиям команда хорошо подготовленных судей готова следить за соблюдением правил игр. Теперь каждое состязание будет проходить честно и на уровне, достойном настоящих чемпионов.',
+        'Soccer2018plus_VictoryByDesign_26-46_Preparation_Sub4' => 'Благодаря вашим стараниям на играх удастся поддерживать безопасность и порядок. Опытные сотрудники по работе с болельщиками и дисциплинированная стража из нашего поселения уже готовы помогать организаторам, а также защищать гостей и участников на протяжении всех празднеств.',
+        'Soccer2018plus_VictoryByDesign_47-61_Application_Main' => 'Прием заявок завершен. К сожалению, наши усилия не увенчались успехом, и нас не выбрали для проведения игр. Однако теперь мы можем полностью сосредоточиться на победе.',
+        'Soccer2018plus_VictoryByDesign_47-61_Application_Sub1' => 'Усилия принесли плоды, и агитационная кампания прошла успешно. Теперь народ поддерживает нашу заявку.',
+        'Soccer2018plus_VictoryByDesign_47-61_Application_Sub2' => 'У нас получилось! Заявка готова и вышла весьма удачной.',
+        'Soccer2018plus_VictoryByDesign_47-61_Application_Sub3' => 'Презентация прошла как нельзя лучше! Комитет был впечатлен. Остается лишь дождаться официального подтверждения нашего статуса принимающей стороны – это, скорее всего, будет чистой формальностью.',
+        'Soccer2018plus_VictoryByDesign_47-61_Application_Sub4' => 'Нашу заявку отклонили. Победил соперник с более слабой заявкой. Какое разочарование. Теперь нужно прийти в себя после неудачи и понять, что пошло не так.',
+        'Soccer2018plus_VictoryByDesign_47-61_Determination_MainA' => 'Наши агенты действовали быстро и без колебаний. Они позаботились о том, чтобы ничто не помешало команде одержать решающую победу на играх. Как говорится, цель оправдывает средства.',
+        'Soccer2018plus_VictoryByDesign_47-61_Determination_MainB' => 'Мы разоблачили махинации вокруг игр, а команда с честью, решимостью и настоящим мастерством пробилась к заслуженной победе в финале.',
+        'Soccer2018plus_VictoryByDesign_47-61_Determination_Sub1A' => 'Подкуп сработал, и должностное лицо незаметно повлияло на несколько решений в нашу пользу. Победы были не вполне заслуженными, но зато команда быстро поднялась в рейтинге и заняла куда более высокое место в играх.',
+        'Soccer2018plus_VictoryByDesign_47-61_Determination_Sub1B' => 'Наши расследователи нашли зацепки, указывающие на тайную сеть, которая может стоять за махинациями вокруг игр. Стоит продолжить расследование.',
+        'Soccer2018plus_VictoryByDesign_47-61_Determination_Sub2A' => 'Наши агенты нашли компромат на нескольких несговорчивых должностных лиц и использовали его, чтобы склонить их на нашу сторону. Противники замолчали, препятствия исчезли, а команда получила решающее преимущество в состязании.',
+        'Soccer2018plus_VictoryByDesign_47-61_Determination_Sub2B' => 'Наши агенты успешно внедрились в тайную сеть и собрали неопровержимые доказательства подкупа, шантажа и саботажа во время игр. Теперь осталось понять, как лучше использовать эти сведения против мошенников.',
+        'Soccer2018plus_VictoryByDesign_47-61_Determination_Sub3A' => 'Наши агенты вмешались в снабжение нескольких команд соперников, и те выступили слабее. Благодаря этому наша команда одержала несколько побед и поднялась в рейтинге еще выше.',
+        'Soccer2018plus_VictoryByDesign_47-61_Determination_Sub3B' => 'Тайная сеть раскрыта, а те, кто стоял за махинациями вокруг игр, ответят за свои поступки. Ваша решимость и доказательства, собранные нашими агентами, помогли вернуть играм справедливость и прозрачность.',
+        'Soccer2018plus_VictoryByDesign_47-61_Determination_Sub4A' => 'Подозрительно действенный заряд энергии сделал свое дело: наши спортсмены одержали победу и принесли поселению чемпионский титул!',
+        'Soccer2018plus_VictoryByDesign_47-61_Determination_Sub4B' => 'Команда получила лучшее снаряжение и безоговорочную поддержку поселения, блестяще выступила и одержала победу благодаря их мастерству и честной борьбе.',
+        'Soccer2018plus_VictoryByDesign_47-61_Hub' => 'Дружеские состязания подошли к концу. Несмотря на неудачи, трудности и непростые решения, наше королевство одержало победу. Теперь пора забрать награду.',
+        'Soccer2018plus_VictoryByDesign_47-61_Participation_Main' => 'Несмотря на все усилия, команда не заняла место, на которое мы рассчитывали. Именно в этот момент поступило сомнительное предложение, и вы решили действовать. Путь выбран, и теперь придется пройти его до конца.',
+        'Soccer2018plus_VictoryByDesign_47-61_Participation_Sub1' => 'Специалисты проанализируют выступление нашей команды и, надеемся, выяснят причины таких разочаровывающих результатов.',
+        'Soccer2018plus_VictoryByDesign_47-61_Participation_Sub2' => 'Наша группа расследователей уже изучает тревожные события вокруг игр. Будем верить, что их отчет прольет свет на нарушения и поможет вернуть доверие к состязаниям.',
+        'Soccer2018plus_VictoryByDesign_47-61_Participation_Sub3a' => 'Мы заключили сделку и внесли требуемую плату. Теперь те, кто действует за кулисами, помогут нам подняться в рейтинге и добиться победы.',
+        'Soccer2018plus_VictoryByDesign_47-61_Participation_Sub3b' => 'Мы отказались от предложения и отправили группу расследователей, чтобы собрать больше сведений о закулисных силах. Мы разоблачим их и добьемся победы честным путем.',
+        'Soccer2018plus_VictoryByDesign_47-61_Preparation_Main' => 'Подготовка завершена. Наша команда отлично подготовлена и обладает всей необходимой поддержкой. Игры должны пройти гладко. Пора побеждать!',
+        'Soccer2018plus_VictoryByDesign_47-61_Preparation_Sub1' => 'Команда собрана. Лучшие из лучших готовы продемонстрировать свои способности.',
+        'Soccer2018plus_VictoryByDesign_47-61_Preparation_Sub2' => 'Благодаря упорным тренировкам и строгой дисциплине команда готова выступить на высшем уровне и этим прославить наше поселение.',
+        'Soccer2018plus_VictoryByDesign_47-61_Preparation_Sub3' => 'Благодаря вашим усилиям команда хорошо подготовленных судей готова следить за соблюдением правил игр. Теперь каждое состязание будет проходить честно и на уровне, достойном настоящих чемпионов.',
+        'Soccer2018plus_VictoryByDesign_47-61_Preparation_Sub4' => 'Благодаря вашим стараниям на играх удастся поддерживать безопасность и порядок. Опытные сотрудники по работе с болельщиками и дисциплинированная стража из нашего поселения уже готовы помогать организаторам, а также защищать гостей и участников на протяжении всех празднеств.',
+        'Soccer2018plus_VictoryByDesign_62-80_Application_Main' => 'Прием заявок завершен. К сожалению, наши усилия не увенчались успехом, и нас не выбрали для проведения игр. Однако теперь мы можем полностью сосредоточиться на победе.',
+        'Soccer2018plus_VictoryByDesign_62-80_Application_Sub1' => 'Усилия принесли плоды, и агитационная кампания прошла успешно. Теперь народ поддерживает нашу заявку.',
+        'Soccer2018plus_VictoryByDesign_62-80_Application_Sub2' => 'У нас получилось! Заявка готова и вышла весьма удачной.',
+        'Soccer2018plus_VictoryByDesign_62-80_Application_Sub3' => 'Презентация прошла как нельзя лучше! Комитет был впечатлен. Остается лишь дождаться официального подтверждения нашего статуса принимающей стороны – это, скорее всего, будет чистой формальностью.',
+        'Soccer2018plus_VictoryByDesign_62-80_Application_Sub4' => 'Нашу заявку отклонили. Победил соперник с более слабой заявкой. Какое разочарование. Теперь нужно прийти в себя после неудачи и понять, что пошло не так.',
+        'Soccer2018plus_VictoryByDesign_62-80_Determination_MainA' => 'Наши агенты действовали быстро и без колебаний. Они позаботились о том, чтобы ничто не помешало команде одержать решающую победу на играх. Как говорится, цель оправдывает средства.',
+        'Soccer2018plus_VictoryByDesign_62-80_Determination_MainB' => 'Мы разоблачили махинации вокруг игр, а команда с честью, решимостью и настоящим мастерством пробилась к заслуженной победе в финале.',
+        'Soccer2018plus_VictoryByDesign_62-80_Determination_Sub1A' => 'Подкуп сработал, и должностное лицо незаметно повлияло на несколько решений в нашу пользу. Победы были не вполне заслуженными, но зато команда быстро поднялась в рейтинге и заняла куда более высокое место в играх.',
+        'Soccer2018plus_VictoryByDesign_62-80_Determination_Sub1B' => 'Наши расследователи нашли зацепки, указывающие на тайную сеть, которая может стоять за махинациями вокруг игр. Стоит продолжить расследование.',
+        'Soccer2018plus_VictoryByDesign_62-80_Determination_Sub2A' => 'Наши агенты нашли компромат на нескольких несговорчивых должностных лиц и использовали его, чтобы склонить их на нашу сторону. Противники замолчали, препятствия исчезли, а команда получила решающее преимущество в состязании.',
+        'Soccer2018plus_VictoryByDesign_62-80_Determination_Sub2B' => 'Наши агенты успешно внедрились в тайную сеть и собрали неопровержимые доказательства подкупа, шантажа и саботажа во время игр. Теперь осталось понять, как лучше использовать эти сведения против мошенников.',
+        'Soccer2018plus_VictoryByDesign_62-80_Determination_Sub3A' => 'Наши агенты вмешались в снабжение нескольких команд соперников, и те выступили слабее. Благодаря этому наша команда одержала несколько побед и поднялась в рейтинге еще выше.',
+        'Soccer2018plus_VictoryByDesign_62-80_Determination_Sub3B' => 'Тайная сеть раскрыта, а те, кто стоял за махинациями вокруг игр, ответят за свои поступки. Ваша решимость и доказательства, собранные нашими агентами, помогли вернуть играм справедливость и прозрачность.',
+        'Soccer2018plus_VictoryByDesign_62-80_Determination_Sub4A' => 'Подозрительно действенный заряд энергии сделал свое дело: наши спортсмены одержали победу и принесли поселению чемпионский титул!',
+        'Soccer2018plus_VictoryByDesign_62-80_Determination_Sub4B' => 'Команда получила лучшее снаряжение и безоговорочную поддержку поселения, блестяще выступила и одержала победу благодаря их мастерству и честной борьбе.',
+        'Soccer2018plus_VictoryByDesign_62-80_Hub' => 'Дружеские состязания подошли к концу. Несмотря на неудачи, трудности и непростые решения, наше королевство одержало победу. Теперь пора забрать награду.',
+        'Soccer2018plus_VictoryByDesign_62-80_Participation_Main' => 'Несмотря на все усилия, команда не заняла место, на которое мы рассчитывали. Именно в этот момент поступило сомнительное предложение, и вы решили действовать. Путь выбран, и теперь придется пройти его до конца.',
+        'Soccer2018plus_VictoryByDesign_62-80_Participation_Sub1' => 'Специалисты проанализируют выступление нашей команды и, надеемся, выяснят причины таких разочаровывающих результатов.',
+        'Soccer2018plus_VictoryByDesign_62-80_Participation_Sub2' => 'Наша группа расследователей уже изучает тревожные события вокруг игр. Будем верить, что их отчет прольет свет на нарушения и поможет вернуть доверие к состязаниям.',
+        'Soccer2018plus_VictoryByDesign_62-80_Participation_Sub3a' => 'Мы заключили сделку и внесли требуемую плату. Теперь те, кто действует за кулисами, помогут нам подняться в рейтинге и добиться победы.',
+        'Soccer2018plus_VictoryByDesign_62-80_Participation_Sub3b' => 'Мы отказались от предложения и отправили группу расследователей, чтобы собрать больше сведений о закулисных силах. Мы разоблачим их и добьемся победы честным путем.',
+        'Soccer2018plus_VictoryByDesign_62-80_Preparation_Main' => 'Подготовка завершена. Наша команда отлично подготовлена и обладает всей необходимой поддержкой. Игры должны пройти гладко. Пора побеждать!',
+        'Soccer2018plus_VictoryByDesign_62-80_Preparation_Sub1' => 'Команда собрана. Лучшие из лучших готовы продемонстрировать свои способности.',
+        'Soccer2018plus_VictoryByDesign_62-80_Preparation_Sub2' => 'Благодаря упорным тренировкам и строгой дисциплине команда готова выступить на высшем уровне и этим прославить наше поселение.',
+        'Soccer2018plus_VictoryByDesign_62-80_Preparation_Sub3' => 'Благодаря вашим усилиям команда хорошо подготовленных судей готова следить за соблюдением правил игр. Теперь каждое состязание будет проходить честно и на уровне, достойном настоящих чемпионов.',
+        'Soccer2018plus_VictoryByDesign_62-80_Preparation_Sub4' => 'Благодаря вашим стараниям на играх удастся поддерживать безопасность и порядок. Опытные сотрудники по работе с болельщиками и дисциплинированная стража из нашего поселения уже готовы помогать организаторам, а также защищать гостей и участников на протяжении всех празднеств.',
         'SocialLong1' => 'Баразеки - большая редкость, но вы все же поделились ими с друзьями. Меня так тронул ваш жест, что я, пожалуй, отдам вам свое печенье, припрятанное на самые голодные времена. Используйте его с умом!',
         'SocialLong2' => 'Вот это я называю самоотдачей! Вам удалось не только поддержать в рабочих необходимый запал, но и заработать несколько самоцветов. Беспроигрышная ситуация, как ни посмотри, верно?',
         'SocialLong3' => 'Вы просто молодец! Теперь мы точно сумеем поставить армии нужное количество оружия. Нужно как-то по-особенному отблагодарить наших друзей за этот добрый жест, согласны?',
@@ -21329,6 +21549,21 @@ Together you’ll rise, where friendships are strong!',
         'XMAS2017plus_Adv2_hard' => 'Да! Теперь, когда у нас есть кое-что из того, что нам нужно, мы должны вернуться на остров, чтобы это доставить.',
         'XMAS2017plus_Adv2_medium' => 'Да! Теперь, когда у нас есть кое-что из того, что нам нужно, мы должны вернуться на остров, чтобы это доставить.',
         'XMAS2017plus_Adv3' => 'Вы завершили доставку подарков. Благодаря вам все веселятся и празднуют Рождество! Какое приятное чувство!',
+        'XMAS2017plus_CardDelivery_lvl26' => 'Ваши открытки растопили сердца всех, кому они были посланы! Я видел их улыбки и блеск в глазах. Вы и правда одарили мир радостью! Отличная работа! Хо-хо-хо!',
+        'XMAS2017plus_CardDelivery_lvl36' => 'Ваши открытки растопили сердца всех, кому они были посланы! Я видел их улыбки и блеск в глазах. Вы и правда одарили мир радостью! Отличная работа! Хо-хо-хо!',
+        'XMAS2017plus_CardDelivery_lvl51' => 'Ваши открытки растопили сердца всех, кому они были посланы! Я видел их улыбки и блеск в глазах. Вы и правда одарили мир радостью! Отличная работа! Хо-хо-хо!',
+        'XMAS2017plus_CardPreparation_lvl26' => 'Ваши открытки выглядят чудесно, а слова в них пробирают до глубины души. Отличная работа! Уверен, что они всех обрадуют!',
+        'XMAS2017plus_CardPreparation_lvl36' => 'Ваши открытки выглядят чудесно, а слова в них пробирают до глубины души. Отличная работа! Уверен, что они всех обрадуют!',
+        'XMAS2017plus_CardPreparation_lvl51' => 'Ваши открытки выглядят чудесно, а слова в них пробирают до глубины души. Отличная работа! Уверен, что они всех обрадуют!',
+        'XMAS2017plus_DecoPlacement1_lvl26' => 'Чудесно! Ваш остров выглядит превосходно. Только взгляните на лица своих поселенцев и увидите в них счастье! У вас отлично получается! Хо-хо-хо!',
+        'XMAS2017plus_DecoPlacement1_lvl36' => 'Чудесно! Ваш остров выглядит превосходно. Только взгляните на лица своих поселенцев и увидите в них счастье! У вас отлично получается! Хо-хо-хо!',
+        'XMAS2017plus_DecoPlacement1_lvl51' => 'Чудесно! Ваш остров выглядит превосходно. Только взгляните на лица своих поселенцев и увидите в них счастье! У вас отлично получается! Хо-хо-хо!',
+        'XMAS2017plus_DecoPlacement2_lvl26' => 'Готово! Украшенные здания выглядят чудесно! Они вызывают блеск в глазах каждого, кто на них смотрит. Похоже, наши сани на верно пути! Хо-хо-хо!',
+        'XMAS2017plus_DecoPlacement2_lvl36' => 'Готово! Украшенные здания выглядят чудесно! Они вызывают блеск в глазах каждого, кто на них смотрит. Похоже, наши сани на верно пути! Хо-хо-хо!',
+        'XMAS2017plus_DecoPlacement2_lvl51' => 'Готово! Украшенные здания выглядят чудесно! Они вызывают блеск в глазах каждого, кто на них смотрит. Похоже, наши сани на верно пути! Хо-хо-хо!',
+        'XMAS2017plus_DecoProduce2_lvl26' => 'Вы меня не разочаровали! Выглядит просто прелестно! Уже вижу, как полные радости поселенцы празднуют в своих уютных домах.',
+        'XMAS2017plus_DecoProduce2_lvl36' => 'Вы меня не разочаровали! Выглядит просто прелестно! Уже вижу, как полные радости поселенцы празднуют в своих уютных домах.',
+        'XMAS2017plus_DecoProduce2_lvl51' => 'Вы меня не разочаровали! Выглядит просто прелестно! Уже вижу, как полные радости поселенцы празднуют в своих уютных домах.',
         'XMAS2017plus_EventMarket_Produce1_lvl26' => 'Невероятно! Немного магии, и ярмарка скоро будет готова!',
         'XMAS2017plus_EventMarket_Produce1_lvl36' => 'Невероятно! Немного магии, и ярмарка скоро будет готова!',
         'XMAS2017plus_EventMarket_Produce1_lvl51' => 'Невероятно! Немного магии, и ярмарка скоро будет готова!',
@@ -21347,15 +21582,39 @@ Together you’ll rise, where friendships are strong!',
         'XMAS2017plus_EventMarket_Tut2_lvl26' => 'Хорошо. Думаю, вы готовы. Приступайте к строительству, и тогда в сочельник все смогут порадоваться!',
         'XMAS2017plus_EventMarket_Tut2_lvl36' => 'Хорошо. Думаю, вы готовы. Приступайте к строительству, и тогда в сочельник все смогут порадоваться!',
         'XMAS2017plus_EventMarket_Tut2_lvl51' => 'Хорошо. Думаю, вы готовы. Приступайте к строительству, и тогда в сочельник все смогут порадоваться!',
+        'XMAS2017plus_FeastPreparation1_lvl26' => 'Превосходно! Какое разнообразие еды! Только взгляните, как им нравится этот пир! Люди на самом деле становятся счастливее. Ничего другого и не надо.',
+        'XMAS2017plus_FeastPreparation1_lvl36' => 'Превосходно! Какое разнообразие еды! Только взгляните, как им нравится этот пир! Люди на самом деле становятся счастливее. Ничего другого и не надо.',
+        'XMAS2017plus_FeastPreparation1_lvl51' => 'Превосходно! Какое разнообразие еды! Только взгляните, как им нравится этот пир! Люди на самом деле становятся счастливее. Ничего другого и не надо.',
+        'XMAS2017plus_FeastPreparation2_lvl26' => 'Вы и правда справились с испытанием! Этот пир был незабываем. Люди со всех уголков ваших земель прибыли на совместный праздник, чтобы испытать счастье и умиротворение. В этом и есть дух зимних праздников! Хо-хо-хо!',
+        'XMAS2017plus_FeastPreparation2_lvl36' => 'Вы и правда справились с испытанием! Этот пир был незабываем. Люди со всех уголков ваших земель прибыли на совместный праздник, чтобы испытать счастье и умиротворение. В этом и есть дух зимних праздников! Хо-хо-хо!',
+        'XMAS2017plus_FeastPreparation2_lvl51' => 'Вы и правда справились с испытанием! Этот пир был незабываем. Люди со всех уголков ваших земель прибыли на совместный праздник, чтобы испытать счастье и умиротворение. В этом и есть дух зимних праздников! Хо-хо-хо!',
+        'XMAS2017plus_GiftGiving_lvl26' => 'Готово! Вы уже чувствуете, сколько вокруг восторга и радости? Делясь любовью с окружающими, вы сумели подняли дух Рождества на новый уровень! Если я решу уйти на пенсию, буду знать, кого сделать своим преемником.',
+        'XMAS2017plus_GiftGiving_lvl36' => 'Готово! Вы уже чувствуете, сколько вокруг восторга и радости? Делясь любовью с окружающими, вы сумели подняли дух Рождества на новый уровень! Если я решу уйти на пенсию, буду знать, кого сделать своим преемником.',
+        'XMAS2017plus_GiftGiving_lvl51' => 'Готово! Вы уже чувствуете, сколько вокруг восторга и радости? Делясь любовью с окружающими, вы сумели подняли дух Рождества на новый уровень! Если я решу уйти на пенсию, буду знать, кого сделать своим преемником.',
+        'XMAS2017plus_HolidayCheerDelay1_lvl26' => 'Так-так-так. Похоже, время осмысления прекрасно на вас сказалось. А теперь продолжим одаривать всех духом Рождества.',
+        'XMAS2017plus_HolidayCheerDelay1_lvl36' => 'Так-так-так. Похоже, время осмысления прекрасно на вас сказалось. А теперь продолжим одаривать всех духом Рождества.',
+        'XMAS2017plus_HolidayCheerDelay1_lvl51' => 'Так-так-так. Похоже, время осмысления прекрасно на вас сказалось. А теперь продолжим одаривать всех духом Рождества.',
+        'XMAS2017plus_HolidayCheerDelay2_lvl26' => 'Вот видите, к чему может привести время на умиротворённое осмысление? Чтобы делиться рождественской радостью, необходимо сначала обрести её самому.',
+        'XMAS2017plus_HolidayCheerDelay2_lvl36' => 'Вот видите, к чему может привести время на умиротворённое осмысление? Чтобы делиться рождественской радостью, необходимо сначала обрести её самому.',
+        'XMAS2017plus_HolidayCheerDelay2_lvl51' => 'Вот видите, к чему может привести время на умиротворённое осмысление? Чтобы делиться рождественской радостью, необходимо сначала обрести её самому.',
         'XMAS2017plus_Main1' => 'Отлично! Теперь вы знаете все о рождественском сюрпризе и о том, как получать подарки.',
         'XMAS2017plus_Main2' => 'Отлично, теперь я смогу развезти подарки.
 Но мы все-таки должны узнать, кто украл моих оленей. Я вернусь завтра. Возможно, отыщу какие-нибудь следы.',
         'XMAS2017plus_Main3_Easy' => 'Прекрасно. Мы хорошо подготовились на тот случай, если Ворчун решит выкинуть какой-нибудь фокус.',
         'XMAS2017plus_Main3_Hard' => 'Прекрасно. Мы хорошо подготовились на тот случай, если Ворчун решит выкинуть какой-нибудь фокус.',
         'XMAS2017plus_Main3_Medium' => 'Прекрасно. Мы хорошо подготовились на тот случай, если Ворчун решит выкинуть какой-нибудь фокус.',
+        'XMAS2017plus_PresentProduction_lvl26' => 'Отличная работа! Разве не приятно делиться чем-то с другими? Эти чудесные подарки откроют вас миру с самой лучшей стороны.',
+        'XMAS2017plus_PresentProduction_lvl36' => 'Отличная работа! Разве не приятно делиться чем-то с другими? Эти чудесные подарки откроют вас миру с самой лучшей стороны.',
+        'XMAS2017plus_PresentProduction_lvl51' => 'Отличная работа! Разве не приятно делиться чем-то с другими? Эти чудесные подарки откроют вас миру с самой лучшей стороны.',
         'XMAS2017plus_Reach16' => 'Прекрасно! Теперь у вас достаточно опыта для выполнения предстоящих заданий.',
         'XMAS2017plus_Reach23' => 'Прекрасно! Теперь у вас достаточно опыта для выполнения предстоящих заданий.',
         'XMAS2017plus_Reach26' => 'Прекрасно! Теперь у вас достаточно опыта для выполнения предстоящих заданий.',
+        'XMAS2017plus_SongPlacement_lvl26' => 'Вы видели их реакции? Вы видели, как они аплодировали? Это было невероятно. Вот это я понимаю — праздничный дух.',
+        'XMAS2017plus_SongPlacement_lvl36' => 'Вы видели их реакции? Вы видели, как они аплодировали? Это было невероятно. Вот это я понимаю — праздничный дух.',
+        'XMAS2017plus_SongPlacement_lvl51' => 'Вы видели их реакции? Вы видели, как они аплодировали? Это было невероятно. Вот это я понимаю — праздничный дух.',
+        'XMAS2017plus_SongProduction_lvl26' => 'Я восхищён! Эта музыка так умиротворяет. Она трогает сердце и возвышает душу. Такая музыка непременно приведёт к нужному результату!',
+        'XMAS2017plus_SongProduction_lvl36' => 'Я восхищён! Эта музыка так умиротворяет. Она трогает сердце и возвышает душу. Такая музыка непременно приведёт к нужному результату!',
+        'XMAS2017plus_SongProduction_lvl51' => 'Я восхищён! Эта музыка так умиротворяет. Она трогает сердце и возвышает душу. Такая музыка непременно приведёт к нужному результату!',
         'XMAS2017plus_Sub1' => 'Как видите, рождественский сюрприз - довольно интересная штука.
 Заглядывайте сюда каждый день, чтобы получать награды.',
         'XMAS2017plus_Sub2' => 'Замечательно! Теперь можно будет создать что-нибудь этакое с помощью собранных вами ресурсов.',
@@ -21425,6 +21684,12 @@ Together you’ll rise, where friendships are strong!',
         'XMAS2017plus_XmasMarket_lvl26' => 'Я видел столько улыбок и слышал столько болтовни на ярмарке… Думаю, это значит, что вы со всем справились! Но мы еще не закончили. Чтобы спасти Рождество, одной болтовни недостаточно.',
         'XMAS2017plus_XmasMarket_lvl36' => 'Я видел столько улыбок и слышал столько болтовни на ярмарке… Думаю, это значит, что вы со всем справились! Но мы еще не закончили. Чтобы спасти Рождество, одной болтовни недостаточно.',
         'XMAS2017plus_XmasMarket_lvl51' => 'Я видел столько улыбок и слышал столько болтовни на ярмарке… Думаю, это значит, что вы со всем справились! Но мы еще не закончили. Чтобы спасти Рождество, одной болтовни недостаточно.',
+        'XMAS2017plus_XmasSpiritFinal_lvl26' => 'Превосходно! Уже чувствуете силу Рождественского духа? Вы подарили это чувство столь многим в этом мире. Благодарю за помощь!',
+        'XMAS2017plus_XmasSpiritFinal_lvl36' => 'Превосходно! Уже чувствуете силу Рождественского духа? Вы подарили это чувство столь многим в этом мире. Благодарю за помощь!',
+        'XMAS2017plus_XmasSpiritFinal_lvl51' => 'Превосходно! Уже чувствуете силу Рождественского духа? Вы подарили это чувство столь многим в этом мире. Благодарю за помощь!',
+        'XMAS2017plus_XmasSpirit_Main_lvl26' => 'У вас получилось! Всем понравились ваши радостные вести, чудные украшения, милые песни, праздничный пир и подарки. Теперь дух Рождества и правда охватил всех поселенцев на всех островах! Уверен, что он останется в них на весь год. Спасибо!',
+        'XMAS2017plus_XmasSpirit_Main_lvl36' => 'У вас получилось! Всем понравились ваши радостные вести, чудные украшения, милые песни, праздничный пир и подарки. Теперь дух Рождества и правда охватил всех поселенцев на всех островах! Уверен, что он останется в них на весь год. Спасибо!',
+        'XMAS2017plus_XmasSpirit_Main_lvl51' => 'У вас получилось! Всем понравились ваши радостные вести, чудные украшения, милые песни, праздничный пир и подарки. Теперь дух Рождества и правда охватил всех поселенцев на всех островах! Уверен, что он останется в них на весь год. Спасибо!',
         'XMASEventAdv' => 'Прекрасно! Вы осчастливили многих детей и их родителей. Только взгляните на все эти красиво украшенные дома! Вот это, что называется, и есть дух Рождества!',
         'XMASEventCookieAdv' => 'Ах, наконец-то этот шум стих и мои глаза… То есть мои уши, ква, теперь наконец-то отдохнут. Вы сделали доброе дело. Санта вами доволен. Хи-хи-хи.',
         'XMASEventCookieAdv_Buff' => 'Превосходно. Как видите, вся эта красота была лишь иллюзией, для того чтобы держать ребятишек в плену! А теперь злодею придется раскрыть себя!',
@@ -21688,11 +21953,6 @@ Together you’ll rise, where friendships are strong!',
         'Adv_TreasureWisdom_Q1' => 'Прибыв на остров, вы находите следы древней цивилизации, которая обитала здесь годы, если не века тому назад. Вокруг вы замечаете несколько лагерей мародеров. Они явно враждебны по отношению к вам, и вы решаете драться.',
         'Adv_TreasureWisdom_Q2' => 'Оказывается, бандиты из этих лагерей просто отвлекают вас, в то время как остальные расхитители могил бесчинствуют в древних гробницах. Такое варварское отношение к наследию древней культуры приводит вас в ярость, и вы решаете положить этому конец.',
         'Adv_TreasureWisdom_Q3' => 'Али-Баба сообщает вам хорошие новости: мародеры не смогли преодолеть защитную систему древних и проникнуть в главный храм. Эта новость действительно радует, но вместе с тем вам становится немного тревожно, ведь вам придется как-то разобраться с этой защитой!',
-        'AdventureSeasonMercenary_LevelRequirement26' => 'NT: Before diving into some adventures and teach some mercenaries a lesson, let\'s first focus on strengthen your military and become stronger! It will soon be your time to shine!',
-        'AdventureSeasonMercenary_Main' => 'NT: One of your scouts spotted an increase of mercenaries on some specific islands around your kingdom. He went on a mission to find the reason and found some interesting relics. I would suggest, going to these islands, defeat the mercenaries and grab those adventure relics. It will be worth it!',
-        'AdventureSeasonMercenary_Sub1' => 'NT: What\'s the secret about those Adventure Relics? Those mercenaries are hiding them on so many islands. We need to investigate!',
-        'AdventureSeasonMercenary_Sub2' => 'NT: The more Adventure Relics you retrieve, the better we can investigate the purpose of it.',
-        'AdventureSeasonMercenary_Sub3' => 'NT: Yes, we need even more. Please go on and don\'t give up!',
         'BAUMP1' => 'Что ж такое… Видимо, мы где-то ошиблись.
 
 Вроде координаты верные. Остров должен быть где-то здесь.
@@ -22609,6 +22869,78 @@ Together you’ll rise, where friendships are strong!',
         'Birthday2018plus_Infrastructure_62-80_Main9_Sub2' => 'Поработали - и хватит. Можете отдохнуть и поискать приключения, золотце!',
         'Birthday2018plus_Infrastructure_62-80_Main9_Sub3' => 'Теперь используем усилители на производственных цепочках. Начнем с пивоварни, хорошо?',
         'Birthday2018plus_Infrastructure_62-80_Main9_Sub4' => 'Продолжайте в том же духе и используйте усилитель на пекарне или улучшенной пекарне, хорошо, золотце?',
+        'Birthday2018plus_LostExpedition_26-35_Following_Main' => 'С тех пор как Октавиан отплыл на запад в поисках римской родины, прошло уже много лет. Хотя экспедиция пропала без вести, со временем стали здесь и там стали появляться разного вида зацепки. Мне нужна ваша помощь, чтобы выяснить, каким маршрутом он отправился через море.',
+        'Birthday2018plus_LostExpedition_26-35_Following_Sub1' => 'На старом складе одного купца обнаружили истертое письмо с печатью Октавиана. Восстановите то, что сохранилось от текста, и узнайте, куда экспедиция отправилась сначала.',
+        'Birthday2018plus_LostExpedition_26-35_Following_Sub2' => 'Ни одна экспедиция не может выжить без припасов. Узнайте из архивов Октавиана, какие виды припасов у них с собой были чтобы лучше понять, как его флот готовился к плаванию.',
+        'Birthday2018plus_LostExpedition_26-35_Following_Sub3' => 'Исследователи сообщают, что обнаружили остатки заброшенного римского лагеря. Тщательно обыщите местность. Даже самая незначительная деталь может подсказать, куда экспедиция направилась дальше.',
+        'Birthday2018plus_LostExpedition_26-35_Following_Sub4' => 'Было время, когда старый маяк указывал кораблям путь через опасные воды, однако теперь он лежит в руинах. Восстановите его и найдите всё, что могли оставить участники экспедиции.',
+        'Birthday2018plus_LostExpedition_26-35_Following_Sub5' => 'Имя штурмана флота исчезло из архивов вскоре после отправления. Разыщите его записи — возможно, в них есть какая-то информация о том, как экспедиция пересекла неизведанные доселе моря.',
+        'Birthday2018plus_LostExpedition_26-35_Hub' => 'Много лет назад Октавиан отплыл на запад в поисках своей утраченной родины. Его флот исчез за горизонтом. В последнее время начали поступать странные донесения — фрагменты карт, римские реликвии и рассказы выживших. Помогите его жене Тинании раскрыть тайну затерянной экспедиции!',
+        'Birthday2018plus_LostExpedition_26-35_Legacy_Main' => 'Поиски почти завершены. Впереди ждет ответ, который я столько лет искала — не только о судьбе моего мужа, но и о наследии, которое он оставил.',
+        'Birthday2018plus_LostExpedition_26-35_Legacy_Sub1' => 'Древние здания чем-то напоминают римскую архитектуру. Восстановите их былое великолепие и отправьтесь на поиски доказательств того, что экспедиция все же достигла своей долгожданной цели.',
+        'Birthday2018plus_LostExpedition_26-35_Legacy_Sub2' => 'Обнаружена процветающая колония, основанная выжившими участниками экспедиции. Укрепите свое поселение в честь всех тех, кто основал новый дом столь далеко от Рима.',
+        'Birthday2018plus_LostExpedition_26-35_Legacy_Sub3' => 'Последний журнал Октавиана незавершен. Соберите ресурсы, необходимые для восстановления поврежденных страниц, и выясните, что стало с главой экспедиции.',
+        'Birthday2018plus_LostExpedition_26-35_Legacy_Sub4' => 'Мы собрали все сохранившиеся записи об экспедиции. Завершите последние приготовления и помогите сохранить историю Октавиана для будущих поколений.',
+        'Birthday2018plus_LostExpedition_26-35_UnknownSeas_Main' => 'Экспедиция отважилась отправиться в воды, которых не было ни на одной римской карте. Что там произошло? Сумел ли Октавиан пережить ужасные штормы, совершить неожиданные открытия или, быть может, найти новых союзников? Помогите мне выяснить, что предопределило судьбу Октавиана и его спутников.',
+        'Birthday2018plus_LostExpedition_26-35_UnknownSeas_Sub1' => 'В журнале рассказывается о мирных встречах с далекими народами. Соберите ценные товары в честь дружбы, которая помогла участникам экспедиции продолжить путь.',
+        'Birthday2018plus_LostExpedition_26-35_UnknownSeas_Sub2' => 'Сильный шторм разбросал корабли флота по открытому морю. Соберите необходимые ресурсы, чтобы подготовиться к подобным испытаниям, и узнайте, как с ними справилась экспедиция Октавиана.',
+        'Birthday2018plus_LostExpedition_26-35_UnknownSeas_Sub3' => 'Судя по сообщениям, после шторма экипажи некоторых кораблей основали на новых землях небольшие поселения. Сделайте так, чтобы ваше сообщество процветало, в память о всех тех, кто отказался сдаваться.',
+        'Birthday2018plus_LostExpedition_26-35_UnknownSeas_Sub4' => 'Найдено потрепанное римское знамя — символ того, что экспедиция не сдалась даже в самые сложные времена. Подготовьте свои войска и сохраните наследие этого знамени.',
+        'Birthday2018plus_LostExpedition_26-35_UnknownSeas_Sub5' => 'Последний известный маршрут проходит через горный перевал. Расчистите путь и соберите необходимые материалы, чтобы отправиться по следам Октавиана за пределы природного барьера.',
+        'Birthday2018plus_LostExpedition_36-50_Following_Main' => 'С тех пор как Октавиан отплыл на запад в поисках римской родины, прошло уже много лет. Хотя экспедиция пропала без вести, со временем стали здесь и там стали появляться разного вида зацепки. Мне нужна ваша помощь, чтобы выяснить, каким маршрутом он отправился через море.',
+        'Birthday2018plus_LostExpedition_36-50_Following_Sub1' => 'На старом складе одного купца обнаружили истертое письмо с печатью Октавиана. Восстановите то, что сохранилось от текста, и узнайте, куда экспедиция отправилась сначала.',
+        'Birthday2018plus_LostExpedition_36-50_Following_Sub2' => 'Ни одна экспедиция не может выжить без припасов. Узнайте из архивов Октавиана, какие виды припасов у них с собой были чтобы лучше понять, как его флот готовился к плаванию.',
+        'Birthday2018plus_LostExpedition_36-50_Following_Sub3' => 'Исследователи сообщают, что обнаружили остатки заброшенного римского лагеря. Тщательно обыщите местность. Даже самая незначительная деталь может подсказать, куда экспедиция направилась дальше.',
+        'Birthday2018plus_LostExpedition_36-50_Following_Sub4' => 'Было время, когда старый маяк указывал кораблям путь через опасные воды, однако теперь он лежит в руинах. Восстановите его и найдите всё, что могли оставить участники экспедиции.',
+        'Birthday2018plus_LostExpedition_36-50_Following_Sub5' => 'Имя штурмана флота исчезло из архивов вскоре после отправления. Разыщите его записи — возможно, в них есть какая-то информация о том, как экспедиция пересекла неизведанные доселе моря.',
+        'Birthday2018plus_LostExpedition_36-50_Hub' => 'Много лет назад Октавиан отплыл на запад в поисках своей утраченной родины. Его флот исчез за горизонтом. В последнее время начали поступать странные донесения — фрагменты карт, римские реликвии и рассказы выживших. Помогите его жене Тинании раскрыть тайну затерянной экспедиции!',
+        'Birthday2018plus_LostExpedition_36-50_Legacy_Main' => 'Поиски почти завершены. Впереди ждет ответ, который я столько лет искала — не только о судьбе моего мужа, но и о наследии, которое он оставил.',
+        'Birthday2018plus_LostExpedition_36-50_Legacy_Sub1' => 'Древние здания чем-то напоминают римскую архитектуру. Восстановите их былое великолепие и отправьтесь на поиски доказательств того, что экспедиция все же достигла своей долгожданной цели.',
+        'Birthday2018plus_LostExpedition_36-50_Legacy_Sub2' => 'Обнаружена процветающая колония, основанная выжившими участниками экспедиции. Укрепите свое поселение в честь всех тех, кто основал новый дом столь далеко от Рима.',
+        'Birthday2018plus_LostExpedition_36-50_Legacy_Sub3' => 'Последний журнал Октавиана незавершен. Соберите ресурсы, необходимые для восстановления поврежденных страниц, и выясните, что стало с главой экспедиции.',
+        'Birthday2018plus_LostExpedition_36-50_Legacy_Sub4' => 'Мы собрали все сохранившиеся записи об экспедиции. Завершите последние приготовления и помогите сохранить историю Октавиана для будущих поколений.',
+        'Birthday2018plus_LostExpedition_36-50_UnknownSeas_Main' => 'Экспедиция отважилась отправиться в воды, которых не было ни на одной римской карте. Что там произошло? Сумел ли Октавиан пережить ужасные штормы, совершить неожиданные открытия или, быть может, найти новых союзников? Помогите мне выяснить, что предопределило судьбу Октавиана и его спутников.',
+        'Birthday2018plus_LostExpedition_36-50_UnknownSeas_Sub1' => 'В журнале рассказывается о мирных встречах с далекими народами. Соберите ценные товары в честь дружбы, которая помогла участникам экспедиции продолжить путь.',
+        'Birthday2018plus_LostExpedition_36-50_UnknownSeas_Sub2' => 'Сильный шторм разбросал корабли флота по открытому морю. Соберите необходимые ресурсы, чтобы подготовиться к подобным испытаниям, и узнайте, как с ними справилась экспедиция Октавиана.',
+        'Birthday2018plus_LostExpedition_36-50_UnknownSeas_Sub3' => 'Судя по сообщениям, после шторма экипажи некоторых кораблей основали на новых землях небольшие поселения. Сделайте так, чтобы ваше сообщество процветало, в память о всех тех, кто отказался сдаваться.',
+        'Birthday2018plus_LostExpedition_36-50_UnknownSeas_Sub4' => 'Найдено потрепанное римское знамя — символ того, что экспедиция не сдалась даже в самые сложные времена. Подготовьте свои войска и сохраните наследие этого знамени.',
+        'Birthday2018plus_LostExpedition_36-50_UnknownSeas_Sub5' => 'Последний известный маршрут проходит через горный перевал. Расчистите путь и соберите необходимые материалы, чтобы отправиться по следам Октавиана за пределы природного барьера.',
+        'Birthday2018plus_LostExpedition_51-61_Following_Main' => 'С тех пор как Октавиан отплыл на запад в поисках римской родины, прошло уже много лет. Хотя экспедиция пропала без вести, со временем стали здесь и там стали появляться разного вида зацепки. Мне нужна ваша помощь, чтобы выяснить, каким маршрутом он отправился через море.',
+        'Birthday2018plus_LostExpedition_51-61_Following_Sub1' => 'На старом складе одного купца обнаружили истертое письмо с печатью Октавиана. Восстановите то, что сохранилось от текста, и узнайте, куда экспедиция отправилась сначала.',
+        'Birthday2018plus_LostExpedition_51-61_Following_Sub2' => 'Ни одна экспедиция не может выжить без припасов. Узнайте из архивов Октавиана, какие виды припасов у них с собой были чтобы лучше понять, как его флот готовился к плаванию.',
+        'Birthday2018plus_LostExpedition_51-61_Following_Sub3' => 'Исследователи сообщают, что обнаружили остатки заброшенного римского лагеря. Тщательно обыщите местность. Даже самая незначительная деталь может подсказать, куда экспедиция направилась дальше.',
+        'Birthday2018plus_LostExpedition_51-61_Following_Sub4' => 'Было время, когда старый маяк указывал кораблям путь через опасные воды, однако теперь он лежит в руинах. Восстановите его и найдите всё, что могли оставить участники экспедиции.',
+        'Birthday2018plus_LostExpedition_51-61_Following_Sub5' => 'Имя штурмана флота исчезло из архивов вскоре после отправления. Разыщите его записи — возможно, в них есть какая-то информация о том, как экспедиция пересекла неизведанные доселе моря.',
+        'Birthday2018plus_LostExpedition_51-61_Hub' => 'Много лет назад Октавиан отплыл на запад в поисках своей утраченной родины. Его флот исчез за горизонтом. В последнее время начали поступать странные донесения — фрагменты карт, римские реликвии и рассказы выживших. Помогите его жене Тинании раскрыть тайну затерянной экспедиции!',
+        'Birthday2018plus_LostExpedition_51-61_Legacy_Main' => 'Поиски почти завершены. Впереди ждет ответ, который я столько лет искала — не только о судьбе моего мужа, но и о наследии, которое он оставил.',
+        'Birthday2018plus_LostExpedition_51-61_Legacy_Sub1' => 'Древние здания чем-то напоминают римскую архитектуру. Восстановите их былое великолепие и отправьтесь на поиски доказательств того, что экспедиция все же достигла своей долгожданной цели.',
+        'Birthday2018plus_LostExpedition_51-61_Legacy_Sub2' => 'Обнаружена процветающая колония, основанная выжившими участниками экспедиции. Укрепите свое поселение в честь всех тех, кто основал новый дом столь далеко от Рима.',
+        'Birthday2018plus_LostExpedition_51-61_Legacy_Sub3' => 'Последний журнал Октавиана незавершен. Соберите ресурсы, необходимые для восстановления поврежденных страниц, и выясните, что стало с главой экспедиции.',
+        'Birthday2018plus_LostExpedition_51-61_Legacy_Sub4' => 'Мы собрали все сохранившиеся записи об экспедиции. Завершите последние приготовления и помогите сохранить историю Октавиана для будущих поколений.',
+        'Birthday2018plus_LostExpedition_51-61_UnknownSeas_Main' => 'Экспедиция отважилась отправиться в воды, которых не было ни на одной римской карте. Что там произошло? Сумел ли Октавиан пережить ужасные штормы, совершить неожиданные открытия или, быть может, найти новых союзников? Помогите мне выяснить, что предопределило судьбу Октавиана и его спутников.',
+        'Birthday2018plus_LostExpedition_51-61_UnknownSeas_Sub1' => 'В журнале рассказывается о мирных встречах с далекими народами. Соберите ценные товары в честь дружбы, которая помогла участникам экспедиции продолжить путь.',
+        'Birthday2018plus_LostExpedition_51-61_UnknownSeas_Sub2' => 'Сильный шторм разбросал корабли флота по открытому морю. Соберите необходимые ресурсы, чтобы подготовиться к подобным испытаниям, и узнайте, как с ними справилась экспедиция Октавиана.',
+        'Birthday2018plus_LostExpedition_51-61_UnknownSeas_Sub3' => 'Судя по сообщениям, после шторма экипажи некоторых кораблей основали на новых землях небольшие поселения. Сделайте так, чтобы ваше сообщество процветало, в память о всех тех, кто отказался сдаваться.',
+        'Birthday2018plus_LostExpedition_51-61_UnknownSeas_Sub4' => 'Найдено потрепанное римское знамя — символ того, что экспедиция не сдалась даже в самые сложные времена. Подготовьте свои войска и сохраните наследие этого знамени.',
+        'Birthday2018plus_LostExpedition_51-61_UnknownSeas_Sub5' => 'Последний известный маршрут проходит через горный перевал. Расчистите путь и соберите необходимые материалы, чтобы отправиться по следам Октавиана за пределы природного барьера.',
+        'Birthday2018plus_LostExpedition_62-80_Following_Main' => 'С тех пор как Октавиан отплыл на запад в поисках римской родины, прошло уже много лет. Хотя экспедиция пропала без вести, со временем стали здесь и там стали появляться разного вида зацепки. Мне нужна ваша помощь, чтобы выяснить, каким маршрутом он отправился через море.',
+        'Birthday2018plus_LostExpedition_62-80_Following_Sub1' => 'На старом складе одного купца обнаружили истертое письмо с печатью Октавиана. Восстановите то, что сохранилось от текста, и узнайте, куда экспедиция отправилась сначала.',
+        'Birthday2018plus_LostExpedition_62-80_Following_Sub2' => 'Ни одна экспедиция не может выжить без припасов. Узнайте из архивов Октавиана, какие виды припасов у них с собой были чтобы лучше понять, как его флот готовился к плаванию.',
+        'Birthday2018plus_LostExpedition_62-80_Following_Sub3' => 'Исследователи сообщают, что обнаружили остатки заброшенного римского лагеря. Тщательно обыщите местность. Даже самая незначительная деталь может подсказать, куда экспедиция направилась дальше.',
+        'Birthday2018plus_LostExpedition_62-80_Following_Sub4' => 'Было время, когда старый маяк указывал кораблям путь через опасные воды, однако теперь он лежит в руинах. Восстановите его и найдите всё, что могли оставить участники экспедиции.',
+        'Birthday2018plus_LostExpedition_62-80_Following_Sub5' => 'Имя штурмана флота исчезло из архивов вскоре после отправления. Разыщите его записи — возможно, в них есть какая-то информация о том, как экспедиция пересекла неизведанные доселе моря.',
+        'Birthday2018plus_LostExpedition_62-80_Hub' => 'Много лет назад Октавиан отплыл на запад в поисках своей утраченной родины. Его флот исчез за горизонтом. В последнее время начали поступать странные донесения — фрагменты карт, римские реликвии и рассказы выживших. Помогите его жене Тинании раскрыть тайну затерянной экспедиции!',
+        'Birthday2018plus_LostExpedition_62-80_Legacy_Main' => 'Поиски почти завершены. Впереди ждет ответ, который я столько лет искала — не только о судьбе моего мужа, но и о наследии, которое он оставил.',
+        'Birthday2018plus_LostExpedition_62-80_Legacy_Sub1' => 'Древние здания чем-то напоминают римскую архитектуру. Восстановите их былое великолепие и отправьтесь на поиски доказательств того, что экспедиция все же достигла своей долгожданной цели.',
+        'Birthday2018plus_LostExpedition_62-80_Legacy_Sub2' => 'Обнаружена процветающая колония, основанная выжившими участниками экспедиции. Укрепите свое поселение в честь всех тех, кто основал новый дом столь далеко от Рима.',
+        'Birthday2018plus_LostExpedition_62-80_Legacy_Sub3' => 'Последний журнал Октавиана незавершен. Соберите ресурсы, необходимые для восстановления поврежденных страниц, и выясните, что стало с главой экспедиции.',
+        'Birthday2018plus_LostExpedition_62-80_Legacy_Sub4' => 'Мы собрали все сохранившиеся записи об экспедиции. Завершите последние приготовления и помогите сохранить историю Октавиана для будущих поколений.',
+        'Birthday2018plus_LostExpedition_62-80_UnknownSeas_Main' => 'Экспедиция отважилась отправиться в воды, которых не было ни на одной римской карте. Что там произошло? Сумел ли Октавиан пережить ужасные штормы, совершить неожиданные открытия или, быть может, найти новых союзников? Помогите мне выяснить, что предопределило судьбу Октавиана и его спутников.',
+        'Birthday2018plus_LostExpedition_62-80_UnknownSeas_Sub1' => 'В журнале рассказывается о мирных встречах с далекими народами. Соберите ценные товары в честь дружбы, которая помогла участникам экспедиции продолжить путь.',
+        'Birthday2018plus_LostExpedition_62-80_UnknownSeas_Sub2' => 'Сильный шторм разбросал корабли флота по открытому морю. Соберите необходимые ресурсы, чтобы подготовиться к подобным испытаниям, и узнайте, как с ними справилась экспедиция Октавиана.',
+        'Birthday2018plus_LostExpedition_62-80_UnknownSeas_Sub3' => 'Судя по сообщениям, после шторма экипажи некоторых кораблей основали на новых землях небольшие поселения. Сделайте так, чтобы ваше сообщество процветало, в память о всех тех, кто отказался сдаваться.',
+        'Birthday2018plus_LostExpedition_62-80_UnknownSeas_Sub4' => 'Найдено потрепанное римское знамя — символ того, что экспедиция не сдалась даже в самые сложные времена. Подготовьте свои войска и сохраните наследие этого знамени.',
+        'Birthday2018plus_LostExpedition_62-80_UnknownSeas_Sub5' => 'Последний известный маршрут проходит через горный перевал. Расчистите путь и соберите необходимые материалы, чтобы отправиться по следам Октавиана за пределы природного барьера.',
         'BirthdayBasicsMain' => 'Привет! Привет, привет, привет... Вы уже слышали о грядущей вечеринке? Король лично послал меня, чтобы узнать, какой сервер подходит для нее лучше всего. Как я это сделаю? О, это проще простого. Сейчас объясню! Привет, привет...',
         'BirthdayBasicsSub1' => 'Главное - собрать побольше шаров! Король просто обожает воздушные шары, знаете ли. Привет, привет... Вы можете узнать, сколько шаров вы уже собрали в ратуше на вкладке "Новое событие". Не стесняйтесь, посмотрите.',
         'BirthdayBasicsSub2' => 'Второй вариант - это торговля! Не важно, продаете вы или покупаете, за каждую сделку вы получаете воздушные шары. Правда есть одно "но": это работает только с гильдией торговцев, если вы торгуете с друзьями, шаров вы не получите. Привет, привет, привет... И чего мы ждем? Вперед, начинайте торговать!',
@@ -23145,6 +23477,20 @@ Together you’ll rise, where friendships are strong!',
         'BuffQuestVigilante_Sub5' => 'Она явно подходит для службы в страже, но ее выступление всерьез заинтересовало наших генералов. Они думают, что однажды она сама станет генералом! Теперь они хотят провести испытание лидерских качеств. Она должна будет вместе с ними повести войска на поиски приключений.',
         'BuffQuestWeddingCake' => 'Я уже поручил лучшим кондитерам наших земель приготовить лучший торт всех времен и народов. Они готовы приступить к работе, как только вы доставите им все необходимые ингредиенты.',
         'BuffQuestWeddingInvitation' => 'Правитель соседнего королевства шлет нам дружеский привет и приглашение на свадьбу своего сына, принца. Он смиренно просит нас приготовить для торжества праздничный торт. Будет много гостей, так что лучше испечь торт побольше!',
+        'BuffQuestWeddingStory1_A' => 'В эти истории сложно поверить. Но все они — чистая правда.
+Это произошло с любимым кузеном друга моего друга.',
+        'BuffQuestWeddingStory1_B' => 'Полный радости от предстоящей свадьбы жених как-то показал своё обручальное кольцо лучшему другу.
+А вот домашняя собака приняла кольцо за игрушку, из-за чего они потом в течение семи дней обыскивали территорию вокруг дома, заглядывая во все лунки, которые с таким удовольствием рыла собачка.',
+        'BuffQuestWeddingStory1_C' => 'Они копали много дней, трудясь в поте лиц при свете факелов, пока шахты наконец не поддались их стараниям.',
+        'BuffQuestWeddingStory2_A' => 'В эти истории сложно поверить. Но все они — чистая правда.
+Это произошло с любимым кузеном друга моего друга.',
+        'BuffQuestWeddingStory2_B' => 'По мере того как приближалась свадьба, невеста распорядилась, что празднество должно проходить за завесами из лёгкой ткани, свисающей с ветвей деревьев, чтобы яркий свет солнца не докучал гостям в такой прекрасный день.',
+        'BuffQuestWeddingStory2_C' => 'На территории должны быть высажены махагониевые деревья, ибо только они будут под стать такого события.',
+        'BuffQuestWeddingStory3_A' => 'В эти истории сложно поверить. Но все они — чистая правда.
+Это произошло с любимым кузеном друга моего друга.',
+        'BuffQuestWeddingStory3_B' => 'По мере того как приближалась свадьба, флорист, которому были поручены все вопросы красоты и порядка, объявил, что букеты должны быть подготовлены немедленно.',
+        'BuffQuestWeddingStory3_C' => 'Яркие, свисающие и совершенно не подходящие для рук невесты.
+После долгих споров было решено, что за такими вычурными бутонами не должно давать брачных обетов.',
         'BuffQuestWolfPuppy' => 'Девочка играла в лесу и нашла волчонка. Она в отчаянии - малыш ранен и нуждается в помощи. Помогите ей вылечить его.',
         'BuffQuestWolfPuppy_Sub1' => 'Девочка держит на руках волчонка. Он дрожит и покрыт ранами. Сначала нужно приготовить ему постель и согреть его.',
         'BuffQuestWolfPuppy_Sub2' => 'Кажется, ему лучше, но нужно вылечить его раны, иначе он не сможет выздороветь.',
@@ -23164,13 +23510,31 @@ Together you’ll rise, where friendships are strong!',
 
 Примечание: если вам не хватит места для всех обязательных зданий, задание закончится неудачей!',
         'Buff_Adv_StormRecovery_SubQuest06' => 'С бедой вы справились, но нужно позаботиться о том, чтобы такое не повторилось. Помогите жителям починить систему защиты. Трубы снаружи здания потрескались. Вы можете их починить чем-нибудь?',
+        'BuiBonus_AuroraTower_Repeatable' => 'Сегодня мы собрались, чтобы поделиться великолепными историями, которые вдохновят будущие поколения на великие поступки.',
+        'BuiBonus_AuroraTower_Timer_Loop1026' => 'Эта сессия завершена.
+Не огорчайтесь. Многое ещё впереди.',
+        'BuiBonus_AuroraTower_Timer_Loop1080' => 'Эта сессия завершена.
+Не огорчайтесь. Многое ещё впереди.',
+        'BuiBonus_AuroraTower_Timer_Loop864' => 'Эта сессия завершена.
+Не огорчайтесь. Многое ещё впереди.',
+        'BuiBonus_AuroraTower_Timer_Loop918' => 'Эта сессия завершена.
+Не огорчайтесь. Многое ещё впереди.',
+        'BuiBonus_AuroraTower_Timer_Loop972' => 'Эта сессия завершена.
+Не огорчайтесь. Многое ещё впереди.',
         'BuiBonus_BalloonMarket_miniStart' => 'Посетите воздаяние ярмарке воздушных шаров и поздоровайтесь с местным мастером. Он приготовил для вас особое творение!
 После посещения воздушный подарок будет ждать вас в звездном меню.',
         'BuiBonus_BalloonMarket_mini_Timer' => 'Чтобы создать особое творение, мастеру воздушных шаров требуется время. Он очень внимателен и отдает только безупречно выполненную работу.
 Возвращайтесь, когда он будет готов. Только не забывайте навещать мастера. Он не приступит к новому творению, пока у него не заберут уже изготовленное.',
         'BuiBonus_BalloonMarket_mini_Timer_Loop' => 'Чтобы создать особое творение, мастеру воздушных шаров требуется время. Он очень внимателен и отдает только безупречно выполненную работу.
 Возвращайтесь, когда он будет готов. Только не забывайте навещать мастера. Он не приступит к новому творению, пока у него не заберут уже изготовленное.',
-        'BuiBonus_DimensionalRift_Start' => 'NT: Go ahead. Take a peek. What is the worse that could happen?',
+        'BuiBonus_Depositorium_Start' => 'Депозиторий — это не просто склад, а место, в котором можно находить тайны. Предметы здесь не просто хранятся, а скорее ждут, пока их найдут.
+Вы сможете прогуляться по бесконечным залам и натолкнуться на что-то интересное. Чтобы найти ящики с пополнителями, просто нажмите на строение. И не забудьте после этого проверить звёздное меню!',
+        'BuiBonus_Depositorium_Timer' => 'Депозиторий: бесконечные пространства и огромное количество комнат. Скоро придёт время для ещё одной прогулки. Интересно, что мы найдём в следующий раз.
+Не забудьте: Перед следующей прогулкой нужно завершить текущую. Время ожидания следующей прогулки запускается только после полного завершения текущей.',
+        'BuiBonus_Depositorium_Timer_Loop' => 'Депозиторий: бесконечные пространства и огромное количество комнат. Скоро придёт время для ещё одной прогулки. Интересно, что мы найдём в следующий раз.
+Не забудьте: Перед следующей прогулкой нужно завершить текущую. Время ожидания следующей прогулки запускается только после полного завершения текущей.',
+        'BuiBonus_FluffyLogistics_Loop' => 'А вот и вы! Приветствую, мэр!
+Не будем терять времени. Нам нужно срочно доставить эти яйца.',
         'BuiBonus_FlyingHouse_Start' => 'Этот летающий дом - особенный. В нем есть зрительная труба, через которую удобно наблюдать за торжеством и фейерверками. Осматривая остров из штаба, дозорный постоянно находит спрятанные, позабытые или потерянные предметы и оповещает вас. Выберите праздничный штаб, чтобы оглядеть окрестности. 
 Чтобы получить предметы, выполните поиск в звездном меню. Скорее проверьте, что же удалось найти!',
         'BuiBonus_FlyingHouse_Timer' => 'Дозорный каждый день что-то находит. Ниже указано время до его следующей находки.
@@ -23239,36 +23603,64 @@ Together you’ll rise, where friendships are strong!',
 Кроме того, мы предоставим вам возможность получить больше наград за выполнение особой задачи раз в неделю. Не выполните задачу, не полу-у-учите больше наград. Мы же не джины какие-то.
 Ищите наш корабль призраков на западном берегу-у-у, его сложно пропустить.',
         'BuiBonus_HauntedMansion_Start' => 'Поселенцы начинают переживать из-за этого нового дома, который вы строите. Говорят, там обитают призраки. Давайте исследуем его.',
-        'BuiBonus_WitchCovenUpgrade_Start' => 'NT: Mayor have you noticed the odd newcomers?
+        'BuiBonus_Offshorelighthouse_Start' => 'Старый смотритель маяка предлагает излишки своего улова.',
+        'BuiBonus_OreRefinery_Bronze_02' => 'Перерабатывающий завод работает вполне неплохо, мэр, но медь, которая в нём производится, все еще содержит слишком много примесей.
+Думаю, температуру в печах можно регулировать точнее. При правильной настройке мы сможем значительно улучшить качество нашей меди.',
+        'BuiBonus_OreRefinery_Bronze_03' => 'Теперь, когда медь стала чище, обнаружился другой недостаток.
+Слишком много тепла уходит через вытяжные каналы, и расплавленный металл остывает еще до завершения отливки.
+Если переработать схему движения жара в печах, мы сможем повысить как количество получаемой меди, так и скорость работы.',
+        'BuiBonus_OreRefinery_Gold_01' => 'Золото требует не столько силы, сколько точности.
+Даже малейшая примесь делает его более тусклым и снижает ценность.
+Нужно освоить более тонкие способы отделения примесей, если мы хотим, чтобы наше золото соответствовало стандартам королевской чеканки.',
+        'BuiBonus_OreRefinery_Gold_02' => 'Во время последней операции несколько плавильных тиглей треснули, а чрезмерно высокая температура испортила целые партии.
+Если улучшить регуляторы нагрева и изолировать камеры переработки, мы сможем сохранить гораздо больше драгоценного металла.',
+        'BuiBonus_OreRefinery_Gold_03' => 'Переработка золота почти достигла совершенства, поэтому спрос начинает превышать наши нынешние мощности.
+Нужно укрепить верхние узлы перерабатывающего завода и стабилизировать производственный поток, пока процветание не погубило свой же источник.',
+        'BuiBonus_OreRefinery_Iron_01' => 'С железом обращаться сложнее, чем с медью. Да, перерабатывающий завод может его расплавить – но этот процесс не всегда проходит гладко.
+Нужно улучшить внутреннюю облицовку печей и укрепить системы давления, если мы хотим обуздать железо.',
+        'BuiBonus_OreRefinery_Iron_02' => 'Новые способы работы с железом выявили еще один недочет.
+Наши мехи не могут поддерживать постоянный поток воздуха при длительной переработке, из-за чего портятся целые партии.
+Более крупные камеры давления могут решить эту проблему.',
+        'BuiBonus_OreRefinery_Iron_03' => 'Качество железа улучшается, но в шлаковых ямах все еще скапливаются отходы.
+При переработке теряется слишком много пригодного металла.
+Если извлечь эти остатки и переработать их заново, наша эффективность сможет сравниться с лучшими литейными далеких королевств.',
+        'BuiBonus_OreRefinery_Platinum_01' => 'Работа с платиной может оказаться для нас самым сложным испытанием.
+Наши текущие методы оставляют в металле слишком много примесей.
+Чтобы как следует перерабатывать платину, нужна точность, которой мы прежде еще не достигали.',
+        'BuiBonus_OreRefinery_Platinum_02' => 'Наши способы работы с платиной дают результат, но для этого приходится прикладывать невероятные усилия.
+Даже малейшие ошибки в настройке печей губят целые циклы переработки.
+Если повысить точность внутренних систем перерабатывающего завода, результаты могут превзойти все ожидания.',
+        'BuiBonus_OreRefinery_Platinum_03' => 'Мы освоили переработку меди, железа, золота, титана, а теперь даже платины.
+Но я верю, что у перерабатывающего завода все еще есть скрытые возможности.
+Последнее улучшение может превратить это место из обычного промышленного центра в чудо, о котором будут помнить многие поколения.',
+        'BuiBonus_OreRefinery_Titanium_01' => 'Титан не похож ни на одну руду, которую мы перерабатывали раньше.
+Жар, необходимый для его обработки, подвергает печи опасной нагрузке, а обычные тигли слабеют и трескаются под давлением.
+Если мы хотим освоить этот металл, нужно усилить сам перерабатывающий завод.',
+        'BuiBonus_OreRefinery_Titanium_02' => 'Переработка титана подвергает наши системы опасной нагрузке и почти доводит их до отказа.
+Трубы деформируются, а целые камеры дрожат от жара печей.
+Нам нужны усиленные материалы и более передовые системы охлаждения, чтобы перерабатывающий завод выдержал дальнейшую работу.',
+        'BuiBonus_OreRefinery_Titanium_03' => 'Теперь мы можем перерабатывать титан, но процесс все еще идет чрезвычайно медленно.
+Если изменить схему движения жара в печах и наладить сеть давления, производство может значительно улучшиться.',
+        'BuiBonus_OreRefinery_Unlock_01' => 'Руда, которую мы добываем из земли, с каждым сезоном становится всё беднее, мэр. Однако ходят слухи о далёких народах, которые извлекают больше из меньшего количества породы.
+Ищите свитки знаний во время приключений и приносите их обратно.',
+        'BuiBonus_OreRefinery_Unlock_02' => 'Чертежи у нас на руках, но перерабатывающий завод гораздо сложнее, чем простая кузница. Каждый канал должен выдерживать поток расплавленного металла и не разрушаться.
+Завершите строительство и приведите механизмы в действие.',
+        'BuiBonus_OreRefinery_Unlock_03' => 'Перерабатывающий завод пожирает топливо, как голодная армия хлеб.
+В старых текстах говорится об очищенном древесном угле и прессованных топливных брикетах. Странные методы...
+Проследите, чтобы эти инструкции передали в мастерские.',
+        'BuiBonus_OreRefinery_Unlock_04' => 'Новое топливо полностью изменит работу перерабатывающего завода.
+Печь будет разогреваться до нужной температуры для размягчения неподатливых руд, а большие механизмы придут в движение с той силой, которую задумали их создатели.',
+        'BuiBonus_OreRefinery_Upgrades_01' => 'Мне пришлось несколько ночей изучать найденные чертежи, но теперь я точно знаю, что наш перерабатывающий завод не должен был работать сам по себе.
 
-We should pay them a visit and make sure they don\'t start any trouble with the locals',
-        'BuiBonus_WitchCovenUpgrade_Upgrade1' => 'NT: Ah! Mayor welcome back.
-
-Oh 1000 apologies for our previous behavior. You would surely understand that stressed of travel can wear one down.
-
-We see you have an interesting collection of texts with you.
-
-If you present us with a complete set, will make worth your while.',
-        'BuiBonus_WitchCovenUpgrade_Upgrade2' => 'NT: Mayor! Your latest gifts have proven most useful... Most useful indeed. haha!
-
-There are many secrets, much knowledge yet untapped.
-
-Why not provide us with any ancient scriptures you can find?
-
-A person of your stature cannot be left behind in matters of wisdom...',
-        'BuiBonus_WitchCoven_CancelBLoodustA' => 'NT: It would be a shame to leave an unsatisfied customer.
-
-Never fear. We can undo the effects... for a price...',
-        'BuiBonus_WitchCoven_CancelBLoodustB' => 'NT: We take great pride in providing only the best service wealth can buy.
-
-Not happy? We can undo the effects... for a price...',
-        'BuiBonus_WitchCoven_CancelRisenArmyA' => 'NT: It would be a shame to leave an unsatisfied customer.
-
-Never fear. We can undo the effects... for a price...',
-        'BuiBonus_WitchCoven_CancelRisenArmyB' => 'NT: We take great pride in providing only the best service wealth can buy.
-
-Not happy? We can undo the effects... for a price...',
-        'BuiBonus_WitchCoven_PageReward_Repeatable' => 'NT: As you know, our sisterhood is always on the search of untold knowledge.',
+В его проекте не предусмотрены целые технологии.',
+        'BuiBonus_OreRefinery_Upgrades_02' => 'Некоторые части проекта словно намеренно остались незавершенными. Пустые камеры. Неиспользованные линии давления. Место, оставленное для технологий, которых не было в собранных нами свитках.',
+        'BuiBonus_OreRefinery_Upgrades_03' => 'Ходят слухи о северных инженерах, которые используют давление пара, металлургах из пустынь, отделяющих руду с помощью измельченных солей, и мастерах с дальних островов, которые снова и снова складывают и очищают сталь, делая ее лучше.',
+        'BuiBonus_Smokehouse_MiniStart' => 'Лучшие мастера копчения острова приготовили в вашу честь особое лакомство. Посетите воздаяние коптильне и узнайте, что вас там ждёт.
+После посещения воздаяния коптильне в вашем звездном меню появится копченый рыбный стейк.',
+        'BuiBonus_Smokehouse_Mini_Loop' => 'На создание идеального копченого деликатеса требуется время. Лучшие мастера копчения на острове никогда не торопятся, чтобы создавать только превосходные продукты.
+Возвращайтесь через день, чтобы забрать свой следующий копченый рыбный стейк. Помните: не забрав свой текущий стейк, вы не сможете получить следующий.',
+        'BuiBonus_Smokehouse_Mini_Timer' => 'На создание идеального копченого деликатеса требуется время. Лучшие мастера копчения на острове никогда не торопятся, чтобы создавать только превосходные продукты.
+Возвращайтесь через день, чтобы забрать свой следующий копченый рыбный стейк. Помните: не забрав свой текущий стейк, вы не сможете получить следующий.',
         'CQ1M1_FourWinds_Tcl1' => 'Чрезвычайная ситуация! Последние полгода хранитель башни постоянно отправлял нам предупреждения, но мы смогли получить их только этим утром. В своем письме он пишет, что четыре ветра объединяются в чудовищный шторм прямо над нашим архипелагом. Он говорит, что такое случается раз в 100 лет. У нас сохранились записи о последнем таком урагане. В тот раз он разрушил большую часть королевства. Мы не можем допустить, чтобы такое повторилось! У нас сложилась чрезвычайная ситуация! Надо готовиться к худшему!',
         'CQ1M1_FourWinds_Tcl2' => 'Чрезвычайная ситуация! Последние полгода хранитель башни постоянно отправлял нам предупреждения, но мы смогли получить их только этим утром. В своем письме он пишет, что четыре ветра объединяются в чудовищный шторм прямо над нашим архипелагом. Он говорит, что такое случается раз в 100 лет. У нас сохранились записи о последнем таком урагане. В тот раз он разрушил большую часть королевства. Мы не можем допустить, чтобы такое повторилось! У нас сложилась чрезвычайная ситуация! Надо готовиться к худшему!',
         'CQ1M1_FourWinds_Tcl3' => 'Чрезвычайная ситуация! Последние полгода хранитель башни постоянно отправлял нам предупреждения, но мы смогли получить их только этим утром. В своем письме он пишет, что четыре ветра объединяются в чудовищный шторм прямо над нашим архипелагом. Он говорит, что такое случается раз в 100 лет. У нас сохранились записи о последнем таком урагане. В тот раз он разрушил большую часть королевства. Мы не можем допустить, чтобы такое повторилось! У нас сложилась чрезвычайная ситуация! Надо готовиться к худшему!',
@@ -23901,7 +24293,6 @@ Not happy? We can undo the effects... for a price...',
         'DaiANewTreasure' => 'Ваш кузен Фредерик, известный своей страстью к поиску сокровищ, снова почтил вас визитом и рассказал о скрытых сокровищах. К сожалению, у него не хватает нескольких фрагментов карты, и подсказки привели его на этот остров. Попробуйте найти их любым путем!',
         'DaiASignOfEsteem' => 'Ваши новые поселенцы уже несколько месяцев усердно на вас работают. Сделайте им подарок в знак признательности и благодарности за верность.',
         'DaiASignOfPeace' => 'В знак мира король Дэмьен предлагает публично уничтожить оружие перед Тирхандским дворцом. Вы разделяете эту идею, а потому решаете принять участие в акции и отдать часть своего оружия.',
-        'DaiAdventureSeasonMercenary' => 'NT: Did you already hear about the new finding on some adventures? There are Adventure Relics which might become quite handy for us. Go to one of these adventures, defeat the mercenaries and collect your rewards!',
         'DaiAdventures' => 'Ваши войска в казармах заскучали, потому что у них закончились славные истории! Думаю, настало время для нового приключения, о котором впоследствии можно будет рассказывать новые истории!',
         'DaiAlienation' => 'Король любит парады! А знаете, что он любит больше, чем парады? Все просто - военные парады! Но для такого масштабного события нужно много бойцов, поэтому мы собираемся отправить часть своих войск!',
         'DaiAnimalMarket' => 'В соседней стране вскоре откроется огромный рынок животных. Один из ваших кузенов хочет пойти и купить новых лошадей, но у него нет золота. Возможно, вы могли бы помочь?',
@@ -24749,8 +25140,6 @@ Not happy? We can undo the effects... for a price...',
 Как только начнется бой, вы можете отправить маршала с атакующими войсками дальше и напасть на лагерь командира.
 
 А теперь приятная новость: как только одолеете командира, все остальные бойцы побегут с поля боя. Так мы сможем спасти многих.',
-        'FinalGuildFest_OpenPanel2' => 'NT: Now that the festivities are over, and the quests are all done,
-Open the Guild Fest Panel, and see what you’ve won.',
         'GarrunQ1' => 'Разведчики сообщают, что охотничьи отряды Гарруна рассредоточились по всему острову. Они кучкуются на привалах браконьеров, расположенных вокруг более крупных охотничьих лагерей.
 
 - Уничтожьте все охотничьи лагеря',
@@ -25459,19 +25848,9 @@ Open the Guild Fest Panel, and see what you’ve won.',
 На состязаньи от тебя ждут лучший монумент.',
         'GuildFest_Day9_Turnin' => 'Ингредиенты ждут, талант твой - ключ к успеху.
 Участвуй в состязании зевакам на потеху.',
-        'GuildFest_ExtraBuilding' => 'NT: Temporary accommodations, with an extra queue to gain, Guild Fest brings guilds together, where victory is the aim.',
-        'GuildFest_ExtraBuilding2' => 'NT: On adventures we go, to win the fight,
-Extra accommodations will speed up the night.
-Gather the tokens, let’s make them soar,
-Guild Fest success is knocking at the door.',
-        'GuildFest_GuildSize2' => 'NT: Join a guild, don’t be shy,
-It needs at least two members to fly.
-One is too lonely, don’t go it alone,
-With a guild, you\'ll find a place to call home!',
         'GuildFest_OpenPanel' => 'Добро пожаловать на фестиваль гильдий! Вас ждет веселье без границ, смех и улыбки милых лиц!
 
 И не забудьте заглянуть на вкладку состязаний. Ожесточенная борьба ведется там день ото дня. И каждый рвется ввысь и вверх, соперников тесня.',
-        'GuildFest_Tutorial_Main' => 'NT: Welcome to Guild Fest, Join us at the Grounds, where fun knows no bounds, a place of joy where laughter resounds.',
         'HQ1_ThePumpkinMaster' => 'Эй! Не нужно бояться, это же я, тыквенный мастер Элиот! Почему так темно снаружи? Это Полый Человек украл солнце. Мне нужна помощь, чтобы найти детей ночи и отпугнуть Полого Человека! Еще нам пригодятся мои волшебные тыквы. Первым делом потребуется кладбище, на котором мы их и вырастим!',
         'HQ1h_TendingTheSpookyCrops' => 'Да, мои тыковки растут медленно, но это поправимо. Говорят, что можно ускорить процесс при помощи добра, которое вырабатывает универсальная мастерская! Попробуем?',
         'HQ2_TricksAndTreats' => 'Полый Человек рожден из чистой темноты и тайны, поэтому в темноте его не видно! Чтобы его отпугнуть, придется изучить все его трюки. Изготовим в универсальной мастерской немного темноты и попробуем... нет, не на этом острове. Думаю, мы сумеем найти кого-нибудь, кто вызовется... стать подопытным, хи-хи!',
@@ -25913,16 +26292,6 @@ With a guild, you\'ll find a place to call home!',
         'HW2017plus_ThePumpkinMasterMain' => 'Мы уже встречались? Ваше лицо кажется мне знакомым. В общем, я Элиот. Вас, наверно, смущает происходящее на вашем острове, так? Мы с вами обо всем позаботимся. Итак, с чего начнем?',
         'HW2017plus_ThePumpkinMasterSub1' => 'Во-первых, нужно попробовать раздобыть тыквы! Зачем? Потому что за них можно купить много классных вещей. Даже здания! Одна из возможностей их получить - это кладбища с тыквами. Их вы найдете у купца. Они бывают разные - отличаются размером и скоростью. Изучите предложение и купите себе несколько.',
         'HW2017plus_ThePumpkinMasterSub2' => 'Тыквы, конечно, можно собирать и по-другому, а не только на кладбищах. Они могут быть наградой за выполнение заданий и некоторых приключений, коллекционным предметом в вашей домашней зоне, товаром у купца и призом за победу над големом. Конечно, возможна и их покупка у других игроков. В общем, удачного сбора!',
-        'HW2017plus_ZombieInvaders_Intro1' => 'NT: Our scouts reported abominations terrorizing our shores.
-
-Send troops to contain their advance.',
-        'HW2017plus_ZombieInvaders_Reach50' => 'NT: Our citizens who live on the southern border have reported unsettling sighting.
-
-I suggest sending scouts to investigate.',
-        'HW2017plus_ZombieInvaders_Repeatable' => 'NT: Once again we must continue our valiant effort to prevent these vermin from spreading into mainland',
-        'HW2017plus_ZombieInvaders_Repeatable_Timer' => 'NT: It is said that is a curse which takes place in this time of the year.
-
-The thread has been dealt with for the moment, but we must remain vigilant, for they may come back.',
         'HWCampaign1_Adv1_Main' => 'Малые големы появились из тумана и напали на город.
 Операция будет простой: нужно спровадить големов, укрепить город для защиты от новых врагов и, наконец, найти и уничтожить источник их появления.',
         'HWCampaign1_Adv1_Sub1' => 'Големы перестали нападать - им нужна передышка. Они прячутся в разрушенных домах. Хорошая возможность нанести удар!',
@@ -26632,6 +27001,90 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'Soccer2018plus_Sub11' => 'В четвертьфинале мы будем играть с курфюршеством Подсолнушье. Они не случайно попали в число восьми сильнейших команд турнира. Как и наш предыдущий соперник, они применяют сильную наступательную тактику, но с более сбалансированной полузащитой. В общем, нам придется туго.',
         'Soccer2018plus_Sub12' => 'Вот и полуфинал… Какой замечательный день! Если бы в самом начале турнира мне сказали, что мы добьемся таких результатов, у меня были бы сомнения. И вот теперь нам предстоит матч с великим герцогством Темнолесье. Что я могу сказать об этом сопернике? Они применяют схему 1-4-1-4, и у них много очень сильных игроков.',
         'Soccer2018plus_Sub13' => 'Чувствуете в воздухе напряженное ожидание? Настал день финала. Наш соперник - королевство Дракоглавия. Это лучшая команда на всем турнире - если не считать нас, конечно. Все их игроки очень сильные. Говорят даже, что они никогда не сдаются. Но ведь им еще не приходилось играть против нас! Выходите на поле и покажите сопернику, что мы не лыком шиты!',
+        'Soccer2018plus_VictoryByDesign_26-46_Application_Main' => 'Для нас было бы честью провести состязание на нашем острове. Исполним же волю короля и подадим заявку.',
+        'Soccer2018plus_VictoryByDesign_26-46_Application_Sub1' => 'Секрет успешной заявки – тщательные приготовления. Нужно убедиться, что народ поддерживает проведение игр на нашем острове. Давайте проведем агитационный тур и заручимся поддержкой людей.',
+        'Soccer2018plus_VictoryByDesign_26-46_Application_Sub2' => 'Мы заручились поддержкой народа. Теперь пора подготовить заявку на проведение игр. Предлагаю сделать все в лучшем виде, чтобы комитет точно выбрал нас.',
+        'Soccer2018plus_VictoryByDesign_26-46_Application_Sub3' => 'Мы подготовили отличную заявку. Теперь пора представить ее комитету. Покажем им, на что мы способны!',
+        'Soccer2018plus_VictoryByDesign_26-46_Application_Sub4' => 'Совсем скоро торжественно объявят, кто будет проводить игры. Мы должны отправить делегацию на празднества и стать принимающей стороной.',
+        'Soccer2018plus_VictoryByDesign_26-46_Determination_MainA' => 'Решения приняты, а связи налажены. Пришло время уверенно действовать по четкому плану и вырвать победу у соперников.',
+        'Soccer2018plus_VictoryByDesign_26-46_Determination_MainB' => 'Вы не поддались искушению и не стали идти легким путем. Пора раскрыть темные замыслы и добиться честной победы.',
+        'Soccer2018plus_VictoryByDesign_26-46_Determination_Sub1A' => 'Через связи с сомнительными личностями вы подкупаете должностное лицо, получая возможность выиграть несколько игр и подняться в рейтинге.',
+        'Soccer2018plus_VictoryByDesign_26-46_Determination_Sub1B' => 'Вы не стали принимать предложение. Теперь очевидно, что на играх действует какая-то нечестная схема. Отправьте команду расследователей, чтобы собрать больше информации об этом.',
+        'Soccer2018plus_VictoryByDesign_26-46_Determination_Sub2A' => 'К сожалению, не все должностные лица готовы принять подкуп. На некоторых нужно надавить. Отправьте агентов, чтобы найти компромат на тех, кто не берет взятку.',
+        'Soccer2018plus_VictoryByDesign_26-46_Determination_Sub2B' => 'Скрытая сеть использует подкуп, шантаж и саботаж, чтобы влиять на ход игр. Внедритесь в эту сеть и соберите доказательства.',
+        'Soccer2018plus_VictoryByDesign_26-46_Determination_Sub3A' => 'Так вышло, что еще остались честные и порядочные люди, которых нельзя ни подкупить, ни шантажировать. Придется искать другой подход. Вмешайтесь в снабжение команд соперников, чтобы обеспечить себе победу.',
+        'Soccer2018plus_VictoryByDesign_26-46_Determination_Sub3B' => 'Собрав достаточно сведений, вы можете вступить с этой преступной сетью в бой и добиться, чтобы все причастные понесли ответственность за содеянное.',
+        'Soccer2018plus_VictoryByDesign_26-46_Determination_Sub4A' => 'Благодаря всем уловкам и ухищрениям, мы вышли в финал. Чтобы выиграть, осталось сделать последний шаг и пойти на небольшие махинации. Вы получили рецепты от своих деловых партнеров – используйте их, чтобы ваша команда получила заряд энергии, необходимый для победы.',
+        'Soccer2018plus_VictoryByDesign_26-46_Determination_Sub4B' => 'Мы остались верны своим принципам и разоблачили коррупционную схему, благодаря чему нам удалось выйти в финал. До победы рукой подать – осталось собрать силы на последний рывок. Позаботьтесь о том, чтобы у вашей команды была надежная поддержка и первоклассное снаряжение.',
+        'Soccer2018plus_VictoryByDesign_26-46_Hub' => 'Королевства готовятся к новому дружескому состязанию. Король приказал своим вассалам подать заявки на проведение игр. Конечно, все должны принять участие и принести королевству победу.',
+        'Soccer2018plus_VictoryByDesign_26-46_Participation_Main' => 'Пора принять участие в играх. У вас отличная подготовка – будет жаль, если вы не займете лидирующую позицию. Вперед за победой!',
+        'Soccer2018plus_VictoryByDesign_26-46_Participation_Sub1' => 'Несмотря на тщательную подготовку и достойное выступление, команда не оправдала ожиданий. Соберите группу специалистов, чтобы выяснить причины неудачи.',
+        'Soccer2018plus_VictoryByDesign_26-46_Participation_Sub2' => 'Команда не только не оправдала ожиданий, но и столкнулась с несколькими сомнительными решениями и результатами. Отправьте группу, чтобы выяснить все обстоятельства.',
+        'Soccer2018plus_VictoryByDesign_26-46_Participation_Sub3a' => 'Расследование показало, что дело может быть нечисто. Затем появилась сомнительная личность и вполголоса предложила повысить место команды в рейтинге.
+Произведите сокровище и уплатите его, чтобы принять предложение.',
+        'Soccer2018plus_VictoryByDesign_26-46_Participation_Sub3b' => 'Расследование показало, что дело может быть нечисто. Затем появилась сомнительная личность и шепотом предложила улучшить позицию команды в рейтинге.
+Произведите требуемые ресурсы и отправьте группу экспертов-расследователей, чтобы отказаться от предложения.',
+        'Soccer2018plus_VictoryByDesign_26-46_Preparation_Main' => 'Принимающей стороной вы не стали, но это не помешает поучаствовать на всех этапах события. У вас еще есть возможность подготовить команду чемпионов.',
+        'Soccer2018plus_VictoryByDesign_26-46_Preparation_Sub1' => 'Начался этап подготовки. Пора собрать команду для участия в играх.',
+        'Soccer2018plus_VictoryByDesign_26-46_Preparation_Sub2' => 'Мы отобрали лучших. Теперь приступим к тренировкам, чтобы на играх они выступили на высшем уровне.',
+        'Soccer2018plus_VictoryByDesign_26-46_Preparation_Sub3' => 'У нас есть возможность удостовериться, что игры проходят честно и по правилам. Предлагаю обучить команду судей и отправить ее на помощь организаторам.',
+        'Soccer2018plus_VictoryByDesign_26-46_Preparation_Sub4' => 'Чтобы игры прошли безопасно и мирно, организаторам от всех участников нужны квалифицированные сотрудники по работе с болельщиками и силы правопорядка. За дело!',
+        'Soccer2018plus_VictoryByDesign_47-61_Application_Main' => 'Для нас было бы честью провести состязание на нашем острове. Исполним же волю короля и подадим заявку.',
+        'Soccer2018plus_VictoryByDesign_47-61_Application_Sub1' => 'Секрет успешной заявки – тщательные приготовления. Нужно убедиться, что народ поддерживает проведение игр на нашем острове. Давайте проведем агитационный тур и заручимся поддержкой людей.',
+        'Soccer2018plus_VictoryByDesign_47-61_Application_Sub2' => 'Мы заручились поддержкой народа. Теперь пора подготовить заявку на проведение игр. Предлагаю сделать все в лучшем виде, чтобы комитет точно выбрал нас.',
+        'Soccer2018plus_VictoryByDesign_47-61_Application_Sub3' => 'Мы подготовили отличную заявку. Теперь пора представить ее комитету. Покажем им, на что мы способны!',
+        'Soccer2018plus_VictoryByDesign_47-61_Application_Sub4' => 'Совсем скоро торжественно объявят, кто будет проводить игры. Мы должны отправить делегацию на празднества и стать принимающей стороной.',
+        'Soccer2018plus_VictoryByDesign_47-61_Determination_MainA' => 'Решения приняты, а связи налажены. Пришло время уверенно действовать по четкому плану и вырвать победу у соперников.',
+        'Soccer2018plus_VictoryByDesign_47-61_Determination_MainB' => 'Вы не поддались искушению и не стали идти легким путем. Пора раскрыть темные замыслы и добиться честной победы.',
+        'Soccer2018plus_VictoryByDesign_47-61_Determination_Sub1A' => 'Через связи с сомнительными личностями вы подкупаете должностное лицо, получая возможность выиграть несколько игр и подняться в рейтинге.',
+        'Soccer2018plus_VictoryByDesign_47-61_Determination_Sub1B' => 'Вы не стали принимать предложение. Теперь очевидно, что на играх действует какая-то нечестная схема. Отправьте команду расследователей, чтобы собрать больше информации об этом.',
+        'Soccer2018plus_VictoryByDesign_47-61_Determination_Sub2A' => 'К сожалению, не все должностные лица готовы принять подкуп. На некоторых нужно надавить. Отправьте агентов, чтобы найти компромат на тех, кто не берет взятку.',
+        'Soccer2018plus_VictoryByDesign_47-61_Determination_Sub2B' => 'Скрытая сеть использует подкуп, шантаж и саботаж, чтобы влиять на ход игр. Внедритесь в эту сеть и соберите доказательства.',
+        'Soccer2018plus_VictoryByDesign_47-61_Determination_Sub3A' => 'Так вышло, что еще остались честные и порядочные люди, которых нельзя ни подкупить, ни шантажировать. Придется искать другой подход. Вмешайтесь в снабжение команд соперников, чтобы обеспечить себе победу.',
+        'Soccer2018plus_VictoryByDesign_47-61_Determination_Sub3B' => 'Собрав достаточно сведений, вы можете вступить с этой преступной сетью в бой и добиться, чтобы все причастные понесли ответственность за содеянное.',
+        'Soccer2018plus_VictoryByDesign_47-61_Determination_Sub4A' => 'Благодаря всем уловкам и ухищрениям, мы вышли в финал. Чтобы выиграть, осталось сделать последний шаг и пойти на небольшие махинации. Вы получили рецепты от своих деловых партнеров – используйте их, чтобы ваша команда получила заряд энергии, необходимый для победы.',
+        'Soccer2018plus_VictoryByDesign_47-61_Determination_Sub4B' => 'Мы остались верны своим принципам и разоблачили коррупционную схему, благодаря чему нам удалось выйти в финал. До победы рукой подать – осталось собрать силы на последний рывок. Позаботьтесь о том, чтобы у вашей команды была надежная поддержка и первоклассное снаряжение.',
+        'Soccer2018plus_VictoryByDesign_47-61_Hub' => 'Королевства готовятся к новому дружескому состязанию. Король приказал своим вассалам подать заявки на проведение игр. Конечно, все должны принять участие и принести королевству победу.',
+        'Soccer2018plus_VictoryByDesign_47-61_Participation_Main' => 'Пора принять участие в играх. У вас отличная подготовка – будет жаль, если вы не займете лидирующую позицию. Вперед за победой!',
+        'Soccer2018plus_VictoryByDesign_47-61_Participation_Sub1' => 'Несмотря на тщательную подготовку и достойное выступление, команда не оправдала ожиданий. Соберите группу специалистов, чтобы выяснить причины неудачи.',
+        'Soccer2018plus_VictoryByDesign_47-61_Participation_Sub2' => 'Команда не только не оправдала ожиданий, но и столкнулась с несколькими сомнительными решениями и результатами. Отправьте группу, чтобы выяснить все обстоятельства.',
+        'Soccer2018plus_VictoryByDesign_47-61_Participation_Sub3a' => 'Расследование показало, что дело может быть нечисто. Затем появилась сомнительная личность и вполголоса предложила повысить место команды в рейтинге.
+Произведите сокровище и уплатите его, чтобы принять предложение.',
+        'Soccer2018plus_VictoryByDesign_47-61_Participation_Sub3b' => 'В ходе расследования выяснилось, что дело может быть нечисто. Затем появилась сомнительная личность и шепотом предложила помочь команде занять более высокую позицию в рейтинге.
+Произведите расследователей и отправьте их для отказа от предложения.',
+        'Soccer2018plus_VictoryByDesign_47-61_Preparation_Main' => 'Принимающей стороной вы не стали, но это не помешает поучаствовать на каждом этапе события. У вас еще есть возможность собрать команду чемпионов.',
+        'Soccer2018plus_VictoryByDesign_47-61_Preparation_Sub1' => 'Начался этап подготовки. Пора собрать команду для участия в играх.',
+        'Soccer2018plus_VictoryByDesign_47-61_Preparation_Sub2' => 'Мы отобрали лучших. Теперь приступим к тренировкам, чтобы на играх они выступили на высшем уровне.',
+        'Soccer2018plus_VictoryByDesign_47-61_Preparation_Sub3' => 'У нас есть возможность удостовериться, что игры проходят честно и по правилам. Предлагаю обучить команду судей и отправить ее на помощь организаторам.',
+        'Soccer2018plus_VictoryByDesign_47-61_Preparation_Sub4' => 'Чтобы игры прошли безопасно и мирно, организаторам от всех участников нужны квалифицированные сотрудники по работе с болельщиками и силы правопорядка. За дело!',
+        'Soccer2018plus_VictoryByDesign_62-80_Application_Main' => 'Для нас было бы честью провести состязание на нашем острове. Исполним же волю короля и подадим заявку.',
+        'Soccer2018plus_VictoryByDesign_62-80_Application_Sub1' => 'Секрет успешной заявки – тщательные приготовления. Нужно убедиться, что народ поддерживает проведение игр на нашем острове. Давайте проведем агитационный тур и заручимся поддержкой людей.',
+        'Soccer2018plus_VictoryByDesign_62-80_Application_Sub2' => 'Мы заручились поддержкой народа. Теперь пора подготовить заявку на проведение игр. Предлагаю сделать все в лучшем виде, чтобы комитет точно выбрал нас.',
+        'Soccer2018plus_VictoryByDesign_62-80_Application_Sub3' => 'Мы подготовили отличную заявку. Теперь пора представить ее комитету. Покажем им, на что мы способны!',
+        'Soccer2018plus_VictoryByDesign_62-80_Application_Sub4' => 'Совсем скоро торжественно объявят, кто будет проводить игры. Мы должны отправить делегацию на празднества и стать принимающей стороной.',
+        'Soccer2018plus_VictoryByDesign_62-80_Determination_MainA' => 'Решения приняты, а связи налажены. Пришло время уверенно действовать по четкому плану и вырвать победу у соперников.',
+        'Soccer2018plus_VictoryByDesign_62-80_Determination_MainB' => 'Вы не поддались искушению и не стали идти легким путем. Пора раскрыть темные замыслы и добиться честной победы.',
+        'Soccer2018plus_VictoryByDesign_62-80_Determination_Sub1A' => 'Через связи с сомнительными личностями вы подкупаете должностное лицо, получая возможность выиграть несколько игр и подняться в рейтинге.',
+        'Soccer2018plus_VictoryByDesign_62-80_Determination_Sub1B' => 'Вы не стали принимать предложение. Теперь очевидно, что на играх действует какая-то нечестная схема. Отправьте команду расследователей, чтобы собрать больше информации об этом.',
+        'Soccer2018plus_VictoryByDesign_62-80_Determination_Sub2A' => 'К сожалению, не все должностные лица готовы принять подкуп. На некоторых нужно надавить. Отправьте агентов, чтобы найти компромат на тех, кто не берет взятку.',
+        'Soccer2018plus_VictoryByDesign_62-80_Determination_Sub2B' => 'Скрытая сеть использует подкуп, шантаж и саботаж, чтобы влиять на ход игр. Внедритесь в эту сеть и соберите доказательства.',
+        'Soccer2018plus_VictoryByDesign_62-80_Determination_Sub3A' => 'Так вышло, что еще остались честные и порядочные люди, которых нельзя ни подкупить, ни шантажировать. Придется искать другой подход. Вмешайтесь в снабжение команд соперников, чтобы обеспечить себе победу.',
+        'Soccer2018plus_VictoryByDesign_62-80_Determination_Sub3B' => 'Собрав достаточно сведений, вы можете вступить с этой преступной сетью в бой и добиться, чтобы все причастные понесли ответственность за содеянное.',
+        'Soccer2018plus_VictoryByDesign_62-80_Determination_Sub4A' => 'Благодаря всем уловкам и ухищрениям, мы вышли в финал. Чтобы выиграть, осталось сделать последний шаг и пойти на небольшие махинации. Вы получили рецепты от своих деловых партнеров – используйте их, чтобы ваша команда получила заряд энергии, необходимый для победы.',
+        'Soccer2018plus_VictoryByDesign_62-80_Determination_Sub4B' => 'Мы остались верны своим принципам и разоблачили коррупционную схему, благодаря чему нам удалось выйти в финал. До победы рукой подать – осталось собрать силы на последний рывок. Позаботьтесь о том, чтобы у вашей команды была надежная поддержка и первоклассное снаряжение.',
+        'Soccer2018plus_VictoryByDesign_62-80_Hub' => 'Королевства готовятся к новому дружескому состязанию. Король приказал своим вассалам подать заявки на проведение игр. Конечно, все должны принять участие и принести королевству победу.',
+        'Soccer2018plus_VictoryByDesign_62-80_Participation_Main' => 'Пора принять участие в играх. У вас отличная подготовка – будет жаль, если вы не займете лидирующую позицию. Вперед за победой!',
+        'Soccer2018plus_VictoryByDesign_62-80_Participation_Sub1' => 'Несмотря на тщательную подготовку и достойное выступление, команда не оправдала ожиданий. Соберите группу специалистов, чтобы выяснить причины неудачи.',
+        'Soccer2018plus_VictoryByDesign_62-80_Participation_Sub2' => 'Команда не только не оправдала ожиданий, но и столкнулась с несколькими сомнительными решениями и результатами. Отправьте группу, чтобы выяснить все обстоятельства.',
+        'Soccer2018plus_VictoryByDesign_62-80_Participation_Sub3a' => 'Расследование показало, что дело может быть нечисто. Затем появилась сомнительная личность и вполголоса предложила повысить место команды в рейтинге.
+Произведите сокровище и уплатите его, чтобы принять предложение.',
+        'Soccer2018plus_VictoryByDesign_62-80_Participation_Sub3b' => 'Расследование показало, что дело может быть нечисто. Затем появилась сомнительная личность и шепотом предложила улучшить позицию команды в рейтинге.
+Произведите требуемые ресурсы и отправьте группу экспертов-расследователей, чтобы отказаться от предложения.',
+        'Soccer2018plus_VictoryByDesign_62-80_Preparation_Main' => 'Принимающей стороной вы не стали, но это не помешает поучаствовать на каждом этапе события. У вас еще есть возможность собрать команду чемпионов.',
+        'Soccer2018plus_VictoryByDesign_62-80_Preparation_Sub1' => 'Начался этап подготовки. Пора собрать команду для участия в играх.',
+        'Soccer2018plus_VictoryByDesign_62-80_Preparation_Sub2' => 'Мы отобрали лучших. Теперь приступим к тренировкам, чтобы на играх они выступили на высшем уровне.',
+        'Soccer2018plus_VictoryByDesign_62-80_Preparation_Sub3' => 'У нас есть возможность удостовериться, что игры проходят честно и по правилам. Предлагаю обучить команду судей и отправить ее на помощь организаторам.',
+        'Soccer2018plus_VictoryByDesign_62-80_Preparation_Sub4' => 'Чтобы игры прошли безопасно и мирно, организаторам от всех участников нужны квалифицированные сотрудники по работе с болельщиками и силы правопорядка. За дело!',
         'SocialLong1' => 'Любой, кого заботят вопросы производительности, должен постоянно изготавливать массу усилителей. Думаю, у вас наверняка найдется такой друг. А знаете, чем его можно удивить? Усилителем "баразек", наложенным на универсальную мастерскую. Согласны?',
         'SocialLong2' => 'Как вовремя мы с вами встретились! Эта неделя обещает быть очень напряженной для наших мастерских. Нужно будет проверять их каждый день и следить, чтобы все работало как часы. Мы ведь можем на вас рассчитывать?',
         'SocialLong3' => 'В наши казармы на этой неделе нужно поставить большую партию оружия, но, боюсь, производственные мощности не смогут справиться с таким заказом. Придется снова просить союзников усилить наши производственные цепочки. Вы ведь поговорите с ними?',
@@ -29115,6 +29568,21 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
 
 Подсказка: в универсальной мастерской редкостей вы также сможете производить те же предметы.',
         'XMAS2017plus_Adv3' => 'Завершите доставку подарков всем жителям острова. Этим вы очень поможете Санте.',
+        'XMAS2017plus_CardDelivery_lvl26' => 'Одними рождественскими открытками не обойтись. Нужно доставить их людям и показать, что в мире есть нечто большее, чем будничная суета.',
+        'XMAS2017plus_CardDelivery_lvl36' => 'Одними рождественскими открытками не обойтись. Нужно доставить их людям и показать, что в мире есть нечто большее, чем будничная суета.',
+        'XMAS2017plus_CardDelivery_lvl51' => 'Одними рождественскими открытками не обойтись. Нужно доставить их людям и показать, что в мире есть нечто большее, чем будничная суета.',
+        'XMAS2017plus_CardPreparation_lvl26' => 'Прежде всего, люди должны знать, что о них заботятся. Чтобы показать им свою заботу, создайте сообщения, несущие радость и веселье. Это поднимет людям дух и облегчит их будни!',
+        'XMAS2017plus_CardPreparation_lvl36' => 'Прежде всего, люди должны знать, что о них заботятся. Чтобы показать им свою заботу, создайте сообщения, несущие радость и веселье. Это поднимет людям дух и облегчит их будни!',
+        'XMAS2017plus_CardPreparation_lvl51' => 'Прежде всего, люди должны знать, что о них заботятся. Чтобы показать им свою заботу, создайте сообщения, несущие радость и веселье. Это поднимет людям дух и облегчит их будни!',
+        'XMAS2017plus_DecoPlacement1_lvl26' => 'Время украшений! Создайте несколько украшений в универсальной мастерской редкостей и разместите их на своём острове! Это украсит ваше поселение и покажет всем, что на ваш остров приходит дух Рождества.',
+        'XMAS2017plus_DecoPlacement1_lvl36' => 'Время украшений! Создайте несколько украшений в универсальной мастерской редкостей и разместите их на своём острове! Это украсит ваше поселение и покажет всем, что на ваш остров приходит дух Рождества.',
+        'XMAS2017plus_DecoPlacement1_lvl51' => 'Время украшений! Создайте несколько украшений в универсальной мастерской редкостей и разместите их на своём острове! Это украсит ваше поселение и покажет всем, что на ваш остров приходит дух Рождества.',
+        'XMAS2017plus_DecoPlacement2_lvl26' => 'Вы создали чудесные украшения. Пришла пора поделиться ими со всеми. Давайте разнесём праздничное настроение по всем островам и принесём людям радость и счастье.',
+        'XMAS2017plus_DecoPlacement2_lvl36' => 'Вы создали чудесные украшения. Пришла пора поделиться ими со всеми. Давайте разнесём праздничное настроение по всем островам и принесём людям радость и счастье.',
+        'XMAS2017plus_DecoPlacement2_lvl51' => 'Вы создали чудесные украшения. Пришла пора поделиться ими со всеми. Давайте разнесём праздничное настроение по всем островам и принесём людям радость и счастье.',
+        'XMAS2017plus_DecoProduce2_lvl26' => 'Для создания подходящей атмосферы радости и единства нам нужно, чтобы и дома тоже выглядели по-рождественски. С вашими-то талантами у вас обязательно получится создать фантастические украшения!',
+        'XMAS2017plus_DecoProduce2_lvl36' => 'Для создания подходящей атмосферы радости и единства нам нужно, чтобы и дома тоже выглядели по-рождественски. С вашими-то талантами у вас обязательно получится создать фантастические украшения!',
+        'XMAS2017plus_DecoProduce2_lvl51' => 'Для создания подходящей атмосферы радости и единства нам нужно, чтобы и дома тоже выглядели по-рождественски. С вашими-то талантами у вас обязательно получится создать фантастические украшения!',
         'XMAS2017plus_EventMarket_Produce1_lvl26' => 'Для подготовки фундамента нужно доставить требуемые ресурсы. Знаю, дело это хлопотное, но того стоит!',
         'XMAS2017plus_EventMarket_Produce1_lvl36' => 'Для подготовки фундамента нужно доставить требуемые ресурсы. Знаю, дело это хлопотное, но того стоит!',
         'XMAS2017plus_EventMarket_Produce1_lvl51' => 'Для подготовки фундамента нужно доставить требуемые ресурсы. Знаю, дело это хлопотное, но того стоит!',
@@ -29139,6 +29607,21 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'XMAS2017plus_EventMarket_Tut2_lvl51' => 'Я создам иллюзию рождественской ярмарки, которая понравилась бы мне, и покажу, что конкретно имею в виду. А еще вы узнаете, как можно доставлять эти подарки и как улучшить рождественскую ярмарку.
 
 Хоть потом я и передам вам чертежи, знайте, именно вы сделали ярмарку реальной!',
+        'XMAS2017plus_FeastPreparation1_lvl26' => 'Ведь не может у вас быть хорошее настроение, если вам дискомфортно. Нужно поделиться теплотой и уютом. Доставайте рецепты и приготовьте для всех праздничный пир.',
+        'XMAS2017plus_FeastPreparation1_lvl36' => 'Ведь не может у вас быть хорошее настроение, если вам дискомфортно. Нужно поделиться теплотой и уютом. Доставайте рецепты и приготовьте для всех праздничный пир.',
+        'XMAS2017plus_FeastPreparation1_lvl51' => 'Ведь не может у вас быть хорошее настроение, если вам дискомфортно. Нужно поделиться теплотой и уютом. Доставайте рецепты и приготовьте для всех праздничный пир.',
+        'XMAS2017plus_FeastPreparation2_lvl26' => 'Давайте воспользуемся моментом и усилим чувство единства. Для поддержания праздничного настроения, мы должны поделиться с людьми чувством единства. Выполняйте задачи совместно с другими и почувствуйте, как растёт чувство единства. Ещё один пир будет очень кстати. Но он должен быть ещё пышнее, чем предыдущий. Уверен, что ты придумаешь что-нибудь потрясающее!',
+        'XMAS2017plus_FeastPreparation2_lvl36' => 'Давайте воспользуемся моментом и усилим чувство единства. Для поддержания праздничного настроения, мы должны поделиться с людьми чувством единства. Выполняйте задачи совместно с другими и почувствуйте, как растёт чувство единства. Ещё один пир будет очень кстати. Но он должен быть ещё пышнее, чем предыдущий. Уверен, что ты придумаешь что-нибудь потрясающее!',
+        'XMAS2017plus_FeastPreparation2_lvl51' => 'Давайте воспользуемся моментом и усилим чувство единства. Для поддержания праздничного настроения, мы должны поделиться с людьми чувством единства. Выполняйте задачи совместно с другими и почувствуйте, как растёт чувство единства. Ещё один пир будет очень кстати. Но он должен быть ещё пышнее, чем предыдущий. Уверен, что ты придумаешь что-нибудь потрясающее!',
+        'XMAS2017plus_GiftGiving_lvl26' => 'Хо-хо-хо! Пришло время помощнику Санты доставить людям радость. Покажите всем, что значит щедрость и доброта.',
+        'XMAS2017plus_GiftGiving_lvl36' => 'Хо-хо-хо! Пришло время помощнику Санты доставить людям радость. Покажите всем, что значит щедрость и доброта.',
+        'XMAS2017plus_GiftGiving_lvl51' => 'Хо-хо-хо! Пришло время помощнику Санты доставить людям радость. Покажите всем, что значит щедрость и доброта.',
+        'XMAS2017plus_HolidayCheerDelay1_lvl26' => 'Из вас вышел отличный помощник Санты. Но теперь пора подумать немного о себе и насладиться радостью, что вы вокруг создали!',
+        'XMAS2017plus_HolidayCheerDelay1_lvl36' => 'Из вас вышел отличный помощник Санты. Но теперь пора подумать немного о себе и насладиться радостью, что вы вокруг создали!',
+        'XMAS2017plus_HolidayCheerDelay1_lvl51' => 'Из вас вышел отличный помощник Санты. Но теперь пора подумать немного о себе и насладиться радостью, что вы вокруг создали!',
+        'XMAS2017plus_HolidayCheerDelay2_lvl26' => 'Рождество — это ещё и время для осмысления и покоя. Для этого нам нужно несколько тихих ночей.',
+        'XMAS2017plus_HolidayCheerDelay2_lvl36' => 'Рождество — это ещё и время для осмысления и покоя. Для этого нам нужно несколько тихих ночей.',
+        'XMAS2017plus_HolidayCheerDelay2_lvl51' => 'Рождество — это ещё и время для осмысления и покоя. Для этого нам нужно несколько тихих ночей.',
         'XMAS2017plus_Main1' => 'С Рождеством вас, мой друг!
 У меня припасены кое-какие новинки, которые сделают праздник в этом году еще лучше.
 
@@ -29148,9 +29631,18 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'XMAS2017plus_Main3_Easy' => 'Я нашел злодея, который украл моих оленей! Он прячется на одном из островов. Думаю, надо отправиться туда и нанести ему визит.',
         'XMAS2017plus_Main3_Hard' => 'Я нашел злодея, который украл моих оленей! Он прячется на одном из островов. Думаю, надо отправиться туда и нанести ему визит.',
         'XMAS2017plus_Main3_Medium' => 'Я нашел злодея, который украл моих оленей! Он прячется на одном из островов. Думаю, надо отправиться туда и нанести ему визит.',
+        'XMAS2017plus_PresentProduction_lvl26' => 'До праздничного финала осталось недолго! Я ощущаю во всех вокруг восторг. Нам нужно усилить этот восторг, приготовив кое-что, чем можно было бы поделиться с миром.',
+        'XMAS2017plus_PresentProduction_lvl36' => 'До праздничного финала осталось недолго! Я ощущаю во всех вокруг восторг. Нам нужно усилить этот восторг, приготовив кое-что, чем можно было бы поделиться с миром.',
+        'XMAS2017plus_PresentProduction_lvl51' => 'До праздничного финала осталось недолго! Я ощущаю во всех вокруг восторг. Нам нужно усилить этот восторг, приготовив кое-что, чем можно было бы поделиться с миром.',
         'XMAS2017plus_Reach16' => 'Я хочу кое-что вам показать, но для этого вам потребуется достичь уровня 16. Возвращайтесь, когда получите больше опыта. С вашим потенциалом это не должно занять много времени.',
         'XMAS2017plus_Reach23' => 'Для следующего задания нужно достичь уровня 23. Возвращайтесь, когда получите больше опыта.',
         'XMAS2017plus_Reach26' => 'Для следующего задания нужно достичь уровня 26. Возвращайтесь, когда получите больше опыта.',
+        'XMAS2017plus_SongPlacement_lvl26' => 'Пора зажигать в людях дух Рождества. Отправьте своих исполнителей на песнопения!',
+        'XMAS2017plus_SongPlacement_lvl36' => 'Пора зажигать в людях дух Рождества. Отправьте своих исполнителей на песнопения!',
+        'XMAS2017plus_SongPlacement_lvl51' => 'Пора зажигать в людях дух Рождества. Отправьте своих исполнителей на песнопения!',
+        'XMAS2017plus_SongProduction_lvl26' => 'Так как житейские потребности удовлетворены, нам нужно что-то для поднятия настроения. Как насчёт музыки в духе зимних праздников? Неужели в ваших владениях не найдётся композитора, который смог бы сочинить праздничную мелодию?',
+        'XMAS2017plus_SongProduction_lvl36' => 'Так как житейские потребности удовлетворены, нам нужно что-то для поднятия настроения. Как насчёт музыки в духе зимних праздников? Неужели в ваших владениях не найдётся композитора, который смог бы сочинить праздничную мелодию?',
+        'XMAS2017plus_SongProduction_lvl51' => 'Так как житейские потребности удовлетворены, нам нужно что-то для поднятия настроения. Как насчёт музыки в духе зимних праздников? Неужели в ваших владениях не найдётся композитора, который смог бы сочинить праздничную мелодию?',
         'XMAS2017plus_Sub1' => 'Для начала обратите внимание на принцип работы рождественского сюрприза.
 Каждый день за дверями вас будут ждать ценные предметы.
 
@@ -29259,6 +29751,12 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'XMAS2017plus_XmasMarket_lvl26' => 'Вот рынок и готов, но посетители хотели бы забрать с собой памятные сувениры! Уточки прекрасно для этого подойдут! Хо-хо-хо!',
         'XMAS2017plus_XmasMarket_lvl36' => 'Вот рынок и готов, но посетители хотели бы забрать с собой памятные сувениры! Уточки прекрасно для этого подойдут! Хо-хо-хо!',
         'XMAS2017plus_XmasMarket_lvl51' => 'Вот рынок и готов, но посетители хотели бы забрать с собой памятные сувениры! Уточки прекрасно для этого подойдут! Хо-хо-хо!',
+        'XMAS2017plus_XmasSpiritFinal_lvl26' => 'Дело осталось за малым! Для поддержания праздничного настроения, мы должны поделиться с людьми чувством единства. Выполняйте задачи совместно с другими и почувствуйте, как растёт чувство единства.',
+        'XMAS2017plus_XmasSpiritFinal_lvl36' => 'Дело осталось за малым! Для поддержания праздничного настроения, мы должны поделиться с людьми чувством единства. Выполняйте задачи совместно с другими и почувствуйте, как растёт чувство единства.',
+        'XMAS2017plus_XmasSpiritFinal_lvl51' => 'Дело осталось за малым! Для поддержания праздничного настроения, мы должны поделиться с людьми чувством единства. Выполняйте задачи совместно с другими и почувствуйте, как растёт чувство единства.',
+        'XMAS2017plus_XmasSpirit_Main_lvl26' => 'Это, пожалуй, лучшее время года. Время счастья, радости и воспоминаний. Но все кажутся такими отвлечёнными повседневными заботами. К сожалению, подготовка к Рождеству занимает всё моё время, и я не могу сейчас заняться этим вопросом. Поэтому мне нужна ваша помощь, чтобы поднять всем настроение и поделиться духом Рождества с каждым. Я знаю, что у вас получится!',
+        'XMAS2017plus_XmasSpirit_Main_lvl36' => 'Это, пожалуй, лучшее время года. Время счастья, радости и воспоминаний. Но все кажутся такими отвлечёнными повседневными заботами. К сожалению, подготовка к Рождеству занимает всё моё время, и я не могу сейчас заняться этим вопросом. Поэтому мне нужна ваша помощь, чтобы поднять всем настроение и поделиться духом Рождества с каждым. Я знаю, что у вас получится!',
+        'XMAS2017plus_XmasSpirit_Main_lvl51' => 'Это, пожалуй, лучшее время года. Время счастья, радости и воспоминаний. Но все кажутся такими отвлечёнными повседневными заботами. К сожалению, подготовка к Рождеству занимает всё моё время, и я не могу сейчас заняться этим вопросом. Поэтому мне нужна ваша помощь, чтобы поднять всем настроение и поделиться духом Рождества с каждым. Я знаю, что у вас получится!',
         'XMASEventAdv' => 'Используйте рождественские подарки-усилители, производимые в универсальной мастерской и универсальной мастерской редкостей, чтобы принести дух Рождества во все дома, где царит непраздничное настроение.',
         'XMASEventCookieAdv' => 'Ква… Какие же эти малявки шумные. Целыми днями просят игрушки. Все повторяют: "Поиграй со мной, Санта". Хоть я и создал эту счастливую страну, они все равно несчастны, ква. Что ж, доверяю это дело вам. Вы ведь сделаете все так, как я скажу? Хе-хе.',
         'XMASEventCookieAdv_Buff' => 'Так, хорошо. У нас получилось пронести препарат, разрушающий чары, в этой фальшивый рождественский рай. А теперь отыщите подозрительные места, где злая магия сильнее всего, и выясните, что скрывается за этим заклинанием.',
@@ -29468,9 +29966,14 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'Buff_produce_FillDeposit_Hunter' => 'Произведите не менее {0} ед. мускуса кабарги.',
         'Buff_produce_HalloweenEvent_Ghostbuster' => 'Произведите не менее {0} ед. яркого света.',
         'Buff_produce_HalloweenEvent_Horror' => 'Произведите не менее {0} ед. темноты.',
+        'Buff_produce_ProductivityBuffCollectibleEW' => 'Произведите не менее {0} наборов инструментов мастера.',
         'Buff_produce_ProductivityBuffLvl1' => 'Произведите рыбные блюда: не менее {0} порц.',
+        'Buff_produce_ProductivityBuffLvl100' => 'Произведите не менее {0} ритуалов сбора урожая.',
+        'Buff_produce_ProductivityBuffLvl101' => 'Произведите не менее {0} кнутов и морковок.',
+        'Buff_produce_ProductivityBuffLvl104' => 'Произведите не менее {0} золотых ленточек.',
         'Buff_produce_ProductivityBuffLvl2' => 'Приготовьте сытные бутерброды: не менее {0} шт.',
         'Buff_produce_ProductivityBuffLvl3' => 'Приготовьте корзины тетушки Ирмы: минимум {0}.',
+        'Buff_produce_RecruitingBuffLvl100' => 'Произведите усилитель "Сержант по строевой подготовке Скунс": не менее {0} ед.',
         'Buff_used_EventBuffLvl01' => 'Используйте волшебный порошок, чтобы вернуть солнце!',
         'Buff_used_ProductivityBuffLvl1' => 'Используйте рыбные блюда: не менее {0} порц.',
         'Building_destroyed' => 'Разрушьте зданий: {0}.',
@@ -29835,6 +30338,7 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'Building_selected_BronzeWeaponsmith' => 'Выберите мастерскую бронзового оружия.',
         'Building_selected_CoalMine' => 'Выберите угольную шахту.',
         'Building_selected_CokingPlant' => 'Выберите углевыжигательный завод.',
+        'Building_selected_EpicWorkyardRefinery' => 'Выберите промышленный рудоперерабатывающий завод',
         'Building_selected_EpicWorkyardWood' => 'Выберите грандиозный лесной склад',
         'Building_selected_Farm' => 'При помощи мыши выберите ферму.',
         'Building_selected_Farmfield_04_pl6' => 'Уничтожьте отравленные пшеничные поля.',
@@ -29966,7 +30470,6 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'GoldSkillTreePoints_ge_explorer' => 'Улучшить навык исследователя: применить не менее {0} кодексов.',
         'GoldSkillTreePoints_ge_general' => 'Улучшить навык боевого генерала: применить не менее {0} шт. кодексов.',
         'GoldSkillTreePoints_ge_geologist' => 'Улучшить навык геолога: применить не менее {0} кодексов.',
-        'GuildSize_ge' => 'NT: Be in a guild with at least {0} member(s).',
         'HQ8_WildGrowingPumpkins' => 'Найдите и соберите тыкву у себя на острове.',
         'HQ9_ImportedPumpkins' => 'Завершите приключение.',
         'HW1_TheGolem' => 'Произведите {0} шт. мешочков с мраморными шариками.',
@@ -30021,7 +30524,8 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'Movebuilding_moved_SimpleResidence' => 'Переместите {0} шт. домов.',
         'Movebuilding_moved_WoodCutter' => 'Переместите домиков дровосека: {0}.',
         'PayForQuestFinish_AdvancedPaper' => 'Уплатите со своего склада отличную бумагу: {0} ед.',
-        'PayForQuestFinish_AdventureRelics' => 'NT: Pay {0} Adventure Relics from your storage.',
+        'PayForQuestFinish_AdvancedTools' => 'Уплатите со своего склада отличные инструменты: {0} шт.',
+        'PayForQuestFinish_AdventureTale' => 'Расплатитесь сказочными приключениями из склада {0} р.',
         'PayForQuestFinish_Archebuse' => 'Уплатите со своего склада аркебузы: {0} шт.',
         'PayForQuestFinish_ArmoredMarksman' => 'Отправьте стрелков в броне: не менее {0} чел.',
         'PayForQuestFinish_BattleHorse' => 'Уплатите со своего склада боевых коней: {0} шт.',
@@ -30035,12 +30539,14 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'PayForQuestFinish_BronzeOre' => 'Уплатите со своего склада медную руду: {0} ед.',
         'PayForQuestFinish_BronzeSword' => 'Уплатите со своего склада бронзовые мечи: {0} шт.',
         'PayForQuestFinish_Cannon' => 'Уплатите со своего склада пушки: {0} шт.',
+        'PayForQuestFinish_Cannoneer' => 'Отправьте не менее {0} канониров.',
         'PayForQuestFinish_Carriage' => 'Уплатите со своего склада повозки: {0} шт.',
         'PayForQuestFinish_Cavalry' => 'Отправьте кавалерию: не менее {0} чел.',
         'PayForQuestFinish_Cloth' => 'Уплатите с вашего склада: {0} ед. ткани.',
         'PayForQuestFinish_Coal' => 'Уплатите со своего склада уголь: {0} ед.',
         'PayForQuestFinish_Codex' => 'Уплатите со своего склада: {0} шт. кодексов.',
         'PayForQuestFinish_Coin' => 'Уплатите со своего склада монеты: {0} ед.',
+        'PayForQuestFinish_CollectibleBanner' => 'Уплатите со своего склада гербы: {0} ед.',
         'PayForQuestFinish_CollectibleFoodCart' => 'Уплатите со своего склада телеги с едой: {0} шт.',
         'PayForQuestFinish_CollectibleHerbs' => 'Уплатите со своего склада травы: {0} шт.',
         'PayForQuestFinish_CollectibleKettle' => 'Уплатите со своего склада чайники: {0} шт.',
@@ -30048,6 +30554,7 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'PayForQuestFinish_Corn' => 'Уплатите со своего склада пшеницу: {0} ед.',
         'PayForQuestFinish_Crossbow' => 'Уплатите {0} шт. арбалетов со своего склада.',
         'PayForQuestFinish_Crossbowman' => 'Отправьте арбалетчиков: не менее {0} чел.',
+        'PayForQuestFinish_Crystal' => 'Уплатите со своего склада кристаллы: {0} ед.',
         'PayForQuestFinish_EMEventResource' => 'Уплатите со своего склада футбольные мячи: {0} ед.',
         'PayForQuestFinish_EliteSoldier' => 'Отправьте элитных солдат: не менее {0} чел.',
         'PayForQuestFinish_ExoticPlank' => 'Уплатите со своего склада доски из красного дерева: {0} шт.',
@@ -30112,6 +30619,14 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'PayForQuestFinish_TitaniumSword' => 'Уплатите со своего склада булатные мечи: {0} шт.',
         'PayForQuestFinish_Tome' => 'Уплатите со своего склада: {0} шт. фолиантов.',
         'PayForQuestFinish_Tool' => 'Уплатите со своего склада инструменты: {0} шт.',
+        'PayForQuestFinish_WMBanana' => 'Уплатите со своего склада банановую кожуру: {0} ед.',
+        'PayForQuestFinish_WMDummy' => 'Уплатите со своего склада манекены для тренировок: {0} ед.',
+        'PayForQuestFinish_WMElasticSpring' => 'Уплатите со своего склада упругие пружины: {0} ед.',
+        'PayForQuestFinish_WMFist' => 'Уплатите со своего склада кулаки: {0} ед.',
+        'PayForQuestFinish_WMHelmet' => 'Уплатите со своего склада шлемы: {0} ед.',
+        'PayForQuestFinish_WMShoe' => 'Уплатите со своего склада бутсы: {0} ед.',
+        'PayForQuestFinish_WMShoulderPad' => 'Уплатите со своего склада наплечники: {0} ед.',
+        'PayForQuestFinish_WMStuds' => 'Уплатите со своего склада шипы: {0} ед.',
         'PayForQuestFinish_Wagon' => 'Уплатите со своего склада телеги: {0} шт.',
         'PayForQuestFinish_Water' => 'Уплатите со своего склада воду: {0} ед.',
         'PayForQuestFinish_Wheel' => 'Уплатите со своего склада колеса: {0} шт.',
@@ -30689,6 +31204,8 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'RefillBuff_consume_Tool' => 'Добавьте инструменты из своего звездного меню на склад.',
         'RefillBuff_consume_Wood' => 'Добавьте сосновую древесину из своего звездного меню на склад.',
         'Resource_ChkResources_Adventure_BanditNest_Granite' => 'Найдите гранит ({0} ед.), завершив приключение "Притон разбойников".',
+        'Resource_ChkResources_Adventure_BronzeOre' => 'Получите {0} ед. медной руды за выполненные приключения.',
+        'Resource_ChkResources_Adventure_Coin' => 'Получите монеты ({0}) за выполненные приключения.',
         'Resource_ChkResources_Adventure_Epic_Coin' => 'Получите монеты ({0} шт.) во время эпических приключений.',
         'Resource_ChkResources_Adventure_Epic_GoldOre' => 'Найдите {0} ед. золотой руды, завершив эпические приключения.',
         'Resource_ChkResources_Adventure_Epic_GoldOre_refiller' => 'Получите в эпических приключениях запасы золота: {0}.',
@@ -30699,9 +31216,11 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'Resource_ChkResources_Adventure_Fairytale_PlatinumOre' => 'Получите {0} ед. платиновой руды, завершив сказочные приключения.',
         'Resource_ChkResources_Adventure_GoldOre_refiller' => 'Соберите {0} ед. наполнителя золотой руды при прохождении приключений.',
         'Resource_ChkResources_Adventure_Granite' => 'Получите гранит ({0} ед.) во время приключений.',
+        'Resource_ChkResources_Adventure_MahoganyWood' => 'Получите {0} ед. махагониевого дерева за выполненные приключения.',
         'Resource_ChkResources_Adventure_MotherLove_Granite' => 'Найдите гранит ({0} ед.), завершив приключение "Материнская любовь".',
         'Resource_ChkResources_Adventure_OldFriends_Granite' => 'Найдите гранит ({0} ед.), завершив приключение "Старые друзья".',
         'Resource_ChkResources_Adventure_Outlaws_Granite' => 'Найдите {0} ед. граниты, выполняя приключение "Преступники".',
+        'Resource_ChkResources_Adventure_PlatinumOre' => 'Получите {0} ед. платиновой руды за выполненные приключения.',
         'Resource_ChkResources_Adventure_SecludedExperiments_ExoticWood' => 'Найдите {0} ед. красного дерева, выполняя приключение "Эксперименты в уединении".',
         'Resource_ChkResources_Adventure_SonsOfTheVeld_TitaniumOre' => 'Найдите {0} ед. титановой руды, выполняя приключение "Сыны степей".',
         'Resource_ChkResources_Adventure_SurpriseAttack_Granite' => 'Найдите гранит ({0} ед.), завершив приключение "Внезапное нападение".',
@@ -30729,6 +31248,7 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'Resource_buy_IronSword' => 'Купите не менее {0} шт. железных мечей, торгуя с другими игроками.',
         'Resource_buy_Longbow' => 'Купите не менее {0} шт. больших луков, торгуя с другими игроками.',
         'Resource_buy_MagicBean' => 'Купите не менее {0} шт. волшебных бобов, торгуя с другими игроками.',
+        'Resource_buy_MapPart' => 'Купите фрагмент карты у других игроков: не менее {0} ед.',
         'Resource_buy_Marble' => 'Купите не менее {0} ед. мрамора, торгуя с другими игроками.',
         'Resource_buy_Mortar' => 'Купите не менее {0} шт. мортир, торгуя с другими игроками.',
         'Resource_buy_PlatinumOre' => 'Купите не менее {0} ед. платиновой руды, торгуя с другими игроками.',
@@ -30741,13 +31261,16 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'Resource_buy_SteelSword' => 'Купите не менее {0} шт. стальных мечей, торгуя с другими игроками.',
         'Resource_buy_TitaniumOre' => 'Купите не менее {0} ед. титановой руды, торгуя с другими игроками.',
         'Resource_buy_Tool' => 'Купите не менее {0} шт. инструментов, торгуя с другими игроками.',
+        'Resource_buy_WMTelescope' => 'Купите зрительную трубу у других игроков: не менее {0} ед.',
         'Resource_buy_Water' => 'Купите не менее {0} ед. воды, торгуя с другими игроками.',
         'Resource_buy_Wheel' => 'Купите не менее {0} шт. колес, торгуя с другими игроками.',
         'Resource_eventdonate_Balloons' => 'Пожертвуйте воздушные шары (не меньше {0} шт.)',
         'Resource_eventdonate_RedNose' => 'Пожертвуйте не менее {0} красных носов',
+        'Resource_geDelta_AdventureTale' => 'Получите ресурс "Сказочное приключение": не менее {0} ед.',
         'Resource_geDelta_Archebuse' => 'Получите не менее {0} шт. аркебуз.',
         'Resource_geDelta_BattleHorse' => 'Получите не менее {0} гол. боевых коней.',
         'Resource_geDelta_Beer' => 'Получите не менее {0} ед. кваса.',
+        'Resource_geDelta_BookFitting' => 'Получите не менее {0} книжных обложек.',
         'Resource_geDelta_Bow' => 'Получите не менее {0} шт. луков.',
         'Resource_geDelta_Bread' => 'Получите не менее {0} ед. хлеба.',
         'Resource_geDelta_BronzeOre' => 'Получите не менее {0} ед. медной руды.',
@@ -30762,6 +31285,7 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'Resource_geDelta_CollectibleKettle' => 'Получите не менее {0} шт. чайников.',
         'Resource_geDelta_CollectibleScarecrow' => 'Получите не менее {0} шт. пугал.',
         'Resource_geDelta_Corn' => 'Получите не менее {0} ед. пшеницы.',
+        'Resource_geDelta_Crystal' => 'Получите ресурс "Кристалл": не менее {0} ед.',
         'Resource_geDelta_EventResource' => 'Получите не менее {0} шт. пасхальных яиц.',
         'Resource_geDelta_ExoticWood' => 'Получите не менее {0} ед. красного дерева.',
         'Resource_geDelta_Fish' => 'Получите не менее {0} ед. рыбы.',
@@ -30772,10 +31296,13 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'Resource_geDelta_Horse' => 'Получите не менее {0} гол. лошадей.',
         'Resource_geDelta_IronOre' => 'Получите не менее {0} ед. железной руды.',
         'Resource_geDelta_IronSword' => 'Получите не менее {0} шт. железных мечей.',
+        'Resource_geDelta_Letter' => 'Получите не менее {0} шт. типографских шрифтов.',
         'Resource_geDelta_MagicBean' => 'Получитене менее {0} шт. волшебных бобов.',
         'Resource_geDelta_Marble' => 'Получите не менее {0} ед. мрамора.',
         'Resource_geDelta_Meat' => 'Получите не менее {0} ед. мяса.',
         'Resource_geDelta_Mortar' => 'Получите не менее {0} шт. мортир.',
+        'Resource_geDelta_Nib' => 'Получите не менее {0} шт. перьев.',
+        'Resource_geDelta_Oil' => 'Получите не менее {0} ед. масла.',
         'Resource_geDelta_Platinum' => 'Получите не менее {0} ед. платины.',
         'Resource_geDelta_PlatinumOre' => 'Получите не менее {0} ед. платиновой руды.',
         'Resource_geDelta_PlatinumSword' => 'Получите не менее {0} шт. платиновых мечей.',
@@ -30785,6 +31312,8 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'Resource_geDelta_SteelSword' => 'Получите не менее {0} шт. стальных мечей.',
         'Resource_geDelta_Stone' => 'Получите не менее {0} ед. камня.',
         'Resource_geDelta_StripedEggs' => 'Получите не менее {0} шт. полосатых яиц.',
+        'Resource_geDelta_WMBanana' => 'Получите ресурс "Банановая кожура": не менее {0} ед.',
+        'Resource_geDelta_WMElasticSpring' => 'Получите ресурс "Упругая пружина": не менее {0} ед.',
         'Resource_geDelta_Water' => 'Получите не менее {0} ед. воды.',
         'Resource_geDelta_Wood' => 'Получите не менее {0} ед. древесины (сосна).',
         'Resource_ge_Beer' => 'Увеличьте запасы кваса минимум до {0} ед.',
@@ -30830,6 +31359,7 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'Resource_ge_Water' => 'У вас должно быть не менее {0} ед. воды.',
         'Resource_ge_Wood' => 'У вас должно быть не менее {0} ед. древесины (сосна).',
         'Resource_produce_AdvancedPaper' => 'Произведите не менее {0} ед. отличной бумаги.',
+        'Resource_produce_AdvancedTools' => 'Произведите не менее {0} шт. отличных инструментов на своих рабочих площадках.',
         'Resource_produce_Beer' => 'Произведите не менее {0} ед. кваса.',
         'Resource_produce_BookFitting' => 'Произведите не менее {0} шт. книжных обложек.',
         'Resource_produce_Bow' => 'Произведите не менее {0} шт. луков.',
@@ -30974,6 +31504,7 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'SpecialistTask_found_FindTreasureShort_RedNose' => 'Найдите красные носы во время поиска сокровищ (быстрого).',
         'SpecialistTask_found_FindTreasureShort_Stone' => 'Получите {0} ед. камня во время поиска сокровищ (быстрого).',
         'SpecialistTask_found_FindTreasureShort_StripedEggs' => 'Получите {0} шт. полосатых яиц во время поиска сокровищ (быстрого).',
+        'SpecialistTask_found_FindTreasureShort_WMGrease' => 'Получите ресурс "Смазка" в быстрых поисках сокровищ: {0} ед.',
         'SpecialistTask_found_FindTreasureShort_WMShoulderPad_WM_Sub05b_tutorial_old' => 'Найдите наплечник во время поиска сокровищ (быстрого).',
         'SpecialistTask_found_FindTreasureShort_WMWetGrass_WM_Sub05b_tutorial' => 'Найдите мокрую траву во время поиска сокровищ (быстрого).',
         'SpecialistTask_found_FindTreasure_Granite' => 'Найдите гранит при поиске сокровищ.',
@@ -31020,7 +31551,6 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'WindowOpen_GAMESTATE_ID_ADVENT_WINDOW' => 'Откройте окно календаря события',
         'WindowOpen_GAMESTATE_ID_ADVENT_WINDOW_Soccer' => 'Откройте окно со списком матчей',
         'WindowOpen_GAMESTATE_ID_AVATAR.achievement' => 'Откройте окно достижений',
-        'WindowOpen_GAMESTATE_ID_AVATAR.btnContest' => 'NT: Click on the Guild Fest button next to your avatar',
         'WindowOpen_GAMESTATE_ID_AVATAR.options' => 'Разверните панель управления, расположенную под аватаром.',
         'WindowOpen_GAMESTATE_ID_AVATAR.options.options.btnHelp' => 'Откройте архив на панели своего аватара',
         'WindowOpen_GAMESTATE_ID_AVATAR.pvpRankButton' => 'Откройте окно прогресса в PvP',
@@ -31031,7 +31561,6 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'WindowOpen_GAMESTATE_ID_CAMERA_CONTROL_PANEL' => 'Откройте окно камеры.',
         'WindowOpen_GAMESTATE_ID_COLONY_WINDOW.(GUIList).mainBg.null.null.current.null.btnBuildDefenses' => 'Войдите в режим постройки оборонительных сооружений на острове, который вы недавно завоевали.',
         'WindowOpen_GAMESTATE_ID_COLONY_WINDOW.(GUIList).mainBg.null.null.current.null.btnClaimColony' => 'Щелкните по кнопке "Завладеть колонией" в меню колонии.',
-        'WindowOpen_GAMESTATE_ID_CONTESTS_PANEL.claimRewardsButton' => 'NT: Click on the Claim Rewards button Guild Fest Panel.',
         'WindowOpen_GAMESTATE_ID_ECONOMY_OVERVIEW' => 'Откройте окно с обзором экономики.',
         'WindowOpen_GAMESTATE_ID_ECONOMY_OVERVIEW.list.Plank' => 'Выберите в списке экономического обзора сосновые доски.',
         'WindowOpen_GAMESTATE_ID_ECONOMY_OVERVIEW.list.Stone' => 'Выберите в списке экономического обзора камень.',
@@ -31180,6 +31709,21 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'buffappliedondeposit' => 'Используйте {0} шт. усилителей на залежах ресурса {1,RES}.',
         'buffappliedonfriend' => 'Используйте {0} шт. усилителей в отношении зданий ваших друзей.',
         'buffappliedonfriend_TruceAny' => 'Предложите перемирие (любого типа) на островах ваших друзей {0} р.',
+        'buffappliedonfriend_christmasbarracks' => 'Примените рождественскую казарму к острову друга {0} р.',
+        'buffappliedonfriend_christmascandles' => 'Примените свечи вдохновения к острову друга {0} р.',
+        'buffappliedonfriend_christmascards' => 'Примените рождественские открытки к острову друга {0} р.',
+        'buffappliedonfriend_christmasdrummer' => 'Примените барабаны маленького барабанщика к острову друга {0} р.',
+        'buffappliedonfriend_christmasjingle' => 'Отправьте хор Jingle Choir на остров друга {0} р.',
+        'buffappliedonfriend_christmasjumper' => 'Примените рождественские свитеры к острову друга {0} р.',
+        'buffappliedonfriend_christmasmayor' => 'Примените рождественскую мэрию к острову друга {0} р.',
+        'buffappliedonfriend_christmasmerry' => 'Отправьте хор Merry and the Wishes на остров друга {0} р.',
+        'buffappliedonfriend_christmasprovision' => 'Примените рождественскую универсальную мастерскую к острову друга {0} р.',
+        'buffappliedonfriend_christmasresidence' => 'Примените рождественскую дом к острову друга {0} р.',
+        'buffappliedonfriend_christmassilent' => 'Отправьте хор Silent Night на остров друга {0} р.',
+        'buffappliedonfriend_christmasstollen' => 'Примените рождественские штоллены к острову друга {0} р.',
+        'buffappliedonfriend_christmasstorehouse' => 'Примените рождественский склад к острову друга {0} р.',
+        'buffappliedonfriend_christmasstories' => 'Примените рождественские истории к острову друга {0} р.',
+        'buffappliedonfriend_christmaswine' => 'Примените глинтвейн к острову друга {0} р.',
         'buffappliedonfriend_item' => 'Используйте на островах друзей: {1,RES} {0}.',
         'buffappliedonfriend_item_on' => 'Используйте {0} шт. усилителей типа {1,RES} в отношении здания типа {2,BUI} у ваших друзей.',
         'buffappliedonfriend_on' => 'Используйте {0} шт. усилителей в отношении здания типа {1,BUI} у ваших друзей.',
@@ -31365,17 +31909,24 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'completeadventurelist_Buff_adv' => 'Завершите любое приключение со сценарием.',
         'completeadventurelist_Buff_adv_stormrecovery' => 'Пройдите сценарий "Восстановление после бури".',
         'completeadventurelist_Coop_1' => 'Пройдите совместную миссию.',
+        'completeadventurelist_Coop_Dif3_1' => 'Завершите совместное приключение со сложностью 3 или выше.',
+        'completeadventurelist_Coop_Dif5_1' => 'Завершите совместное приключение со сложностью 5 или выше.',
+        'completeadventurelist_Coop_Dif9_1' => 'Завершите совместное приключение со сложностью 9 или выше.',
         'completeadventurelist_Coop_many' => 'Пройдите совместные миссии (не менее {0}).',
         'completeadventurelist_Dif10_1' => 'Пройдите приключение (сложность: 10 и выше).',
+        'completeadventurelist_Dif10_many' => 'Пройдите приключения (не менее {0}, сложность: 10 и выше).',
         'completeadventurelist_Dif1_1' => 'Пройдите приключение (сложность: 1 и выше).',
         'completeadventurelist_Dif2_1' => 'Пройдите приключение (сложность: 2 и выше).',
         'completeadventurelist_Dif3_1' => 'Пройдите приключение (сложность: 3 и выше).',
+        'completeadventurelist_Dif3_many' => 'Пройдите приключения (не менее {0}, сложность: 3 и выше).',
         'completeadventurelist_Dif4_1' => 'Пройдите приключение (сложность: 4 и выше).',
+        'completeadventurelist_Dif4_many' => 'Пройдите приключения (не менее {0}, сложность: 4 и выше).',
         'completeadventurelist_Dif5_1' => 'Пройдите приключение (сложность: 5 и выше).',
         'completeadventurelist_Dif5_many' => 'Пройдите приключения (не менее {0}, сложность: 5 и выше).',
         'completeadventurelist_Dif6_1' => 'Пройдите приключение (сложность: 6 и выше).',
         'completeadventurelist_Dif6_many' => 'Пройдите приключения (не менее {0}, сложность: 6 и выше).',
         'completeadventurelist_Dif7_1' => 'Пройдите приключение (сложность: 7 и выше).',
+        'completeadventurelist_Dif7_many' => 'Пройдите приключения (не менее {0}, сложность: 7 и выше).',
         'completeadventurelist_Dif8_1' => 'Пройдите приключение (сложность: 8 и выше).',
         'completeadventurelist_Dif9_1' => 'Пройдите приключение (сложность: 9 и выше).',
         'completeadventurelist_Dif9_many' => 'Пройдите приключения (не менее {0}, сложность: 9 и выше).',
@@ -31384,6 +31935,9 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'completeadventurelist_Fairytale_many' => 'Пройдите сказочные приключения (не менее {0}).',
         'completeadventurelist_Mini_1' => 'Пройдите мини-миссию.',
         'completeadventurelist_Mini_many' => 'Пройдите мини-миссии (не менее {0}).',
+        'completeadventurelist_Mission_Dif3_many' => 'Завершите миссии ({0}) со сложностью 3 или выше.',
+        'completeadventurelist_Mission_Dif6_many' => 'Завершите миссии ({0}) со сложностью 6 или выше.',
+        'completeadventurelist_Mission_Dif9_many' => 'Завершите миссии ({0}) со сложностью 9 или выше.',
         'completeadventurelist_NewBanditNestAndMotherLove' => 'Завершите приключение
 "Возвращение в притон
 разбойников" или
@@ -31403,6 +31957,9 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'completeadventurelist_PvPExp' => 'Завоюйте остров экспедиции.',
         'completeadventurelist_Scenario' => 'Пройдите сценарии: {0}.',
         'completeadventurelist_Scenario_1' => 'Пройдите сценарий.',
+        'completeadventurelist_Scenario_Dif1_many' => 'Завершите сценарии ({0}) со сложностью 1 или выше.',
+        'completeadventurelist_Scenario_Dif3_many' => 'Завершите сценарии ({0}) со сложностью 3 или выше.',
+        'completeadventurelist_Scenario_Dif7_many' => 'Завершите сценарии ({0}) со сложностью 7 или выше.',
         'completeadventurelist_Scenario_many' => 'Пройдите сценарии (не менее {0}).',
         'completeadventurelist_TaskMed_Fairytale' => 'Пройдите любое сказочное приключение.',
         'completeadventurelist_TaskMed_Mini' => 'Завершите любое мини-приключение.',
@@ -31463,6 +32020,7 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'completeexpeditionlist_small' => 'Захватите {0} шт. маленьких островов-колоний.',
         'completequestlist' => 'Завершите несколько заданий ({0} шт.) из списка: {1,QUL}',
         'completequestlist_Chupacabra' => 'Победите или исцелите все заброшенные лагеря в джунглях в 1 секторе.',
+        'completequestlist_Determination' => 'Проявите решимость и добейтесь победы.',
         'completequestlist_Eas2015M1' => 'Завершите цепочку заданий "Вспомнить все"',
         'completequestlist_Eas2015M2' => 'Завершите цепочку заданий "Потерянные яйца"',
         'completequestlist_Eas2015M3' => 'Завершите цепочку заданий "Помощник Пасхального Кролика"',
@@ -31472,6 +32030,7 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'completequestlist_HW2016Golems3' => 'Победите 5 древних големов на своем родном острове.',
         'completequestlist_HW2016Golems4' => 'Победите 5 верховных големов на своем родном острове.',
         'completequestlist_LostCityActivateAll' => 'Освободите один из алтарей и активируйте его с помощью правильного подношения.',
+        'completequestlist_LostExpedition' => 'Завершите цепочку заданий «Потерянная экспедиция Октавиана».',
         'completequestlist_PartyCrasherWin' => 'Разберитесь с незваными гостями мирным путем или в бою.',
         'completequestlist_SoccerInfrastructureAchievement' => 'Завершите цепочку заданий "Ответственное проведение"',
         'completequestlist_SoccerInfrastructureBandits' => 'Уничтожьте 1 лагерь вожака разбойников сейчас или 3 таких в прошлом.',
@@ -31480,6 +32039,7 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'completequestlist_TMC_Dispell2Debuffs' => 'Снарядите войска двумя видами зимней экипировки.',
         'completequestlist_TMC_LiberateFirstVillage' => 'Освободите первую деревню северян, разгромив ближайшую пещеру царя зверей.',
         'completequestlist_TheForgotten' => 'Разгадайте загадку Позабытых',
+        'completequestlist_UnethicalOffer' => 'Примите решение по сомнительному предложению.',
         'completequestlist_WaitForDailyUnlock' => 'Подождите, пока это задание не станет доступным.',
         'completequestlist_WaitForSecondWeek' => 'Подождите, пока не наступит вторая неделя после начала этого события.',
         'completequestlist_WaitForThirdWeek' => 'Подождите, пока не наступит третья неделя после начала этого события.',
@@ -31489,11 +32049,9 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'completequestlist_defeat10crashers' => 'Разберитесь с незваными гостями 10 раз.',
         'completequestlist_defeat15crashers' => 'Разберитесь с незваными гостями 15 раз.',
         'completequestlist_defeat5crashers' => 'Разберитесь с незваными гостями 5 раз.',
-        'contestpointcount' => 'NT: Earn Guild Fest Tokens',
         'contestpvpcolony_large' => 'Захватите {0} шт. больших островов-колоний у других игроков.',
         'contestpvpcolony_medium' => 'Захватите {0} шт. средних островов-колоний у других игроков.',
         'contestpvpcolony_small' => 'Захватите {0} шт. маленьких островов-колоний у других игроков.',
-        'contestrewardtier' => 'NT: Achieve {0,LAB} rank',
         'countAnyBuildingOnMap' => 'У вас на острове должно быть здание – {0,BUI}.',
         'countAnyBuildingOnMap_max' => 'У вас на острове должно быть менее {1} шт. зданий типа {0,BUI}.',
         'countAnyBuildingOnMap_min' => 'У вас на острове должно быть не менее {1} шт. зданий типа {0,BUI}.',
@@ -31848,11 +32406,6 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'Adv_TreasureWisdom_Q1' => 'Грабители могил',
         'Adv_TreasureWisdom_Q2' => 'Древние хроники',
         'Adv_TreasureWisdom_Q3' => 'К вершине',
-        'AdventureSeasonMercenary_LevelRequirement26' => 'NT: A new adventure awaits',
-        'AdventureSeasonMercenary_Main' => 'NT: Mercenary Invasion',
-        'AdventureSeasonMercenary_Sub1' => 'NT: Investigate Adventure Relics',
-        'AdventureSeasonMercenary_Sub2' => 'NT: More Investigation of Adventure Relics',
-        'AdventureSeasonMercenary_Sub3' => 'NT: The Final Investigation of Adventure Relics',
         'BAUMP1' => 'Слишком много воды',
         'BAUMP1_Sub1' => 'Непростые спасательные жилеты',
         'BAUMP1_Sub2' => 'Спасение утопающих',
@@ -32394,6 +32947,78 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'Birthday2018plus_Infrastructure_62-80_Main9_Sub2' => 'Пройдите затею',
         'Birthday2018plus_Infrastructure_62-80_Main9_Sub3' => 'Усилители пивоварни',
         'Birthday2018plus_Infrastructure_62-80_Main9_Sub4' => 'Усилители пекарни',
+        'Birthday2018plus_LostExpedition_26-35_Following_Main' => 'По горячим следам',
+        'Birthday2018plus_LostExpedition_26-35_Following_Sub1' => 'Недоставленное письмо',
+        'Birthday2018plus_LostExpedition_26-35_Following_Sub2' => 'Обеспечение флота',
+        'Birthday2018plus_LostExpedition_26-35_Following_Sub3' => 'Следы на берегу',
+        'Birthday2018plus_LostExpedition_26-35_Following_Sub4' => 'Разрушенный маяк',
+        'Birthday2018plus_LostExpedition_26-35_Following_Sub5' => 'Пропавший штурман',
+        'Birthday2018plus_LostExpedition_26-35_Hub' => 'Потерянная экспедиция Октавиана',
+        'Birthday2018plus_LostExpedition_26-35_Legacy_Main' => 'Наследие Октавиана',
+        'Birthday2018plus_LostExpedition_26-35_Legacy_Sub1' => 'Отголоски дома',
+        'Birthday2018plus_LostExpedition_26-35_Legacy_Sub2' => 'Забытая колония',
+        'Birthday2018plus_LostExpedition_26-35_Legacy_Sub3' => 'Судьба Октавиана',
+        'Birthday2018plus_LostExpedition_26-35_Legacy_Sub4' => 'Наследие мореплавателя',
+        'Birthday2018plus_LostExpedition_26-35_UnknownSeas_Main' => 'По неизвестному морю',
+        'Birthday2018plus_LostExpedition_26-35_UnknownSeas_Sub1' => 'Друзья среди чужаков',
+        'Birthday2018plus_LostExpedition_26-35_UnknownSeas_Sub2' => 'Бурное море',
+        'Birthday2018plus_LostExpedition_26-35_UnknownSeas_Sub3' => 'Выжившие',
+        'Birthday2018plus_LostExpedition_26-35_UnknownSeas_Sub4' => 'Римский стандарт',
+        'Birthday2018plus_LostExpedition_26-35_UnknownSeas_Sub5' => 'Горные врата',
+        'Birthday2018plus_LostExpedition_36-50_Following_Main' => 'По горячим следам',
+        'Birthday2018plus_LostExpedition_36-50_Following_Sub1' => 'Недоставленное письмо',
+        'Birthday2018plus_LostExpedition_36-50_Following_Sub2' => 'Обеспечение флота',
+        'Birthday2018plus_LostExpedition_36-50_Following_Sub3' => 'Следы на берегу',
+        'Birthday2018plus_LostExpedition_36-50_Following_Sub4' => 'Разрушенный маяк',
+        'Birthday2018plus_LostExpedition_36-50_Following_Sub5' => 'Пропавший штурман',
+        'Birthday2018plus_LostExpedition_36-50_Hub' => 'Потерянная экспедиция Октавиана',
+        'Birthday2018plus_LostExpedition_36-50_Legacy_Main' => 'Наследие Октавиана',
+        'Birthday2018plus_LostExpedition_36-50_Legacy_Sub1' => 'Отголоски дома',
+        'Birthday2018plus_LostExpedition_36-50_Legacy_Sub2' => 'Забытая колония',
+        'Birthday2018plus_LostExpedition_36-50_Legacy_Sub3' => 'Судьба Октавиана',
+        'Birthday2018plus_LostExpedition_36-50_Legacy_Sub4' => 'Наследие мореплавателя',
+        'Birthday2018plus_LostExpedition_36-50_UnknownSeas_Main' => 'По неизвестному морю',
+        'Birthday2018plus_LostExpedition_36-50_UnknownSeas_Sub1' => 'Друзья среди чужаков',
+        'Birthday2018plus_LostExpedition_36-50_UnknownSeas_Sub2' => 'Бурное море',
+        'Birthday2018plus_LostExpedition_36-50_UnknownSeas_Sub3' => 'Выжившие',
+        'Birthday2018plus_LostExpedition_36-50_UnknownSeas_Sub4' => 'Римский стандарт',
+        'Birthday2018plus_LostExpedition_36-50_UnknownSeas_Sub5' => 'Горные врата',
+        'Birthday2018plus_LostExpedition_51-61_Following_Main' => 'По горячим следам',
+        'Birthday2018plus_LostExpedition_51-61_Following_Sub1' => 'Недоставленное письмо',
+        'Birthday2018plus_LostExpedition_51-61_Following_Sub2' => 'Обеспечение флота',
+        'Birthday2018plus_LostExpedition_51-61_Following_Sub3' => 'Следы на берегу',
+        'Birthday2018plus_LostExpedition_51-61_Following_Sub4' => 'Разрушенный маяк',
+        'Birthday2018plus_LostExpedition_51-61_Following_Sub5' => 'Пропавший штурман',
+        'Birthday2018plus_LostExpedition_51-61_Hub' => 'Потерянная экспедиция Октавиана',
+        'Birthday2018plus_LostExpedition_51-61_Legacy_Main' => 'Наследие Октавиана',
+        'Birthday2018plus_LostExpedition_51-61_Legacy_Sub1' => 'Отголоски дома',
+        'Birthday2018plus_LostExpedition_51-61_Legacy_Sub2' => 'Забытая колония',
+        'Birthday2018plus_LostExpedition_51-61_Legacy_Sub3' => 'Судьба Октавиана',
+        'Birthday2018plus_LostExpedition_51-61_Legacy_Sub4' => 'Наследие мореплавателя',
+        'Birthday2018plus_LostExpedition_51-61_UnknownSeas_Main' => 'По неизвестному морю',
+        'Birthday2018plus_LostExpedition_51-61_UnknownSeas_Sub1' => 'Друзья среди чужаков',
+        'Birthday2018plus_LostExpedition_51-61_UnknownSeas_Sub2' => 'Бурное море',
+        'Birthday2018plus_LostExpedition_51-61_UnknownSeas_Sub3' => 'Выжившие',
+        'Birthday2018plus_LostExpedition_51-61_UnknownSeas_Sub4' => 'Римский стандарт',
+        'Birthday2018plus_LostExpedition_51-61_UnknownSeas_Sub5' => 'Горные врата',
+        'Birthday2018plus_LostExpedition_62-80_Following_Main' => 'По горячим следам',
+        'Birthday2018plus_LostExpedition_62-80_Following_Sub1' => 'Недоставленное письмо',
+        'Birthday2018plus_LostExpedition_62-80_Following_Sub2' => 'Обеспечение флота',
+        'Birthday2018plus_LostExpedition_62-80_Following_Sub3' => 'Следы на берегу',
+        'Birthday2018plus_LostExpedition_62-80_Following_Sub4' => 'Разрушенный маяк',
+        'Birthday2018plus_LostExpedition_62-80_Following_Sub5' => 'Пропавший штурман',
+        'Birthday2018plus_LostExpedition_62-80_Hub' => 'Потерянная экспедиция Октавиана',
+        'Birthday2018plus_LostExpedition_62-80_Legacy_Main' => 'Наследие Октавиана',
+        'Birthday2018plus_LostExpedition_62-80_Legacy_Sub1' => 'Отголоски дома',
+        'Birthday2018plus_LostExpedition_62-80_Legacy_Sub2' => 'Забытая колония',
+        'Birthday2018plus_LostExpedition_62-80_Legacy_Sub3' => 'Судьба Октавиана',
+        'Birthday2018plus_LostExpedition_62-80_Legacy_Sub4' => 'Наследие мореплавателя',
+        'Birthday2018plus_LostExpedition_62-80_UnknownSeas_Main' => 'По неизвестному морю',
+        'Birthday2018plus_LostExpedition_62-80_UnknownSeas_Sub1' => 'Друзья среди чужаков',
+        'Birthday2018plus_LostExpedition_62-80_UnknownSeas_Sub2' => 'Бурное море',
+        'Birthday2018plus_LostExpedition_62-80_UnknownSeas_Sub3' => 'Выжившие',
+        'Birthday2018plus_LostExpedition_62-80_UnknownSeas_Sub4' => 'Римский стандарт',
+        'Birthday2018plus_LostExpedition_62-80_UnknownSeas_Sub5' => 'Горные врата',
         'BirthdayBasicsMain' => 'Большая вечеринка',
         'BirthdayBasicsSub1' => 'Воздушные шары',
         'BirthdayBasicsSub2' => 'Как достать шары',
@@ -32695,6 +33320,15 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'BuffQuestVigilante_Sub5' => 'Испытание лидерских качеств',
         'BuffQuestWeddingCake' => 'Торт для всех',
         'BuffQuestWeddingInvitation' => 'Приглашение на свадьбу',
+        'BuffQuestWeddingStory1_A' => 'Лучший друг человека?',
+        'BuffQuestWeddingStory1_B' => 'Лучший друг человека? Часть 1.',
+        'BuffQuestWeddingStory1_C' => 'Лучший друг человека? Часть 2.',
+        'BuffQuestWeddingStory2_A' => 'Заносчивая невеста.',
+        'BuffQuestWeddingStory2_B' => 'Заносчивая невеста. Часть 1.',
+        'BuffQuestWeddingStory2_C' => 'Заносчивая невеста. Часть 2.',
+        'BuffQuestWeddingStory3_A' => 'Рьяный флорист',
+        'BuffQuestWeddingStory3_B' => 'Рьяный флорист. Часть 1.',
+        'BuffQuestWeddingStory3_C' => 'Рьяный флорист. Часть 2.',
         'BuffQuestWolfPuppy' => 'Волчонок!',
         'BuffQuestWolfPuppy_Sub1' => 'Замерзший волчонок',
         'BuffQuestWolfPuppy_Sub2' => 'Раненый волчонок',
@@ -32708,10 +33342,19 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'Buff_Adv_StormRecovery_SubQuest04' => 'Очищение',
         'Buff_Adv_StormRecovery_SubQuest05' => 'Восстановление',
         'Buff_Adv_StormRecovery_SubQuest06' => 'Защита от бури',
+        'BuiBonus_AuroraTower_Repeatable' => 'Время историй',
+        'BuiBonus_AuroraTower_Timer_Loop1026' => 'До скорых встреч',
+        'BuiBonus_AuroraTower_Timer_Loop1080' => 'До скорых встреч',
+        'BuiBonus_AuroraTower_Timer_Loop864' => 'До скорых встреч',
+        'BuiBonus_AuroraTower_Timer_Loop918' => 'До скорых встреч',
+        'BuiBonus_AuroraTower_Timer_Loop972' => 'До скорых встреч',
         'BuiBonus_BalloonMarket_miniStart' => 'Особые воздушные шары для воздаяния',
         'BuiBonus_BalloonMarket_mini_Timer' => 'Создается новый воздушный шар',
         'BuiBonus_BalloonMarket_mini_Timer_Loop' => 'Создается новый воздушный шар',
-        'BuiBonus_DimensionalRift_Start' => 'NT: More than meets the eye',
+        'BuiBonus_Depositorium_Start' => 'Чудесный депозиторий',
+        'BuiBonus_Depositorium_Timer' => 'Следующая прогулка по депозиторию',
+        'BuiBonus_Depositorium_Timer_Loop' => 'Следующая прогулка по депозиторию',
+        'BuiBonus_FluffyLogistics_Loop' => 'Планируйте, следуйте плану, доставляйте',
         'BuiBonus_FlyingHouse_Start' => 'Отличный вид',
         'BuiBonus_FlyingHouse_Timer' => 'До следующей находки',
         'BuiBonus_FlyingHouse_Timer_Loop' => 'До следующей находки',
@@ -32748,16 +33391,31 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'BuiBonus_GiftChristmasTree_Timer_Loop' => 'До следующего подарка',
         'BuiBonus_GiftGhostShip_Start' => 'Призрачное явление',
         'BuiBonus_HauntedMansion_Start' => 'Дом призраков',
-        'BuiBonus_WitchCovenUpgrade_Start' => 'NT: Strange new neighbors',
-        'BuiBonus_WitchCovenUpgrade_Upgrade1' => 'NT: Curiosity killed the cat',
-        'BuiBonus_WitchCovenUpgrade_Upgrade2' => 'NT: Some Questions are Better Left Unanswered',
-        'BuiBonus_WitchCoven_CancelBLoodustA' => 'NT: Buyer\'s Remorse',
-        'BuiBonus_WitchCoven_CancelBLoodustB' => 'NT: Unsatisfied Customer',
-        'BuiBonus_WitchCoven_CancelRisenArmyA' => 'NT: Not what you expected?',
-        'BuiBonus_WitchCoven_CancelRisenArmyB' => 'NT: Always read the fine print',
-        'BuiBonus_WitchCoven_CancelSpeedA' => 'NT: ENTER_TEXT_HERE',
-        'BuiBonus_WitchCoven_CancelSpeedB' => 'NT: ENTER_TEXT_HERE',
-        'BuiBonus_WitchCoven_PageReward_Repeatable' => 'NT: Continuous Mutualism',
+        'BuiBonus_Offshorelighthouse_Start' => 'Излишки улова',
+        'BuiBonus_OreRefinery_Bronze_02' => 'Более глубокие знания о меди',
+        'BuiBonus_OreRefinery_Bronze_03' => 'Самые глубокие знания о меди',
+        'BuiBonus_OreRefinery_Gold_01' => 'Глубокие знания о золоте',
+        'BuiBonus_OreRefinery_Gold_02' => 'Более глубокие знания о золоте',
+        'BuiBonus_OreRefinery_Gold_03' => 'Самые глубокие знания о золоте',
+        'BuiBonus_OreRefinery_Iron_01' => 'Глубокие знания о железе',
+        'BuiBonus_OreRefinery_Iron_02' => 'Более глубокие знания о железе',
+        'BuiBonus_OreRefinery_Iron_03' => 'Самые глубокие знания о железе',
+        'BuiBonus_OreRefinery_Platinum_01' => 'Глубокие знания о платине',
+        'BuiBonus_OreRefinery_Platinum_02' => 'Более глубокие знания о платине',
+        'BuiBonus_OreRefinery_Platinum_03' => 'Самые глубокие знания о платине',
+        'BuiBonus_OreRefinery_Titanium_01' => 'Глубокие знания о титане',
+        'BuiBonus_OreRefinery_Titanium_02' => 'Более глубокие знания о титане',
+        'BuiBonus_OreRefinery_Titanium_03' => 'Самые глубокие знания о титане',
+        'BuiBonus_OreRefinery_Unlock_01' => 'Экзотическая металлургия',
+        'BuiBonus_OreRefinery_Unlock_02' => 'Первое пламя',
+        'BuiBonus_OreRefinery_Unlock_03' => 'Голодный зверь',
+        'BuiBonus_OreRefinery_Unlock_04' => 'Накормить зверя',
+        'BuiBonus_OreRefinery_Upgrades_01' => 'Глубокие знания',
+        'BuiBonus_OreRefinery_Upgrades_02' => 'Более глубокие знания',
+        'BuiBonus_OreRefinery_Upgrades_03' => 'Самые глубокие знания',
+        'BuiBonus_Smokehouse_MiniStart' => 'Воздаяние коптильне',
+        'BuiBonus_Smokehouse_Mini_Loop' => 'Готовится следующий деликатес',
+        'BuiBonus_Smokehouse_Mini_Timer' => 'Готовится следующий деликатес',
         'CQ1M1_FourWinds_Tcl1' => 'Четыре ветра',
         'CQ1M1_FourWinds_Tcl2' => 'Четыре ветра',
         'CQ1M1_FourWinds_Tcl3' => 'Четыре ветра',
@@ -33132,7 +33790,6 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'DaiANewTreasure' => 'Новое сокровище',
         'DaiASignOfEsteem' => 'Знак признательности',
         'DaiASignOfPeace' => 'Знак мира',
-        'DaiAdventureSeasonMercenary' => 'NT: The new Adventure Relics',
         'DaiAdventures' => 'Приключения',
         'DaiAlienation' => 'Предотвращение',
         'DaiAnimalMarket' => 'Животный рынок',
@@ -33761,7 +34418,6 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'ExpDefeatMeleeCamp' => 'Одержите первую победу над лагерем разбойников',
         'ExpDefeatSectorBoss' => 'Победите босса сектора',
         'ExpUseDistract' => 'Используйте блокировку',
-        'FinalGuildFest_OpenPanel2' => 'NT: Thanks for coming',
         'GarrunQ1' => 'Охота на охотников',
         'GarrunQ2' => 'Освобождение кроликов',
         'GuiDaiANobleArgument' => 'Претензии высокопоставленных особ',
@@ -34455,10 +35111,6 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'GuildFest_Day7_Turnin' => 'Текст ценится новизной',
         'GuildFest_Day8_Turnin' => 'Это же шедевр!',
         'GuildFest_Day9_Turnin' => 'Готовое совершенство',
-        'GuildFest_ExtraBuilding' => 'NT: Double the fun',
-        'GuildFest_ExtraBuilding2' => 'NT: Feel welcomed, by force!',
-        'GuildFest_GuildSize2' => 'NT: One is a such a lonely number',
-        'GuildFest_OpenPanel' => 'NT: Welcome to Guild Fest',
         'GuildFest_Tutorial_Main' => 'Добро пожаловать на фестиваль гильдий',
         'HQ1_ThePumpkinMaster' => 'Тыквенный мастер',
         'HQ1h_TendingTheSpookyCrops' => 'Уход за жуткими растениями',
@@ -34674,10 +35326,6 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'HW2017plus_ThePumpkinMasterMain' => 'Тыквенный мастер',
         'HW2017plus_ThePumpkinMasterSub1' => 'Кладбища с тыквами',
         'HW2017plus_ThePumpkinMasterSub2' => 'Сбор тыкв',
-        'HW2017plus_ZombieInvaders_Intro1' => 'NT: The Culling',
-        'HW2017plus_ZombieInvaders_Reach50' => 'NT: Something Stirs on our Islands',
-        'HW2017plus_ZombieInvaders_Repeatable' => 'NT: They are Back',
-        'HW2017plus_ZombieInvaders_Repeatable_Timer' => 'NT: They Will be Back',
         'HWCampaign1_Adv1_Main' => 'Монстры из тумана',
         'HWCampaign1_Adv1_Sub1' => 'Отбиться от них',
         'HWCampaign1_Adv1_Sub2' => 'Выгнать их',
@@ -35084,6 +35732,84 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'Soccer2018plus_Sub11' => 'Четвертьфинал',
         'Soccer2018plus_Sub12' => 'Полуфинал',
         'Soccer2018plus_Sub13' => 'Финал',
+        'Soccer2018plus_VictoryByDesign_26-46_Application_Main' => 'Заявка',
+        'Soccer2018plus_VictoryByDesign_26-46_Application_Sub1' => 'Приготовления',
+        'Soccer2018plus_VictoryByDesign_26-46_Application_Sub2' => 'Подтверждение',
+        'Soccer2018plus_VictoryByDesign_26-46_Application_Sub3' => 'Презентация',
+        'Soccer2018plus_VictoryByDesign_26-46_Application_Sub4' => 'Выборы',
+        'Soccer2018plus_VictoryByDesign_26-46_Determination_MainA' => 'Решимость',
+        'Soccer2018plus_VictoryByDesign_26-46_Determination_MainB' => 'Решимость',
+        'Soccer2018plus_VictoryByDesign_26-46_Determination_Sub1A' => 'Взятка',
+        'Soccer2018plus_VictoryByDesign_26-46_Determination_Sub1B' => 'Сбор информации',
+        'Soccer2018plus_VictoryByDesign_26-46_Determination_Sub2A' => 'Шантаж',
+        'Soccer2018plus_VictoryByDesign_26-46_Determination_Sub2B' => 'Доказательства коррупции',
+        'Soccer2018plus_VictoryByDesign_26-46_Determination_Sub3A' => 'Саботаж',
+        'Soccer2018plus_VictoryByDesign_26-46_Determination_Sub3B' => 'Разоблачение сети',
+        'Soccer2018plus_VictoryByDesign_26-46_Determination_Sub4A' => 'Финальный рывок',
+        'Soccer2018plus_VictoryByDesign_26-46_Determination_Sub4B' => 'Финальный рывок',
+        'Soccer2018plus_VictoryByDesign_26-46_Hub' => 'Победа по плану',
+        'Soccer2018plus_VictoryByDesign_26-46_Participation_Main' => 'Игры',
+        'Soccer2018plus_VictoryByDesign_26-46_Participation_Sub1' => 'Хуже ожидаемого',
+        'Soccer2018plus_VictoryByDesign_26-46_Participation_Sub2' => 'Подозрительные результаты',
+        'Soccer2018plus_VictoryByDesign_26-46_Participation_Sub3a' => 'Сомнительное предложение',
+        'Soccer2018plus_VictoryByDesign_26-46_Participation_Sub3b' => 'Сомнительное предложение',
+        'Soccer2018plus_VictoryByDesign_26-46_Preparation_Main' => 'Подготовка',
+        'Soccer2018plus_VictoryByDesign_26-46_Preparation_Sub1' => 'Сбор команды',
+        'Soccer2018plus_VictoryByDesign_26-46_Preparation_Sub2' => 'Обучение команды',
+        'Soccer2018plus_VictoryByDesign_26-46_Preparation_Sub3' => 'Беспристрастность',
+        'Soccer2018plus_VictoryByDesign_26-46_Preparation_Sub4' => 'Безопасность',
+        'Soccer2018plus_VictoryByDesign_47-61_Application_Main' => 'Заявка',
+        'Soccer2018plus_VictoryByDesign_47-61_Application_Sub1' => 'Приготовления',
+        'Soccer2018plus_VictoryByDesign_47-61_Application_Sub2' => 'Подтверждение',
+        'Soccer2018plus_VictoryByDesign_47-61_Application_Sub3' => 'Презентация',
+        'Soccer2018plus_VictoryByDesign_47-61_Application_Sub4' => 'Выборы',
+        'Soccer2018plus_VictoryByDesign_47-61_Determination_MainA' => 'Решимость',
+        'Soccer2018plus_VictoryByDesign_47-61_Determination_MainB' => 'Решимость',
+        'Soccer2018plus_VictoryByDesign_47-61_Determination_Sub1A' => 'Взятка',
+        'Soccer2018plus_VictoryByDesign_47-61_Determination_Sub1B' => 'Сбор информации',
+        'Soccer2018plus_VictoryByDesign_47-61_Determination_Sub2A' => 'Шантаж',
+        'Soccer2018plus_VictoryByDesign_47-61_Determination_Sub2B' => 'Доказательства коррупции',
+        'Soccer2018plus_VictoryByDesign_47-61_Determination_Sub3A' => 'Саботаж',
+        'Soccer2018plus_VictoryByDesign_47-61_Determination_Sub3B' => 'Разоблачение сети',
+        'Soccer2018plus_VictoryByDesign_47-61_Determination_Sub4A' => 'Финальный рывок',
+        'Soccer2018plus_VictoryByDesign_47-61_Determination_Sub4B' => 'Финальный рывок',
+        'Soccer2018plus_VictoryByDesign_47-61_Hub' => 'Победа по плану',
+        'Soccer2018plus_VictoryByDesign_47-61_Participation_Main' => 'Игры',
+        'Soccer2018plus_VictoryByDesign_47-61_Participation_Sub1' => 'Хуже ожидаемого',
+        'Soccer2018plus_VictoryByDesign_47-61_Participation_Sub2' => 'Подозрительные результаты',
+        'Soccer2018plus_VictoryByDesign_47-61_Participation_Sub3a' => 'Сомнительное предложение',
+        'Soccer2018plus_VictoryByDesign_47-61_Participation_Sub3b' => 'Сомнительное предложение',
+        'Soccer2018plus_VictoryByDesign_47-61_Preparation_Main' => 'Подготовка',
+        'Soccer2018plus_VictoryByDesign_47-61_Preparation_Sub1' => 'Сбор команды',
+        'Soccer2018plus_VictoryByDesign_47-61_Preparation_Sub2' => 'Обучение команды',
+        'Soccer2018plus_VictoryByDesign_47-61_Preparation_Sub3' => 'Беспристрастность',
+        'Soccer2018plus_VictoryByDesign_47-61_Preparation_Sub4' => 'Безопасность',
+        'Soccer2018plus_VictoryByDesign_62-80_Application_Main' => 'Заявка',
+        'Soccer2018plus_VictoryByDesign_62-80_Application_Sub1' => 'Приготовления',
+        'Soccer2018plus_VictoryByDesign_62-80_Application_Sub2' => 'Подтверждение',
+        'Soccer2018plus_VictoryByDesign_62-80_Application_Sub3' => 'Презентация',
+        'Soccer2018plus_VictoryByDesign_62-80_Application_Sub4' => 'Выборы',
+        'Soccer2018plus_VictoryByDesign_62-80_Determination_MainA' => 'Решимость',
+        'Soccer2018plus_VictoryByDesign_62-80_Determination_MainB' => 'Решимость',
+        'Soccer2018plus_VictoryByDesign_62-80_Determination_Sub1A' => 'Взятка',
+        'Soccer2018plus_VictoryByDesign_62-80_Determination_Sub1B' => 'Сбор информации',
+        'Soccer2018plus_VictoryByDesign_62-80_Determination_Sub2A' => 'Шантаж',
+        'Soccer2018plus_VictoryByDesign_62-80_Determination_Sub2B' => 'Доказательства коррупции',
+        'Soccer2018plus_VictoryByDesign_62-80_Determination_Sub3A' => 'Саботаж',
+        'Soccer2018plus_VictoryByDesign_62-80_Determination_Sub3B' => 'Разоблачение сети',
+        'Soccer2018plus_VictoryByDesign_62-80_Determination_Sub4A' => 'Финальный рывок',
+        'Soccer2018plus_VictoryByDesign_62-80_Determination_Sub4B' => 'Финальный рывок',
+        'Soccer2018plus_VictoryByDesign_62-80_Hub' => 'Победа по плану',
+        'Soccer2018plus_VictoryByDesign_62-80_Participation_Main' => 'Игры',
+        'Soccer2018plus_VictoryByDesign_62-80_Participation_Sub1' => 'Хуже ожидаемого',
+        'Soccer2018plus_VictoryByDesign_62-80_Participation_Sub2' => 'Подозрительные результаты',
+        'Soccer2018plus_VictoryByDesign_62-80_Participation_Sub3a' => 'Сомнительное предложение',
+        'Soccer2018plus_VictoryByDesign_62-80_Participation_Sub3b' => 'Сомнительное предложение',
+        'Soccer2018plus_VictoryByDesign_62-80_Preparation_Main' => 'Подготовка',
+        'Soccer2018plus_VictoryByDesign_62-80_Preparation_Sub1' => 'Сбор команды',
+        'Soccer2018plus_VictoryByDesign_62-80_Preparation_Sub2' => 'Обучение команды',
+        'Soccer2018plus_VictoryByDesign_62-80_Preparation_Sub3' => 'Беспристрастность',
+        'Soccer2018plus_VictoryByDesign_62-80_Preparation_Sub4' => 'Безопасность',
         'SocialLong1' => 'Чудесное печенье',
         'SocialLong2' => 'Личный пример',
         'SocialLong3' => 'Срочный заказ на оружие',
@@ -35401,12 +36127,6 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'TheSiegeQ1' => 'Снятие осады',
         'TombRaidersQ1' => 'Освящение',
         'TombRaidersQ2' => 'Очищение',
-        'Towerofbraging2' => 'NT: Unlock the achievement "Don\'t get cocky, kid I"',
-        'Towerofbraging3' => 'NT: Unlock the achievement "Don\'t get cocky, kid II"',
-        'Towerofbraging4' => 'NT: Unlock the achievement "Don\'t get cocky, kid III"',
-        'Towerofbraging5' => 'NT: Unlock the achievement "Don\'t get cocky, kid IV"',
-        'Towerofbraging6' => 'NT: Unlock the achievement "Don\'t get cocky, kid V"',
-        'Towerofbraging7' => 'NT: Unlock the achievement "Don\'t get cocky, kid VI"',
         'TutAddSector' => 'Расширяйте владения',
         'TutAdditionalForester' => 'Идеальное производство древесины',
         'TutAdditionalSawmill' => 'Излишки досок',
@@ -36311,6 +37031,21 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'XMAS2017plus_Adv2_hard' => 'Мастерская подарков',
         'XMAS2017plus_Adv2_medium' => 'Мастерская подарков',
         'XMAS2017plus_Adv3' => 'Завершить доставку подарков',
+        'XMAS2017plus_CardDelivery_lvl26' => 'Доставка веселья',
+        'XMAS2017plus_CardDelivery_lvl36' => 'Доставка веселья',
+        'XMAS2017plus_CardDelivery_lvl51' => 'Доставка веселья',
+        'XMAS2017plus_CardPreparation_lvl26' => 'Радостные вести',
+        'XMAS2017plus_CardPreparation_lvl36' => 'Радостные вести',
+        'XMAS2017plus_CardPreparation_lvl51' => 'Радостные вести',
+        'XMAS2017plus_DecoPlacement1_lvl26' => 'Украсьте поселение',
+        'XMAS2017plus_DecoPlacement1_lvl36' => 'Украсьте поселение',
+        'XMAS2017plus_DecoPlacement1_lvl51' => 'Украсьте поселение',
+        'XMAS2017plus_DecoPlacement2_lvl26' => 'Праздничное касание',
+        'XMAS2017plus_DecoPlacement2_lvl36' => 'Праздничное касание',
+        'XMAS2017plus_DecoPlacement2_lvl51' => 'Праздничное касание',
+        'XMAS2017plus_DecoProduce2_lvl26' => 'Всё для Рождества',
+        'XMAS2017plus_DecoProduce2_lvl36' => 'Всё для Рождества',
+        'XMAS2017plus_DecoProduce2_lvl51' => 'Всё для Рождества',
         'XMAS2017plus_EventMarket_Produce1_lvl26' => 'Простые материалы ярмарки',
         'XMAS2017plus_EventMarket_Produce1_lvl36' => 'Простые материалы ярмарки',
         'XMAS2017plus_EventMarket_Produce1_lvl51' => 'Простые материалы ярмарки',
@@ -36329,14 +37064,38 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'XMAS2017plus_EventMarket_Tut2_lvl26' => 'Иллюзия чуда',
         'XMAS2017plus_EventMarket_Tut2_lvl36' => 'Иллюзия чуда',
         'XMAS2017plus_EventMarket_Tut2_lvl51' => 'Иллюзия чуда',
+        'XMAS2017plus_FeastPreparation1_lvl26' => 'Теплу быть',
+        'XMAS2017plus_FeastPreparation1_lvl36' => 'Теплу быть',
+        'XMAS2017plus_FeastPreparation1_lvl51' => 'Теплу быть',
+        'XMAS2017plus_FeastPreparation2_lvl26' => 'Приходит, готовь, празднуй',
+        'XMAS2017plus_FeastPreparation2_lvl36' => 'Приходит, готовь, празднуй',
+        'XMAS2017plus_FeastPreparation2_lvl51' => 'Приходит, готовь, празднуй',
+        'XMAS2017plus_GiftGiving_lvl26' => 'Доставьте радость',
+        'XMAS2017plus_GiftGiving_lvl36' => 'Доставьте радость',
+        'XMAS2017plus_GiftGiving_lvl51' => 'Доставьте радость',
+        'XMAS2017plus_HolidayCheerDelay1_lvl26' => 'Осмысление',
+        'XMAS2017plus_HolidayCheerDelay1_lvl36' => 'Осмысление',
+        'XMAS2017plus_HolidayCheerDelay1_lvl51' => 'Осмысление',
+        'XMAS2017plus_HolidayCheerDelay2_lvl26' => 'Тихие ночи',
+        'XMAS2017plus_HolidayCheerDelay2_lvl36' => 'Тихие ночи',
+        'XMAS2017plus_HolidayCheerDelay2_lvl51' => 'Тихие ночи',
         'XMAS2017plus_Main1' => 'Вот и Рождество!',
         'XMAS2017plus_Main2' => 'Пропали олени',
         'XMAS2017plus_Main3_Easy' => 'Злодей',
         'XMAS2017plus_Main3_Hard' => 'Злодей',
         'XMAS2017plus_Main3_Medium' => 'Злодей',
+        'XMAS2017plus_PresentProduction_lvl26' => 'Праздничная мастерская',
+        'XMAS2017plus_PresentProduction_lvl36' => 'Праздничная мастерская',
+        'XMAS2017plus_PresentProduction_lvl51' => 'Праздничная мастерская',
         'XMAS2017plus_Reach16' => 'Самое начало',
         'XMAS2017plus_Reach23' => 'Умение приходит с практикой',
         'XMAS2017plus_Reach26' => 'Приготовления к битве',
+        'XMAS2017plus_SongPlacement_lvl26' => 'Хор добра',
+        'XMAS2017plus_SongPlacement_lvl36' => 'Хор добра',
+        'XMAS2017plus_SongPlacement_lvl51' => 'Хор добра',
+        'XMAS2017plus_SongProduction_lvl26' => 'Праздничная музыка',
+        'XMAS2017plus_SongProduction_lvl36' => 'Праздничная музыка',
+        'XMAS2017plus_SongProduction_lvl51' => 'Праздничная музыка',
         'XMAS2017plus_Sub1' => 'Рождественский сюрприз',
         'XMAS2017plus_Sub2' => 'Колокольчики, леденцы и имбирные пряники',
         'XMAS2017plus_Sub2a' => 'Окно событий',
@@ -36390,6 +37149,12 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'XMAS2017plus_XmasMarket_lvl26' => 'Доставка уточек',
         'XMAS2017plus_XmasMarket_lvl36' => 'Доставка уточек',
         'XMAS2017plus_XmasMarket_lvl51' => 'Доставка уточек',
+        'XMAS2017plus_XmasSpiritFinal_lvl26' => 'Чувство единства',
+        'XMAS2017plus_XmasSpiritFinal_lvl36' => 'Чувство единства',
+        'XMAS2017plus_XmasSpiritFinal_lvl51' => 'Чувство единства',
+        'XMAS2017plus_XmasSpirit_Main_lvl26' => 'Операция «Праздничное веселье»',
+        'XMAS2017plus_XmasSpirit_Main_lvl36' => 'Операция «Праздничное веселье»',
+        'XMAS2017plus_XmasSpirit_Main_lvl51' => 'Операция «Праздничное веселье»',
         'XMASEventAdv' => 'Нести дух Рождества',
         'XMASEventCookieAdv' => 'Игрушки для малышни',
         'XMASEventCookieAdv_Buff' => 'Рождественское представление',
@@ -36397,8 +37162,6 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'XMASEventCookieAdv_Military' => 'Лягушкофобия',
     ],
     'RES' => [
-        'ChangeSkin_Anniversary2026_MayorsHouse_long' => 'Облик на 15 дней: ратуша (наследие трёх десятилетий)',
-        'ProductivityBuffLvl_CommandCenterBoost' => 'Тактика: Картечь',
         'AddBuildingLimit' => 'Разрешение на строительство',
         'AddRecipe_AddResourceCodex' => 'Рецепт: Кодекс',
         'AddRecipe_AddResourceManuscript' => 'Рецепт: Рукопись',
@@ -36422,7 +37185,6 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'AddRecipe_StarfallAirship_Unlock_Bracket3' => 'Блок набора улучшений "Предвестника" III',
         'AddRecipe_StarfallAirship_Unlock_Bracket4' => 'Блок набора улучшений "Предвестника" IV',
         'AddRecipe_StoneRefill' => 'Рецепт: Выгодная сделка',
-        'AddRecipe_Tower_Unlock_Upgrade2' => 'NT: Tower Remodeling Work Order',
         'AddRecipe_WeaponsmithBoost' => 'Рецепт: Двойной темп',
         'AddResource' => 'Добавить ресурс: {0} {1,RES}',
         'AddResource_AdventureCodex' => 'Долгая история приключений',
@@ -36542,7 +37304,6 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'AddResources_CrystalShardToCrystal' => 'Насос высокого давления',
         'AdvancedPaper' => 'Отличная бумага',
         'AdvancedTools' => 'Отличные инструменты',
-        'AdventureRelics' => 'NT: Adventure Relics',
         'AdventureTale' => 'Сказочное приключение',
         'AdventureZoneTravelBoostHigh' => 'Подробная звездная карта',
         'AdventureZoneTravelBoostLow' => 'Приблизительная звездная карта',
@@ -36566,9 +37327,9 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'ArcheologyTrainee' => 'Археолог-ученик',
         'ArcticIronMine' => 'Арктический железный рудник',
         'ArcticTitaniumMine' => 'Арктический титановый рудник',
-        'AreaBuffIceSkatingLakeLvl1' => 'NT: Winter Jolly',
-        'AreaBuffIceSkatingLakeLvl2' => 'NT: Winter Spirit I',
-        'AreaBuffIceSkatingLakeLvl3' => 'NT: Winter Spirit II',
+        'AreaBuffFluffyLogistics1' => 'Лучшая доставка!',
+        'AreaBuffFluffyLogistics2' => 'Логистическая сеть пасхальных яиц',
+        'AreaBuffFluffyLogistics3' => 'Налаженная логистика пасхальных яиц',
         'AreaBuffLoveGardenLvl1' => 'Усилитель сада любви',
         'ArmillarySphere' => 'Армиллярная сфера',
         'ArmoredMarksman' => 'Стрелок в броне',
@@ -36577,6 +37338,8 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'ArtMuseumBuff3' => 'Выставка военного искусства',
         'Artisan' => 'Ремесленник',
         'AssassinGeneral' => 'Скрытный генерал',
+        'AuroraBuff' => 'Время историй',
+        'AuroraTower' => 'Башня Авроры',
         'BalancedGeologist' => 'Уравновешенный геолог',
         'Balloons' => 'Воздушные шары',
         'Bandit' => 'Разбойник',
@@ -36721,13 +37484,12 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'BattleBuffKill_random_unit_type_limited' => 'Убийца',
         'BattleLance' => 'Тяжелое копье',
         'Battlehorse' => 'Боевой конь',
-        'BattleHorse' => 'Боевой конь',
         'Beer' => 'Квас',
         'Besieger' => 'Мастер осады',
         'BirthdayShaman' => 'Мистический шаман',
+        'BlastingCartAid' => 'Взрывная телега',
         'BlondeBowman' => 'Лучник-блондин',
         'Board' => 'Использованное угощение',
-        'BoatHouse' => 'NT: Boat Residence',
         'BookFitting' => 'Книжная обложка',
         'BookbinderBuffLvl1' => 'Животный клей',
         'BookbinderBuffLvl2' => 'Смола дикого дерева',
@@ -36735,16 +37497,18 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'BookbinderBuffLvl4' => 'Клейкий сахарный сироп',
         'BookbinderBuffLvl5' => 'Духовная близость',
         'BookbinderBuffLvl6' => 'Родственная душа',
+        'BookbinderBuffLvl_ChristmasStories' => 'Рождественские истории',
         'BorisGeneral' => 'Генерал Борис',
         'BountyHunterNew' => 'Охотник за головами',
         'Bow' => 'Луки',
         'Bowman' => 'Лучник',
         'Bread' => 'Хлеб',
         'BridgeBaseMaterial' => 'Материал для моста',
-        'Brohmann' => 'NT: Brohmann',
         'Bronze' => 'Бронза',
         'BronzeBullet' => 'Бронзовая пуля',
         'BronzeOre' => 'Медная руда',
+        'BronzeOreKnowledge1' => 'Знания по металлургии: медь I',
+        'BronzeOreKnowledge2' => 'Знания по металлургии: медь II',
         'BronzeSword' => 'Бронзовые мечи',
         'Bucket' => 'Ведро',
         'BuffAd_BarredGate' => 'Запертые ворота',
@@ -36821,6 +37585,7 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'ChangeColorScheme_spooky' => 'Блуждающие огни',
         'ChangeColorScheme_tropical' => 'Талисман хорошей погоды',
         'ChangeColorScheme_tundra' => 'Красочный север',
+        'ChangeDefaultSkin_Anniversary2026_MayorsHouse_perm' => 'Облик: ратуша (наследие трёх десятилетий)',
         'ChangeDefaultSkin_ArtMuseum_blue_permanent' => 'Цвет: музей искусств, синий',
         'ChangeDefaultSkin_ChristmasBarracks_permanent' => 'Вид: казармы (рождественские)',
         'ChangeDefaultSkin_ChristmasProvisionHouse_permanent' => 'Вид: универсальные мастерские (рождественские)',
@@ -36842,21 +37607,15 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'ChangeDefaultSkin_FlowerBlossomsResidence_green_permanent' => 'Вид: дома (цветущий дом, зеленый)',
         'ChangeDefaultSkin_FlowerBlossomsStorehouse_blue_permanent' => 'Вид: склады (цветущий склад, синий)',
         'ChangeDefaultSkin_FlowerBlossomsStorehouse_green_permanent' => 'Вид: склады (цветущий склад, зеленый)',
-        'ChangeDefaultSkin_HauntedSpiderWarehouse_permanent' => 'NT: Haunted Spider Warehouse',
         'ChangeDefaultSkin_InflatableResidence_blue_permanent' => 'Вид: дома (надувной дом, синий)',
         'ChangeDefaultSkin_InflatableResidence_red_permanent' => 'Вид: дома (надувной дом, красный)',
         'ChangeDefaultSkin_InflatableStorehouse_blue_permanent' => 'Вид: склады (надувной склад, синий)',
         'ChangeDefaultSkin_InflatableStorehouse_red_permanent' => 'Вид: склады (надувной склад, красный)',
         'ChangeDefaultSkin_Ostereierbaum_blue_permanent' => 'Цвет: пасхальное дерево, синее',
         'ChangeDefaultSkin_Ostereierbaum_red_permanent' => 'Цвет: пасхальное дерево, красное',
-        'ChangeDefaultSkin_SpiritJourneyMayorhouse' => 'NT: Epic Skin: Mayor\'s House (Spirit Journey)',
         'ChangeDefaultSkin_christmas_mayorhouse_permanent' => 'Вид: ратуша (рождественская)',
         'ChangeDefaultSkin_default_market_permanent' => 'Вид: рождественская ярмарка (по умолчанию)',
         'ChangeDefaultSkin_evil_mayourhouse_permanent' => 'Вид: ратуша (жуткая)',
-        'ChangeDefaultSkin_guild_building_GF_bronze_perm' => 'NT: Skin: Guild House (Guild Fest, Bronze)',
-        'ChangeDefaultSkin_guild_building_GF_gold_perm' => 'NT: Skin: Guild House (Guild Fest, Gold)',
-        'ChangeDefaultSkin_guild_building_GF_plat_perm' => 'NT: Skin: Guild House (Guild Fest, Platinum)',
-        'ChangeDefaultSkin_guild_building_GF_silver_perm' => 'NT: Skin: Guild House (Guild Fest, Silver)',
         'ChangeDefaultSkin_lvl1_mayourhouse_permanent' => 'Вид: ратуша (ностальгия уровня 1)',
         'ChangeDefaultSkin_lvl2_mayourhouse_permanent' => 'Вид: ратуша (ностальгия уровня 2)',
         'ChangeDefaultSkin_mediterranean_mayourhouse_blue_permanent' => 'Вид: ратуша (величественная, синяя)',
@@ -36867,6 +37626,7 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'ChangeDefaultSkin_retro_mason_permanent' => 'Вид: каменоломня (ретро)',
         'ChangeDefaultSkin_retro_well_permanent' => 'Вид: колодец (ретро)',
         'ChangeDefaultSkin_retro_woodcutter_permanent' => 'Вид: домик дровосека (ретро)',
+        'ChangeSkin_Anniversary2026_MayorsHouse_long' => 'Облик на 15 дней: ратуша (наследие трёх десятилетий)',
         'ChangeSkin_BuffAd_Beer' => 'Особый напиток',
         'ChangeSkin_BuffAd_Bread' => 'Вкусный хлеб',
         'ChangeSkin_BuffAd_Bridge' => 'Дополнительный мост',
@@ -36895,8 +37655,12 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'ChangeSkin_Buff_Ad_Rescueparty' => 'Спасательный отряд',
         'ChangeSkin_Buffad_Broadsheet' => 'Плакат',
         'ChangeSkin_Buffad_Rescueparty' => 'Спасательный отряд',
+        'ChangeSkin_ChristmasBarracks_short' => 'Рождественское украшение казарм',
         'ChangeSkin_ChristmasBarracks_temp' => '5-дневный вид: казармы (рождественские)',
+        'ChangeSkin_ChristmasMayorhouse_short' => 'Рождественское украшение мэрии',
+        'ChangeSkin_ChristmasProvisionHouse_short' => 'Рождественское украшение универсальной мастерской',
         'ChangeSkin_ChristmasProvisionHouse_temp' => '5-дневный вид: универсальные мастерские (рождественские)',
+        'ChangeSkin_ChristmasStorehouse_short' => 'Рождественское украшение склада',
         'ChangeSkin_ChristmasStorehouse_temp' => '5-дневный вид: склады (рождественские)',
         'ChangeSkin_Crystal_Barracks_temp' => '3-дневный вид: казармы (кристальные)',
         'ChangeSkin_Crystal_Mayorhouse_temp' => '3-дневный вид: ратуша (кристальная)',
@@ -36918,7 +37682,6 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'ChangeSkin_FlowerBlossomsResidence_green_temp' => '5-дневный вид: дома (цветущий дом, зеленый)',
         'ChangeSkin_FlowerBlossomsStorehouse_blue_temp' => '5-дневный вид: склады (цветущий склад, синий)',
         'ChangeSkin_FlowerBlossomsStorehouse_green_temp' => '5-дневный вид: склады (цветущий склад, зеленый)',
-        'ChangeSkin_HauntedSpiderWarehouse_temp' => 'NT: Haunted Spider Warehouse',
         'ChangeSkin_ImprovedFloatingResidenceWinterSkin_long' => '15-дневный вид: улучшенный дом на воде (покрытый льдом)',
         'ChangeSkin_ImprovedFloatingResidenceWinterSkin_permanent' => 'Вид: улучшенный дом на воде (покрытый льдом)',
         'ChangeSkin_InflatableResidence_blue_temp' => '5-дневный вид: дома (надувной дом, синий)',
@@ -36945,6 +37708,7 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'ChangeSkin_Xmas_ResidenceBig_permanent' => 'Вид: дом, особняк (большой рождественский)',
         'ChangeSkin_Xmas_ResidenceMedium_long' => '15-дневный вид: дом, особняк (средний рождественский)',
         'ChangeSkin_Xmas_ResidenceMedium_permanent' => 'Вид: дом, особняк (средний рождественский)',
+        'ChangeSkin_Xmas_ResidenceMedium_short' => 'Рождественское украшение дома',
         'ChangeSkin_Xmas_ResidenceSmall_long' => '15-дневный вид: дом, особняк (маленький рождественский)',
         'ChangeSkin_Xmas_ResidenceSmall_permanent' => 'Вид: дом, особняк (маленький рождественский)',
         'ChangeSkin_christmas_mayorhouse_long' => '15-дневный вид: ратуша (рождественская)',
@@ -36964,6 +37728,10 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'ChangeSkin_retro_well_long' => '15-дневный вид: колодец (ретро)',
         'ChangeSkin_retro_woodcutter' => '5-дневный вид: домик дровосека (ретро)',
         'ChangeSkin_retro_woodcutter_long' => '15-дневный вид: домик дровосека (ретро)',
+        'Changeloopmusic_Christmas_Jingle' => 'Рождественский хор',
+        'Changeloopmusic_Christmas_Merry' => 'Рождественские пожелания',
+        'Changeloopmusic_Christmas_Silent' => 'Ночные певцы',
+        'ChocolateDepot' => 'Склад шоколада',
         'ChristmasBoss1' => 'Ворчун',
         'ChristmasBoss1variant' => 'Ворчун',
         'ChristmasBossTwin1' => 'Квакша',
@@ -36972,13 +37740,17 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'ChristmasLargePresentPackage' => 'Большой набор подарков',
         'ChristmasResource' => 'Подарки',
         'ChristmasSmallPresentPackage' => 'Малый набор подарков',
-        'ChummyExplorer' => 'NT: Chummy Explorer',
+        'Christmas_Bench_Deposit' => 'Украшение «Рождественская скамья»',
+        'Christmas_Lantern_Deposit' => 'Украшение «Рождественский фонарь»',
+        'Christmas_Nutcracker_Deposit' => 'Украшение «Рождественский щелкунчик»',
+        'Christmas_Presents_Deposit' => 'Украшение «Рождественские подарки»',
+        'Christmas_Pyramid_Deposit' => 'Украшение «Рождественская пирамида»',
+        'Christmastree_Deposit' => 'Украшение «Рождественское дерево»',
         'ChupacabraBoss' => 'Чупакабра',
         'Clock' => 'Время производства',
         'Cloth' => 'Шерстяная ткань',
         'Coal' => 'Уголь',
         'Codex' => 'Кодекс',
-        'CoffeeShop' => 'NT: Coffee Shop',
         'Coin' => 'Монеты',
         'CollectibleAdamantium' => 'Адамантовая руда',
         'CollectibleBanner' => 'Герб',
@@ -37009,6 +37781,11 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'CombatBuffLostCityStone' => 'Покровительство камня',
         'CombatBuffLostCityWater' => 'Покровительство воды',
         'CombatBuffLostCityWind' => 'Покровительство ветра',
+        'CommandCenter' => 'Командный пункт',
+        'CommandCenterAid' => 'Дозорный пост',
+        'CommandCenterBuff1' => 'Тактика: Диверсия',
+        'CommandCenterBuff2' => 'Тактика: Картечь',
+        'CommandCenterBuff3' => 'Тактика: Конный натиск',
         'CompositeBow' => 'Лук для нападения',
         'ConstructionWorkerJourneyman' => 'Строитель-специалист',
         'ConstructionWorkerMaster' => 'Строитель-эксперт',
@@ -37047,6 +37824,7 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'DefensiveMiner' => 'Шахтер-защитник',
         'DeleteItem' => 'Удалить предмет',
         'DepositBronzeOre' => 'Залежь меди',
+        'DepositChristmasResource' => 'Подарки',
         'DepositCoal' => 'Залежь угля',
         'DepositCorn' => 'Пшеничное поле',
         'DepositCrystalShard' => 'Залежь кристальных осколков',
@@ -37057,8 +37835,11 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'DepositHalloweenResource' => 'Кладбище с тыквами',
         'DepositHardCurrency' => 'Залежь самоцветов',
         'DepositIronOre' => 'Залежь железа',
+        'DepositMahoganyWood' => 'Махагониевое дерево',
         'DepositMarble' => 'Залежь мрамора',
         'DepositMeat' => 'Дикое животное',
+        'DepositOilseed' => 'Маслосемена',
+        'DepositPlatinumOre' => 'Платиновая руда',
         'DepositRealWood' => 'Дуб',
         'DepositSalpeter' => 'Залежь селитры',
         'DepositStarfallStarShards' => 'Осколок звезды',
@@ -37067,6 +37848,7 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'DepositValentinesFlower' => 'Залежь цветов Валентина',
         'DepositWater' => 'Колодец',
         'DepositWood' => 'Сосна',
+        'Depositorium' => 'Депозиторий',
         'DestroyBuilding_Farmfield' => 'Уничтожить пашню',
         'DestroyBuilding_Fisher' => 'Уничтожить рыбную ферму',
         'DestroyResource_marble' => 'Уничтожить кусков мрамора: x',
@@ -37075,12 +37857,35 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'EMBoss1' => 'Вратарь',
         'EMCavalry' => 'Нападающий',
         'EMEventResource' => 'Футбольные мячи',
+        'EMFlowerbed_canada' => 'Клумба в виде флага Канады',
+        'EMFlowerbed_capverdi' => 'Клумба в виде флага Кабо-Верде',
+        'EMFlowerbed_curacao' => 'Клумба в виде флага Кюрасао',
+        'EMFlowerbed_drcongo' => 'Клумба в виде флага Демократической Республики Конго',
+        'EMFlowerbed_ecuador' => 'Клумба в виде флага Эквадора (без герба)',
+        'EMFlowerbed_haiti' => 'Клумба в виде флага Гаити',
+        'EMFlowerbed_iraq' => 'Клумба в виде флага Ирака',
+        'EMFlowerbed_joradan' => 'Клумба в виде флага Иордании',
+        'EMFlowerbed_newzealand' => 'Клумба в виде флага Новой Зеландии',
+        'EMFlowerbed_norway' => 'Клумба в виде флага Норвегии',
+        'EMFlowerbed_paraguay' => 'Клумба в виде флага Парагвая',
+        'EMFlowerbed_qatar' => 'Клумба в виде флага Катара',
+        'EMFlowerbed_southafrica' => 'Клумба в виде флага ЮАР',
+        'EMFlowerbed_uzbekistan' => 'Клумба в виде флага Узбекистана',
         'EMLongbow' => 'Полузащитник',
         'EMMilitia' => 'Защитник',
+        'EW_Refinery_BronzeOre' => 'Переработка меди',
+        'EW_Refinery_GoldOre' => 'Переработка золота',
+        'EW_Refinery_IronOre' => 'Переработка железа',
+        'EW_Refinery_PlatinumOre' => 'Переработка платины',
+        'EW_Refinery_TitaniumOre' => 'Переработка титана',
+        'Easter2026_LargeBundle' => 'Сундук с сокровищами Пухлохолмса',
+        'Easter2026_MediumBundle' => 'Ящик сюрпризов Пухлохолмса',
+        'Easter2026_SmallBundle' => 'Набор угощений Пухлохолмса',
         'EasterBoss1' => 'Зверолов Гаррун',
         'EasterBowman' => 'Охотник на кроликов',
         'EasterCavalry' => 'Гончая',
         'EasterEggHunt' => 'Поиски спрятанных яиц',
+        'EasterEvent2026_Residence' => 'Пасхальная корзина (2026)',
         'EasterEventFrightenedChicken' => 'Испуганная курица.',
         'EasterEventStinkyPlant' => 'Вонючее растение',
         'EasterGeneral' => 'Ветеран',
@@ -37098,6 +37903,7 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'EffectBuffFakeCoins' => 'Мешочек фальшивых монет',
         'EffectBuffFlimsyProp' => 'Реквизит',
         'EffectBuffFlowerBouquet' => 'Букет цветов',
+        'EffectBuffFluffyLogistics1' => 'Спрятанное пасхальное яйцо',
         'EffectBuffFlute' => 'Флейта',
         'EffectBuffGoldenStatue' => 'Золотая статуя',
         'EffectBuffGourmetMeal' => 'Деликатесы',
@@ -37174,10 +37980,7 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'EffectBuff_pumpkinfield_01_resurrector' => 'Удобрение: небольшое кладбище с тыквами',
         'EffectBuff_pumpkinfield_02_resurrector' => 'Удобрение: обычное кладбище с тыквами',
         'EffectBuff_pumpkinfield_03_resurrector' => 'Удобрение: большое кладбище с тыквами',
-        'EfficientAdvancedToolmaker' => 'NT: Efficient Advanced Toolmaker',
-        'EfficientPlatinumSmelter' => 'NT: Efficient Platinum Smelter',
-        'ElderTreeLH' => 'NT: Elder Tree Lighthouse',
-        'EliteGuildBanner_Deco' => 'NT: Elite Guild Fest Banner',
+        'EfficientCrossbowsmith' => 'Эффективная оружейная (арбалеты)',
         'EliteSoldier' => 'Элитный солдат',
         'EliteWildlifeAir' => 'Снежный орел',
         'EliteWildlifeBowman' => 'Снежный волк',
@@ -37255,6 +38058,7 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'EpicRaidKingdomLongbowman' => 'Королевский стрелок из длинного лука',
         'EpicRaidKingdomMilitia' => 'Королевское ополчение',
         'EpicRaidKingdomRecruit' => 'Королевский новобранец',
+        'EpicWorkyardRefinery' => 'Промышленный рудоперерабатывающий завод',
         'EventBuffLvl01' => 'Солнечная сила',
         'EventMonsterBuff2014Heart1' => 'Очищенная вода',
         'EventMonsterBuff2014Heart2' => 'Обогащенная вода',
@@ -37330,6 +38134,7 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'FlowerBlossomsResidence' => 'Цветущий дом',
         'FlowerBlossomsStorehouse' => 'Цветущий склад',
         'Flowers' => 'Цветы',
+        'FluffyLogistics' => 'Логистический офис Пухлохолмса',
         'FrostyGeneral' => 'Морозный генерал',
         'Furniture' => 'Мебель',
         'Gems' => 'Самоцветы',
@@ -37344,27 +38149,24 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'GeneralSpeedBuff_Obsidian' => 'Обсидиановые подковы',
         'GeneralSpeedBuff_Platinum' => 'Платиновые подковы',
         'GeneralSpeedBuff_TMC_A' => 'Глубокий снег',
-        'GeneralSpeedBuff_Witchcoven_Speed1' => 'NT: Dark Ritual: Reckless Speed',
-        'GeneralSpeedBuff_Witchcoven_Speed2' => 'NT: Generals move 50% slower and their accuracy is reduced by 50% for 3h',
         'GeneralTrembleBeard' => 'Генерал Бородотряс',
         'GeneralVargus' => 'Чемпион Варгус',
         'GeologistOnVacation' => 'Геолог на отдыхе',
-        'GhostExplorer' => 'NT: Ghost Explorer',
         'GhostGeneral' => 'Призрачный генерал',
         'GiftChristmasTree' => 'Новогодняя елка с подарками',
         'GiftGhostShip' => 'Корабль призраков',
+        'GloryExploriExplorer' => 'Исследовательница Нора',
         'GlowingHerbs' => 'Светящиеся растения',
         'Gold' => 'Золото',
         'GoldOre' => 'Золотая руда',
+        'GoldOreKnowledge1' => 'Знания по металлургии: золото I',
+        'GoldOreKnowledge2' => 'Знания по металлургии: золото II',
         'GoldenGuard' => 'Золотой страж',
         'Granite' => 'Гранит',
         'Grout' => 'Раствор',
         'GuardLvl1' => 'Охрана',
         'GuildCoins' => 'Монеты гильдии',
-        'GuildFestBundle1' => 'NT: Gold Guild Fest Bundle',
-        'GuildFestBundle2' => 'NT: Silver Guild Fest Bundle',
-        'GuildFestBundle3' => 'NT: Bronze Guild Fest Bundle',
-        'GuildFestCommendation' => 'Награда фестиваля гильдий',
+        'GuildFestCommendation' => 'Похвала',
         'GuildFestTentI' => 'Достойное жилье при фестивале гильдий',
         'GuildFestTentII' => 'Удобное жилье при фестивале гильдий',
         'GuildFestTentIII' => 'Уютное жилье при фестивале гильдий',
@@ -37423,11 +38225,9 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'HalloweenGeneral2' => 'Генерал Мрачный жнец',
         'HalloweenGeneralDracul' => 'Лорд Дракул',
         'HalloweenResource' => 'Тыквы',
-        'HalloweenZombieInvader' => 'NT: Zombie Invader',
         'HardCurrency' => 'Самоцветы',
         'HeartFruit' => 'Плод сердцедерева',
         'HiredMilitary' => 'Добавить бойцов регулярных войск: {0} {1,RES}',
-        'HiredMilitaryReaninmatedArmy' => 'NT: Dark Ritual: Risen Army',
         'HiredMilitary_ArmoredMarksmen50' => 'Нанятое войско стрелков в броне',
         'HiredMilitary_Besiegers50' => 'Нанятое войско мастеров осады',
         'HiredMilitary_Bowmen50' => 'Нанятое войско лучников',
@@ -37444,10 +38244,10 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'HiredMilitary_Recruit50' => 'Нанятое войско новобранцев',
         'HiredMilitary_Soldiers50' => 'Нанятое войско солдат',
         'HiredMilitary_Swordsmen50' => 'Нанятое войско мечников',
+        'HoneygladeResidence' => 'Резиденция «Медовая опушка»',
         'Horse' => 'Лошади',
         'HumbleExplorer' => 'Скромный исследователь',
         'IceSculpture' => 'Ледяная скульптура',
-        'IceSkatingLake' => 'NT: Ice Skating Lake',
         'ImprovedDeerstalker' => 'Улучшенная хижина охотника',
         'IncreaseMaxBuildingCount' => '10 разрешений на строительство',
         'IncreaseMaxBuildingCount3' => '3 разрешения на строительство',
@@ -37460,11 +38260,11 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'Iron' => 'Железо',
         'IronBullet' => 'Железная пуля',
         'IronOre' => 'Железная руда',
+        'IronOreKnowledge1' => 'Знания по металлургии: железо I',
+        'IronOreKnowledge2' => 'Знания по металлургии: железо II',
         'IronPike' => 'Железная пика',
         'IronSword' => 'Железные мечи',
         'IslandDeed_FreeIsland' => 'Лицензия на сектор',
-        'Jewelcrafter' => 'NT: Jewel Crafter Workshop',
-        'JewelcrafterAdventureBuff1' => 'NT: Glittering Armor',
         'KingdomBoss1' => 'Сэр Робин',
         'KingdomBoss2' => 'Большая Берта',
         'KingdomBowman' => 'Лучник-дезертир',
@@ -37480,6 +38280,7 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'KingdomRecruitTrainee' => 'Новобранец-призывник',
         'KingdomSoldier' => 'Солдат-дезертир',
         'Knight' => 'Рыцарь',
+        'KrampusPit' => 'Угольная шахта Крампуса',
         'LazaretRecoverGeneral1' => 'Аптечка',
         'LazaretRecoverGeneral2' => 'Аптечка',
         'LazaretRecoverGeneral3' => 'Аптечка',
@@ -37490,7 +38291,7 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'LetterNormalPart' => 'Фрагмент обычного письма',
         'LetterShort' => 'Короткое письмо',
         'LetterShortPart' => 'Фрагмент короткого письма',
-        'LoggingHut' => 'NT: Logging Hut',
+        'LonelyHeartInn' => 'Таверна «Одинокое сердце»',
         'LonerGeneral' => 'Генерал-одиночка',
         'Longbow' => 'Длинные луки',
         'Longbowman' => 'Стрелок из длинного лука',
@@ -37502,8 +38303,29 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'Loottable_ChristmasDecorationsBox2015' => 'Набор рождественских украшений',
         'Loottable_ChristmasMysteryBoxDeco' => 'Таинственный сундук с украшениями',
         'Loottable_ChristmasMysteryBoxResource' => 'Таинственный сундук с ресурсами',
+        'Loottable_Christmas_Bench_MysteryBox_b' => 'Большой комплект для удобной сборки рождественской скамьи',
+        'Loottable_Christmas_Bench_MysteryBox_m' => 'Средний комплект для удобной сборки рождественской скамьи',
+        'Loottable_Christmas_Bench_MysteryBox_s' => 'Маленький комплект для удобной сборки рождественской скамьи',
+        'Loottable_Christmas_Christmastree_MysteryBox_b' => 'Большой комплект для удобной сборки рождественского дерева',
+        'Loottable_Christmas_Christmastree_MysteryBox_m' => 'Средний комплект для удобной сборки рождественского дерева',
+        'Loottable_Christmas_Christmastree_MysteryBox_s' => 'Маленький комплект для удобной сборки рождественского дерева',
+        'Loottable_Christmas_Lantern_MysteryBox_b' => 'Большой комплект для удобной сборки рождественского фонаря',
+        'Loottable_Christmas_Lantern_MysteryBox_m' => 'Средний комплект для удобной сборки рождественского фонаря',
+        'Loottable_Christmas_Lantern_MysteryBox_s' => 'Маленький комплект для удобной сборки рождественского фонаря',
+        'Loottable_Christmas_Nutcracker_MysteryBox_b' => 'Большой комплект для удобной сборки рождественского щелкунчика',
+        'Loottable_Christmas_Nutcracker_MysteryBox_m' => 'Средний комплект для удобной сборки рождественского щелкунчика',
+        'Loottable_Christmas_Nutcracker_MysteryBox_s' => 'Маленький комплект для удобной сборки рождественского щелкунчика',
+        'Loottable_Christmas_Presents_MysteryBox_b' => 'Большой комплект для удобной сборки рождественских подарков',
+        'Loottable_Christmas_Presents_MysteryBox_m' => 'Средний комплект для удобной сборки рождественских подарков',
+        'Loottable_Christmas_Presents_MysteryBox_s' => 'Маленький комплект для удобной сборки рождественских подарков',
+        'Loottable_Christmas_Pyramid_MysteryBox_b' => 'Большой комплект для удобной сборки рождественской пирамиды',
+        'Loottable_Christmas_Pyramid_MysteryBox_m' => 'Средний комплект для удобной сборки рождественской пирамиды',
+        'Loottable_Christmas_Pyramid_MysteryBox_s' => 'Маленький комплект для удобной сборки рождественской пирамиды',
+        'Loottable_Christmas_Snowman_MysteryBox_b' => 'Большой комплект для удобной сборки рождественского снеговика',
+        'Loottable_Christmas_Snowman_MysteryBox_m' => 'Средний комплект для удобной сборки рождественского снеговика',
+        'Loottable_Christmas_Snowman_MysteryBox_s' => 'Маленький комплект для удобной сборки рождественского снеговика',
         'Loottable_CollectibleMysteryBox' => 'Коллекционный таинственный сундук',
-        'Loottable_CombatLoot_MysteryBox' => 'NT: Raider\'s Plunder',
+        'Loottable_CombatLoot_MysteryBox334' => 'Тайник самовозвеличивания',
         'Loottable_CostumeTimeMysteryBox' => 'Время преображений',
         'Loottable_Easter2015MysteryBox' => 'Полосатый сюрприз',
         'Loottable_Easter2016MysteryBox' => 'Таинственный пасхальный сундук',
@@ -37519,9 +38341,6 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'Loottable_MysteryBoxAdventure' => 'Таинственный сундук с приключениями',
         'Loottable_MysteryBoxBlackKnights' => 'Черный сундук',
         'Loottable_NormalResourceBox' => 'Обычная коробка ресурсов',
-        'Loottable_ProspectorMysteryBox1' => 'NT: Prospected Stone',
-        'Loottable_ProspectorMysteryBox2' => 'NT: Prospected Marble',
-        'Loottable_ProspectorMysteryBox3' => 'NT: Prospected Granite',
         'Loottable_RefillMysteryBox' => 'Коллекция наполнителей',
         'Loottable_RewardBoxCommon' => 'Обычный сундук с наградой',
         'Loottable_RewardBoxManuscriptRecipe' => 'Сундук с наградой',
@@ -37541,9 +38360,9 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'Loottable_UnityMysteryBox' => 'Сундук с чудесностями "Чудесное единство"',
         'Loottable_ValentineBox' => 'Сюрприз на день святого Валентина',
         'Loottable_ValentineCardBox' => 'Ящик с валентинками',
-        'Loottable_WitchCovenAchievement1_MysteryBox' => 'NT: Chest of Ghostly Exploration',
-        'Loottable_WitchCovenAchievement2_MysteryBox' => 'NT: Chest of Ghostly Military',
+        'Loottable_WeddingStory' => 'Свадебная история',
         'Loottable_XmasDecorationMysteryBox' => 'Таинственный сундук с рождественским украшением',
+        'Loottable_XmasSock_MysteryBox' => 'Бабушкин вязаный рождественский чулок',
         'Loottable_xmas2015_calendarbox' => 'Подарок к морозной зиме',
         'MadScientistBoss' => 'Безумный ученый',
         'MadScientistGeneral' => 'Безумный ученый',
@@ -37576,7 +38395,6 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'MiraculousGeneral' => 'Чудесный генерал',
         'Monks' => 'Ученый',
         'Mortar' => 'Мортира',
-        'MountainClanColossus' => 'NT: Mountain Clan Colossus',
         'MountainDemolition_L' => 'Команда разрушителей',
         'MountainDemolition_M' => 'Взрывник',
         'MountainDemolition_S' => 'Пороховых дел мастер',
@@ -37585,8 +38403,10 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'MountedSwordsman' => 'Конный мечник',
         'MultiplierBuffZone1' => 'Любовная лихорадка',
         'MultiplierBuffZone2_PremiumFriendBuff1Day' => 'Престижный усилитель друзей',
+        'MultiplierBuffZone2_PremiumFriendBuff_Christmas' => 'Рождественский усилитель друга',
         'MultiplierBuffZone4_PremiumFriendBuffSkills' => 'Улучшения престижного усилителя друзей',
         'Musketeer' => 'Мушкетер',
+        'NarcissisticGeneral' => 'Самолюбивый генерал',
         'NeutralCavalry' => 'Серый Волк',
         'New Control' => 'ENTER_TEXT_HERE',
         'Nib' => 'Перо',
@@ -37598,6 +38418,7 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'NordsSoldier' => 'Хускерл',
         'NutcrackerGeneral' => 'Щелкунчик-генерал',
         'ObsidianOre' => 'Обсидиановая руда',
+        'OffshoreLighthouse' => 'Маяк у побережья',
         'Oil' => 'Масло',
         'Oilseed' => 'Маслосемена',
         'OrientalApe1' => 'Обезьяна с палкой',
@@ -37651,6 +38472,7 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'OrientalStoneStatue1' => 'Большая каменная статуя',
         'OrientalStoneStatue2' => 'Замшелая каменная статуя',
         'OstereierbaumBuff' => 'Охота за яйцами',
+        'OutdoorCanteenAid' => 'Телега с запасами для готовки',
         'PageOfSheetMusic' => 'Страница с нотами',
         'Paper' => 'Бумага',
         'PartyCrasherBoss1' => 'Деннис-преступник',
@@ -37684,6 +38506,8 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'Plant' => 'Лекарственное растение',
         'Platinum' => 'Платина',
         'PlatinumOre' => 'Платиновая руда',
+        'PlatinumOreKnowledge1' => 'Знания по металлургии: платина I',
+        'PlatinumOreKnowledge2' => 'Знания по металлургии: платина II',
         'Platinumsword' => 'Платиновый меч',
         'PohutukawaTree' => 'Рождественская похутукава',
         'Population' => 'Поселенцы',
@@ -37719,6 +38543,7 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'ProductivityAreaBuffLvl4' => 'Подношения духам леса',
         'ProductivityAreaBuffLvl5' => 'Эффективные ловушки',
         'ProductivityAreaBuffLvl6' => 'Календарь плавилен',
+        'ProductivityAreaBuffLvl_ChristmasJumper' => 'Рождественский свитер',
         'ProductivityAreaBuffRainDance' => 'Танец дождя',
         'ProductivityAreaBuffXmasMarketLvl1' => 'Усилитель рождественской ярмарки ур. 1',
         'ProductivityAreaBuffXmasMarketLvl2' => 'Усилитель рождественской ярмарки ур. 2',
@@ -37734,10 +38559,6 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'ProductivityBuffCandyFactoryBuff2' => 'Сладкое безумие',
         'ProductivityBuffCandyFactoryBuff3' => 'Углеводная кома',
         'ProductivityBuffCarnivalGrounds1' => 'Хохот сквозь хаос',
-        'ProductivityBuffCoffeeShop0' => 'NT: Exhaustion',
-        'ProductivityBuffCoffeeShop1' => 'NT: Espresso',
-        'ProductivityBuffCoffeeShop2' => 'NT: Double Espresso',
-        'ProductivityBuffCoffeeShop3' => 'NT: Leftover Ground Beans',
         'ProductivityBuffCollectibleEW' => 'Набор инструментов мастера',
         'ProductivityBuffEW1' => 'Суп из волшебных бобов',
         'ProductivityBuffEW2' => 'Песнопение концентрации',
@@ -37745,11 +38566,12 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'ProductivityBuffEW4' => 'Цветки черного дерева',
         'ProductivityBuffEWBalloonsLv1' => 'Малюсенький праздничный торт',
         'ProductivityBuffEWBalloonsLv2' => 'Громадный праздничный торт',
+        'ProductivityBuffEW_Refinery' => 'Топливо для промышленного рудоперерабатывающего завода',
+        'ProductivityBuffGrandmasDinner' => 'Бабушкин рождественский ужин',
         'ProductivityBuffHalloween1' => 'Заостренные кирки',
         'ProductivityBuffHalloween2' => 'Трансмутация камней',
         'ProductivityBuffHalloween3' => 'Камнедробилки',
-        'ProductivityBuffJewelcrafter1' => 'NT: Infused Sunflower Fertilizer',
-        'ProductivityBuffJewelcrafter2' => 'NT: Titanium Hen Egg Laying Stimulant',
+        'ProductivityBuffKrampusPickaxe' => 'Кирка Крампуса',
         'ProductivityBuffLvl1' => 'Рыбное блюдо',
         'ProductivityBuffLvl10' => 'Закуски на стадионе',
         'ProductivityBuffLvl100' => 'Ритуал сбора урожая',
@@ -37783,6 +38605,7 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'ProductivityBuffLvl29' => 'Копченый рыбный стейк',
         'ProductivityBuffLvl3' => 'Корзина тетушки Ирмы',
         'ProductivityBuffLvl300' => 'Угощение тетушки Ирмы',
+        'ProductivityBuffLvl31' => 'Изысканное рагу с трюфелем',
         'ProductivityBuffLvl4' => 'Корзина с экзотическими фруктами',
         'ProductivityBuffLvl5' => 'Красный летающий поселенец',
         'ProductivityBuffLvl6' => 'Кроличья лапка',
@@ -37790,6 +38613,7 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'ProductivityBuffLvl8' => 'Печенье',
         'ProductivityBuffLvl9' => 'Ускоритель брожения',
         'ProductivityBuffLvlIronMine' => 'Экстрактор железной руды',
+        'ProductivityBuffLvl_CommandCenterBoost' => 'Решительное действие',
         'ProductivityBuffSunflowerFertilizer' => 'Удобрение для подсолнухов',
         'ProductivityBuffToyFactoryBuff3' => 'Остатки упаковочной бумаги',
         'ProductivityBuffValentinesCard_01' => 'Валентинка №1',
@@ -37809,11 +38633,12 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'ProductivityBuffZoneOreLvl2' => 'Побуждение',
         'ProductivityBuffZoneScienceLvl1' => 'Руководство по бумажной работе',
         'ProductivityBuffZoneScienceLvl2' => 'Детские пасхальные рассказы',
+        'ProductivityBuffZoneScienceLvl_Candles' => 'Свечи вдохновения',
         'ProductivityBuffZoneStoneLvl1' => 'Руководство по добыче камня',
         'ProductivityBuffZoneWeaponLvl1' => 'Руководство по производству оружия',
         'ProductivityBuffZoneWeaponLvl2' => 'Пир оружейников',
-        'ProductivityBuffZoneWitchCovenFamine' => 'NT: Famine',
         'ProductivityBuffZoneWoodLvl1' => 'Руководство по рубке леса',
+        'ProductivityBuff_ChristmasCard' => 'Рождественская открытка',
         'ProductivityBuff_StarfallStarExtractor_Buff1' => 'Смазка для СКРЭБОК I',
         'ProductivityBuff_StarfallStarExtractor_Buff2' => 'Смазка для СКРЭБОК II',
         'ProductivityBuff_StarfallStarExtractor_Buff3' => 'Смазка для СКРЭБОК III',
@@ -37851,8 +38676,6 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'PropagationBuff_CantineBuff5' => 'Пир на весь мир',
         'PropagationBuff_EspionageSwiftBoost' => 'Разведданные: тропы разведчиков',
         'PropagationBuff_EspionageTradeOffenseForXP' => 'Разведданные: туманная погода',
-        'PropagationBuff_WitchCovenBloodlust' => 'NT: Dark Ritual: Warmongery',
-        'Prospector' => 'NT: Prospector Workshop',
         'ProvisionerBuffArtificerStudy1' => 'Техническое руководство: осадные орудия',
         'ProvisionerBuffLvl1' => 'Шоколадный кролик',
         'ProvisionerBuffLvl2' => 'Шоколадные пралине',
@@ -37860,16 +38683,19 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'ProvisionerBuffLvl300' => 'Двойной темп',
         'ProvisionerBuffLvl301' => 'Интенсивная работа',
         'ProvisionerBuffLvl4' => 'Густой горячий шоколад',
-        'ProvisionerBuffLvlGuildFestGrounds1' => 'NT: Cheer!',
-        'ProvisionerBuffLvlGuildFestGrounds2' => 'NT: Cheer harder!',
+        'ProvisionerBuffLvl_ChristmasStollen' => 'Рождественский штоллен',
         'ProvisionerBuffTravelDocuments' => 'Экспресс-документы для путешествий',
         'ProvisionerBuffZoneLvl1' => 'Универсальный банкет',
         'ProvisionerBuffZoneLvl2' => 'Праздник весны',
         'PvPXp' => 'Опыт (PvP)',
         'QuestStart_ANewStone' => 'Блестящий драгоценный камень',
+        'QuestStart_OreRefinery' => 'Задание: Экзотическая металлургия',
         'QuestStart_SavetheDeers' => 'Искатель оленей',
         'QuestStart_SilkCat' => 'Изысканный кошачий ошейник',
         'QuestStart_UnlockStarfallShip' => 'Предвестник',
+        'QuestStart_WeddingStory1' => 'Свадебная история: лучший друг человека?',
+        'QuestStart_WeddingStory2' => 'Свадебная история: заносчивая невеста',
+        'QuestStart_WeddingStory3' => 'Свадебная история: Рьяный флорист',
         'RabbitsLuckCharm' => 'Кроличья лапка',
         'RaidersBoss1' => 'Ревущий Бык',
         'RaidersBowman' => 'Стрелок с составным луком',
@@ -37912,6 +38738,7 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'RecruitingBuffLvl7' => 'Плавание в ледяной воде',
         'RecruitingBuffLvl8' => 'Марш через тундру',
         'RecruitingBuffLvl9' => 'Целовашки-обнимашки',
+        'RecruitingBuffLvl_LittleDrummer' => 'Барабаны маленького барабанщика',
         'RecruitingBuffValentineZoneConditional' => 'День семьи',
         'RecruitingBuffZoneLvl1' => 'Руководство по вербовке',
         'RecruitingBuffZoneLvl2' => 'Праздник инструкторов',
@@ -37923,6 +38750,8 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'Resource' => 'Количество ваших бойцов на острове.',
         'RetailBox2General' => 'Генерал Лог',
         'RetailBoxGeneral' => 'Генерал Большешлем',
+        'RetirementHome' => 'Деревня престарелых',
+        'RetirementHomeAid' => 'Почтовый ящик Санты',
         'RevealCollectiblesBuff01' => 'Огонь фей',
         'RevealCollectiblesBuff02' => 'Свет фей',
         'RevealCollectiblesBuff03' => 'Вальпургиева ночь',
@@ -37937,9 +38766,11 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'ShuffleCollectibles' => 'Волшебная пыльца',
         'SimplePaper' => 'Простая бумага',
         'SlickBanditBoss' => 'Скользкий босс разбойников',
+        'Smokehouse_Mini' => 'Воздаяние коптильне',
         'SnowglobeBuff1' => 'Вечновьюга ур. 1',
         'SnowglobeBuff2' => 'Вечновьюга ур. 2',
         'SnowglobeBuff3' => 'Вечновьюга ур. 3',
+        'Snowman_Deposit' => 'Украшение «Снеговик»',
         'SoccerChampionTrophy_2016' => 'Приз чемпиона по футболу 2016 года',
         'SoccerChampionTrophy_2018' => 'Приз чемпиона по футболу 2018 года',
         'SoccerChampionTrophy_2019' => 'Приз чемпиона по футболу 2019 года',
@@ -37948,10 +38779,6 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'SoccerChampionTrophy_2022' => 'Приз чемпиона по футболу 2022 года',
         'SoccerChampionTrophy_2023' => 'Приз чемпиона по футболу 2023 года',
         'SoccerChampionTrophy_2024' => 'Приз чемпиона по футболу 2024 года',
-        'SoccerChampionTrophy_2025' => 'NT: Champion\'s Trophy 2025',
-        'SoccerChampionTrophy_2026' => 'NT: Champion\'s Trophy 2026',
-        'SoccerChampionTrophy_2027' => 'NT: Champion\'s Trophy 2027',
-        'SoccerChampionTrophy_2028' => 'NT: Champion\'s Trophy 2028',
         'Soldier' => 'Солдат',
         'SootyGeologist' => 'Геолог Уголек',
         'SpeedUpPopulationGrowth' => 'Приворотное зелье',
@@ -37962,12 +38789,12 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'SpeedUpPopulationGrowth4' => 'Шапки болельщиков',
         'SpeedUpPopulationGrowth5' => 'К нам едет знаменитость',
         'SpeedUpPopulationGrowth6' => 'Товарищеский матч',
-        'SpeedUpPopulationGrowthDateLvl1' => 'NT: Romantic Date',
         'SpeedUpPopulationGrowthDateLvl2' => 'Чрезвычайно романтическое свидание',
         'SpeedUpPopulationGrowthLoveGardenZoneConditionalLvl1' => 'Кулоны-сердечки ур. 1',
         'SpeedUpPopulationGrowthLoveGardenZoneConditionalLvl2' => 'Кулоны-сердечки ур. 2',
         'SpeedUpPopulationGrowthSettlerDateLvl1' => 'Романтическое свидание',
         'SpeedUpPopulationGrowthValentineZoneConditional' => 'Кулоны-сердечки',
+        'SpeedUpPopulationGrowth_MulledWine' => 'Глинтвейн',
         'SpeedUpPopulationGrowth_Tourism1' => 'Туризм (уровень 1)',
         'SpeedUpPopulationGrowth_Tourism2' => 'Туризм (уровень 2)',
         'SpeedUpPopulationGrowth_Tourism3' => 'Туризм (уровень 3)',
@@ -38010,14 +38837,17 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'StarfallUnitfruit2' => 'Подозрительный плод',
         'StarfallUnitfruit3' => 'Пугающий плод',
         'StarfallUnitfruit4' => 'Потусторонний плод',
+        'StargazingGeologist' => 'Геолог-астроном',
         'Steel' => 'Сталь',
         'SteelBullet' => 'Стальная пуля',
         'SteelSword' => 'Стальные мечи',
         'StinkyMushroom' => 'Вонючий гриб',
         'Stone' => 'Камни',
-        'StorageBasket' => 'NT: Storage Basket',
         'StripedEggs' => 'Полосатое пасхальное яйцо',
         'StrongBuilder' => 'Сильный строитель',
+        'SummerBundle2026_Large' => 'Сундук летнего ветерка',
+        'SummerBundle2026_Medium' => 'Ящик летнего ветерка',
+        'SummerBundle2026_Small' => 'Мешок летнего ветерка',
         'Sword' => 'Мечи',
         'Swordsman' => 'Мечник',
         'SylvanaGeneral' => 'Генерал Сильвана',
@@ -38042,9 +38872,11 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'Textiles' => 'Ткань',
         'TheMountainClan' => '"Горный клан"',
         'TheMountainClanPart' => 'Страница "Горного клана"',
-        'TheSmuggler' => 'NT: The Smuggler',
+        'TitanicGeologist' => 'Титанический геолог',
         'Titanium' => 'Титан',
         'TitaniumOre' => 'Титановая руда',
+        'TitaniumOreKnowledge1' => 'Знания по металлургии: титан I',
+        'TitaniumOreKnowledge2' => 'Знания по металлургии: титан II',
         'TitaniumSword' => 'Булатный меч',
         'Token' => 'Жетоны',
         'Tome' => 'Фолиант',
@@ -38074,6 +38906,7 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'UnemployedBuilder' => 'Незанятый строитель',
         'Units' => 'бойцы',
         'UnityBurning' => 'Универсальный усилитель производительности XL-R8',
+        'UnityEvent_Residence' => 'Мобильное научное и жилое здание',
         'UnityEvent_Trophy' => 'Здание "Чудесное единство"',
         'UnityZoneRefresh' => 'Обновитель зоны',
         'Unlimited' => 'Без ограничения',
@@ -38105,6 +38938,8 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'WMZoneDefense' => 'Зонная защита',
         'Wagon' => 'Телега',
         'Water' => 'Вода',
+        'WeddingChapel' => 'Венчальная часовня',
+        'WeddingChapelAid' => 'Шарик-сердечко',
         'Wheel' => 'Колеса',
         'Wild' => 'Дичь',
         'WildlifeBowman' => 'Волк',
@@ -38116,26 +38951,6 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'WinConditionBuilding' => 'Строение',
         'WinConditionSupply' => 'Запасы',
         'WinterGarden' => 'Зимний сад',
-        'WitchCovenGrimoirePage1' => 'NT: Witchy Grimoire Page I',
-        'WitchCovenGrimoirePage10' => 'NT: Witchy Grimoire Page X',
-        'WitchCovenGrimoirePage11' => 'NT: Witchy Grimoire Page XI',
-        'WitchCovenGrimoirePage12' => 'NT: Witchy Grimoire Page XII',
-        'WitchCovenGrimoirePage13' => 'NT: Witchy Grimoire Page XIII',
-        'WitchCovenGrimoirePage14' => 'NT: Witchy Grimoire Page XIV',
-        'WitchCovenGrimoirePage15' => 'NT: Witchy Grimoire Page XV',
-        'WitchCovenGrimoirePage16' => 'NT: Witchy Grimoire Page XVI',
-        'WitchCovenGrimoirePage17' => 'NT: Witchy Grimoire Page XVII',
-        'WitchCovenGrimoirePage18' => 'NT: Witchy Grimoire Page XVIII',
-        'WitchCovenGrimoirePage19' => 'NT: Witchy Grimoire Page XIX',
-        'WitchCovenGrimoirePage2' => 'NT: Witchy Grimoire Page II',
-        'WitchCovenGrimoirePage20' => 'NT: Witchy Grimoire Page XX',
-        'WitchCovenGrimoirePage3' => 'NT: Witchy Grimoire Page III',
-        'WitchCovenGrimoirePage4' => 'NT: Witchy Grimoire Page IV',
-        'WitchCovenGrimoirePage5' => 'NT: Witchy Grimoire Page V',
-        'WitchCovenGrimoirePage6' => 'NT: Witchy Grimoire Page VI',
-        'WitchCovenGrimoirePage7' => 'NT: Witchy Grimoire Page VII',
-        'WitchCovenGrimoirePage8' => 'NT: Witchy Grimoire Page VIII',
-        'WitchCovenGrimoirePage9' => 'NT: Witchy Grimoire Page IX',
         'Wood' => 'Древесина из сосны',
         'Wool' => 'Шерсть',
         'Workers' => 'Рабочие',
@@ -38143,9 +38958,6 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'XMAS2023_LargeBundle' => 'Морозный сундук',
         'XMAS2023_MediumBundle' => 'Морозный ящик',
         'XMAS2023_SmallBundle' => 'Морозный мешок',
-        'XMAS2024_LargeBundle' => 'NT: Jolly Winter Chest',
-        'XMAS2024_MediumBundle' => 'NT: Jolly Winter Box',
-        'XMAS2024_SmallBundle' => 'NT: Jolly Winter Bag',
         'XMASFamily1' => 'Грустный ребенок',
         'XMASFamily2' => 'Раздраженный родитель',
         'XMASFamily3' => 'Расстроенный ребенок',
@@ -38180,18 +38992,12 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'battlebuffdestroy_tmc_bridgeconstructionkit' => 'Набор для строительства моста',
         'battlebuffdestroy_tmc_repairkit' => 'Набор для ремонта здания',
         'battlebuffhurt_buffad_grandmothers_hut' => 'Фруктово-липовый чай',
-        'braggingrights1' => 'NT: Bragging Rights I',
-        'braggingrights2' => 'NT: Bragging Rights II',
-        'braggingrights3' => 'NT: Bragging Rights III',
-        'braggingrights4' => 'NT: Bragging Rights IV',
-        'braggingrights5' => 'NT: Bragging Rights V',
-        'braggingrights6' => 'NT: Bragging Rights VI',
-        'braggingrights7' => 'NT: Bragging Rights VII',
         'buffad_ancient_ruin' => 'Подозрительные развалины',
         'buffad_swamp' => 'Болото',
         'buffad_twin_residence' => 'Жилой дом',
         'effectbuffpandacage' => 'Тропическая клетка',
         'effectbuffweddingcake' => 'Свадебный торт',
+        'loottable_depositoriummysterybox' => 'Открытие в депозитории',
         'loottable_xmas_calendarbox' => 'Подарок к морозной зиме',
         'o_arch_betatester' => 'Арка основателей',
         'queststart_annoholics' => 'Плакат тура "Поклонников Анно"',
@@ -38235,9 +39041,6 @@ The thread has been dealt with for the moment, but we must remain vigilant, for 
         'AddRecipe_SmallGlue' => 'Особый клей, который облегчает работу переплетчика. С этим клеем все получается быстрее.',
         'AddRecipe_StoneRefill' => 'Приехал торговец из другого королевства. У них много камня, но не хватает древесины. Он хочет изготовить бочки для своего торгового дома. И{b> <b}предлагает обменять на них камень.',
         'AddRecipe_TSR_SheetMusic6' => 'Добавляет в концертный зал отличную композицию "The Settlers: Новые союзники"!',
-        'AddRecipe_Tower_Unlock_Upgrade2' => 'NT: When you are so good, that a gigantic trophy shaped tower is not quite pompous enough.
-
-Here is a guide to make it even more glorious.',
         'AddRecipe_WeaponsmithBoost' => 'Улучшите производительность кузнецов в боевом арсенале, научив их особой песне, пришедшей из наших колоний. Она им очень понравится!',
         'AdditionalAdmiralShop' => 'Вы можете нанять еще одного маршала, кроме тех, которые уже находятся у вас в таверне. Он может вам пригодиться.',
         'AdvancedPaperLvl1' => 'Наконец, мольбы ваших переписчиков были услышаны, и они получили бумагу, о которую не порежешься при письме. Более того, бумага оказалась такой удобной, что теперь многие просто на ней спят.',
@@ -38338,7 +39141,6 @@ Here is a guide to make it even more glorious.',
         'AdventureSonsOfTheVeld' => 'Вы получили письменный вызов от тех, кто называет себя "Сыны степей". Очевидно, появилась новая группа кочевников, слишком уверенных в своих силах. Этот вызов оскорбляет вашу честь. Вы должны поставить на место этих дикарей!',
         'AdventureSplitCity' => 'Прилетел голубь - к его лапке привязана записка. В ней нас просят о помощи жители далеких земель. Уже десятилетие злодеи всех мастей круглый год пытаются прорваться в небольшой городок под названием Калижнород. Жителей все меньше, и никто не может объяснить, что происходит. Они больше не способны постоять за себя. Захватчики не нападают на людей напрямую, и все же люди больше не могут вести мирную жизнь. Поможете ли вы им избавиться от злодеев?',
         'AdventureStealingFromTheRich' => 'Крайне встревоженный помещик обратился к вам с письмом. Один из его верных умелых лучников стал разбойником! Теперь он живет в лесу и отбирает золото у богатых купцов и дворян. Кроме того, он подкупает простых крестьян, подстрекая их на восстание. Вы должны немедленно это остановить!',
-        'AdventureStealingFromTheRich02' => 'NT: Do you remember the master archer who was stealing from the rich? He is back. Or at least, that’s what we think. It can also be a copycat. Nevertheless, someone is rioting against our noble kingdom, stealing again from rich merchants to fire another riot. Please, find this guy and end it before our kingdom takes critical damage out of it.',
         'AdventureStormRecovery' => 'В этом трудном, но интересном приключении вы будете помогать жителям деревни заново отстраивать их поселение, пострадавшее от мощнейшей бури.
 
 Внимание: это приключение может закончиться неудачей',
@@ -38387,7 +39189,6 @@ Here is a guide to make it even more glorious.',
         'AdventureTombRaiders' => 'Служители Темного культа отыскали древний артефакт и спрятали его на своем укрепленном острове, где они проводят какие-то неописуемые ритуалы. 
 Отправляйтесь в путь со своими товарищами и положите конец этим омерзительным деяниям!',
         'AdventureTraitors' => 'Они были хорошими людьми, но жадность превратила их в безжалостных разбойников. Аристократия обратилась к вам за помощью в борьбе против этих дезертиров. Будьте осторожны, приближаясь к ним, так как эти предатели – хорошо вооруженные и закаленные в боях люди.',
-        'AdventureTraitors02' => 'NT: Do you remember Sir Robin, the king of the traitors? He is back! Some loyal followers freed him from the prison. Since then, he hid on an island nearby. Finally, we have been able to locate him and it’s time to take action bringing him back to prison before he starts attacking our beautiful kingdom!',
         'AdventureVictorTheVicious' => 'Злобный Виктор из далекого королевства.
 
 С ним никто не сравнится в стрельбе из лука. Поговаривают, что он сбил выстрелом яблоко с головы собственного сына! К несчастью, он объявил близлежащие охотничьи угодья дружественного регента своими. Регент не смог смириться с такой наглостью и предложил вознаграждение за голову Виктора.',
@@ -38403,9 +39204,9 @@ Here is a guide to make it even more glorious.',
         'AnniversaryBundle2024_Large' => 'Пришло время отметить новую годовщину! На праздник соберется немало поселенцев. Приглашаем и вас угоститься напитками и закусками, а заодно порадовать себя чудесной компанией генералов и новыми зданиями в подарок!',
         'AnniversaryBundle2024_Medium' => 'Пришло время отметить новую годовщину! На праздник соберется немало поселенцев. Приглашаем и вас угоститься напитками и закусками, а заодно порадовать себя чудесной компанией генерала и новыми зданиями в подарок!',
         'AnniversaryBundle2024_Small' => 'Пришло время отметить новую годовщину! На праздник соберется немало поселенцев. Приглашаем и вас угоститься напитками и закусками, а заодно порадовать себя новыми зданиями в подарок!',
-        'AnniversaryBundle2025_Large' => 'NT: Oh yeah! It\'s that time of the year. Happy people come together to celebrate we are still running laps around the Sun. A-Mazing!',
-        'AnniversaryBundle2025_Medium' => 'NT: Oh yeah! It\'s that time of the year. Happy people come together to celebrate we are still running laps around the Sun. A-Mazing!',
-        'AnniversaryBundle2025_Small' => 'NT: Oh yeah! It\'s that time of the year. Happy people come together to celebrate we are still running laps around the Sun. A-Mazing!',
+        'AnniversaryBundle2026_Large' => 'Сундук с товарами, создававшимися 30 лет.',
+        'AnniversaryBundle2026_Medium' => 'Ящик с товарами, создававшимися 30 лет.',
+        'AnniversaryBundle2026_Small' => 'Мешок с товарами, создававшимися 30 лет.',
         'ArchebusesLvl1' => 'Аркебузы - это вершина развития дальнобойного оружия! Обладая огромной мощью, они с полным правом могут называться ручными пушками. Однако высокая стоимость производства и необходимость специализированной подготовки для использования делают их оружием лишь небольшой группы элитных стрелков.',
         'ArcheologistGeologist' => 'Геолог, неравнодушный к футболу и археологии. Он не просто ищет ископаемые, поэтому в процессе определенных раскопок может найти глубоко в земле ценные сокровища. А еще он вдвое быстрее обычного геолога.',
         'ArcticTitaniumMine' => 'Титановый рудник, приспособленный для эффективной добычи при низких температурах. При других погодных условиях работает ничуть не хуже.',
@@ -38414,6 +39215,7 @@ Here is a guide to make it even more glorious.',
         'ArtificerStudy' => 'Разрабатывает технологии для улучшения производства предметов и усилителей, связанных с артиллерией.',
         'AssassinGeneral' => 'Замаскировавшись вместе со своим гарнизоном под разбойников, может совершать внезапные нападения и даже ослаблять своих противников до начала боя, что делает его очень эффективным в сражениях с боссами. Это строго конфиденциальная информация, никому ни слова! Тс-с!',
         'AuctionAchievement' => 'Престижная награда, символ состоявшегося дельца.',
+        'AuroraTower' => 'Бесплотная башня, на которой собираются старые мудрецы, чтобы передать свои легенды новым поколениям.',
         'AvatarBuffRedNose' => 'С красным носом у аватара вы можете продемонстрировать, что готовы поддержать доброе дело.
 Всю прибыль от проданных носов мы пожертвуем для кампании "Красный нос".',
         'BM_Valentines2023BuildingBundle00' => 'Этот набор - любовное послание тем, кто отдал свое сердце коллекции зданий на День святого Валентина 2023.',
@@ -38453,7 +39255,6 @@ Here is a guide to make it even more glorious.',
         'BewitchingBundle' => 'В этом особом временном наборе - в аккурат к Хэллоуину - зачарованный исследователь собрала для вас крайне занятные предметы. Подойдите поближе и взгляните сами…',
         'BewitchingExplorer' => 'Когда-то исследователь была самим очарованием, пока с ней кое-что не случилось. После путешествия на один остров она вернулась со странным чувством и без единого воспоминания о приключении. Но с тех пор она ощущает в себе огромную силу и дар убеждения.',
         'BigHalloweenBundle2023' => 'В этом сундуке есть что-то пугающее… Но, если осмелитесь его открыть, внутри вы найдете храбрых специалистов, жуткие здания и полезные усилители.',
-        'BioFarm' => 'NT: No one would ever say that our good old farms are old but they are! Some settlers took some time to improve the productivity of farms and build the Bio Farm which is just incredible. It does not need additional wheat fields anymore!',
         'Birthday2020CakeMap' => 'Однажды в рассветном тумане у самого горизонта возник загадочный остров. Рыбаки, которым удалось подплыть к нему, рассказали о множестве разгуливающих по острову злодеев. Что странно, каждый рыбак видел каких-то своих злодеев, непохожих на других, но все они были без лидеров! Так или иначе, нельзя допустить существование подобного так близко к вашему собственному острову.',
         'Birthday2020_Bundle1' => 'Чтобы порадовать наших любимых игроков, в этом году мы приготовили парочку премиум-наборов с несколькими последними новинками и отличной скидкой! Новые наборы будут доступны только во время празднования годовщины. Поторопитесь!',
         'Birthday2020_Bundle2' => 'Чтобы порадовать наших любимых игроков, в этом году мы приготовили парочку премиум-наборов с несколькими последними новинками и отличной скидкой! Новые наборы будут доступны только во время празднования годовщины. Поторопитесь!',
@@ -38470,8 +39271,7 @@ Here is a guide to make it even more glorious.',
 Стоя рядом с таким деревом, ощущаешь, как тебя пронизывает источаемая им загадочная энергия, и в тебе зарождается стремление завести на своем острове как можно больше этих деревьев, что также может быть частью их магии.',
         'BlackTree_Red' => 'Семя, из которого можно вырастить дерево чернее ночи. Символ гордости ведьм, вокруг которого когда-то они устраивали свои пляски, загадочным образом попал в ваши руки. Дерево, вырастающее из этого семени, поглощает окружающий его свет, а затем испускает мистическое красное свечение.
 Стоя рядом с таким деревом, ощущаешь, как тебя пронизывает источаемая им загадочная энергия, и в тебе зарождается стремление завести на своем острове как можно больше этих деревьев, что также может быть частью их магии.',
-        'BlacktreeExplorer' => 'NT: The Blacktree Explorer is obsessed by the Blacktree. She loves all variations of it. She is so committed to the Blacktree that during her exploration she always brings back one of the famous Blacktree buffs.',
-        'BoatHouse' => 'NT: And old boat turn into a cozy residence. The rocking helps falling asleep.',
+        'BlastingCartAid' => 'Декоративное здание, повышающее скорость производства кабинета мастера и камнебазы.',
         'BoldExplorer' => 'Да, он дерзкий не только на вид. Этот парень обожает поиски сокровищ и обычно возвращается из них с 50% наград сверху. И все благодаря его дерзости! Кстати, поговаривают, что ни один из его поисков приключений и сокровищ не обходился без находки усилителя. Согласитесь, впечатляет?',
         'BonabertiBusiness' => 'На один чудесный островок, принадлежащий семье Бонаберти, позарились разбойники. Бонаберти хоть и богаты, но в военном деле не очень-то смыслят, поэтому они решили обратиться за помощью к вам. Готовы ли вы избавить остров, что находится на крайнем юге, от врагов? Щедрые награды взамен обеспечены.',
         'BookFittingLvl1' => 'Конечно, нельзя судить книгу по обложке, но так же нельзя и спорить о том, что хорошо украшенная книга выглядит более достойно. Благодаря этому мешку с украшениями вы сможете сделать так, чтобы увековеченная вами мудрость выглядела чуточку мудрее.',
@@ -38481,8 +39281,6 @@ Here is a guide to make it even more glorious.',
         'BowsLvl1' => 'Стойка с самыми обычными луками. Обращение с ними требует некоторой сноровки, однако неопытным стрелкам рекомендуется начинать именно с них, чтобы потом с большей легкостью овладеть обладающими рядом преимуществ длинными луками.',
         'BreadLvl1' => 'Большинство пекарей прикладывают как можно больше усилий, чтобы сделать побольше хлеба. Они, безусловно, тоже оценят ваше покровительство.',
         'BreweryEndless' => 'Кто же знал, что поселенцам нужно столько кваса? Но чего только не сделаешь ради их счастья…',
-        'Brohmann' => 'NT: An aggressive warlord that only knows one direction: Forward.
-He prefers the aid of a small reliable horsemen to get the job done. After his enemies are vanquished he will return home with coffers full of loot.',
         'BronzeMineEndless' => 'Слухи о черной магии и страшных проклятиях десятилетиями витали над неисчерпаемым рудником, пока недавно изобретательный и решительный молодой делец не решил воспользоваться идеей.',
         'BronzeSwordsLvl1' => 'Идеальное оружие для новобранцев. Эти мечи не только весьма эффективны в бою, но также помогают бойцам привыкнуть к весу клинка перед получением более серьезного вооружения.',
         'BuffAd_Easter2015' => 'Особый сценарий, доступный только во время Пасхи. Узнайте, что случилось с таинственной фермой по производству пасхальных яиц.',
@@ -38727,10 +39525,6 @@ He prefers the aid of a small reliable horsemen to get the job done. After his e
         'ChangeDefaultSkin_FlowerBlossomsResidence_green_permanent' => 'Постоянный вид для дома. Выглядит как обычный цветущий дом, но зеленого цвета.',
         'ChangeDefaultSkin_FlowerBlossomsStorehouse_blue_permanent' => 'Постоянный вид для склада. Выглядит как обычный цветущий склад, но синего цвета.',
         'ChangeDefaultSkin_FlowerBlossomsStorehouse_green_permanent' => 'Постоянный вид для склада. Выглядит как обычный цветущий склад, но зеленого цвета.',
-        'ChangeDefaultSkin_GuildFestTentIII_Residence' => 'NT: Makes your residences look like Guild Fest Accommodations',
-        'ChangeDefaultSkin_GuildFestTentII_Residence' => 'NT: Makes your residences look like Guild Fest Accommodations',
-        'ChangeDefaultSkin_GuildFestTentI_Residence' => 'NT: Makes your residences look like Guild Fest Accommodations',
-        'ChangeDefaultSkin_HauntedSpiderWarehouse_permanent' => 'NT: Haunted houses became more and more famous but what is more scary than ghost? YES! SPIDERS! And this haunted warehouse is infested with spiders. Or is it just one huge spider?',
         'ChangeDefaultSkin_InflatableResidence_blue_permanent' => 'Постоянный вид для наземных домов размера 2x2. Выглядит как обычный надувной дом, но синего цвета.',
         'ChangeDefaultSkin_InflatableResidence_red_permanent' => 'Постоянный вид для наземных домов размера 2x2. Выглядит как обычный надувной дом, но красного цвета.',
         'ChangeDefaultSkin_InflatableStorehouse_blue_permanent' => 'Постоянный вид для наземных складов размера 2x2. Выглядит как обычный надувной склад, но синего цвета.',
@@ -38777,7 +39571,6 @@ He prefers the aid of a small reliable horsemen to get the job done. After his e
         'ChangeSkin_Elari_Residence_temp' => 'Элари делятся с вами секретами мастерства и дают возможность на 15 дней превратить ваш дом 2x2 в дом элари.',
         'ChangeSkin_Elari_TrainingGrounds_temp' => 'Элари делятся с вами секретами мастерства и дают возможность на 15 дней превратить ваши казармы в тренировочную площадку элари.',
         'ChangeSkin_Elari_Warehouse_temp' => 'Элари делятся с вами секретами мастерства и дают возможность на 15 дней превратить ваш склад 2x2 в склад элари.',
-        'ChangeSkin_HauntedSpiderWarehouse_temp' => 'NT: Haunted houses became more and more famous but what is more scary than ghost? YES! SPIDERS! And this haunted warehouse is infested with spiders. Or is it just one huge spider?',
         'ChangeSkin_ImprovedFloatingResidenceWinterSkin_Shop_long' => 'Превращает улучшенный дом на воде в умиротворенную вариацию на тему зимы.',
         'ChangeSkin_ImprovedFloatingResidenceWinterSkin_Shop_permanent' => 'Превращает улучшенный дом на воде в умиротворенную вариацию на тему зимы.',
         'ChangeSkin_SpiritJourneyMayorhouse_temp' => 'Бесподобная архитектура и чарующая атмосфера перенесут вас в удивительный волшебный мир.',
@@ -38792,6 +39585,7 @@ He prefers the aid of a small reliable horsemen to get the job done. After his e
         'ChangeSkin_mediterranean_mayourhouse_blue_long' => 'Превращает вашу ратушу в величественную вариацию синего цвета.',
         'ChangeSkin_mediterranean_mayourhouse_red_long' => 'Превращает вашу ратушу в величественную вариацию красного цвета.',
         'ChimneysweepsBag' => 'Союз левшей-трубочистов скопил у себя значительное количество собранной в дымоходах клиентов сажи. Несмотря на высказываемые сомнения, трубочисты утверждают, что забирать сажу - обычная практика, а делается это в интересах заказчика. Теперь Союз продает уголь, удобно расфасованный в брикеты.',
+        'ChocolateDepot' => 'Склад, принадлежащий тому же человеку, кто владеет шоколадной фабрикой. Он тот ещё сладкоежка.',
         'ChristmasAThousandSnowflakes' => 'Откройте этот волшебный мешок от Санта-Клауса, чтобы вызвать снежную бурю, которая укутает весь остров снежным покрывалом.',
         'ChristmasBreweryBuff' => 'Один из ваших поселенцев, называющий себя изобретателем, сконструировал машину, способную быстро нагревать жидкости и ускорять процесс брожения. К сожалению, у него пока не было возможности ее испробовать. Хотите попробовать?',
         'ChristmasBuffKrampus' => 'Кажется, в этом году многие детишки плохо себя вели. Напарник святого Николая Крампус лично занялся оптимизацией производства угля, чтобы удовлетворить сезонный спрос на угольки для этих детей.',
@@ -38810,17 +39604,17 @@ He prefers the aid of a small reliable horsemen to get the job done. After his e
         'Christmas_Nutcracker' => 'Вещь первой необходимости для всех фанатов Рождества. Посвящается любителям пощелкать орешки.',
         'Christmas_Presents' => 'Ничто так не возвещает о приходе Рождества, как куча аккуратно упакованных подарков.',
         'Christmas_Pyramid' => 'Традиционное рождественское украшение родом из фольклора Рудных гор.',
-        'ChummyExplorer' => 'NT: Chummy Geologist\'s sibling. Always in a good mood. Always quiet. Will return with chocolaty goodness after a search.',
         'ChummyGeologist' => 'Подружиться с вами - главная цель дружелюбного геолога. Чтобы порадовать вас, он очень быстро находит залежи и возвращается с вкусным шоколадом почти из каждого второго продолжительного поиска.',
         'ClassyHotel' => 'Роскошное, мегапопулярное и дорогое во всех смыслах место отдыха. Номер здесь стоит каждого потраченного камушка.',
         'CoalLvl1' => 'Из-за его полезности его иногда даже называют черным золотом. Этот ресурс необходим для производства практически любого оружия. С этой кучей угля ваши оружейники никогда не останутся без дела.',
         'CoalLvl2' => 'Работая в вашем лесу, лесоруб упал в яму и нашел там много угля. Теперь он продает уголь, получая небольшую компенсацию, достаточную для облегчения его боли и страданий.',
         'CoalMineEndless' => 'Надоело строить новые угольные шахты? Тогда получите неисчерпаемую угольную шахту!',
         'CoalRefillGuild' => 'На самом деле этот черный кусок более ценный, чем кажется.',
-        'CoffeeShop' => 'NT: The place to get a sip or two of that bittersweet productivity burnt bean juice.',
         'CoinsLvl1' => 'Мечта каждого искателя приключений, будь то крестьянин или король, – большой сундук блестящих золотых монет. О чем еще можно мечтать?',
         'CollectibleFoodCartGuildShop' => 'Маловато еды? Тогда эти телеги с едой - то, что вам нужно!',
         'CollectibleMysteryBox' => 'Прекрасное собрание всех коллекционных предметов, которые только можно пожелать, включая адамантовую руду и телеги с едой.',
+        'CommandCenter' => 'Военачальники со всех земель собираются в этих залах перед каждой кампанией с целью разработать хитрые стратегии.',
+        'CommandCenterAid' => 'Декоративное здание, повышающее скорость производства командного пункта.',
         'ConcertHall' => 'Приобщитесь к высокой культуре и постройте прекрасный концертный зал. Здание позволит вам изменить фоновую музыку на острове и одновременно активировать мощные усилители зоны.
 Восстановление: 24 часа, можно снизить, если разместить дополнительные здания этого же типа.',
         'ConscientiousGeologist' => 'Юные геологи не хотят размениваться на мелочи и не видят леса за деревьями. Но грамотные специалисты знают: внимательность окупается дважды.',
@@ -38873,8 +39667,8 @@ He prefers the aid of a small reliable horsemen to get the job done. After his e
         'Deco_RabbitBush' => 'Это милое деревце, подстриженное главным садовником, напоминает Пасхального Кролика. По крайней мере, по мнению этого почтенного поселенца (все равно никто не сможет доказать обратного).',
         'Deco_SkeletonScarecrow' => 'Обычно чучело используют для отпугивания птиц с полей и огородов, но этот экземпляр - особенный. Пугало вышло настолько реалистичным, что на ветру и вовсе кажется живым. Если хотите отвадить от поселения чужаков, скелет-пугало вам в этом поможет.',
         'Deco_Tombstone' => 'Доподлинно неизвестно, кто именно тут захоронен, но при жизни этот человек явно пользовался успехом.',
+        'Depositorium' => 'Депозиторий — это не просто склад, а место, в котором можно находить тайны. Предметы здесь не просто хранятся, а скорее ждут, пока их найдут.',
         'DiligentGeologist' => 'Прилежный геолог осмотрит каждый уголок, заглянет под каждый камень и, возможно, даже отыщет хорошо спрятанные сокровища. Ее страсть к поискам зародилась еще в детстве, когда она вместе с отцом устраивала настоящую охоту за сокровищами. Теперь же геолог никуда не торопится и явно получает больше удовольствия от самого поиска, чем от находок. Она часто вспоминает отцовскую присказку: "Повезло раз, свезет и второй".',
-        'DimensionalRift' => 'NT: A tiny storage shack that uses dark rituals to be able to store more goods that seem physically possible.',
         'EMBuildingTrophy' => 'Величественный мерцающий кубок с таинственными письменами, рассказывающими о триумфальных победах и сокрушительных поражениях на большом футбольном турнире. Этот загадочный трофей вселяет чувство эйфории и уверенности. Вы размышляете о том, сможете ли сохранить его более четырех лет.',
         'EMBuildingflowerbed_flag_01' => 'Раскрасьте свой остров в цвета той команды, которую вы поддерживаете. Эта клумба позволит вам рассказать о своих пристрастиях всему свету. На худой конец, из этих цветов можно будет сделать симпатичный венок.',
         'EMBuildingflowerbed_flag_02' => 'Раскрасьте свой остров в цвета той команды, которую вы поддерживаете. Эта клумба позволит вам рассказать о своих пристрастиях всему свету. На худой конец, из этих цветов можно будет сделать симпатичный венок.',
@@ -38939,6 +39733,20 @@ He prefers the aid of a small reliable horsemen to get the job done. After his e
         'EMFlowerbed_Scotland' => 'Раскрасьте свой остров в цвета той команды, которую вы поддерживаете. Эта клумба позволит вам рассказать о своих пристрастиях всему свету. На худой конец, из этих цветов можно будет сделать симпатичный венок.',
         'EMFlowerbed_UN' => 'Раскрасьте свой остров в поддержку людей, за которых болеете. Эта клумба позволит вам рассказать о своих ценностях всему свету. На худой конец, из этих цветов можно будет сделать симпатичный венок.',
         'EMFlowerbed_Unionjack' => 'Раскрасьте свой остров в цвета той команды, которую вы поддерживаете. Эта клумба позволит вам рассказать о своих пристрастиях всему свету. На худой конец, из этих цветов можно будет сделать симпатичный венок.',
+        'EMFlowerbed_canada' => 'Украсьте остров цветами команды, за которую болеете! Речь буквально о цветочных клумбах, так что придется повозиться в земле. А если ваша команда проиграет, из этих цветов хотя бы получится красивый утешительный венок.',
+        'EMFlowerbed_capverdi' => 'Украсьте остров цветами команды, за которую болеете! Речь буквально о цветочных клумбах, так что придется повозиться в земле. А если ваша команда проиграет, из этих цветов хотя бы получится красивый утешительный венок.',
+        'EMFlowerbed_curacao' => 'Украсьте остров цветами команды, за которую болеете! Речь буквально о цветочных клумбах, так что придется повозиться в земле. А если ваша команда проиграет, из этих цветов хотя бы получится красивый утешительный венок.',
+        'EMFlowerbed_drcongo' => 'Украсьте остров цветами команды, за которую болеете! Речь буквально о цветочных клумбах, так что придется повозиться в земле. А если ваша команда проиграет, из этих цветов хотя бы получится красивый утешительный венок.',
+        'EMFlowerbed_ecuador' => 'Украсьте остров цветами команды, за которую болеете! Речь буквально о цветочных клумбах, так что придется повозиться в земле. А если ваша команда проиграет, из этих цветов хотя бы получится красивый утешительный венок.',
+        'EMFlowerbed_haiti' => 'Украсьте остров цветами команды, за которую болеете! Речь буквально о цветочных клумбах, так что придется повозиться в земле. А если ваша команда проиграет, из этих цветов хотя бы получится красивый утешительный венок.',
+        'EMFlowerbed_iraq' => 'Украсьте остров цветами команды, за которую болеете! Речь буквально о цветочных клумбах, так что придется повозиться в земле. А если ваша команда проиграет, из этих цветов хотя бы получится красивый утешительный венок.',
+        'EMFlowerbed_joradan' => 'Украсьте остров цветами команды, за которую болеете! Речь буквально о цветочных клумбах, так что придется повозиться в земле. А если ваша команда проиграет, из этих цветов хотя бы получится красивый утешительный венок.',
+        'EMFlowerbed_newzealand' => 'Украсьте остров цветами команды, за которую болеете! Речь буквально о цветочных клумбах, так что придется повозиться в земле. А если ваша команда проиграет, из этих цветов хотя бы получится красивый утешительный венок.',
+        'EMFlowerbed_norway' => 'Украсьте остров цветами команды, за которую болеете! Речь буквально о цветочных клумбах, так что придется повозиться в земле. А если ваша команда проиграет, из этих цветов хотя бы получится красивый утешительный венок.',
+        'EMFlowerbed_paraguay' => 'Украсьте остров цветами команды, за которую болеете! Речь буквально о цветочных клумбах, так что придется повозиться в земле. А если ваша команда проиграет, из этих цветов хотя бы получится красивый утешительный венок.',
+        'EMFlowerbed_qatar' => 'Украсьте остров цветами команды, за которую болеете! Речь буквально о цветочных клумбах, так что придется повозиться в земле. А если ваша команда проиграет, из этих цветов хотя бы получится красивый утешительный венок.',
+        'EMFlowerbed_southafrica' => 'Украсьте остров цветами команды, за которую болеете! Речь буквально о цветочных клумбах, так что придется повозиться в земле. А если ваша команда проиграет, из этих цветов хотя бы получится красивый утешительный венок.',
+        'EMFlowerbed_uzbekistan' => 'Украсьте остров цветами команды, за которую болеете! Речь буквально о цветочных клумбах, так что придется повозиться в земле. А если ваша команда проиграет, из этих цветов хотя бы получится красивый утешительный венок.',
         'EMIncreaseMaxBuildings' => 'Для толп болельщиков, которых вы обрели во время чемпионата, необходимо жилище. Поэтому стоит подумать, где их разместить. Лучше предупредить соседей о возможном шуме в ближайшие дни.',
         'EMProductionBoost' => 'Они не только сулят хорошее настроение и бодрость, но и украшают рабочий день поселенца. Мексиканская "волна" в кулинарии обеспечивает повышенное количество "хет-триков" на рабочих местах.',
         'EMResourceBoxLvl1' => 'Чтобы хорошо подготовить своих парней к этому важному событию, закупите снаряжение для тренировок.',
@@ -38950,6 +39758,9 @@ He prefers the aid of a small reliable horsemen to get the job done. After his e
         'Easter2021BuildingsBundle' => 'Воспользуйтесь огромной скидкой на 3 здания и дополнительно получите престижный усилитель друзей. Торопитесь, набор доступен только во время события!',
         'Easter2021SpecialistsBundle' => 'В весенний набор специалистов входит премиум-время и 4 отличных специалиста. С ними эта весна обещает быть особенной. Торопитесь, набор доступен только во время события!',
         'Easter2021SuperBundle' => 'Эксклюзивный пасхальный супернабор - это лучшее предложение, и точка. Потратьте яйца и получите все перечисленное ниже.',
+        'Easter2026_LargeBundle' => 'Большой набор, в котором удачно сочетаются лёгкость и сладость',
+        'Easter2026_MediumBundle' => 'Средний набор, в котором удачно сочетаются лёгкость и сладость',
+        'Easter2026_SmallBundle' => 'Небольшой набор, в котором удачно сочетаются лёгкость и сладость',
         'EasterAreaBuff' => 'Эта отлично произнесенная речь может заставить поднапрячься в работе даже самых ленивых.',
         'EasterEggPraline' => 'Эти пралине такие вкусные, да еще и с начинкой из разных сортов шоколада. С их помощью почти все начинают работать быстрее.',
         'EasterGeneral2015' => 'Опытный генерал, закаленный во многих сражениях.',
@@ -38975,11 +39786,8 @@ He prefers the aid of a small reliable horsemen to get the job done. After his e
 ПРИМЕЧАНИЕ: можно использовать только на развалинах обычного кладбища с тыквами.',
         'EffectBuff_pumpkinfield_03_resurrector' => 'Не осталось тыкв на кладбище? Ничего страшного, и нечего тут волноваться. Это удобрение восстановит его, добавит 10 тыкв - и вот уже кладбище как новенькое. Но следите за тем, чтобы оно вновь не истощилось.
 ПРИМЕЧАНИЕ: можно использовать только на развалинах большого кладбища с тыквами.',
-        'EfficientAdvancedToolmaker' => 'NT: An alternative engineering of the Advanced tool maker. Trades off a little bit of speed for resource economy.',
-        'EfficientPlatinumSmelter' => 'NT: An alternative engineering of the Platinum Smelter. Trades off a little bit of speed for resource economy.',
+        'EfficientCrossbowsmith' => 'Альтернативное производство оружейной (арбалеты). Немного снижает скорость в обмен на дополнительную экономию ресурсов.',
         'EggLvl1' => 'Загадочный кролик в темном переулке тайно продает пасхальные яйца. Если вы ему скажите пароль "Пасха", то сможете купить несколько яиц.',
-        'ElderTreeLH' => 'NT: A very old tree that teems with magic. Legends says that it is as old as time itself and has the ability of finding hidden treasures.',
-        'EliteGuildBanner_Deco' => 'NT: A memorabilia from the festivities to keep around on you island for the best.',
         'EmphaticExplorer' => 'Она дружелюбная, смелая и решительная. Не тратит время зря и настроена извлечь из каждого поиска сокровищ максимум выгоды.',
         'EnchantedCastle' => 'Стены его построены из древнего камня, что полнится магией, а обитающие в замке поселенцы исполнены счастья и любви.',
         'EowEventAdventure' => 'Старый астролог убедил нашего достопочтенного короля Дэмьена, что мы все обречены! Весь мир обречен! Тысячу лет назад древний и таинственный клан колдунов наложил на весь мир проклятие, и скоро наступит конец света.',
@@ -39021,8 +39829,9 @@ He prefers the aid of a small reliable horsemen to get the job done. After his e
         'FlowerPackageLarge' => 'Набор прелестных цветов, которые можно обменять на уникальные предметы во время Дня святого Валентина.',
         'FlowerPackageSmall' => 'Набор прелестных цветов, которые можно обменять на уникальные предметы во время Дня святого Валентина.',
         'FluffyButteExplorer' => 'Благодаря мощным ногам он перепрыгивает с задания на задание в 3 раза быстрее обычных исследователей. А в его чудесном мешке помещается множество волшебных предметов.',
+        'FluffyLogistics' => 'Пухлохолмс неустанно трудится, чтобы своевременно доставлять пасхальные яйца.
+Ни один ребёнок не должен упустить возможности потратить целый день на поиски яиц.',
         'ForgottenCemetery_Residence' => 'Об этом кладбище поселенцы в какой-то момент совсем позабыли, но жилищный вопрос и проблема перенаселения вынудили народ вспомнить о нем. Здесь живые обрели новый дом рядом с родными, которые уже покинули этот мир.',
-        'FrankenHouse' => 'NT: The home and work place of a "differently minded" man of science who is obsessed with curing death.',
         'FrostyGeneral' => 'Может, у него и бледно-голубая наружность, а его спокойствию позавидовали бы многие, но не дайте внешности вас обмануть. Глубоко внутри него бушует пламя - жажда завоеваний. Он славится своим мощным ударом и усиливает оборонительные войска.',
         'GFF' => 'Вы - один из самых щедрых людей в мире поселенцев, но ваши друзья не верят в это. Докажите это, подарив самоцветы друзьям!',
         'GemPit' => 'Глубоко в недрах земли в суровых краях ваши люди неожиданно обнаружили залежи самоцветов. Только самые опытные старатели смогут извлечь эти бесценные самоцветы, рискуя собственными жизнями.',
@@ -39058,10 +39867,10 @@ He prefers the aid of a small reliable horsemen to get the job done. After his e
         'GenerousBundle6' => 'Генерал со сверхъестественными способностями в компании двух хитроумных исследователей. Этого мало? Так тут еще и 30 дней премиум-статуса!',
         'GenerousBundle_Halloween2021' => 'Ужасно полезный набор! Подойдет всем! Содержит самые необходимые здания, специалистов и усилители.',
         'GeologistOnVacation' => 'Геологу требуется в 2 раза больше времени на задания, ведь он все-таки в отпуске. Но есть и плюсы: он вернется домой с подарками и сувенирами.',
-        'GhostExplorer' => 'NT: An explorer from a bygone age who keeps diligently working on his tasks.',
         'GhostGeneral' => 'Этот благородный призрак жаждет возмездия и считает вас идеальным партнером для его свершения.',
         'GiantBarrel' => 'Склад, сделанный из гигантской бочки. Кто приложил руку к строительству - неизвестно, как и то, что именно там хранилось. По-моему, это перебор…',
         'GingerbreadGeologist' => 'Этот парень не из простого теста: скоростью он не отличается, зато удача на его стороне. Он всегда находит дополнительные ресурсы, а порой даже предметы.',
+        'GloryExploriExplorer' => 'Обожающая лошадей исследовательница, которую до сих пор преследует прошлое. Она всегда ищет необычные приключения ради острых ощущений.',
         'GoldMineEndless' => 'Эта золотая жила уходит корнями в самую глубь. Если построить тут рудник, то целые поколения будут считать его неисчерпаемым. Самое главное - чтобы вас миновала золотая лихорадка!',
         'GoldOreLvl1' => 'Шайка пиратов пытается продать вам "золотые сокровища". Когда вы, открыв один из сундуков, видите в нем вместо ожидаемых монет золотую руду, головорезы лишь пожимают плечами.',
         'GoldheartedGeologist' => 'У этого геолога золотое сердце. Кажется, боги решили вознаградить ее за доброту и трудолюбие.',
@@ -39072,15 +39881,10 @@ He prefers the aid of a small reliable horsemen to get the job done. After his e
 Почему бы не нанести на них свежий слой раствора с помощью новой фабрики растворов!',
         'Groutlvl1' => 'Строительный раствор - новейшее изобретение наших каменщиков. С ним здания получаются более прочными, и это позволяет улучшать их до новых уровней.',
         'GuildAdventure1' => 'Возможно, что истории про пиратский остров - это выдумка. Но недавно около бухты Черепа, что к северу отсюда, исчезли несколько путешественников. Мы более чем уверены, что в этой бухте прячутся пираты, а пиратов мы ой как не любим!',
-        'GuildBanner_Deco' => 'NT: A memorabilia from the festivities to keep around on you island.',
-        'GuildFestBundle1' => 'NT: A bundle worth its weight in Gold',
-        'GuildFestBundle2' => 'NT: A bundle worth its weight in Silver',
-        'GuildFestBundle3' => 'NT: A bundle worth its weight in Bronze',
         'GuildFestTentI' => 'Временное место проживания для наших уважаемых гостей. Жилье оборудовано всеми удобствами и соответствует всем стандартам мероприятия.',
         'GuildFestTentII' => 'Временное место проживания для наших уважаемых гостей. Жилье оборудовано всеми удобствами и соответствует всем стандартам мероприятия.',
         'GuildFestTentIII' => 'Временное место проживания для наших уважаемых гостей. Жилье оборудовано всеми удобствами и соответствует всем стандартам мероприятия.',
         'GuildFillMarble' => 'В некоторых камнях попадаются вкрапления мрамора, но только профессионал может их заметить. Конечно же, каменщики такого класса не будут работать бесплатно.',
-        'GuildHouse_Mini' => 'NT: A tiny version of the Guild Office building that passively produces Guild Coins for your convenience.',
         'GuildMasterGeologistLvl1' => 'Отличные новости! Гильдии удалось заключить сделку с союзом шахтеров. Теперь мы можем нанять веселых геологов за деньги гильдии.',
         'Halloween2019General' => 'На младшего в этой семье не стоит смотреть свысока. Хоть внешне они с братом похожи как две капли воды, младший генерал-близнец не надеется на огромную армию. Напротив - он полагается на себя и берет с собой лишь небольшой отряд поддержки. Неизвестно, в чем источник его силы, но красный цвет кожи наводит на мысли о колдовстве.',
         'Halloween2021Bundle1' => 'Побалуй себя этим ужасающе полезным набором строений, специалистов и баффов.',
@@ -39135,12 +39939,11 @@ He prefers the aid of a small reliable horsemen to get the job done. After his e
         'HiredMilitary_Swordsmen50' => 'Вы смотрите на группу наемных мечников. На первый взгляд - ничего особенного, но вы быстро убедитесь, что они исключительно хорошо обучены и снаряжены.',
         'HiredMilitary_Swordsmen5000' => 'Вы смотрите на группу наемных мечников. На первый взгляд - ничего особенного, но вы быстро убедитесь, что они исключительно хорошо обучены и снаряжены.',
         'HoliFestivalGrounds' => 'Пробуждение природы - суть фестиваля Холи. Устройте веселье и добавьте красок в серые будни!',
+        'HoneygladeResidence' => 'Идеальный дом для тех, кто считает, что благополучие — это сладкая жизнь, стабильность и упоение цветами.',
         'HorsesLvl1' => 'Эти быстрые и сильные животные приучены к звукам и запахам поля боя. Однако для изнурительных скачек они не годятся, поэтому кавалеристам приходится не раз менять лошадей не только в битвах, но и во время учений.',
         'HumbleExplorer' => 'Девиз этого исследователя: "Не нужно идти на край света, чтобы найти счастье". Он не стремится к дальним и невероятно быстрым путешествиям. Ценит малое и превосходно справляется с быстрыми и средними поисками сокровищ.',
         'IcePalace' => 'Великолепный дворец из волшебного вечного льда. Кстати, вид отсюда открывается чудесный!',
         'IceSculpture' => 'Утонченная скульптура, выполненная изо льда. Жаль, красота ее растает с приходом тепла.',
-        'IceSkatingLake' => 'NT: A favorite recreational attraction of the cold times of the year.
-After spending the day here Settlers return home with warm hearts.',
         'IglooStorehouse' => 'Склад, построенный в лучших традициях инуитов. Отлично подходит для хранения скоропортящихся продуктов. М-м-морозная свежесть!',
         'ImprovedBakery' => 'Простенькие старые пекарни уже не справляются с вашими запросами на приготовление сэндвичей? С помощью науки с этой ужасной проблемой можно справиться!
 Эта пекарня оснащена улучшенными духовками и невероятно точными песочными часами.',
@@ -39165,34 +39968,28 @@ After spending the day here Settlers return home with warm hearts.',
         'IronSwordsLvl1' => 'Простые, но хорошо сбалансированные мечи, которые в непростые времена раздают ополченцам. C таким клинком можно обращаться даже без специальной подготовки.',
         'IronWilledGeologist' => 'Этот парень появился здесь с твердым намерением стать лучшим геологом на свете. Всю свою жизнь он практиковался и приобрел сноровку в поисках богатых залежей железа.',
         'JaguarBundle' => 'Подготовьтесь к концу света с этим эксклюзивным временным набором события.',
-        'Jewelcrafter' => 'NT: A humble workshop focused on handcrafted jewel products.',
-        'JewelsBundle' => 'NT: Jewel crafting and prospecting bundle with both new buildings at a more convenient price.',
         'KeenerExplorer' => 'Она снова и снова страдала ради своих любимых, но даже не думала сдаваться. Напротив, это сделало ее сильнее, ловче и безудержнее любого другого исследователя.',
+        'KrampusPit' => 'Очень глубокая угольная шахта. Она до сих пор работает, но вырытые помещения отлично подходят для хранения самых разных продуктов. Более того, никто даже не посмеет воровать ваши вещи, пока их охраняет Крампус.',
         'Laboratory' => 'Весьма любопытное строение. Никогда прежде не видел ничего подобного.
 Вместе с ним поставляется куча таинственного оборудования. Меня заверили, что с его помощью эксперт сможет превращать один ресурс в другой.',
         'LaboratoryForGems' => 'Весьма любопытное здание. Никогда прежде не видел ничего подобного.
 Вместе с ним поставляется куча таинственного оборудования. Меня заверили, что с его помощью эксперт сможет превращать один ресурс в другой.',
         'LargeDefBuild' => 'Содержит не менее 3 случайных крепостей с вероятностью получения смешанного лагеря. Также есть дополнительная возможность получить случайный четвертый укрепленный лагерь (ур. 2).',
         'LargeEasterBundle2024' => 'Этот сундук с фестиваля красок Холи станет огромным сюрпризом. Откройте его скорее! Внутри вас ждут отличные здания, специалисты и усилители.',
-        'LargeEasterBundle2025' => 'NT: A chest of sweet goodness to fill your heart and ruin your dental health.',
-        'LargeHalloweenBundle2024' => 'NT: Oh no, look at this bag. It comes right from a nightmare. Don\'t close your eyes or it will haunt you in your precious dreams.',
-        'LargeHalloweenBundle2025' => 'NT: A chest made of a ghoulish leather full of Halloween themed goodness. Hopefully the contents are worth bearing the smell.',
         'LetterLvl1' => 'Если периодические памфлеты для вас интереснее нарядных книжек со стихами, то это для вас. Нечего тратить время на всякую ерунду, только так вы сможете произвести кучу этих документов в срок.',
         'LevelUp_ExpeditionLevel' => 'Если вам нужен больший уровень PvP, чтобы должным образом проводить испытания, будьте нашим гостем!',
         'LevelUp_PlayerLevel' => 'Нам тут нужно кое-что испытать. Мы же не можем оставить вас на уровне 1, не так ли?
 Получите столько уровней, сколько считаете нужным.',
         'LevelUp_PlayerLevel10' => 'Нам тут нужно кое-что испытать. Мы же не можем оставить вас на уровне 1, не так ли?
 Почти то же самое, но в 10 раз больше.',
-        'LevitatingHauntedWarehouse' => 'NT: This warehouse is flying! It\'s unbelievable. It\'s so haunted that it started to levitate. This is our opportunity to place it in the water!',
         'LightingBlackAndWhite' => 'Кто-то похитил все краски.',
         'LightingDesert' => 'Над островом светит яркое солнце. Оно может сыграть злую шутку с вашим разумом.',
         'LightingSpooky' => 'Будьте осторожны! Многие странники сбились с пути, следуя за блуждающими огнями.',
         'LightingTundra' => 'Тундра - одна из самых красивых, но в то же время опасных природных зон.',
-        'LoggingHut' => 'NT: A cozy vacation home, far away from everything. Perfect to relax and knit ugly winter sweaters.',
+        'LonelyHeartInn' => 'Таверна, которая странным образом превратилась в излюбленное место для страдальцев с разбитым сердцем, которым хочется утопить свои печали.',
         'LonerGeneral' => 'Генерал-одиночка очень высокого о себе мнения, но ему действительно есть чем гордиться: он отлично командует войсками и проводит отменные атаки.',
         'LongboatStorehouse' => 'Некогда это судно служило пиратам и повидало немало рейдов, а теперь в нем хранятся несметные награбленные богатства.',
         'LongbowsLvl1' => 'Эти изящно сработанные длинные луки превосходят обычные как дальностью стрельбы, так и пробивной силой. Несмотря на то, что стрелкам требуется особая подготовка для правильного их использования, эффективность этого оружия того стоит.',
-        'Loottable_GrimoirePages_MysteryBox' => 'NT: An ancient notebook that might contain useful knowledge.',
         'Loottable_HalloweenMysteryBox' => 'Данный ящик содержит различные приключения, например "Северяне" или "Пиратский остров", и даже эпичные походы, такие как "Портняжка-герой", или совместные приключения, такие как "Грабители могил".',
         'Loottable_RewardBoxAtTheFootOfTheMountain' => 'Имитирует награду из затеи "У подножия горы".',
         'Loottable_RewardBoxBuccaneerRoundup' => 'Имитирует награду из приключения "Облава на пиратов".',
@@ -39204,7 +40001,6 @@ After spending the day here Settlers return home with warm hearts.',
         'Loottable_RewardBoxTombRaiders' => 'Имитирует награду из приключения "Грабители могил".',
         'Loottable_RewardBoxUnknownRegions' => 'Имитирует награду из затеи "Неизведанные земли".',
         'Loottable_RewardBoxWhirlwind' => 'Имитирует награду из приключения "Вихрь".',
-        'Loottable_Valentines2025DecorationMysteryBox' => 'NT: A box containing a mystery Valentines themed decoration.',
         'Loottable_XmasDecorationMysteryBox' => 'Сундук, внутри которого сокрыто украшение к Рождеству.',
         'LoveStruckExplorer' => 'Вам доводилось встречать людей, влюбленных по уши? Они витают в облаках и не замечают ничего вокруг. Таков наш влюбленный исследователь. Он забыл обо всем и грезит лишь об объекте своих чувств.',
         'LovelyExplorer' => 'Приятный голос помогает ей получить сведения о грандиозных сокровищах.',
@@ -39218,7 +40014,6 @@ After spending the day here Settlers return home with warm hearts.',
         'MahoganyWoodLv1' => 'Это дерево отличается особой прочностью, поэтому отлично подходит для построек, сооружаемых на века.',
         'MajorGeneral' => 'Генерал-майор повидал немало битв и способен командовать внушительными армиями без потерь в скорости передвижения.',
         'ManEatingPlant' => 'Какие листики! Какой стебелек! Чудесная кроха! Уж она-то точно вырастет примерным кустиком, а не гадкой хищницей.',
-        'MarathonGeologist' => 'NT: This geologist is specialized on running. He loves to run. Due to that he is super fast but on the other hand not that efficient. He feels so bad about that that he tries to compensate with presents.',
         'MarbleLvl1' => 'Белые и блестящие мраморные блоки высокого качества готовы к транспортировке на ваш склад.',
         'MarbleLvl2' => 'Подозрительный парень продает много мрамора у рынка. Не спрашивайте, где он взял мрамор. Впрочем, поговаривают, будто у каменотеса и его бригады пропал мрамор.',
         'MasterEasterExplorer' => 'Этот исследователь не только выглядит опытным, он таковым и является. Он молниеносно находит сокровища и карты в заданных районах. Необходимый спутник для каждого путешественника.',
@@ -39231,17 +40026,13 @@ After spending the day here Settlers return home with warm hearts.',
         'MeatLvl1' => 'Повар продает консервированное мясо из своих запасов - их у него больше, чем нужно для того, чтобы накормить всех постоянных клиентов, а позволять столь качественным продуктам просто лежать и портиться - настоящее кощунство!',
         'MedicGeneral' => 'Медик, которого повысили до звания генерала. Он очень заботится о своем войске и использует навыки медицины, чтобы подлечить бойцов после битвы.',
         'MediumEasterBundle2024' => 'Похоже, кто-то забыл этот ящик на фестивале красок Холи. Зато теперь он может стать вашим! Внутри найдется неплохой запас зданий, специалистов и усилителей.',
-        'MediumEasterBundle2025' => 'NT: A box of sweet goodness to fill your heart and ruin your dental health.',
         'MediumHalloweenBundle2023' => 'Этот ящик, всеми позабытый, стоял в давно опустевшем здании. Однако его нашли, и внутри оказалось множество полезных специалистов и усилителей.',
-        'MediumHalloweenBundle2024' => 'NT: Oh no, look at this bag. It comes right from a nightmare. Don\'t close your eyes or it will haunt you in your precious dreams.',
-        'MediumHalloweenBundle2025' => 'NT: A Box made of a ghoulish leather full of Halloween themed goodness. Hopefully the contents are worth bearing the smell.',
         'MiadTikkiIsland' => 'Красивый маленький остров со слегка эксцентричным населением. Местные жители попросили у вас помощи в борьбе с вредящими им разбойниками. Откликнитесь на эту просьбу - ведь заодно вы сможете вернуть украденную с острова монету и снять проклятие, поразившее это некогда тихое и спокойное место.',
         'MineralRabbit' => 'Прапрапрапрапрапрадедушка одного из ваших поселенцев закопал древесину, чтобы уберечь ее от разбойников. Древесина превратилась в уголь, и теперь вы можете ее получить.',
         'MiniAdventureBox' => 'Данный сундук позволяет быстро набрать опыт в ходе приключения. Подходит для поселенца, не располагающего временем или ресурсами, но желающего не отставать от соседей.',
         'MiraculousGeneral' => 'Находится под защитой божественной силы, которая распространяется на всех ее союзников.',
         'MortarsLvl1' => 'Дальность стрельбы мортир сравнительно невысока, да и подвижностью они не отличаются, однако по силе взрыва их заряды заметно превосходят обычные пушечные. Правда, это оружие для навесной стрельбы, что вызывает некоторые сложности при прицеливании, поэтому на опытных мастеров осады спрос всегда очень большой.',
         'MotherlyExplorer' => 'Заботливая исследовательница никого не оставляет без внимания, поэтому во время всех поисков сокровищ, диковинок и артефактов приносит в 4 раза больше наград.',
-        'MountainClanColossus' => 'NT: An ancient, massive sculpture carved straight into a mountain by the Mountain Clan. It can produce and store copious amounts of riches.',
         'MountainDemolition_L' => 'Команда серьезных ребят с тревожной склонностью к огню и разрушению.
 Их материально-техническое обеспечение и психическое расстройство помогут взорвать даже самую большую гору и обеспечить столь необходимое место для строительства на вашем острове.',
         'MountainDemolition_M' => 'Его предки хотя и прожили недолго, но передали ему немало знаний об искусстве разрушения.
@@ -39251,18 +40042,22 @@ After spending the day here Settlers return home with warm hearts.',
         'MultiplierBuffZone1' => 'Люди, обезумевшие от любви, со всем справляются лучше. Секрет прост: они все делают с любовью.',
         'MultiplierBuffZone2_PremiumFriendBuff1Day' => 'Хотите показать другу, как вы им дорожите? Пошлите в подарок цветы. Или даже лучше - этот замечательный усилитель! Его точно оценят и сердечно вас отблагодарят. Не верите? Посмотрите ниже, какими эффектами он порадует друга.',
         'MultiplierBuffZone2_PremiumFriendBuff1DaySoccer' => 'Хотите показать другу, как вы им дорожите? Пошлите в подарок цветы. Или даже лучше - этот замечательный усилитель! Его точно оценят и сердечно вас отблагодарят. Не верите? Посмотрите ниже, какими эффектами он порадует друга.',
+        'MultiplierBuffZone2_PremiumFriendBuff_Christmas' => 'Если хотите выказать друзьям знак внимания, отправьте им цветы… А если она вам на самом деле дороги, отправьте им этот превосходный усилитель! Такое они по-настоящему оценят. Не верите? Только взгляните на все эффекты, которыми сможет насладиться ваш друг!',
         'MummifiedGeologist' => 'Он был самым обычным геологом, ничем не отличался от других. Но однажды совершил роковую ошибку: забрел слишком далеко в одну из древних египетских гробниц. С тех пор он проклят и обречен скитаться по миру в обличии жуткой мумии.',
         'MysteryBoxAdventure' => 'Таинственный сундук с неизвестными содержимым. Когда ты держишь его в руках, у тебя появляется непреодолимое желание отправиться в далекое путешествие в поисках приключений.',
         'MysteryBoxBlackKnights' => 'Откройте таинственный сундук и получите награду',
+        'NarcissisticGeneral' => 'Генерал, страдающая от обострённого чувства собственного величия. Она способна превосходно выполнять свою работу, однако в силу её нездорового соперничества с генералами-близнецами с ней просто невозможно работать.',
         'NibLvl1' => 'Если вы хотите хорошо освоить письмо, они вам понадобятся. Только не надо капризничать - развить хороший почерк очень непросто. И не забывайте держать кисть расслабленной.',
         'NordsResidence' => 'Типичный дом северян.',
         'NormalResourceBox' => 'Огромная коробка с обычными ресурсами. Она увесистая и неплохо выглядит. Похоже, там немало добра.',
         'NutcrackerGeneral' => 'Может, он и сделан из дерева, но щелкает врагов как семечки. Этот генерал - крепкий орешек.',
+        'OffshoreLighthouse' => 'Надежный маяк на крошечном острове. Днем в свободное от работы время смотритель маяка ловит рыбу и продает излишки на местном рынке.',
         'OilRefinery' => 'Поселенцы трудились не покладая рук и освоили переработку масла. Это расширяет возможности по его производству. Отныне можно получать масло даже из рыбы, представляете? Правда, для начала производства потребуется капелька самого масла. Если у вас еще нет к нему доступа, почему бы не попросить его у друга или члена гильдии или не поискать его на рынке? Теперь масло смогут делать все.',
         'Oillvl1' => 'Масло для самых разных нужд. Максимально повышает эффективность производства.',
         'OrePackage' => 'Прекрасный набор базовых видов руды для ускорения соответствующих видов производства.',
         'Ostereierbaum' => 'Дерево, на котором растут яйца? Дальше что? Дерево со стейками? Коровы из травы?',
         'OutdoorCanteen' => 'Здесь ваши войска могут подкрепиться перед приключениями. Как говорится: "Война войной, а обед по расписанию!"',
+        'OutdoorCanteenAid' => 'Декоративное здание, снижающее время восстановления уличной столовой и повышающее скорость производства коптильни.',
         'PalmTreeDeco01' => 'Очень красивая пальма, которую можно разместить на острове для его украшения.',
         'PalmTreeDeco02' => 'Очень красивая пальма, которую можно разместить на острове для его украшения.',
         'PalmTreeDeco03' => 'Очень красивая пальма, которую можно разместить на острове для его украшения.',
@@ -39311,21 +40106,20 @@ After spending the day here Settlers return home with warm hearts.',
         'ProductivityBuffEW3' => 'Опыт, полученный в долгой и тяжелой войне с йотунами, поможет вашим рабочим увеличить производительность.',
         'ProductivityBuffEWBalloonsLv2' => 'В создании этого торта участвовало множество известных кондитеров. Без него не обходится ни одно торжество в праздничном зале.',
         'ProductivityBuffLvl12' => 'Никто не знает, что это такое. Главное, производительность значительно повышается.',
+        'ProductivityBuffLvl22' => 'Смазывает механизмы оборудования для предотвращения износа зубчатых колёс и обеспечения максимальной производительности.',
         'ProductivityBuffLvl25' => 'Искусный пекарь-чужестранец, готовый помочь вам в улучшении ваших пекарен с помощью своих методов.',
         'ProductivityBuffLvl27' => 'Может, у него и нет головы, но он умеет обращаться с лошадьми. И хотя приветливым человеком его назвать нельзя, зато у него есть огромное желание ухаживать за нашими скакунами.',
         'ProductivityBuffLvl28' => 'Липкие и почти растаявшие сладости служат источником вдохновения для всех плавилен. Во всяком случае, так заявлено. Но скорее всего, там просто работают одни сладкоежки.',
         'ProductivityBuffZoneEW_WitchesFamiliars' => 'Это не какие-то обычные питомцы. Хозяйки наделили их частью своей силы, и потому фамильяры так любят подстрекательства.',
-        'Prospector' => 'NT: A workshop that thoroughly inspected mined rocks in search of  traces amounts of precious metals and minerals.',
         'ProvisionerBuffLvl3' => 'Сласти из восточных земель. Повышают производительность универсальных мастерских.',
         'ProvisionerBuffLvl300' => 'Вы производите оружие медленнее, чем хотелось бы, но вы используете правильные материалы? Ускорьте производительность, увеличив время работы арсенала.',
         'ProvisionerBuffLvl301' => 'Ваши поселенцы устали все делать вручную? Автоматизируйте их труд, усильте линию сборки в арсенале, и вы значительно увеличите производительность.',
-        'ProvisionerBuffLvlGuildFestGrounds1' => 'NT: Show your support for your guild by letting a loud cheer out!',
-        'ProvisionerBuffLvlGuildFestGrounds2' => 'NT: Show your support for your guild by letting a deafening cheer out!',
         'PumpkinFieldDeco' => 'Чтобы разбить кладбища с тыквами на острове, не обязательно дожидаться Хэллоуина! В выращивании тыкв есть непреходящая красота, и она сохранена в этой копии сооружения. Помните: эта постройка не производит тыкв!',
         'PumpkinMansion' => 'На Хэллоуин сюда выстраиваются очереди за угощением. К счастью, конфет в тыквенном особняке хватит на всех!',
         'QuestStart_ANewStone' => 'Один мальчик играл на пляже и нашел красивый камень. Интересно, что это за минерал? Он ценный?',
         'QuestStart_Harbour' => 'Людям пришлось покинуть континент и отправиться на далекий архипелаг Тавос, где они хотят начать новую жизнь. Но нужно больше поселенцев, чтобы помочь им добиться успеха.',
         'QuestStart_MysteriousCoin' => 'Взяв эту вещицу в руки, отчего-то начинаешь ощущать беспокойство.',
+        'QuestStart_OreRefinery' => 'Эпическое задание, во время которого вам предстоит раскрыть секреты обработки металлов далеких цивилизаций.',
         'QuestStart_SavetheDeers' => 'Популяция оленей стремительно редеет. Вы должны сделать что-нибудь, чтобы поддержать природное равновесие. Найдите причину вымирания и восстановите численность оленей.',
         'QuestStart_SilkCat' => 'Этот кожаный ошейник смотрится очень дорого. И кажется, кто-то прикрепил к нему записку.',
         'QuestStart_TheLittlePanda' => 'Он испуган и истощен.',
@@ -39359,6 +40153,8 @@ After spending the day here Settlers return home with warm hearts.',
         'ResourceCodex' => 'Используется для тренировки золотых навыков ваших специалистов',
         'ResourceManiscript' => 'Используется для тренировки бронзовых навыков ваших специалистов',
         'ResourceTome' => 'Используется для тренировки серебряных навыков ваших специалистов',
+        'RetirementHome' => 'Производитель усилений, использующий шерсть для создания Бабушкиных вязаных рождественских чулок, набитых подарками.',
+        'RetirementHomeAid' => 'Почтовый ящик, письма из которого отправляют напрямую Санте. Дети часто посещают их после того, как побывали у бабушки с дедушкой.',
         'RevealCollectiblesBuff01' => 'Редкие коллекционные предметы могут оказаться в самых неожиданных местах, и, если вам никак не удается найти их, вам помогут магические создания.',
         'RevealCollectiblesBuff02' => 'Если вам никак не удается найти редкие коллекционные предметы в дальних землях, вам помогут эти магические создания.',
         'RinaTheExplorer' => 'Рина обожает исследовать все вокруг. Во время путешествий она выискивает и собирает разные интересные штучки. Скорости Рины можно только позавидовать, а ее главная цель - приключения.',
@@ -39366,8 +40162,6 @@ After spending the day here Settlers return home with warm hearts.',
         'RomanticRestaurant' => 'От одного взгляда на аппетитные блюда начинают течь слюнки. Здесь каждому найдется яство по душе. А кроме того, в этом месте так приятно встретиться со своей половинкой!',
         'RoseArbor' => 'В любом розовом саду должна стоять арка, увитая розами.',
         'RoseTrellis' => 'Прекрасная шпалера с розами любой сад превратит в райский уголок для влюбленных.',
-        'RosyIronMine' => 'NT: This Iron Mine is not just covered in roses but also very useful. The roses cause the effect that this special mine it not producing the ore but the smelted bar! Incredible',
-        'RosyStorage' => 'NT: It\'s just an ordinary storehouse but look at these beautiful roses. The beauty of roses and the soothing smell should be reason enough to have this beautiful storehouse in the village.',
         'RoyalExplorer' => 'Королевский исследователь поистине королевский. Он невероятно быстр и порой при поиске приключений находит жетоны, которые просто обожает, но потом всегда отдает их вам.',
         'S4Barracks' => 'Иногда новое не значит лучшее. Вот и старые методики полевой подготовки все еще эффективны - солдаты лучше перемещаются и сражаются в доспехах.',
         'S4Lazaret' => 'Иногда старые рецепты превосходят новые изобретения. Если использовать простые материалы, но с небольшими добавлениями, можно создать нечто особенное. Раньше это считалось невозможным, но теперь можно производить аптечки - как в старые добрые времена.',
@@ -39384,6 +40178,8 @@ After spending the day here Settlers return home with warm hearts.',
         'ScenarioBundle1' => 'Отличный набор, который пригодится каждому поселенцу.',
         'ScenarioBundle2' => 'Потрясающий эксклюзивный набор для сезона приключений со сценарием.',
         'ScenarioBundle3' => 'Побалуйте себя порцией наполнителей, ресурсов и горящих стрел в виде временного набора.',
+        'Settlers2HQDeco' => 'Увеличивает предел населения.
+Выполняет функцию входа на склад для производственных зданий.',
         'SettlersHQ' => 'Дизайн штаба поселенцев основан на старом образце из Settlers 2',
         'ShamanBundle' => 'Подготовьтесь к концу света с этим эксклюзивным временным набором события.',
         'ShopBookbinderBuffLvl2' => 'Это смола кажется чуть-чуть липкой, но не верьте этому! По эффективности она ничуть не уступает клею!',
@@ -39407,11 +40203,9 @@ After spending the day here Settlers return home with warm hearts.',
 Этот величественный и уникальный зимний дом должен стоять под каждой новогодней елкой. Для полного улучшения этого шедевра зодчества требуется 4500 подарков!',
         'SmallDefBuild' => 'Содержит не менее 2 случайных крепостей. Есть дополнительная возможность получить случайный третий укрепленный лагерь (ур. 2).',
         'SmallEasterBundle2024' => 'Этот мешок побывал на фестивале красок Холи. Не бойтесь заглянуть в него. Немного запачкаете руки, зато получите несколько зданий и усилителей, которые добавят в жизнь красок!',
-        'SmallEasterBundle2025' => 'NT: A bag of sweet goodness to fill your heart and ruin your dental health.',
         'SmallHalloweenBundle2023' => 'С виду совершенно бесполезный пыльный мешок. Однако, если смахнуть пыль, внутри вы найдете жуткие здания и усилители.',
-        'SmallHalloweenBundle2024' => 'NT: Oh no, look at this bag. It comes right from a nightmare. Don\'t close your eyes or it will haunt you in your precious dreams.',
-        'SmallHalloweenBundle2025' => 'NT: A bag made of a ghoulish leather full of Halloween themed goodness. Hopefully the contents are worth bearing the smell.',
         'Smokehouse' => 'Коптильня в стиле северян. Тут вы сможете закоптить рыбу и получить вкусный усилитель.',
+        'Smokehouse_Mini' => 'Это воздаяние отдаёт дань уважения лучшим мастерам копчения на острове. Производит 1 копченый рыбный стейк каждый день.',
         'Snowglobe' => 'В этом снежном шаре заключен дух Рождества. Вечная вьюга, зима, снег, даже когда на дворе лето. При виде снежного шара сердце каждого из нас наполняется теплом и предвкушением чуда.',
         'SnowyExplorer' => 'Помимо праздного времяпрепровождения в пряничном доме, он просто обожает охоту за сокровищами. Пожалуй, на свете есть лишь одна вещь, которая способна увлечь его больше, - подарки! Поэтому он всегда привозит из событий в четыре раза больше ресурсов.',
         'SnowyExplorerGems' => 'Помимо праздного времяпрепровождения в пряничном доме, он просто обожает охоту за сокровищами. Пожалуй, на свете есть лишь одна вещь, которая способна увлечь его больше, - подарки! Поэтому он всегда привозит из событий в четыре раза больше ресурсов.',
@@ -39440,6 +40234,7 @@ After spending the day here Settlers return home with warm hearts.',
         'SpringBundle8' => 'Каждый хочет быть особенным. Превратите монеты в нечто более ценное!',
         'SpringBundle9' => 'Что это тут такое? За полное судно кваса кое-кто поможет вам с углем, водой и местом на складе…',
         'SpringPark' => 'Прекрасный парк, построенный в честь прихода весны. Лучшего места для проведения сезонных праздников не найти!',
+        'StargazingGeologist' => 'Одержимый звёздами геолог Он мечтает изучать редкие камни, которые падают с неба. Эта одержимость даёт ему способность находить Осколки звёзд.',
         'StarterPack' => 'Специальное предложение можно купить только один раз!
 Оно включает в себя работников и большое количество строительных материалов. Это все, что вам нужно для преимущества при развитии своего города.',
         'SteelSwordsLvl1' => 'Стандартные армейские мечи, выкованные из высококачественной стали. Эти надежные клинки придутся по нраву любым солдатам, обученным обращаться с таким оружием.',
@@ -39450,14 +40245,13 @@ After spending the day here Settlers return home with warm hearts.',
         'StoneLvl1' => 'Высококачественные камни старательно вырублены из прочной скалы.',
         'StoneLvl2' => 'Совсем недавно ужасное землетрясение вселило страх и трепет в сердца ваших жителей. Возможно, вы найдете что-то положительное даже в этом бедствии.',
         'StoneRefillGuild' => 'Это особенные каменные кубы. Их можно использовать, чтоб восстанавливать залежи камня. Классно!',
-        'StorageBasket' => 'NT: A special storehouse that matches the Easter Basket Residence',
         'Stronghold' => 'Пусть ваши войска участвуют в суровых климатических испытаниях горного клана.',
         'SummerBoosterBundle' => 'Эксклюзивный временный набор события, чтобы чуть-чуть помочь вам.',
         'SummerBundle1' => 'Эксклюзивный временный набор события в помощь поселенцам.',
         'SummerBundle2' => 'Эксклюзивный временный набор события в помощь поселенцам. Включает совершенно новый склад с темной крышей.',
-        'SummerBundle2025_Large' => 'NT: A sunblasted chest containing wonderful goodies',
-        'SummerBundle2025_Medium' => 'NT: A sunblasted box containing wonderful goodies',
-        'SummerBundle2025_Small' => 'NT: A sunblasted bag containing wonderful goodies.',
+        'SummerBundle2026_Large' => 'Большой набор, от которого веет свежестью летнего ветерка.',
+        'SummerBundle2026_Medium' => 'Средний набор, от которого веет свежестью летнего ветерка.',
+        'SummerBundle2026_Small' => 'Небольшой набор, от которого веет свежестью летнего ветерка.',
         'SummerBundle3' => 'Эксклюзивный временный набор события в помощь поселенцам.',
         'SummerBundle_Large' => 'Пусть солнышко сияет! С набором новых зданий и в компании славных помощников все озарится светом. Это ли не счастье?',
         'SummerBundle_Medium' => 'Пусть солнышко сияет! С набором новых зданий и славным помощником все озарится светом. Это ли не счастье?',
@@ -39470,10 +40264,10 @@ After spending the day here Settlers return home with warm hearts.',
         'SunflowerFertilizer' => 'Один из ваших поселенцев разработал особое удобрение для выращивания подсолнухов, которое намного увеличивает производительность подсолнечной фермы.',
         'SylvanaGeneralHardCurrency' => 'Сильвана - настоящая казачка и прирожденный лидер. Она добрая, жесткая, но при этом справедливая. Не стоит ее недооценивать, ведь только она знает, как заставить кавалерию сражаться.',
         'SylvanaGeneralSoccerBalls' => 'Сильвана - настоящая казачка и прирожденнный лидер. Она добрая, жесткая, но при этом справедливая. Не стоит ее недооценивать, ведь только она знает, как заставить кавалерию сражаться.',
-        'TheSmuggler' => 'NT: A transporter general with the ability to smuggle in weapons and gold with every trip.',
         'ThoroughGeologist' => 'От такой скрупулезности не скроется ни грамм ресурсов. Но на тщательный поиск нужно время.',
         'TikiStorehouse' => 'Не обращайте внимания на жуткие маски! Место это гостеприимное, к тому же просторное.',
         'TitanOreLv1' => 'Эти титановые слитки сияют, как солнце. Им самое место на вашем складе.',
+        'TitanicGeologist' => 'Выдающийся геолог, который занимается изучением титана и гордится результатами своей работы.',
         'TitaniumMine_Mini' => 'Воздаяние титаническим трудам шахтеров. Восхвалим всех работников титановых рудников троекратным "гип-гип-кирка-а-а"!',
         'TitaniumSwordsLvl1' => 'Это оружие сделано не из обычного титана, а из особой булатной стали на его основе. Гладкость и плавность очертаний булатного меча, о которых рассказывают в легендах, говорит не только о красоте, но также о невероятной прочности и остроте клинка.',
         'TokenCoinage' => 'Ученые провели немало экспериментов, чтобы создать более крепкий металл, но вместо этого открыли новый способ производства жетонов. Процесс сложный и затратный, но чего не сделаешь ради драгоценных жетонов?',
@@ -39481,7 +40275,6 @@ After spending the day here Settlers return home with warm hearts.',
         'TokenLvl2' => 'Этот ресурс принимают очень многие торговцы. Если у вас его недостаточно, пополните свои запасы с помощью данного набора и отправляйтесь в долгий поход за покупками.',
         'ToolsLvl1' => 'Местный торговец инструментами предлагает безупречные инструменты на еженедельном блошином рынке по очень низкой цене. Вероятно, он не заметил, насколько ценны эти инструменты в такие времена.',
         'ToolsLvl2' => 'В каждом подвале пылится ящик с инструментами. Вот это сокровище! Набор инструментов ожидает хорошего применения.',
-        'TowerOfBraggingRights' => 'NT: A trophy awarded to the mightiest guilds in the realm. Possessing one if testament to the cooperative prowess of the members.',
         'ToyFactory' => 'Здесь на свет появляются игрушки. И каждая из них создана с любовью. Помните, подарок зависит от поведения. Интересно, что достанется вам?',
         'TransporterAdmiral' => 'Поставщик экспедиции может взять с собой на остров-колонию много войск. Так как он является специалистом по рискованным путешествиям на неизвестные острова, его нельзя использовать в обычных приключениях.',
         'TransporterGeneral' => 'Генерал-интендант - эксперт в логистике. 
@@ -39489,19 +40282,19 @@ After spending the day here Settlers return home with warm hearts.',
         'TransporterGeneralBjoern' => 'Бьерн - отличный малый и чудесный генерал. Он умеет расположить к себе. Народ так и тянется к Бьерну и готов следовать за ним по пятам. В самом бою от него мало прока, зато он может позаботиться о самочувствии войска, а заодно привлечь дополнительных новобранцев во время путешествий.',
         'TribesmanBundle' => 'Подготовьтесь к концу света с этим эксклюзивным временным набором события.',
         'TunnelOfLove' => 'Излюбленное место для первых свиданий… и для первых поцелуев! Поговаривают, что парочки, повстречавшиеся тут, навсегда связаны нерушимыми узами любви.',
+        'UnityEvent_Residence' => 'Здесь можно разместить 100 людей, а на складе доступно 1,000 мест. Потрясающе!',
         'Valentine2024_LargeBundle' => 'Большой набор, полный любви и других полезных штук.',
         'Valentine2024_MediumBundle' => 'Набор, полный любви и других полезных штук.',
         'Valentine2024_SmallBundle' => 'Маленький набор, полный любви и других полезных штук.',
-        'Valentine2025_LargeBundle' => 'NT: Look closely and enjoy the view of this beautiful chest of roses. Yes, roses are beautiful and they smell so good. Opening the chest just let you feel good.',
-        'Valentine2025_MediumBundle' => 'NT: Look closely and enjoy the view of this beautiful box of roses. Yes, roses are beautiful and they smell so good. Opening the box just let you feel good.',
-        'Valentine2025_SmallBundle' => 'NT: Look closely and enjoy the view of this beautiful bag of roses. Yes, roses are beautiful and they smell so good. Opening the bag just let you feel good.',
+        'Valentine2026_LargeBundle' => 'Сделанный с любовью и заботой большой подарок, способный залечить разбитое сердце. Выше нос, в океане полно рыбы!',
+        'Valentine2026_MediumBundle' => 'Сделанный с любовью и заботой подарок, способный залечить разбитое сердце. Выше нос, в океане полно рыбы!',
+        'Valentine2026_SmallBundle' => 'Сделанный с любовью и заботой маленький подарок, способный залечить разбитое сердце. Выше нос, в океане полно рыбы!',
         'ValentineMysteryBox' => 'Особая коробка к особому дню. Воспользуйтесь шансом и доставьте удовольствие особому человеку.',
         'Valentines2021MilitaryBundle' => 'Враги никогда не дремлют, а их сердца наполнены ненавистью даже в День святого Валентина, так что этот набор станет достойной поддержкой для вашего войска.',
         'Valentines2021SpecialistsBundle' => 'Нельзя сказать, что исследователи и геологи всегда в восторге друг от друга, однако есть у них славная традиция: на День святого Валентина одинокие специалисты собираются, чтобы хорошо провести время в душевной компании.',
         'Valentines2021WondrousBundle' => 'Благодаря этому набору у вас вмиг появится куча свободного места для населения!',
         'ValentinesTransporterGeneral' => 'Он хорошо разбирается в людях, а сердце у него ну просто золотое! Быстро перевозит большие отряды бойцов, но сам не сражается.',
         'VersedGeologist' => 'Этот геолог отличается от других.',
-        'VesyGeologist' => 'NT: In his aimless, adventurous, amateur, attempts in the search of gold, all areas are acceptable for prospecting. It is indeed an arbitrary and absurdly ambitious approach, because he actively avoids actual advice. However, from time to time, and against all odds, he manages to strike gold.',
         'WMBananaLvl1' => 'Плохо подготовились к турнирному матчу? Воспользуйтесь этими ресурсами, чтобы произвести недостающие тактические средства.',
         'WMDummyLvl1' => 'Плохо подготовились к турнирному матчу? Воспользуйтесь этими ресурсами, чтобы произвести недостающие тактические средства.',
         'WMElasticSpringLvl1' => 'Плохо подготовились к турнирному матчу? Воспользуйтесь этими ресурсами, чтобы произвести недостающие тактические средства.',
@@ -39519,9 +40312,9 @@ After spending the day here Settlers return home with warm hearts.',
         'WeaponBoost' => 'С таким усилением производства ваше оружие будет готово в кратчайшие сроки!',
         'WeatherSnowlight' => 'Я купил эти ведра у парня по имени Джек. Приглядитесь к ним: это не обычная краска, а настоящий мороз! Используйте ее и проснитесь прекрасным зимним утром.',
         'WeatherTropical' => 'Говорят, этот талисман обладает магической силой. Закопайте его в земле, и погода будет ясной целую неделю. По крайней мере, так гласит легенда…',
+        'WeddingChapel' => 'Производитель усилителей, создающий усилители для запуска коротких заданий в тематике свадебных историй.',
+        'WeddingChapelAid' => 'Декоративное здание, повышающее скорость производства венчальной часовни.',
         'WinterGarden' => 'Несмотря на ужасные условия, в этом прекрасном саду можно вырастить даже самые привередливые деревья.',
-        'WitchCoven' => 'NT: A group of old ladies seemed to set up a Bakery of sorts. Those are definitely not cake ingredients.',
-        'WitchCovenAid' => 'NT: The old ladies from the new "bakery" are setting up this things everywhere. Apparently is to promote their business or something.',
         'WoodPackage' => 'Прекрасный набор базовых видов древесины для ускорения соответствующих видов производства.',
         'XMAS2020_BuildingBundle' => 'Рождественский премиум-набор содержит невероятно ценные здания, множество полезных усилителей и приличное количество ресурсов события.',
         'XMAS2020_GingerbreadBundle' => 'В пряничном наборе вы найдете 2 пряничных здания, зимние украшения и все необходимое для того, чтобы придать родному острову праздничный вид. Лучшего набора для любителей имбирных пряников не сыскать! Поверьте на слово.',
@@ -39531,9 +40324,9 @@ After spending the day here Settlers return home with warm hearts.',
         'XMAS2023_LargeBundle' => 'Свежий набор для удовлетворения всех-всех-всех сезонных потребностей.',
         'XMAS2023_MediumBundle' => 'Свежий набор для удовлетворения большинства сезонных потребностей.',
         'XMAS2023_SmallBundle' => 'Свежий набор для удовлетворения части сезонных потребностей.',
-        'XMAS2024_LargeBundle' => 'NT: It\'s that time of the year when Settlers exchange gifts with each other. Here is a Chest of them.',
-        'XMAS2024_MediumBundle' => 'NT: It\'s that time of the year when Settlers exchange gifts with each other. Here is a box of them.',
-        'XMAS2024_SmallBundle' => 'NT: It\'s that time of the year when Settlers exchange gifts with each other. Here is a bag of them.',
+        'XMAS2025_LargeBundle' => 'И снова наступила пора, когда поселенцы дарят друг другу подарки! Вот вам целый сундук подарков.',
+        'XMAS2025_MediumBundle' => 'И снова наступила пора, когда поселенцы дарят друг другу подарки! Вот вам целый короб подарков.',
+        'XMAS2025_SmallBundle' => 'И снова наступила пора, когда поселенцы дарят друг другу подарки! Вот вам целая сумка подарков.',
         'XMAS_BoosterBundle' => 'Превосходный набор для начинающих или для повышения эффективности.',
         'XMAS_SheetMusic1' => 'Все любят рождественскую музыку, правда же? При применении этого нотного усилителя к концертному залу музыканты начинают играть Jingle All the Way, а музыкальное усиление увеличивает скорость производства обычных и элитных казарм. Атмосферно и продуктивно.',
         'XMAS_SheetMusic2' => 'Все любят рождественскую музыку, правда же? При применении этого нотного усилителя к концертному залу музыканты начинают играть Silent Night, а музыкальное усиление увеличивает скорость производства обычных и элитных казарм. Атмосферно и продуктивно.',
@@ -39579,7 +40372,6 @@ After spending the day here Settlers return home with warm hearts.',
         'AddRecipe_SmallGlue' => '"Бессрочная гарантия."',
         'AddRecipe_StoneRefill' => '"Как насчет поменяться?"',
         'AddRecipe_TSR_SheetMusic6' => 'Новые мелодии не перестают удивлять.',
-        'AddRecipe_Tower_Unlock_Upgrade2' => 'NT: "I think there\'s room for improvement"',
         'AddRecipe_WeaponsmithBoost' => '"Лучшее оружие в кратчайшие сроки!"',
         'AdditionalAdmiralShop' => '"К несению службы готов, сэр!"',
         'AdvancedPaperLvl1' => '"Мягкая и двухслойная"',
@@ -39650,7 +40442,6 @@ After spending the day here Settlers return home with warm hearts.',
         'AdventureSonsOfTheVeld' => '"По коням!"',
         'AdventureSplitCity' => '"Поделен на части!"',
         'AdventureStealingFromTheRich' => '"Забирать у бедных и отдавать…"',
-        'AdventureStealingFromTheRich02' => 'NT: "I don\'t like desperation..."',
         'AdventureStormRecovery' => '"К счастью, ураган не принес сюда ни одной акулы из морских пучин"',
         'AdventureSurpriseAttack' => '"Сюрприз!"',
         'AdventureTheBetrayedLittleTailor' => '"Нужно вернуть волшебство".',
@@ -39677,7 +40468,6 @@ After spending the day here Settlers return home with warm hearts.',
         'AdventureTheValiantLittleTailor' => '"Одним махом семерых убивахом!"',
         'AdventureTombRaiders' => '"Этому место в музее!"',
         'AdventureTraitors' => '"Все ради золота".',
-        'AdventureTraitors02' => 'NT: "Revenge is no solution"',
         'AdventureVictorTheVicious' => '"Что еще за Виктор?"',
         'AdventureWhirlwind' => '"Нападение со всех сторон гарантирует успех".',
         'AdventureWitchOfTheSwamp' => '"Болота зовут"',
@@ -39688,9 +40478,9 @@ After spending the day here Settlers return home with warm hearts.',
         'AnniversaryBundle2024_Large' => '"Веселье продолжается!"',
         'AnniversaryBundle2024_Medium' => '"Веселье продолжается!"',
         'AnniversaryBundle2024_Small' => '"Веселье продолжается!"',
-        'AnniversaryBundle2025_Large' => 'NT: "Don\'t drink too much. I expect you back next year"',
-        'AnniversaryBundle2025_Medium' => 'NT: "Don\'t drink too much. I expect you back next year"',
-        'AnniversaryBundle2025_Small' => 'NT: "Don\'t drink too much. I expect you back next year"',
+        'AnniversaryBundle2026_Large' => '«Выпьем же за следующие три десятилетия».',
+        'AnniversaryBundle2026_Medium' => '«Выпьем же за следующие три десятилетия».',
+        'AnniversaryBundle2026_Small' => '«Выпьем же за следующие три десятилетия».',
         'ArchebusesLvl1' => '"Бам!"',
         'ArcheologistGeologist' => '"О, смотрите, что спрятано под камнем!"',
         'ArcticTitaniumMine' => '"Титан" - это звучит гордо и внушает доверие".',
@@ -39699,6 +40489,7 @@ After spending the day here Settlers return home with warm hearts.',
         'ArtificerStudy' => '"Все дело в баллистике и превосходящей огневой мощи".',
         'AssassinGeneral' => '"…   …   …БАХ!"',
         'AuctionAchievement' => '"Просто блеск! Как сверкает!"',
+        'AuroraTower' => '«Северное сияние?! Прямо в этот момент, в этой части острова и в этой самой башни?!»',
         'AvatarBuffRedNose' => 'Не только клоуны выглядят с ними потрясающе.',
         'BM_Valentines2023BuildingBundle00' => '"Всегда в наших сердцах"',
         'Bakery_Mini' => '"Сила в муке!"',
@@ -39729,7 +40520,6 @@ After spending the day here Settlers return home with warm hearts.',
         'BewitchingBundle' => '"Поддайтесь очарованию!"',
         'BewitchingExplorer' => '"Посмотри мне в глаза..."',
         'BigHalloweenBundle2023' => '"Аж мурашки бегут!"',
-        'BioFarm' => 'NT: "Make everything more eco please"',
         'Birthday2020CakeMap' => '"Смутное видение".',
         'Birthday2020_Bundle1' => '"Веселятся все!"',
         'Birthday2020_Bundle2' => '"Веселятся все!"',
@@ -39739,8 +40529,7 @@ After spending the day here Settlers return home with warm hearts.',
         'BlackTree_Green' => '"Беспросветная чернота, излучающая свет."',
         'BlackTree_Purple' => '"Беспросветная чернота, излучающая свет."',
         'BlackTree_Red' => '"Беспросветная чернота, излучающая свет."',
-        'BlacktreeExplorer' => 'NT: "Can we get more Blacktrees?"',
-        'BoatHouse' => 'NT: "If you don\'t like the neighbors, you can always sail away"',
+        'BlastingCartAid' => '«На твоем месте я бы эту трубку не прикуривал…»',
         'BoldExplorer' => '"Дерзкий, как пуля резкий!"',
         'BonabertiBusiness' => '"Бонаберти требуется помощь!"',
         'BookFittingLvl1' => '"Золотая отделка"',
@@ -39750,7 +40539,6 @@ After spending the day here Settlers return home with warm hearts.',
         'BowsLvl1' => '"Для охоты и боя".',
         'BreadLvl1' => '"Тысячи батонов"',
         'BreweryEndless' => '"Квас должен течь".',
-        'Brohmann' => 'NT: "What is best in life? to trample your enemies, see them running in fear, and hear the lamentations of the conquered"',
         'BronzeMineEndless' => '"Это будет кошерно?"',
         'BronzeSwordsLvl1' => '"Легко освоить, но непросто достичь совершенства".',
         'BuffAd_Easter2015' => '"Хорьки!"',
@@ -39980,10 +40768,6 @@ After spending the day here Settlers return home with warm hearts.',
         'ChangeDefaultSkin_FlowerBlossomsResidence_green_permanent' => '"Ах, что за чудный аромат!"',
         'ChangeDefaultSkin_FlowerBlossomsStorehouse_blue_permanent' => '"Полный склад цветов!"',
         'ChangeDefaultSkin_FlowerBlossomsStorehouse_green_permanent' => '"Полный склад цветов!"',
-        'ChangeDefaultSkin_GuildFestTentIII_Residence' => 'NT: "I like it enough to keep it"',
-        'ChangeDefaultSkin_GuildFestTentII_Residence' => 'NT: "I like it enough to keep it"',
-        'ChangeDefaultSkin_GuildFestTentI_Residence' => 'NT: "I like it enough to keep it"',
-        'ChangeDefaultSkin_HauntedSpiderWarehouse_permanent' => 'NT: "8 legs are too many legs"',
         'ChangeDefaultSkin_InflatableResidence_blue_permanent' => '"Там мягко, что можно спать прямо на полу".',
         'ChangeDefaultSkin_InflatableResidence_red_permanent' => '"Там мягко, что можно спать прямо на полу".',
         'ChangeDefaultSkin_InflatableStorehouse_blue_permanent' => '"Хрупкие вещи в полной сохранности".',
@@ -40029,7 +40813,6 @@ After spending the day here Settlers return home with warm hearts.',
         'ChangeSkin_Elari_Residence_temp' => '"Новые союзники - элари!"',
         'ChangeSkin_Elari_TrainingGrounds_temp' => '"Новые союзники - элари!"',
         'ChangeSkin_Elari_Warehouse_temp' => '"Новые союзники - элари!"',
-        'ChangeSkin_HauntedSpiderWarehouse_temp' => 'NT: "8 legs are too many legs"',
         'ChangeSkin_ImprovedFloatingResidenceWinterSkin_Shop_long' => '"Вид на холодное море".',
         'ChangeSkin_ImprovedFloatingResidenceWinterSkin_Shop_permanent' => '"Вид на холодное море".',
         'ChangeSkin_SpiritJourneyMayorhouse_temp' => '"Тсс… Вы тоже их слышите?"',
@@ -40044,6 +40827,7 @@ After spending the day here Settlers return home with warm hearts.',
         'ChangeSkin_mediterranean_mayourhouse_blue_long' => '"Большая, величественная и синяя".',
         'ChangeSkin_mediterranean_mayourhouse_red_long' => '"Большая, величественная и красная".',
         'ChimneysweepsBag' => '"Эти куски угля я где-то видел".',
+        'ChocolateDepot' => '«Не самый лучший кровельный материал для жаркой погоды. Но не мне судить!»',
         'ChristmasAThousandSnowflakes' => '"А снег идет!"',
         'ChristmasBreweryBuff' => '"Брожение всегда может быть быстрее!"',
         'ChristmasBuffKrampus' => '"Розги больше не нужны."',
@@ -40062,17 +40846,17 @@ After spending the day here Settlers return home with warm hearts.',
         'Christmas_Nutcracker' => '"С ним вы все будете щелкать как орешки".',
         'Christmas_Presents' => '"Идеальный подарок для любого человека!"',
         'Christmas_Pyramid' => '"Чтобы все ощутили великолепие Рождества".',
-        'ChummyExplorer' => 'NT: "...ssso good!"',
         'ChummyGeologist' => '"Будем дружить?"',
         'ClassyHotel' => '"Что?! Вы потратили на обслуживание в номере 967 самоцветов?!"',
         'CoalLvl1' => '"А он горит, горит, горит…"',
         'CoalLvl2' => '"Ой!"',
         'CoalMineEndless' => '"Прекрасное угольно-черное строение".',
         'CoalRefillGuild' => '"Выглядит как кусок черной грязи".',
-        'CoffeeShop' => 'NT: "Whenever no one can find Quartermaster Bjoern, this is the place to look for him"',
         'CoinsLvl1' => '"Деньги не пахнут".',
         'CollectibleFoodCartGuildShop' => '"Целое море еды".',
         'CollectibleMysteryBox' => '"Собирайте все!"',
+        'CommandCenter' => '«Тем, кто познал как врага, так и себя, не стоит бояться исхода даже ста сражений».',
+        'CommandCenterAid' => '«На этом фронте все спокойно».',
         'ConcertHall' => '"Услада для ушей!"',
         'ConscientiousGeologist' => '"Ура! Ура!"',
         'ConversionBattleBuffBomb_random_units' => '"Настоящий град пуль".',
@@ -40124,8 +40908,8 @@ After spending the day here Settlers return home with warm hearts.',
         'Deco_RabbitBush' => '"У него были морковки вместо усов, но кто-то их съел"',
         'Deco_SkeletonScarecrow' => '"Он до косточек продрог".',
         'Deco_Tombstone' => '"Тут что-то выгравировано…"',
+        'Depositorium' => '«Создано, чтобы выдержать испытание временем и обеспечить безопасность хранимых вещей. Хотите узнать, что здесь можно найти?»',
         'DiligentGeologist' => '"Прилежность - ключ к успеху!"',
-        'DimensionalRift' => 'NT: "It\'s a lot bigger in the inside"',
         'EMBuildingTrophy' => '"Только для победителей"',
         'EMBuildingflowerbed_flag_01' => '"Фанатская поддержка нового уровня"',
         'EMBuildingflowerbed_flag_02' => '"Фанатская поддержка нового уровня"',
@@ -40190,6 +40974,20 @@ After spending the day here Settlers return home with warm hearts.',
         'EMFlowerbed_Scotland' => '"Фанатская поддержка нового уровня".',
         'EMFlowerbed_UN' => '"Поддержка нового уровня".',
         'EMFlowerbed_Unionjack' => '"Фанатская поддержка нового уровня".',
+        'EMFlowerbed_canada' => '"Фанатская поддержка нового уровня".',
+        'EMFlowerbed_capverdi' => '"Фанатская поддержка нового уровня".',
+        'EMFlowerbed_curacao' => '"Фанатская поддержка нового уровня".',
+        'EMFlowerbed_drcongo' => '"Фанатская поддержка нового уровня".',
+        'EMFlowerbed_ecuador' => '"Фанатская поддержка нового уровня".',
+        'EMFlowerbed_haiti' => '"Фанатская поддержка нового уровня".',
+        'EMFlowerbed_iraq' => '"Фанатская поддержка нового уровня".',
+        'EMFlowerbed_joradan' => '"Фанатская поддержка нового уровня".',
+        'EMFlowerbed_newzealand' => '"Фанатская поддержка нового уровня".',
+        'EMFlowerbed_norway' => '"Фанатская поддержка нового уровня".',
+        'EMFlowerbed_paraguay' => '"Фанатская поддержка нового уровня".',
+        'EMFlowerbed_qatar' => '"Фанатская поддержка нового уровня".',
+        'EMFlowerbed_southafrica' => '"Фанатская поддержка нового уровня".',
+        'EMFlowerbed_uzbekistan' => '"Фанатская поддержка нового уровня".',
         'EMIncreaseMaxBuildings' => '"Особое разрешение"',
         'EMProductionBoost' => '"Ух ты, сосисочка!"',
         'EMResourceBoxLvl1' => '"Малый фанатский пакет"',
@@ -40201,6 +40999,9 @@ After spending the day here Settlers return home with warm hearts.',
         'Easter2021BuildingsBundle' => '"Самая выгодная цена!"',
         'Easter2021SpecialistsBundle' => '"Особенная весна!"',
         'Easter2021SuperBundle' => '"Нет ничего лучше весны!"',
+        'Easter2026_LargeBundle' => '«Почему мой шоколад в кроличьем пуху?»',
+        'Easter2026_MediumBundle' => '«Почему мой шоколад в кроличьем пуху?»',
+        'Easter2026_SmallBundle' => '«Почему мой шоколад в кроличьем пуху?»',
         'EasterAreaBuff' => '"Работа и снова работа!"',
         'EasterEggPraline' => '"Шоколад с шоколадной начинкой".',
         'EasterGeneral2015' => '"Мастер защиты"',
@@ -40218,11 +41019,8 @@ After spending the day here Settlers return home with warm hearts.',
         'EffectBuff_pumpkinfield_01_resurrector' => '"Нет, неужели опять?!"',
         'EffectBuff_pumpkinfield_02_resurrector' => '"Надо бы наполнить его!"',
         'EffectBuff_pumpkinfield_03_resurrector' => '"Придержите коней! Иначе оно опять истощится!"',
-        'EfficientAdvancedToolmaker' => 'NT: "According to my calculations, this is more efficient. Trust me, dear brother"',
-        'EfficientPlatinumSmelter' => 'NT: "Steam power allows the workers of this shop express their true lazy self."',
+        'EfficientCrossbowsmith' => '«Эти чудеса техники выполняют работу сразу трех подмастерьев и при этом не жалуются на занозы».',
         'EggLvl1' => '"Эй! Не говори никому".',
-        'ElderTreeLH' => 'NT: "The way is made clear when seen from above"',
-        'EliteGuildBanner_Deco' => 'NT: "We are good, Mayor. We are very good"',
         'EmphaticExplorer' => '"Четкие инструкции — четкое выполнение задачи".',
         'EnchantedCastle' => '"Любовь витает в воздухе!"',
         'EoWEventAdventure' => '"Конец близок!"',
@@ -40262,8 +41060,8 @@ After spending the day here Settlers return home with warm hearts.',
         'FlowerPackageLarge' => '"Райский запах"',
         'FlowerPackageSmall' => '"Ах, этот чудный запах!"',
         'FluffyButteExplorer' => '"Прыг-скок! Прыг-скок!"',
+        'FluffyLogistics' => '«Нам платят недостаточно, чтобы мы носили эти дурацкие костюмы.»',
         'ForgottenCemetery_Residence' => '"И вовсе здесь не страшно!"',
-        'FrankenHouse' => 'NT: "That fellow who walked out of there last time... He looked a bit like your deceased Nana didn\'t he?"',
         'FrostyGeneral' => '"Леденящее спокойствие".',
         'GFF' => '"Хорошие друзья дарят самоцветы!"',
         'GemPit' => '"Хорошие вещи приходят к тем, кто умеет ждать".',
@@ -40291,10 +41089,10 @@ After spending the day here Settlers return home with warm hearts.',
         'GenerousBundle6' => '"С огромной силой приходит… ОГРОМНАЯ СИЛА".',
         'GenerousBundle_Halloween2021' => '"Жутко хорош! Аж по телу бежит дрожь!"',
         'GeologistOnVacation' => '"У меня для вас сувенир!"',
-        'GhostExplorer' => 'NT: "He doesn\'t seem to realize that the museum he worked for lies in ruins. Ancient ones"',
         'GhostGeneral' => '"З-з-здравия желаю, генерал!"',
         'GiantBarrel' => '"Пахнет как от заправского моряка".',
         'GingerbreadGeologist' => '"Он вам не старый сухарь!"',
+        'GloryExploriExplorer' => '«Моя жизнь, мой выбор!»',
         'GoldMineEndless' => '"На вес золота"',
         'GoldOreLvl1' => '"Йо-хо-хо! О каких монетах речь?"',
         'GoldheartedGeologist' => '"Все что-то ищут. Позвольте мне вам помочь!"',
@@ -40304,15 +41102,10 @@ After spending the day here Settlers return home with warm hearts.',
         'GroutFactory' => '"Запачкаем руки!"',
         'Groutlvl1' => '"Только что от каменотесов!"',
         'GuildAdventure1' => '"Миссия: бросить пиратов в тюрьму!"',
-        'GuildBanner_Deco' => 'NT: "Yes. This was the moment when merchandizing was invented"',
-        'GuildFestBundle1' => 'NT: "Thanks for coming. See you next season"',
-        'GuildFestBundle2' => 'NT: "Thanks for coming. See you next season"',
-        'GuildFestBundle3' => 'NT: "Thanks for coming. See you next season"',
         'GuildFestTentI' => '"Так сколько народу соберется?"',
         'GuildFestTentII' => '"Так сколько народу соберется?"',
         'GuildFestTentIII' => '"Так сколько народу соберется?"',
         'GuildFillMarble' => '"О, смотрите, что я нашел!"',
-        'GuildHouse_Mini' => 'NT: "They always find a new way to tax us"',
         'GuildMasterGeologistLvl1' => '"Я чую медь… Нет, железо! Или это золото? А вы чувствуете, чем пахнет?"',
         'Halloween2019General' => '"Поклонись мне!"',
         'Halloween2021Bundle1' => '"Уловка? Нет! Удовольствие? О, да!"',
@@ -40366,11 +41159,11 @@ After spending the day here Settlers return home with warm hearts.',
         'HiredMilitary_Swordsmen50' => '"Средние среди элитных"',
         'HiredMilitary_Swordsmen5000' => '"Средние среди элитных"',
         'HoliFestivalGrounds' => '"Добавьте в жизнь красок!"',
+        'HoneygladeResidence' => '«Дом там, где есть мёд.»',
         'HorsesLvl1' => '"И-го-го!"',
         'HumbleExplorer' => '"Неприхотливость".',
         'IcePalace' => '"Надеюсь, холод всегда вам был по душе".',
         'IceSculpture' => '"Весьма претенциозно…"',
-        'IceSkatingLake' => 'NT: "Skate to the music. Hold hands if you have to"',
         'IglooStorehouse' => '"Это вам не иглушка!"',
         'ImprovedBakery' => '"М-м-м, запах свежего хлеба!"',
         'ImprovedBronzeWeaponsmith' => '"Ах, как сверкает меч!"',
@@ -40394,30 +41187,24 @@ After spending the day here Settlers return home with warm hearts.',
         'IronSwordsLvl1' => '"Мечи для массового использования".',
         'IronWilledGeologist' => '"Заурядность неприемлема!"',
         'JaguarBundle' => '"Конец близок!"',
-        'Jewelcrafter' => 'NT: "I only wanted a wedding ring..."',
-        'JewelsBundle' => 'NT: "Jewels are truly outrageous. They are truly, truly outrageous."',
         'KeenerExplorer' => '"Любовь побеждает все".',
+        'KrampusPit' => '«Он просто хочет, чтобы его оставили наедине с его киркой.»',
         'Laboratory' => '"Ничего не трогайте!"',
         'LaboratoryForGems' => '"Ничего не трогайте!"',
         'LargeDefBuild' => '"Укрепить эту позицию, и как следует!"',
         'LargeEasterBundle2024' => '"Раскрасим мир в яркие цвета!"',
-        'LargeEasterBundle2025' => 'NT: "Brush and floss at least twice a days"',
-        'LargeHalloweenBundle2024' => 'NT: "Don\'t close your eyes..."',
-        'LargeHalloweenBundle2025' => 'NT: "Wash your hands after handling that"',
         'LetterLvl1' => '"Запустить станок!"',
         'LevelUp_ExpeditionLevel' => '"Быстрая перемотка!"',
         'LevelUp_PlayerLevel' => '"Это кнопка, чтобы победить в игре?"',
         'LevelUp_PlayerLevel10' => '"Это кнопка, чтобы победить в игре?"',
-        'LevitatingHauntedWarehouse' => 'NT: "How can we reach it when it\'s flying?"',
         'LightingBlackAndWhite' => '"Ха, да кому нужны эти краски"',
         'LightingDesert' => '"Прикройте чем-нибудь голову"',
         'LightingSpooky' => '"Не заходите далеко в болото!"',
         'LightingTundra' => '"Столько красок"',
-        'LoggingHut' => 'NT: "Oh you knit that... Thing... For me? You didn\'t have to. You definitely didn\'t have to"',
+        'LonelyHeartInn' => '«Одинокое сердце лучше разбитого».',
         'LonerGeneral' => '"Мое слово - закон!"',
         'LongboatStorehouse' => '"Грабь, угрожай, добычу собирай!"',
         'LongbowsLvl1' => '"Длиннее, чем обычный лук".',
-        'Loottable_GrimoirePages_MysteryBox' => 'NT: "Let us trade"',
         'Loottable_HalloweenMysteryBox' => '"Посмотри, не бойся: она не укусит".',
         'Loottable_RewardBoxAtTheFootOfTheMountain' => '"Как если бы вы прошли затею"',
         'Loottable_RewardBoxBuccaneerRoundup' => '"Как если бы вы прошли приключение"',
@@ -40429,7 +41216,6 @@ After spending the day here Settlers return home with warm hearts.',
         'Loottable_RewardBoxTombRaiders' => '"Как если бы вы прошли приключение"',
         'Loottable_RewardBoxUnknownRegions' => '"Как если бы вы прошли затею"',
         'Loottable_RewardBoxWhirlwind' => '"Как если бы вы прошли приключение"',
-        'Loottable_Valentines2025DecorationMysteryBox' => 'NT: "Where do all the roses come from?"',
         'Loottable_XmasDecorationMysteryBox' => '"Похож на те, что появляются под елкой. Кто знает, что скрывается внутри?"',
         'LoveStruckExplorer' => '"Любит... не любит..."',
         'LovelyExplorer' => '"Какой приятный голос!"',
@@ -40442,7 +41228,6 @@ After spending the day here Settlers return home with warm hearts.',
         'MahoganyWoodLv1' => '"Отличное красное дерево!"',
         'MajorGeneral' => '"Вперед к славе!"',
         'ManEatingPlant' => '"Хрум-хрум…"',
-        'MarathonGeologist' => 'NT: "RUN!!!"',
         'MarbleLvl1' => '"Кому нужны камни? Вот мрамор – это дело!"',
         'MarbleLvl2' => '"Эй!"',
         'MasterEasterExplorer' => '"Перья на шляпе ускоряют поиски".',
@@ -40455,35 +41240,35 @@ After spending the day here Settlers return home with warm hearts.',
         'MeatLvl1' => '"Чуть солоноватое, но все равно очень вкусное".',
         'MedicGeneral' => '"Пропустите меня, я доктор".',
         'MediumEasterBundle2024' => '"Раскрасим мир в яркие цвета!"',
-        'MediumEasterBundle2025' => 'NT: "Floss too"',
         'MediumHalloweenBundle2023' => '"Забылось, но нашлось…"',
-        'MediumHalloweenBundle2024' => 'NT: "Don\'t close your eyes..."',
-        'MediumHalloweenBundle2025' => 'NT: "Wash your hands after handling that"',
         'MiadTikkiIsland' => '"Что? Опять проклятие?"',
         'MineralRabbit' => '"Два метра под землей".',
         'MiniAdventureBox' => '"Для поселенца, любящего приключения".',
         'MiraculousGeneral' => '"Божественное провидение".',
         'MortarsLvl1' => '"Бу-у-ум!"',
         'MotherlyExplorer' => '"Какая заботливая исследовательница!"',
-        'MountainClanColossus' => 'NT: "And they called it a mine... A MINE!"',
         'MountainDemolition_L' => '"Нет проблем, босс"',
         'MountainDemolition_M' => '"Вот это огненный шар!"',
         'MountainDemolition_S' => '"Звон в ушах как стиль жизни"',
         'MultiplierBuffZone1' => '"Безумие какое-то!"',
         'MultiplierBuffZone2_PremiumFriendBuff1Day' => '"Это... просто... потрясающе!"',
         'MultiplierBuffZone2_PremiumFriendBuff1DaySoccer' => '"Это... просто... потрясающе!"',
+        'MultiplierBuffZone2_PremiumFriendBuff_Christmas' => '«Это. Просто. Невероятно!»',
         'MummifiedGeologist' => '"Даже не заглядывай под бинты!"',
         'MysteryBoxAdventure' => '"Прогулка по диким местам".',
         'MysteryBoxBlackKnights' => '"Можете выбрать сундук любого цвета - если, конечно, это черный сундук"',
+        'NarcissisticGeneral' => '«Почему тебе захотелось стать именно таким человеком?»',
         'NibLvl1' => '"Радость каллиграфа"',
         'NordsResidence' => '"Внутри очень тепло и комфортно"',
         'NormalResourceBox' => '"Она вполне ничего".',
         'NutcrackerGeneral' => '"Врагу точно достанется на орехи!"',
+        'OffshoreLighthouse' => '"Здесь ни души. С рыбешками хоть не так одиноко. Они умеют слушать, не перебивая".',
         'OilRefinery' => '"Больше масла в кратчайшие сроки!"',
         'Oillvl1' => '"Доступно во всех цветах"',
         'OrePackage' => '"Руда или не руда - вот в чем вопрос!"',
         'Ostereierbaum' => '"Яйца не растут на деревьях? Посмотрите на это!"',
         'OutdoorCanteen' => '"М-м-м… Как вкусно!"',
+        'OutdoorCanteenAid' => '«Ничто так не обеспечивает работу кухни, как стабильные поставки продуктов».',
         'PalmTreeDeco01' => '“Прекрасные пальмы!”',
         'PalmTreeDeco02' => '“Прекрасные пальмы!”',
         'PalmTreeDeco03' => '“Прекрасные пальмы!”',
@@ -40524,21 +41309,20 @@ After spending the day here Settlers return home with warm hearts.',
         'ProductivityBuffEW3' => '"Они это заслужили!"',
         'ProductivityBuffEWBalloonsLv2' => '"Ка-а-ак сладенько!"',
         'ProductivityBuffLvl12' => '"Это что, какая-то магия?"',
+        'ProductivityBuffLvl22' => '«Сделано из самого скользкого вещества, что мы смогли найти.»',
         'ProductivityBuffLvl25' => '"Ведь кто не любит свежеиспеченные батоны?"',
         'ProductivityBuffLvl27' => '"…"',
         'ProductivityBuffLvl28' => '"Сахарная лихорадка!"',
         'ProductivityBuffZoneEW_WitchesFamiliars' => '"Сверхъестественные подстрекатели".',
-        'Prospector' => 'NT: "Fidgeting with stones all day might seem like madness to some, but my goodness, do they get results..."',
         'ProvisionerBuffLvl3' => '"Золото из пустыни".',
         'ProvisionerBuffLvl300' => '"Вдвое больше работы - втрое больше потеха".',
         'ProvisionerBuffLvl301' => '"Работает как хорошо смазанный механизм".',
-        'ProvisionerBuffLvlGuildFestGrounds1' => 'NT: "Let me hear you cheer!"',
-        'ProvisionerBuffLvlGuildFestGrounds2' => 'NT: "....I can\'t hear you!"',
         'PumpkinFieldDeco' => '"Хеллоуин круглый год!"',
         'PumpkinMansion' => '"Сласти или напасти? Будем творить шалости!"',
         'QuestStart_ANewStone' => 'Драгоценный камень и в пыли светится.',
         'QuestStart_Harbour' => '"Врата к новым приключениям".',
         'QuestStart_MysteriousCoin' => 'Маленькая блестящая монета',
+        'QuestStart_OreRefinery' => '"Нам придется отправиться в дальние земли, чтобы узнать, как им это удается".',
         'QuestStart_SavetheDeers' => '"Искать оленей нам не лень…"',
         'QuestStart_SilkCat' => '"А тут разве кота не должно быть?"',
         'QuestStart_TheLittlePanda' => 'Милая пушистость',
@@ -40569,6 +41353,8 @@ After spending the day here Settlers return home with warm hearts.',
         'ResourceCodex' => '"Знание - сила".',
         'ResourceManuscript' => '"Изобразительное искусство - это знание".',
         'ResourceTome' => '"Знание есть сокровище, но хранитель его - разум".',
+        'RetirementHome' => '«Отсюда невозможно уйти, не наевшись до отвала и не прихватив один из тех свитеров.»',
+        'RetirementHomeAid' => '«Как вы себя вели в этом году? Только честно… Я сказал, честно… Спасибо.»',
         'RevealCollectiblesBuff01' => '"Поджигай!"',
         'RevealCollectiblesBuff02' => '"Свет во тьме"',
         'RinaTheExplorer' => '"Мною правит дух приключений!"',
@@ -40576,8 +41362,6 @@ After spending the day here Settlers return home with warm hearts.',
         'RomanticRestaurant' => '"От этих яств слюнки текут!"',
         'RoseArbor' => '"Эти розы цветут круглый год!"',
         'RoseTrellis' => '"За шпалерой прячутся влюбленные..."',
-        'RosyIronMine' => 'NT: "These are not ores..."',
-        'RosyStorage' => 'NT: "The smell of roses are everywhere..."',
         'RoyalExplorer' => '"Собираем жетоны!"',
         'S4Barracks' => '"Тренировки в полных доспехах".',
         'S4Lazaret' => '"Здоровье - лучшее богатство".',
@@ -40594,6 +41378,7 @@ After spending the day here Settlers return home with warm hearts.',
         'ScenarioBundle1' => '"Налетай! Торопись!"',
         'ScenarioBundle2' => '"Время ограничено!"',
         'ScenarioBundle3' => '"Невероятно!"',
+        'Settlers2HQDeco' => '«Выглядит как в день создания, несмотря на то что прошло уже 30 лет».',
         'SettlersHQ' => '"Может, и старый, но все еще неплох".',
         'ShamanBundle' => '"Конец близок!"',
         'ShopBookbinderBuffLvl2' => '"Уважайте книги."',
@@ -40615,11 +41400,9 @@ After spending the day here Settlers return home with warm hearts.',
         'Skyscraper_Residence_Xmas' => '"Зима, холода, чудный домик среди льда!"',
         'SmallDefBuild' => '"Укрепить эту позицию!"',
         'SmallEasterBundle2024' => '"Раскрасим мир в яркие цвета!"',
-        'SmallEasterBundle2025' => 'NT: "Don\'t forget to brush before bed"',
         'SmallHalloweenBundle2023' => '"Весь в пыли!"',
-        'SmallHalloweenBundle2024' => 'NT: "Don\'t close your eyes..."',
-        'SmallHalloweenBundle2025' => 'NT: "Wash your hands after handling that"',
         'Smokehouse' => '"Лучший тип рыбы"',
+        'Smokehouse_Mini' => '«Хорошие вещи приходят к тем, кто умеет ждать».',
         'Snowglobe' => '"Зимняя сказка круглый год!"',
         'SnowyExplorer' => '"Обожаю зиму!"',
         'SnowyExplorerGems' => '"Обожаю зиму!"',
@@ -40644,6 +41427,7 @@ After spending the day here Settlers return home with warm hearts.',
         'SpringBundle8' => '"Просто блеск!"',
         'SpringBundle9' => '"Выходной для всех".',
         'SpringPark' => '"Весна круглый год!"',
+        'StargazingGeologist' => '«Если б он смотрел на землю хотя бы половину того времени, что он смотрит на звёзды, возможно, работа шла бы быстрее.»',
         'StarterPack' => '"Вам нужно преимущество или как?"',
         'SteelSwordsLvl1' => '"Только для профессионалов".',
         'StoneColdGeologist' => '"Нечего меня отвлекать!"',
@@ -40652,14 +41436,13 @@ After spending the day here Settlers return home with warm hearts.',
         'StoneLvl1' => '"Резьба по камню – это настоящее искусство!"',
         'StoneLvl2' => '"Столько и не унести!"',
         'StoneRefillGuild' => '"Старый добрый камень!"',
-        'StorageBasket' => 'NT: "Match your egg basket set"',
         'Stronghold' => '"Ее лучше не атаковать"',
         'SummerBoosterBundle' => '"Пора усилить архипелаг!"',
         'SummerBundle1' => '"Налетай! Торопись!"',
         'SummerBundle2' => '"Время ограничено!"',
-        'SummerBundle2025_Large' => 'NT: "Sunscreen not included"',
-        'SummerBundle2025_Medium' => 'NT: "Sunscreen not included"',
-        'SummerBundle2025_Small' => 'NT: "Sunscreen not included"',
+        'SummerBundle2026_Large' => '"Почувствуйте ветер на лице".',
+        'SummerBundle2026_Medium' => '"Почувствуйте ветер на лице".',
+        'SummerBundle2026_Small' => '"Почувствуйте ветер на лице".',
         'SummerBundle3' => '"Невероятно!"',
         'SummerBundle_Large' => '"Солнышко сияет. Солнышко блестит".',
         'SummerBundle_Medium' => '"Солнышко сияет. Солнышко блестит".',
@@ -40673,10 +41456,10 @@ After spending the day here Settlers return home with warm hearts.',
         'SunflowerFertilizer' => '"Сколько расчудесных подсолнухов!"',
         'SylvanaGeneralHardCurrency' => '"У нас есть все необходимое!"',
         'SylvanaGeneralSoccerBalls' => '"У нас есть все необходимое!"',
-        'TheSmuggler' => 'NT: "For a price, I can get you anything, from anywhere"',
         'ThoroughGeologist' => '"Если берешься за работу — делай ее качественно".',
         'TikiStorehouse' => '"Похоже, тут затеяли луау".',
         'TitanOreLv1' => '"Как солнце из титана".',
+        'TitanicGeologist' => '«С титанической задачей справится только титан».',
         'TitaniumMine_Mini' => '"В память о титаническом труде!"',
         'TitaniumSwordsLvl1' => '"Процесс их производства держится в секрете".',
         'TokenCoinage' => '"Наградный жетон за упорный труд"',
@@ -40684,26 +41467,25 @@ After spending the day here Settlers return home with warm hearts.',
         'TokenLvl2' => '"За сколько можно купить весь мир?"',
         'ToolsLvl1' => '"Скупой платит дважды"',
         'ToolsLvl2' => '"Вы даже не представляете, насколько универсальны эти инструменты…"',
-        'TowerOfBraggingRights' => 'NT: "Hear us roar!"',
         'ToyFactory' => '"Квинтэссенция зимнего волшебства".',
         'TransporterAdmiral' => '"Кто-нибудь вызывал подкрепление?"',
         'TransporterGeneral' => '"Подкрепление на подходе!"',
         'TransporterGeneralBjoern' => '"Наш девиз - никогда не сдаваться!"',
         'TribesmanBundle' => '"Конец близок!"',
         'TunnelOfLove' => '"Станешь моей половинкой?"',
+        'UnityEvent_Residence' => '«Последний прорыв в области портативного жилья».',
         'Valentine2024_LargeBundle' => '"Этот сундук пахнет розами!"',
         'Valentine2024_MediumBundle' => '"Этот ящик пахнет розами!"',
         'Valentine2024_SmallBundle' => '"Этот мешок пахнет розами!"',
-        'Valentine2025_LargeBundle' => 'NT: "Roses are red..."',
-        'Valentine2025_MediumBundle' => 'NT: "Roses are red..."',
-        'Valentine2025_SmallBundle' => 'NT: "Roses are red..."',
+        'Valentine2026_LargeBundle' => '«Есть ведь и хорошая сторона — весь шоколад остаётся у тебя!»',
+        'Valentine2026_MediumBundle' => '«Есть ведь и хорошая сторона — весь шоколад остаётся у тебя!»',
+        'Valentine2026_SmallBundle' => '«Есть ведь и хорошая сторона — весь шоколад остаётся у тебя!»',
         'ValentineMysteryBox' => '"Нечто особое".',
         'Valentines2021MilitaryBundle' => '"Бейте изо всех сил!"',
         'Valentines2021SpecialistsBundle' => '"Компания отличных специалистов!"',
         'Valentines2021WondrousBundle' => '"Чудесно! Просто чудесно!"',
         'ValentinesTransporterGeneral' => '"Вести за собой - значит любить".',
         'VersedGeologist' => '"Сделать все немного лучше".',
-        'VesyGeologist' => 'NT: "For goodness sake Vesy, I\'ll give you 10 coins if you stop just fooling around."',
         'WMBananaLvl1' => 'Кто сказал, что фрукты всегда полезны?',
         'WMDummyLvl1' => 'Подходят для тренировки и обманов',
         'WMElasticSpringLvl1' => 'Прикрепляйте. Прыгайте. Побеждайте.',
@@ -40721,9 +41503,9 @@ After spending the day here Settlers return home with warm hearts.',
         'WeaponBoost' => '"Больше оружия, больше сражений, больше добычи!"',
         'WeatherSnowlight' => '"Нежная прелесть зимы"',
         'WeatherTropical' => '"Надеюсь, ваши поселенцы не будут прохлаждаться на пляже".',
+        'WeddingChapel' => '«Клятва брата надёжна и верна, а дворцовая любовь всегда будто нова».',
+        'WeddingChapelAid' => '«Отсюда видно мой дом».',
         'WinterGarden' => '"Даже в самых необычных условиях красота тянется к свету".',
-        'WitchCoven' => 'NT: "They seem nice... Except for Michaella. She is such a basic witch"',
-        'WitchCovenAid' => 'NT: "If you don\'t mind the flies it attracts, I think it looks quiet... Exotic"',
         'WoodPackage' => '"Используется для чего угодно - от строительства зданий до создания оружия".',
         'XMAS2020_BuildingBundle' => '"Это Рождество станет самым лучшим!"',
         'XMAS2020_GingerbreadBundle' => '"Обожаю имбирные пряники!"',
@@ -40733,9 +41515,9 @@ After spending the day here Settlers return home with warm hearts.',
         'XMAS2023_LargeBundle' => '"Просто айс! Настолько свежо, что вполне может остановить глобальное потепление".',
         'XMAS2023_MediumBundle' => '"Просто айс! Настолько свежо, что вполне может остановить глобальное потепление".',
         'XMAS2023_SmallBundle' => '"Просто айс! Настолько свежо, что вполне может остановить глобальное потепление".',
-        'XMAS2024_LargeBundle' => 'NT: "Everything smells like cinnamon and sugar these days"',
-        'XMAS2024_MediumBundle' => 'NT: "Everything smells like cinnamon and sugar these days"',
-        'XMAS2024_SmallBundle' => 'NT: "Everything smells like cinnamon and sugar these days"',
+        'XMAS2025_LargeBundle' => '«В последнее время всё вокруг пахнет корицей, глинтвейном и сладостями.»',
+        'XMAS2025_MediumBundle' => '«В последнее время всё вокруг пахнет корицей, глинтвейном и сладостями.»',
+        'XMAS2025_SmallBundle' => '«В последнее время всё вокруг пахнет корицей, глинтвейном и сладостями.»',
         'XMAS_BoosterBundle' => '"Счастливого усиления!"',
         'XMAS_SheetMusic1' => '"Музыкальное усиление для настроения!"',
         'XMAS_SheetMusic2' => '"Музыкальное усиление для настроения!"',
@@ -40916,9 +41698,6 @@ After spending the day here Settlers return home with warm hearts.',
 Эффект зоны: +700% к производительности
 Объект: оружейная (бронза, железо, сталь, булат, платина), грандиозная оружейная (бронза, железо, сталь, булат, платина), мастерская луков, длинных луков, арбалетов и аркебуз, пушечный завод, литейная мастерская, конюшня, элитная конюшня, грандиозная конюшня
 Продолжительность: 60 минут',
-        'AddRecipe_Tower_Unlock_Upgrade2' => 'NT: Apply on the Tower of Bragging Rights to unlock level 2 upgrade.
-
-Target: Tower of Bragging Rights',
         'AddRecipe_WeaponsmithBoost' => 'При использовании на универсальной мастерской редкостей данный рецепт открывает возможность производства следующего предмета:
 
 Двойной темп
@@ -41220,11 +41999,6 @@ Target: Tower of Bragging Rights',
 Игроки: 1-2
 Тема: классика
 Помните: отменив приключение, вы не сможете к нему вернуться.',
-        'AdventureStealingFromTheRich02' => 'NT: Type: Mission
-Difficulty: 7
-Players: 1
-Theme: Classical
-Please note: If you cancel the adventure you cannot get it back.',
         'AdventureStormRecovery' => 'Тип: сценарий
 Сложность: 10
 Игроки: 1
@@ -41356,11 +42130,6 @@ Please note: If you cancel the adventure you cannot get it back.',
 Игроки: 1
 Тема: классика
 Помните: отменив приключение, вы не сможете к нему вернуться.',
-        'AdventureTraitors02' => 'NT: Type: Mission
-Difficulty: 7
-Players: 1
-Theme: Classical
-Please note: If you cancel the adventure you cannot get it back.',
         'AdventureVictorTheVicious' => 'Тип: миссия
 Сложность: 7
 Игроки: 1-3
@@ -41466,64 +42235,54 @@ Please note: If you cancel the adventure you cannot get it back.',
 руководство по земледелию и охоте x1
 руководство по добыче камня x1
 руководство по рубке леса x1',
-        'AnniversaryBundle2025_Large' => 'NT: You get:
-
-1x General Tremble Beard
-1x Emphatic Explorer
-1x Wondrous Celebration Residence
-1x Oldschool Barracks
-3x 1 Premium Day
-2x 3 Premium Days
-3x 7 Premium Days
-200 Grout 
-100 Oil 
-1x Enormous Birthday Cake 
-5x Rain of Flaming Arrows 
-1x Prestigious Friend Buff 
-1x Recruitment Guide 
-1x Weapon Crafting Guide 
-1x Paperwork Guide 
-1x Mining Guide 
-1x Farming & Hunting Guide 
-1x Rock Mining Guide 
-1x Wood Cutting Guide',
-        'AnniversaryBundle2025_Medium' => 'NT: You get:
-
-1x Oil Refinery
-1x Thatched Cottage 
-1x 4th Era Mayan Toolmaker
-1x 1 Premium Day
-2x 3 Premium Days
-200 Grout 
-100 Oil 
-1x Enormous Birthday Cake 
-5x Rain of Flaming Arrows 
-1x Prestigious Friend Buff 
-1x Recruitment Guide 
-1x Weapon Crafting Guide 
-1x Paperwork Guide 
-1x Mining Guide 
-1x Farming & Hunting Guide 
-1x Rock Mining Guide 
-1x Wood Cutting Guide',
-        'AnniversaryBundle2025_Small' => 'NT: You get:
-
-1x Sickbay
-1x General Loudmouth
-1x 1 Premium Day
-2x 3 Premium Days
-200 Grout 
-100 Oil 
-1x Enormous Birthday Cake 
-5x Rain of Flaming Arrows 
-1x Prestigious Friend Buff 
-1x Recruitment Guide 
-1x Weapon Crafting Guide 
-1x Paperwork Guide 
-1x Mining Guide 
-1x Farming & Hunting Guide 
-1x Rock Mining Guide 
-1x Wood Cutting Guide',
+        'AnniversaryBundle2026_Large' => 'Содержит:
+Исследовательница Рина
+Чудесный праздничный дом
+Воздаяние маслобойне
+Пост разведчиков
+Раствор х600
+Масло х300
+Громадный праздничный торт х6
+Ливень из горящих стрел х8
+Престижный усилитель друзей х1
+Руководство по вербовке х3
+Руководство по производству оружия х3
+Руководство по бумажной работе х3
+Руководство по горному делу х3
+Руководство по земледелию и охоте х3
+Руководство по добыче камня х3
+Руководство по рубке леса х3',
+        'AnniversaryBundle2026_Medium' => 'Содержит:
+Бывалый геолог
+Старший генерал-близнец
+Переплетчик приключений
+Раствор х400
+Масло х200
+Громадный праздничный торт х4
+Ливень из горящих стрел х6
+Престижный усилитель друзей х1
+Руководство по вербовке х2
+Руководство по производству оружия х2
+Руководство по бумажной работе х2
+Руководство по горному делу х2
+Руководство по земледелию и охоте х2
+Руководство по добыче камня х2
+Руководство по рубке леса х2',
+        'AnniversaryBundle2026_Small' => 'Содержит:
+Крытый соломой домик
+Генерал Бородотряс
+200 ед. раствора
+100 ед. масла
+Громадный праздничный торт х2
+Ливень из горящих стрел х4
+Престижный усилитель друзей х1
+Руководство по вербовке х1
+Руководство по производству оружия х1
+Руководство по бумажной работе х1
+Руководство по горному делу х1
+Руководство по земледелию и охоте х1
+Руководство по добыче камня х1
+Руководство по рубке леса х1',
         'ArcheologistGeologist' => 'Может при успешном поиске определенной залежи найти сокровище: пополнение залежи, усилитель или даже книгу.',
         'ArcticTitaniumMine' => 'Добывает 5 ед. титановой руды каждые 12 минут.',
         'ArmillarySphere' => 'Украшение размером 1x1.',
@@ -41562,6 +42321,14 @@ Please note: If you cancel the adventure you cannot get it back.',
 • Урон по области.
 • Засада: снижает здоровье боссов и защитных войск на 25%. Снижает урон боссов на 25%.',
         'AuctionAchievement' => 'Такому все позавидуют!',
+        'AuroraTower' => 'Тип: Особая резиденция 
+Размер: 2x2 
+Уровни: 3 
+
+Эффект: Повышает население на 80 и ещё на 80 за каждый уровень.
+Кроме этого, начинает задание «Время историй» каждые 45 дней.  Каждая дополнительная башня (до 5) снижает время восстановления усиления на 54 ч.
+
+Время историй: Исследователи выполняют поиск сокровищ и поиск приключений на 15% быстрее. Последние 48 ч.',
         'AvatarBuffRedNose' => 'Используйте на ратуше:
 • У вашего аватара на 7 дней появится красный нос',
         'BM_Valentines2023BuildingBundle00' => 'Включает в себя смотровую вышку рейнджера, ярмарочную площадку, шикарную гостиницу и склад на воде.
@@ -41679,11 +42446,6 @@ Please note: If you cancel the adventure you cannot get it back.',
 стрелу из черного дерева x10
 Айгора x10
 Нэша Уильямса x10',
-        'BioFarm' => 'NT: Type: Workyard, recurring
-Effect: produces 1 Wheat without depleting deposit
-Duration: 10 min
-Size: 2x2
-Upgrades: 6, increase output',
         'Birthday2020CakeMap' => 'Цель: зачистите загадочный остров.
 
 Тип: миссия
@@ -41892,11 +42654,12 @@ Upgrades: 6, increase output',
 Базовое время производства: 36 часов. Стоимость улучшения: 3000 досок из красного дерева, 2750 тыкв.
 
 Выберите один или несколько любимых цветов!',
-        'BlacktreeExplorer' => 'NT: Always brings back one of the Blacktree buffs from long, very long and prolonged treasure searches.',
-        'BoatHouse' => 'NT: Effect: Increases population by 60
-Size: 1x1 
-Placeable on water
-Upgrade: 3, up to 160 population',
+        'BlastingCartAid' => 'Тип: украшение поддержки, возобновляемое.
+Эффект: +20% скорости производства кабинета мастера
+Эффект: +20% скорости производства камнебазы
+
+Уровни: 1
+Размер: 1х1',
         'BoldExplorer' => '+150% к скорости заданий
 Дерзость: приносит на +50% больше наград, когда занимается поиском сокровищ. Всегда находит усилитель во время поиска приключений и сокровищ.',
         'BonabertiBusiness' => 'Цель: разгромите всех разбойников на острове.
@@ -41929,10 +42692,6 @@ Upgrade: 3, up to 160 population',
 Продолжительность: 1 мин.
 Размер: 2x2
 Улучшения: нет',
-        'Brohmann' => 'NT: Band of raiders:
-
-Cavalry and Knights get +30 damage. Knights also get Flanking.
-Defeating enemies in battle have a chance of bring coffers with weapons or gold.',
         'BronzeMineEndless' => 'Тип: мастерская, возобновляемая
 Эффект: производит 2 ед. меди, источник не истощается
 Продолжительность: 3 мин.
@@ -42900,22 +43659,6 @@ Defeating enemies in battle have a chance of bring coffers with weapons or gold.
 Объект: склад размера 2x2
 Продолжительность: постоянно
 Повторное применение: можно убрать и вновь установить в любой момент',
-        'ChangeDefaultSkin_GuildFestTentIII_Residence' => 'NT: Effect: Changes appearance to "Cozy Guild Fest Accommodation"
-Target: 2x2 land based Residences
-Duration: Permanent
-Reusable: Can be removed and reapplied at any time',
-        'ChangeDefaultSkin_GuildFestTentII_Residence' => 'NT: Effect: Changes appearance to "Comfy Guild Fest Accommodation"
-Target: 2x2 land based Residences
-Duration: Permanent
-Reusable: Can be removed and reapplied at any time',
-        'ChangeDefaultSkin_GuildFestTentI_Residence' => 'NT: Effect: Changes appearance to "Cushy Guild Fest Accommodation"
-Target: 2x2 land based Residences
-Duration: Permanent
-Reusable: Can be removed and reapplied at any time',
-        'ChangeDefaultSkin_HauntedSpiderWarehouse_permanent' => 'NT: Effect: Changes appearance to "Haunted Spider Warehouse"
-Target: 2x2 land based Storehouses
-Duration: Permanent
-Reusable: Can be removed and reapplied at any time',
         'ChangeDefaultSkin_InflatableResidence_blue_permanent' => 'Эффект: устанавливает вид "Надувной дом, синий"
 Объект: наземные дома размера 2x2
 Продолжительность: постоянно
@@ -43111,10 +43854,6 @@ Reusable: Can be removed and reapplied at any time',
 Объект: склад размера 2x2
 Продолжительность: 15 дней
 Повторное применение: недоступно',
-        'ChangeSkin_HauntedSpiderWarehouse_temp' => 'NT: Effect: Changes appearance to "Haunted Spider Warehouse"
-Target: 2x2 land based Storehouses
-Duration: 5 days
-Reusable: No',
         'ChangeSkin_ImprovedFloatingResidenceWinterSkin_Shop_long' => 'Эффект: устанавливает вид "Покрытый льдом"
 Объект: улучшенный дом на воде
 Продолжительность: 15 дней
@@ -43153,6 +43892,11 @@ Reusable: No',
 Повторное применение: недоступно',
         'ChimneysweepsBag' => 'Используйте на залежах угля:
 • Добавляет 1000 ед. угля',
+        'ChocolateDepot' => 'Тип: Особый склад
+Размер: 2х2
+Уровень: 3
+Эффект: Повышает вместимость ресурсов на 20 000 и ещё на 10 000 за каждый уровень.
+Также влияет на бонус производства шоколадной фабрики.',
         'ChristmasAThousandSnowflakes' => 'Эффект зоны: покрывает ваш остров снегом
 Продолжительность: 7 дней (10,5 дней для друга/члена гильдии)',
         'ChristmasBreweryBuff' => 'Эффект: +300% к производительности
@@ -43197,8 +43941,6 @@ Reusable: No',
 Размер: 1x1',
         'Christmas_Pyramid' => 'Тип: украшение, возобновляемое
 Размер: 2x2',
-        'ChummyExplorer' => 'NT: Run tasks twice as fast as normal explorer.
-Has a chance to return with a Chocolate Rabbit, Chocolate Pralines, Viscous Drinking Chocolate or Chocolate Covered Arrows from Long, Very Long and Prolonged treasure searches.',
         'ChummyGeologist' => 'Шанс вернуться с шоколадным кроликом, шоколадными пралине, густым горячим шоколадом или стрелами в шоколаде из поисков следующих ресурсов таковы:
 
 • уголь - 40%
@@ -43221,31 +43963,24 @@ Has a chance to return with a Chocolate Rabbit, Chocolate Pralines, Viscous Drin
 Улучшения: 5, увеличивается производительность',
         'CoalRefillGuild' => 'Используйте на залежах угля:
 • Восстанавливает 1000 ед. угля.',
-        'CoffeeShop' => 'NT: Type: Buff Producer
-Size 2x2
-
-Available Buffs:
-
-Level 1 - Espresso
-Increases production output by 500% but then everyone is exhausted and decreases production output and input by 50%
-Duration: 2h+30m
-Target: Workyards (Own only)
-
-Level 2 - Leftover Ground Beans
-Increases production by 400%
-Duration: 6h
-Target: Sunflower Farm, Man Eating Plant, Bio Farm, Farm, Improved Farm, Forester, Hardwood Forester, Exotic Forester, Exotic Wood Tree Nursery
-
-Level 3 - Double Espresso
-Increases production output by 500% but then everyone is exhausted and decreases production output and input by 50%
-Duration: 4h+30m
-Target: Workyards (Own only)',
         'CoinsLvl1' => 'Вы получаете:
 • 100 монет.',
         'CollectibleFoodCartGuildShop' => 'Вы получаете:
 • 50 телег с едой.',
         'CollectibleMysteryBox' => 'Откройте:
 • Получите произвольный собираемый ресурс.',
+        'CommandCenter' => 'Тип: производитель усилителей, возобновляемое
+Производимые усилители:
+Диверсия
+Картечь
+Конный натиск
+
+Уровни: 3
+Размер: 2х2',
+        'CommandCenterAid' => 'Тип: украшение поддержки, возобновляемое.
+Эффект: +15% скорости производства командного пункта
+Уровни: 1
+Размер: 1х1',
         'ConcertHall' => 'Тип: культура, возобновляемое
 Эффект: нотные усилители позволяют изменить фоновую музыку и дополнительно активировать мощный усилитель зоны
 Размер: 3x2
@@ -43424,6 +44159,13 @@ Target: Workyards (Own only)',
 Размер: 1x1',
         'Deco_Tombstone' => 'Тип: украшение, возобновляемое
 Размер: 1x1',
+        'Depositorium' => 'Тип: Особый склад
+Размер: 2x3
+Уровень: 3
+Эффект: Повышает вместительность на 40 000 Улучшения повышают вместительность на 20 000, а затем ещё на 10 000.
+Кроме этого, предоставляет возможность каждые 48 часов получать пополнитель залежей.
+Общее время улучшений: 72 часа.
+Для улучшения необходимы яйца в полоску.',
         'DiligentGeologist' => 'Требуется в 6 раз больше времени на большинство поисков, зато есть шанс найти целых два великих сокровища в пути.
 Найденные залежи из большинства поисков на 50% больше.
 
@@ -43438,20 +44180,6 @@ Target: Workyards (Own only)',
 гранит - 75%
 
 Если и находит сокровище, то всегда сразу 2.',
-        'DimensionalRift' => 'NT: Type: Special Storehouse, recurring
-Effect: Increases storage by 20000. Additionally applies random zone buffs when interacted with.
-Cooldown: 7d.
-Size: 1x1
-Upgrades: 2, increase storage up to 40000.
-
-Possible zone buffs:
-"Something Came Through: The Undead"
-"Something Came Through: Living Armor"
-"Something Came Through: Restless Souls"
-"Something Came Through: Annoying Loud Creatures"
-"Something Came Through: Benevolent Fae Creatures". Improves the production output of Epic Workyards by 100%.
-"Something Came Through: Soothing Rain". Improves the production output of all Foresters, Sunflower Farm, Flower Farms, Silos, and Improved Silos by 100%.
-Duration: 2h',
         'EMBuildingTrophy' => 'Тип: украшение, возобновляемое
 Размер: 2x2',
         'EMBuildingflowerbed_flag_01' => 'Тип: украшение, возобновляемое
@@ -43580,6 +44308,34 @@ Duration: 2h',
 Размер: 2x3',
         'EMFlowerbed_Unionjack' => 'Тип: украшение, возобновляемое
 Размер: 2x3',
+        'EMFlowerbed_canada' => 'Тип: украшение, возобновляемое
+Размер: 2x3',
+        'EMFlowerbed_capverdi' => 'Тип: украшение, возобновляемое
+Размер: 2x3',
+        'EMFlowerbed_curacao' => 'Тип: украшение, возобновляемое
+Размер: 2x3',
+        'EMFlowerbed_drcongo' => 'Тип: украшение, возобновляемое
+Размер: 2x3',
+        'EMFlowerbed_ecuador' => 'Тип: украшение, возобновляемое
+Размер: 2x3',
+        'EMFlowerbed_haiti' => 'Тип: украшение, возобновляемое
+Размер: 2x3',
+        'EMFlowerbed_iraq' => 'Тип: украшение, возобновляемое
+Размер: 2x3',
+        'EMFlowerbed_joradan' => 'Тип: украшение, возобновляемое
+Размер: 2x3',
+        'EMFlowerbed_newzealand' => 'Тип: украшение, возобновляемое
+Размер: 2x3',
+        'EMFlowerbed_norway' => 'Тип: украшение, возобновляемое
+Размер: 2x3',
+        'EMFlowerbed_paraguay' => 'Тип: украшение, возобновляемое
+Размер: 2x3',
+        'EMFlowerbed_qatar' => 'Тип: украшение, возобновляемое
+Размер: 2x3',
+        'EMFlowerbed_southafrica' => 'Тип: украшение, возобновляемое
+Размер: 2x3',
+        'EMFlowerbed_uzbekistan' => 'Тип: украшение, возобновляемое
+Размер: 2x3',
         'EMIncreaseMaxBuildings' => 'Используйте на ратуше:
 • Увеличивает максимальное количество разрешений на строительство на 5',
         'EMProductionBoost' => 'Используйте на мастерской:
@@ -43629,6 +44385,46 @@ Duration: 2h',
 • ливень из стрел x2
 • ливень из горящих стрел x2
 • баллиста x2',
+        'Easter2026_LargeBundle' => 'Содержит следующие предметы:
+Ярмарка воздушных шаров х1
+Чудесный дом (весна) х1
+Экоферма х1
+Эффективная усовершенствованная мастерская инструментов х1
+Принцесса Зои х1
+Генерал Борис х1
+Чемпион Варгус х1
+Бывалый геолог х1
+Престижный усилитель друзей х1
+Мистер Круа Сан х5
+К нам едет знаменитость х5
+Шоколадный кролик х5
+Шоколадные пралине х5
+Катание яиц х5
+Счастливая кроличья лапка х5',
+        'Easter2026_MediumBundle' => 'Содержит следующие предметы:
+Огромное дерево надежды х1
+Мастер боевых искусств х1
+Дружелюбный исследователь х1
+Геолог с каменным сердцем х1
+Престижный усилитель друзей х1
+Мистер Круа Сан х3
+К нам едет знаменитость х3
+Шоколадный кролик х3
+Шоколадные пралине х3
+Катание яиц х3
+Счастливая кроличья лапка х3',
+        'Easter2026_SmallBundle' => 'Содержит следующие предметы:
+Площадка фестиваля Холи х1
+Величественная водяная мельница х1
+Рыбная ферма х1
+Башня-склад х1
+Престижный усилитель друзей х1
+Мистер Круа Сан х3
+К нам едет знаменитость х3
+Шоколадный кролик х3
+Шоколадные пралине х3
+Катание яиц х3
+Счастливая кроличья лапка х3',
         'EasterAreaBuff' => 'Эффект области: +200% к производительности
 Объект: мастерская
 Продолжительность: 12 часов (18 часов для друга/члена гильдии)
@@ -43680,22 +44476,13 @@ Duration: 2h',
         'EffectBuff_pumpkinfield_03_resurrector' => 'Используйте на высохшем большом кладбище с тыквами:
 • Восстанавливает кладбище с тыквами, добавляя 10 тыкв
 Можно использовать на островах друзей.',
-        'EfficientAdvancedToolmaker' => 'NT: Type: Workyard, recurring
-Effect: Produces 2 Advanced Tools. Cost 3 Titanium +12 Tools
-Duration: 45 min.
-Size: 2x2',
-        'EfficientPlatinumSmelter' => 'NT: Type: Workyard, recurring
-Effect: Produces 2 Platinum
-Duration: 23.4 min.
-Size: 2x2
-Upgrades: 3, increase output / input',
+        'EfficientCrossbowsmith' => 'Тип: мастерская, возобновляемая.
+Эффект: преобразует 9 ед. титана и 24 ед. красного дерева в 2 арбалета
+Время производства: 43 минуты
+Уровни: 4
+Размер: 2х2',
         'EggLvl1' => 'Вы получаете:
 • 40 яиц',
-        'ElderTreeLH' => 'NT: Effect: Applies Fairy Fire. In addition increases population by 80
-Cooldown: 3 days
-Size: 1x1',
-        'EliteGuildBanner_Deco' => 'NT: Decoration
-Size: 2x2',
         'EmphaticExplorer' => '+100% к скорости заданий
 Решительность: четкая цель и эффективная работа приносят втрое больше добычи при поиске сокровищ. Точка. За дело!',
         'EnchantedCastle' => 'Увеличивает предел населения на 160
@@ -43781,14 +44568,44 @@ Size: 2x2',
         'FlowerPackageSmall' => '+100 цветов Валентина',
         'FluffyButteExplorer' => '+200% к скорости заданий
 Приносит на 400% больше наград за ресурсы события.',
+        'FluffyLogistics' => 'Тип: Производитель усилителей
+Размер: 2х2
+Уровень: 1
+Эффект: Производит усиления для налаживания контактов между игроками. Также открывает задание.
+
+
+Спрятанное пасхальное яйцо
+Тип:  Временный усилитель для строения
+Цель: Дома
+Время производства: 5 ч
+Стоимость производства: 1 повозка, 6 волшебных боба, 150 простой бумаги
+Длительность: 24 ч
+Эффект: Примените усилитель как минимум к 12 домам друзей или членов гильдии, чтобы запустить для них логистическую сеть пасхальных яиц.
+Цель эффекта: Дома
+
+
+Лучшая доставка!
+Тип: Временный усилитель зоны
+Применяется в качестве награды за задание
+Длительность: 24 ч
+Эффект: Увеличивает количество ресурсов за приключения на 10%.
+Цель эффекта: Приключения
+
+Логистическая сеть пасхальных яиц
+Тип: Условный усилитель зоны
+Условие: На острове активны 12 спрятанных пасхальных яйца
+Эффект: Увеличивает опыт за задания на 10%.
+Цель эффекта: Задания (не считая приключения).
+
+
+Налаженная логистика пасхальных яиц
+Тип: Условный усилитель зоны
+Условие: Активны «Мы доставляем!» и «Логистическая сеть пасхальных яиц»
+Эффект: Увеличивает количество ресурсов за задания на 10% (за исключением самоцветов, звёздных монет, жетонов, рукописей, фолиантов и кодексов).
+Цель эффекта: Задания (не считая приключения).',
         'ForgottenCemetery_Residence' => '+160 к пределу населения.
 +1 поселенец каждые 3 часа
 Размер: 2x2',
-        'FrankenHouse' => 'NT: Effect: Produces Population from Meat and Wool
-Duration: 25 min.
-+ 100 Population limit
-Size: 2x2
-Upgrades: 3. Increased production. Increases population up to 300.',
         'FrostyGeneral' => 'В 2 раза быстрее перемещается к приключениям.
 В 2 раза быстрее восстанавливается после поражения.
 Может вести в бой до 190 бойцов.',
@@ -44124,29 +44941,12 @@ Upgrades: 3. Increased production. Increases population up to 300.',
 
 руководство по рубке леса x1',
         'GeologistOnVacation' => 'Геологу требуется в 2 раза больше времени на задания, но он может принести фрагменты карты или усилители, а найденные им залежи на 50% больше. Кроме того, во время событий он всегда приносит ресурсы события.',
-        'GhostExplorer' => 'NT: Brings coffers with Halloween themed buffs
-Chances:
-11,11% Zombie x1
-11,11% The Headless Horseman x1
-11,11% Magic Bean Soup x1
-11,11% iGor x1
-11,11% Mr. Myers x1
-11,11% Witches\' Familiars x1
-11,11% Bucket of Candy x1
-11,11% Weak Point Potion x1
-11,11% Helpful Scarecrow
-
-Additional loot during Halloween
-10% Refill Pumpkins x5
-10% Banshee\'s Scream x1
-10% Werewolf\'s Howl x1
-
-Additional loot after level 50
-Any of 1 through 20 Witchy Grimoire Pages x1',
         'GhostGeneral' => 'Здоровье бойцов +20%, точность врагов -50%, скорость перемещения x3, восстановление x4, восстанавливает 20% потерянных войск. 1 дополнительная жизнь, не сочетается с другими навыками.',
         'GiantBarrel' => 'Вмещает до 40 000 ед. каждого ресурса.
 Размер: 2x2',
         'GingerbreadGeologist' => 'Находит залежи размером на 50% больше. Есть шанс отыскать предметы. Требуется в 3 раза больше времени.',
+        'GloryExploriExplorer' => 'Навык: Фанат острых ощущений
+Она всегда ищет острых ощущений, за счёт чего в два раза быстрее справляется с поиском приключений. Она также с некоторой вероятностью может найти дополнительное особое приключение во время долгих и очень долгих поисков. К сожалению, ей не интересны сокровища, поэтому на их поиски у неё уходит на 50% больше времени.',
         'GoldMineEndless' => 'Тип: мастерская, возобновляемая
 Эффект: производит 2 ед. золотой руды, источник не истощается
 Продолжительность: 9 мин. 36 сек.
@@ -44180,29 +44980,6 @@ Any of 1 through 20 Witchy Grimoire Pages x1',
 Игроки: 1
 Тема: классика
 Помните: отменив приключение, вы не сможете к нему вернуться.',
-        'GuildBanner_Deco' => 'NT: Type: Decoration
-Size: 1x1',
-        'GuildFestBundle1' => 'NT: Contains:
-
-Machine Oil x25
-Flaming Arrows x25
-Training Overtime x7
-Barazek x7
-Extravagant Sugar Glue x7',
-        'GuildFestBundle2' => 'NT: Contains:
-
-Machine Oil x15
-Flaming Arrows x15
-Training Overtime x5
-Barazek x5
-Extravagant Sugar Glue x5',
-        'GuildFestBundle3' => 'NT: Contains:
-
-Machine Oil x5
-Flaming Arrows x5
-Training Overtime x3
-Barazek x3
-Extravagant Sugar Glue x3',
         'GuildFestTentI' => 'Временное здание фестиваля гильдий, которое обеспечивает дополнительную линию производства для преобразования жетонов фестиваля гильдий.
 Размер: 2x2
 Будет удалено по окончании события.',
@@ -44215,8 +44992,6 @@ Extravagant Sugar Glue x3',
         'GuildFillMarble' => 'Эффект:
 
 Используйте на залежах мрамора, чтобы добавить 500 единиц этого ресурса.',
-        'GuildHouse_Mini' => 'NT: Effect: Produces 1 Guild Coins ever 14.4 hours.
-Size: 1x1',
         'GuildMasterGeologistLvl1' => 'Эффект
 
 Вы можете нанять веселого геолога.',
@@ -44404,24 +45179,17 @@ Size: 1x1',
 Объект: мастерская
 Размер: 2x2
 Эффект: активирует усилитель, который увеличивает производительность всех соседних производственных зданий в области 7x7.',
+        'HoneygladeResidence' => 'Тип: Дом
+Размер: 2х2
+Уровень: 3
+Эффект: Повышает макс. население на 160 и ещё на 160 за каждый уровень.
+Общее время улучшений: 72 часа.
+Для улучшения необходимы яйца в полоску.',
         'HumbleExplorer' => 'Скромность: во время быстрых и средних поисков сокровищ приносит в 6 раз больше наград.',
         'IcePalace' => 'Увеличивает предел населения на 160
 Размер: 2x2',
         'IceSculpture' => 'Тип: украшение, возобновляемое
 Размер: 1x1',
-        'IceSkatingLake' => 'NT: Type: Public, recurring
-Effect: Buffs residencies in a 15x15 area around it
-Cooldown: 120 hours, reduced by additional buildings
-Size: 4x4
-
-Winter Jolly: 
-Duration: 12 hours
- 
-Buffs residencies in range. Triggers island-wide effects based on the number of residencies buffed:
-20 residencies: Increases production speed by 25%
-25 residencies: Increases production speed by 50%
-
-Targets: Provision House, Rarity Provision House, Snack Stand, Harbor, Chocolateer, Lazaret, Blacktree, Lover\'s Statue, Balloon Market, Stone Depot, Toy Factory, Candy Factory, Siege Workshop, Artficer Study, Carnival Grounds, Romantic Restaurant, Bookbinder, Adventure Bookbinder, Oil Mill, Oil Refinery, Smokehouse, Stronghold, Laboratory',
         'IglooStorehouse' => 'Вмещает до 40 000 ед. каждого ресурса
 Размер: 2x2',
         'ImprovedBakery' => 'Тип: мастерская, возобновляемая
@@ -44502,34 +45270,14 @@ Targets: Provision House, Rarity Provision House, Snack Stand, Harbor, Chocolate
 • "К нам едет знаменитость" x5
 • Красный летающий поселенец x5
 • баразек x5',
-        'Jewelcrafter' => 'NT: Type: Buff producer
-Size: 1x1
-Upgrades: 2, Unlocks extra buffs
-Available Buffs:
-
-Level 1 -
-
-Infused Sunflower Fertilizer
-Increases production output by 500%
-Duration: 48h
-Target: Sunflower Farm
-
-Level 2 - 
-
-Titanium Hen Egg Laying Stimulant
-Increases production output by 1400%
-Duration: 24h
-Target: Titanium Hen
-
-Level 3 - 
-
-Glittering Armor
-Reducers enemy accuracy by 50%
-Duration: 5m
-Target: Adventures Zones',
-        'JewelsBundle' => 'NT: Contains a Jewel Crafter Workshop and a Prospector Workshop',
         'KeenerExplorer' => '+100% к скорости заданий
 Ловкость: +100% к скорости заданий. +2 броска в заданиях по поиску приключений.',
+        'KrampusPit' => 'Тип: Особый склад
+Размер: 2x2
+Уровень: 3
+Эффект: Повышает запасы ресурсов на 20 000 и ещё на 20 000 за каждый уровень.
+Дополнительно генерирует 1 ед. (+1 за каждый уровень) угля каждые 9 минут.
+Нельзя использовать, чтобы завладеть сектором или точкой ресурсов.',
         'Laboratory' => 'Тип: универсальная мастерская, возобновляемая
 Эффект: можно обменивать ресурсы
 Размер: 4x3
@@ -44567,68 +45315,11 @@ Target: Adventures Zones',
 минерального кролика x5 (пополняет залежи угля на 30 000 ед.)
 чудо-семена x5 (пополняют любые залежи на 1250 ед.)
 кроличью лапку x5',
-        'LargeEasterBundle2025' => 'NT: Contains:
-
-1x Fluffy Butte Explorer
-1x Miraculous General
-1x Gold-hearted Geologist
-1x Art Museum
-1x Decorative Fallen Star
-5x Mr. Croix Sant 
-5x Easter Egg Roll 
-5x A celebrity comes to town 
-5x Chocolate Pralinés 
-5x Chocolate Rabbit 
-30.000x refill coal deposits
-1.250 x Omniseeds 
-5x Rabbit\'s lucky charm',
-        'LargeHalloweenBundle2024' => 'NT: You get:
-
-1x Resolute General
-1x Mummified Geologist
-1x Scared Explorer
-1x Ghost Lantern
-1x Fish Farm
-1x Village School
-3x 1 Premium Day
-2x 3 Premium Days
-3x 7 Premium Days
-1x Prestigious Friend Buff
-2x Medipack
-10x Elixier
-10x Barazek
-10x Rain of Flaming Arrows
-10x Mr. Myers
-10x Bucket of Sweets',
-        'LargeHalloweenBundle2025' => 'NT: You get:
-
-1x Wondrous Halloween Residence
-1x Tree House
-1x Improved Floating Residence
-1x Bewitching Explorer
-1x General Sylvana
-3x 1 Premium Day
-2x 3 Premium Days
-3x 7 Premium Days
-1x Prestigious Friend Buff
-2x Medipack
-10x Elixier
-10x Barazek
-10x Rain of Flaming Arrows
-10x Mr. Myers
-10x Bucket of Sweets',
         'LetterLvl1' => 'Вы получили:
 • Типографские шрифты (100 шт.)',
         'LevelUp_ExpeditionLevel' => 'Эффект: повышает ваш уровень PvP.',
         'LevelUp_PlayerLevel' => 'Эффект: повышает ваш уровень.',
         'LevelUp_PlayerLevel10' => 'Эффект: повышает ваш уровень на 10.',
-        'LevitatingHauntedWarehouse' => 'NT: Type: Storage, recurring
-Effect: + 40.000 storage
-Size: 2x2
-Upgrades: No
-Cannot be used to claim sectors.
-Cannot be used as a resource drop-off point.
-Only placeable on water.',
         'LightingBlackAndWhite' => 'Эффект зоны: окрашивает ваш остров в черно-белые цвета
 Продолжительность: 7 дней (10,5 дней для друга/члена гильдии)',
         'LightingDesert' => 'Эффект зоны: из-за горячего воздуха и яркого солнца на вашем острове становится нереально жарко!
@@ -44637,12 +45328,10 @@ Only placeable on water.',
 Продолжительность: 7 дней (10,5 дней для друга/члена гильдии)',
         'LightingTundra' => 'Эффект зоны: на вашем острове пасмурная погода и дуют холодные ветра!
 Продолжительность: 7 дней (10,5 дней для друга/члена гильдии)',
-        'LoggingHut' => 'NT: Type: Special Residence
-Increases population limit by 160
-Effect: Produces 1 Cloth per 3 Wool
-Duration: 10 min
-
-Size: 2x2',
+        'LonelyHeartInn' => 'Тип: Дом
+Размер: 2х2
+Уровень: 3
+Эффект: Повышает население на 160 и ещё на 160 за каждый уровень.',
         'LonerGeneral' => 'В 2 раза быстрее перемещается к приключениям.
 Может вести в бой до 230 бойцов.
 Первый удар
@@ -44652,7 +45341,6 @@ Size: 2x2',
 Эффект: вмещает до 40 000 ед. каждого ресурса.
 
 Размер: 2x2',
-        'Loottable_GrimoirePages_MysteryBox' => 'NT: Contains 2 of the 20 possible Witchy Grimoire Pages',
         'Loottable_HalloweenMysteryBox' => 'Откройте:
 •  Получите один из полезных предметов, например приключения "Вторжение северян" или "Ограбление богатых", а также многое другое.',
         'Loottable_RewardBoxAtTheFootOfTheMountain' => 'Вам все же нужно начать новую кампанию.',
@@ -44665,18 +45353,6 @@ Size: 2x2',
         'Loottable_RewardBoxTombRaiders' => 'Получите удовольствие и от приключения',
         'Loottable_RewardBoxUnknownRegions' => 'Вам все же нужно начать новую кампанию.',
         'Loottable_RewardBoxWhirlwind' => 'Получите удовольствие и от приключения',
-        'Loottable_Valentines2025DecorationMysteryBox' => 'NT: Has a chance to contain one of the following decoration items:
-
-1x Rose Arbor
-1x Rose Trellis
-1x Decorative Flower Farm
-1x Valentine Pavillon
-2x Cupido Statue
-2x Heart Tree
-2x Valentine Fountain
-2x Valentine Vegetation
-3x Valentine Bench
-3x Flowerbed Heart',
         'Loottable_XmasDecorationMysteryBox' => 'Содержит один из следующих сюрпризов:
 
 временный вид: улучшенный дом на воде (покрытый льдом) x2
@@ -44735,8 +45411,6 @@ Size: 2x2',
 Продолжительность: 15 мин.
 Размер: 2x2
 Улучшения: 2',
-        'MarathonGeologist' => 'NT: 3 times faster but deposits are half of their original size
-Chance to bring additional random refiller after successful search.',
         'MarbleLvl1' => 'Вы получаете:
 • 500 ед. мрамора.',
         'MarbleLvl2' => 'Вы получаете:
@@ -44783,19 +45457,6 @@ Chance to bring additional random refiller after successful search.',
 минерального кролика x3 (пополняет залежи угля на 18 000 ед.)
 чудо-семена x3 (пополняют любые залежи на 750 ед.)
 кроличью лапку x3',
-        'MediumEasterBundle2025' => 'NT: Contains:
-
-1x Princess Zoe
-1x Easter Egg Tree
-1x Bunny Borrows
-3x Mr. Croix Sant 
-3x Easter Egg Roll 
-3x A celebrity comes to town 
-3x Chocolate Pralinés 
-3x Chocolate Rabbit 
-18.000x refill coal deposits
-750x Omniseeds
-3x Rabbit\'s lucky charm',
         'MediumHalloweenBundle2023' => 'Вы получаете:
 
 младшего генерала-близнеца x1
@@ -44812,37 +45473,6 @@ Chance to bring additional random refiller after successful search.',
 стрелу из черного дерева x10
 Айгора x10
 Нэша Уильямса x10',
-        'MediumHalloweenBundle2024' => 'NT: You get:
-
-1x Mad Scientist
-1x Stone Depot
-1x Improved Bakery
-1x Improved Farm
-1x Improved Warehouse
-1x 1 Premium Day
-2x 3 Premium Days
-1x Prestigious Friend Buff
-2x Medipack
-10x Elixier
-10x Barazek
-10x Rain of Flaming Arrows
-10x Mr. Myers
-10x Bucket of Sweets',
-        'MediumHalloweenBundle2025' => 'NT: You get:
-
-1x Haunted Mansion
-1x Magnificent Watermill 
-1x Quartermaster Bjoern
-1x Candid Explorer
-1x 1 Premium Day
-2x 3 Premium Days
-1x Prestigious Friend Buff
-2x Medipack
-10x Elixier
-10x Barazek
-10x Rain of Flaming Arrows
-10x Mr. Myers
-10x Bucket of Sweets',
         'MiadTikkiIsland' => 'Цель: разгромите всех разбойников.
 
 Тип: мини-миссия
@@ -44858,11 +45488,6 @@ Chance to bring additional random refiller after successful search.',
 
 400-800 ед. урона, 300 ОЗ, 80% точности',
         'MotherlyExplorer' => 'Приносит на 300% больше наград при всех поисках сокровищ, диковинок и артефактов.',
-        'MountainClanColossus' => 'NT: Type: Special Storehouse, recurring
-Effect: Inrceases storage by 20000 and produces 1 Gold Ore
-Duration: 1h.
-Size: 3x3
-Upgrades: 7, increase storage up to 140000, and Gold Ore production up to 7',
         'MountainDemolition_L' => 'Применяйте к горам:
 • Навсегда убирает объект
 • Освобождает место для строительства (до 9 ячеек)',
@@ -44902,6 +45527,19 @@ Upgrades: 7, increase storage up to 140000, and Gold Ore production up to 7',
 • Нельзя использовать на родном острове - только на острове друга.
 • Повторное применение усилителя перезапустит отсчет времени и не сложится с предыдущим.
 • Удвоенный эффект не сочетается с другими усилителями производительности и не может быть применен на грандиозных мастерских.',
+        'MultiplierBuffZone2_PremiumFriendBuff_Christmas' => 'Знак уважения отличному другу. 
+• Все эффекты усиления единичного производства удваиваются!
+• +50% опыта от приключений (поверх усиления опыта с премиум-временем!)
+• Время производства в казармах и элитных казармах сокращается вдвое!
+• Время производства в универсальной мастерской и универсальной мастерской редкостей сокращается вдвое!
+• Производство оружия (кроме боевого арсенала) ускоряется вдвое.
+• Исследователи и геологи выполняют задачи на 20% быстрее.
+• Длительность: 5 часов.
+
+Важно знать:
+• Это усиление нельзя использовать на собственном острове — только на острове друга.
+• Повторное применение усиления сбросит отсчёт времени, т. е. оставшееся время будет потеряно.
+• Удвоение усилений не складывается с другими подобными усилениями и не применяется к грандиозной мастерской.',
         'MummifiedGeologist' => 'Хотя геолог-мумия и медлителен, упорства ему не занимать. Ему требуется в три раза больше времени при поиске залежей, но он находит залежи в четыре раза крупнее.',
         'MysteryBoxAdventure' => 'Откройте:
 • получите произвольное приключение.',
@@ -44912,6 +45550,11 @@ Upgrades: 7, increase storage up to 140000, and Gold Ore production up to 7',
 Темный замок x1
 Церковь из костей x1
 Башня ведьмы x1',
+        'NarcissisticGeneral' => 'Навык: Нарцисс
+У вражеских боссов на 25% меньше здоровья.
+Естественная доп. жизнь.
+Победы над врагами приносят дополнительные рассказы о приключениях.
+Опыт от убийства врагов снижен на 80%.',
         'NibLvl1' => 'Вы получили:
 • Перья (100 шт.)',
         'NordsResidence' => 'Тип: дом, возобновляемый
@@ -44920,6 +45563,10 @@ Upgrades: 7, increase storage up to 140000, and Gold Ore production up to 7',
 Улучшения: 3, увеличивается предел населения',
         'NormalResourceBox' => 'Откройте:
 • получите произвольный ресурс.',
+        'OffshoreLighthouse' => 'Тип: особая резиденция
+Размер: 2x2, можно разместить только на воде
+Уровень: 3
+Эффект: увеличивает лимит населения на 100 и еще на 100 за каждый уровень. Кроме того, сокращает время восстановления маяка Старого древа и производит 50 ед. рыбы из косяков каждые 24 часа.',
         'OilRefinery' => 'Тип: универсальная мастерская, возобновляемая
 Эффект: можно обменивать масло и ресурсы на еще больше масла.
 Размер: 3x3
@@ -44947,6 +45594,11 @@ Upgrades: 7, increase storage up to 140000, and Gold Ore production up to 7',
         'OutdoorCanteen' => 'Культурное сооружение
 Активирует усилитель, делающий бойцов мощнее в приключениях.
 Размер: 2x2',
+        'OutdoorCanteenAid' => 'Тип: украшение поддержки, возобновляемое.
+Эффект: +20% снижение времени восстановления уличной столовой
+Эффект: +20% скорости производства коптильни
+Уровни: 1
+Размер: 1х1',
         'PalmTreeDeco01' => 'Тип: украшение, возобновляемое
 Размер: 1x1',
         'PalmTreeDeco02' => 'Тип: украшение, возобновляемое
@@ -45147,6 +45799,9 @@ Upgrades: 7, increase storage up to 140000, and Gold Ore production up to 7',
         'ProductivityBuffLvl17' => 'Эффект: +200% к производительности
 Объект: золотой рудник
 Продолжительность: 16 часов (24 часа для друга/члена гильдии)',
+        'ProductivityBuffLvl22' => 'Эффект: +400% к производительности
+Объект: мастерская
+Продолжительность: 6 часов (9 часов для друга/члена гильдии)',
         'ProductivityBuffLvl25' => 'Эффект: +200% к производительности
 Объект: пекарня, улучшенная пекарня
 Продолжительность: 24 часа (36 часов для друга/члена гильдии)',
@@ -45296,49 +45951,6 @@ Upgrades: 7, increase storage up to 140000, and Gold Ore production up to 7',
 • 20 поселенцев',
         'PromotionWMExplorer' => '• Выполняет все задания быстрее следопыта и опытного исследователя.
 • Может во время поиска найти дополнительный усилитель.',
-        'Prospector' => 'NT: Type: Buff producer
-Size: 1x1
-Upgrades: 2, Unlocks extra buffs
-Available Buffs:
-
-Level 1 -
-
-Prospected Stone
-Chance one of the following rewards:
-11% Copper Ore 400 
-20% Gold Ore 200 
-20,5% Platinum Ore 100               
-5%  Adamantium 2   
-13% Obsidian Ore 20   
-13%  Crystal Shards 15   
-12,5% Crystals 10 
-5% Star Shards 10
-
-Level 2 -
-
-Prospected Marble
-Chance two of the following rewards:
-11% Copper Ore 400 
-17% Gold Ore 200 
-17,5% Platinum Ore 100               
-8%  Adamantium 3  
-13% Obsidian Ore 20   
-13%  Crystal Shards 15   
-12,5% Crystals 10 
-8% Star Shards 15
-
-Level 3 -
-
-Prospected Granite
-Chance three of the following rewards:
-11% Copper Ore 400 
-12% Gold Ore 200 
-12,5% Platinum Ore 100               
-13%  Adamantium 5   
-13% Obsidian Ore 20   
-13%  Crystal Shards 15   
-12,5% Crystals 10 
-13% Star Shards 15',
         'ProvisionerBuffLvl3' => 'Эффект: +300% к скорости производства
 Объект: универсальная мастерская, универсальная мастерская редкостей
 Продолжительность: 12 часов (18 часов для друга/члена гильдии)',
@@ -45348,12 +45960,6 @@ Chance three of the following rewards:
         'ProvisionerBuffLvl301' => 'Эффект: +200% к скорости производства
 Объект: арсенал
 Продолжительность: 6 часов (9 часов для друга/члена гильдии)',
-        'ProvisionerBuffLvlGuildFestGrounds1' => 'NT: Increase Guild Fest Grounds and Guild Fest Accommodation Buildings production speed by 100%
-
-Duration: 40 min. (60 min. on friends/guild members)',
-        'ProvisionerBuffLvlGuildFestGrounds2' => 'NT: Increase Guild Fest Grounds and Guild Fest Accommodation Buildings production speed by 200%
-
-Duration: 40 min. (60 min. on friends/guild members)',
         'PumpkinFieldDeco' => 'Тип: украшение, возобновляемое
 Размер: 2x2',
         'PumpkinMansion' => 'Увеличивает предел населения.
@@ -45362,6 +45968,13 @@ Duration: 40 min. (60 min. on friends/guild members)',
         'QuestStart_Harbour' => 'Эффект: начинает задание "Поддержка Тавоса"
 (Задание находится в разделе "Основные задания".)',
         'QuestStart_MysteriousCoin' => 'Эффект: начинает задание "Таинственная монета"',
+        'QuestStart_OreRefinery' => 'Эпическое задание, в ходе которого вам предстоит открыть промышленный рудоперерабатывающий завод
+Тип: особая мастерская
+Размер: 3x3
+Эффект: перерабатывает 10 ед. металлической руды, увеличивая количество получаемой руды на 10% за каждый уровень.
+Дополнительные уровни эффективности и виды руды открываются при выполнении заданий.
+Для работы требуется топливо.
+Усилители грандиозной мастерской не действуют.',
         'QuestStart_SavetheDeers' => 'Эффект: начинает задание "Спасите оленей!"',
         'QuestStart_SilkCat' => 'Эффект: начинает задание "Ларсийская шелковая кошка"
 Это задание по мотивам одноименной истории (Die larsianische Seidenkatze), написанной Julie3, победителем конкурса!',
@@ -45427,6 +46040,32 @@ Duration: 40 min. (60 min. on friends/guild members)',
 Объект: ратуша',
         'ResourceTome' => 'Эффект: фолиант x1
 Объект: ратуша',
+        'RetirementHome' => 'Тип: Производитель усилителей, возобновляемое
+
+Эффект: Производит бабушкин вязаный рождественский чулок.
+Производство:  48 часов, сокращается дополнительными зданиями. 10 000 шерсти, 200 инструментов.
+Размер: 2x3
+
+Бабушкин вязаный рождественский чулок содержит:
+Волшебные бобы х25
+
+А также:
+Усилитель «Крампус»
+Усилитель «Печенья»
+Усилитель «Густой горячий шоколад»
+Усилитель «Любовный эликсир»
+Усилитель «Кирка Крампуса»
+Усилитель «Бабушкин ужин»
+Волшебные бобы х15
+Уголь х150
+случайным образом.
+
+Количество волшебных бобов увеличивается за каждый установленный почтовый ящик Санты на острове (вплоть до 5).',
+        'RetirementHomeAid' => 'Тип: Украшение поддержки
+Размер: 1x1
+
+Эффект: Увеличивает количество волшебных бобов в бабушкином вязаном рождественском чулке до 5 за каждый почтовый ящик.
+Вдобавок к шансу получить более мощные усилители, также на 15% сокращается время производства бабушкиного вязаного рождественского чулка.',
         'RevealCollectiblesBuff01' => 'Эффект зоны: указывает на все коллекционные предметы на вашем родном острове при помощи синей стрелки
 Продолжительность: 5 минут',
         'RevealCollectiblesBuff02' => 'Эффект зоны: указывает на все коллекционные предметы на острове приключения при помощи желтой стрелки
@@ -45452,13 +46091,6 @@ Duration: 40 min. (60 min. on friends/guild members)',
 Размер: 1x1',
         'RoseTrellis' => 'Тип: украшение, возобновляемое
 Размер: 1x1',
-        'RosyIronMine' => 'NT: Type: Workyard
-Effect: Produces Iron (12) without the need of Coal and with halved deposit consumption (6)
-Size: 2x2',
-        'RosyStorage' => 'NT: Type: Storage, recurring
-Effect: +40.000 storage
-Size: 2x2
-Upgrades: No',
         'RoyalExplorer' => '+300% к скорости заданий
 Королевский сборщик: при поиске приключений может найти жетоны.',
         'S4Barracks' => 'Тип: пристройка, возобновляемая
@@ -45563,6 +46195,10 @@ Upgrades: No',
 • 500 ед. раствора',
         'Settlers2HQ' => '+100 населения
 Используется как точка входа на склад для производственных зданий',
+        'Settlers2HQDeco' => 'Тип: дом
+Эффект: население +220, вход на склад
+Размер: 2х3
+Улучшения: 4, что еще больше повышает предел населения',
         'ShamanBundle' => 'Содержимое набора:
 
 • романтичный исследователь x1
@@ -45656,18 +46292,6 @@ Upgrades: No',
 минерального кролика x3 (пополняет залежи угля на 18 000 ед.)
 чудо-семена x3 (пополняют любые залежи на 750 ед.)
 кроличью лапку x3',
-        'SmallEasterBundle2025' => 'NT: Contains:
-
-1x Titanium Hen
-1x Cloaked General
-3x Mr. Croix Sant 
-3x Easter Egg Roll 
-3x A celebrity comes to town 
-3x Chocolate Pralinés 
-3x Chocolate Rabbit 
-18.000x refill coal deposits
-750x Omniseeds
-3x Rabbit\'s lucky charm',
         'SmallHalloweenBundle2023' => 'Вы получаете:
 
 чудесный хэллоуинский дом x1
@@ -45679,38 +46303,16 @@ Upgrades: No',
 эликсир x10
 Айгора x10
 Нэша Уильямса x10',
-        'SmallHalloweenBundle2024' => 'NT: You get:
-
-1x Grim Reaper General
-1x Haunted Mansion
-1x Improved Deerstalker Hut
-1x Silo
-1x 1 Premium Day
-2x 3 Premium Days
-1x Prestigious Friend Buff
-2x Medipack
-10x Elixier
-10x Barazek
-10x Rain of Flaming Arrows
-10x Mr. Myers
-10x Bucket of Sweets',
-        'SmallHalloweenBundle2025' => 'NT: 1x Archeological Geologist
-1x Spooky Bronze Mine
-1x 1 Premium Day
-2x 3 Premium Days
-1x Prestigious Friend Buff
-2x Medipack
-10x Elixier
-10x Barazek
-10x Rain of Flaming Arrows
-10x Mr. Myers
-10x Bucket of Sweets',
         'Smokehouse' => 'Тип: универсальная мастерская, возобновляемая
 Эффект: можно производить различные усилители
 Размер: 2x2
 Время производства можно снизить, если разместить дополнительные здания
 
 Копченый рыбный стейк: +100% к производительности на 72 часа в мастерской',
+        'Smokehouse_Mini' => 'Тип: Воздаяние
+Эффект: производит 1 копченый рыбный стейк каждый день
+Уровни: 1
+Размер: 1х1',
         'Snowglobe' => 'Производит усилитель области, который увеличивает производство в соседних зданиях.',
         'SnowyExplorer' => '+100% к скорости заданий
 Приносит на 100% больше наград, когда занимается поиском сокровищ (включая поиски артефактов и диковинок)
@@ -45833,6 +46435,8 @@ Upgrades: No',
 Вальпургиева ночь: подсвечивает все коллекционные предметы на 5 мин.
 Детские пасхальные рассказы: +100% к производительности на 6 часов на бумажной фабрике (обычной, улучшенной, усовершенствованной), в лавке каллиграфа, лавке печатника, улучшенной лавке печатника, лавке художника',
         'StandardResourceList' => '• {0} {1,RES}',
+        'StargazingGeologist' => 'Позволяет находить залежи, которые вдвое богаче, но поиски длятся на 50% медленнее.
+Также при успешной находке угля, золота, титана, селитры и гранита есть шанс найти осколки звёзд.',
         'StarterPack' => 'Получаете:
 • 9999 досок из сосны.
 • 9999 камней.
@@ -45845,36 +46449,29 @@ Upgrades: No',
         'StoneCubes' => 'Используйте на ратуше:
 
 • получите 1000 ед. камня.',
-        'StoneDepot' => 'Тип: универсальная мастерская, возобновляемая
-Эффект: производит различные усилители, связанные с товарами из камня
-Размер: 2x2
+        'StoneDepot' => 'Тип: Универсальная мастерская, возобновляемая.
+Эффект: производит различные усилители, связанные с товарами из камня.
+Размер: 2х2
 Улучшения: 3
-
 Заостренные кирки
-Эффект: +200% к скорости производства
-Объект: каменная каменоломня, мраморная каменоломня, гранитная каменоломня
-Продолжительность: 6 часов
-Базовое время производства: 24 часа
-
+Эффект: +300% производительности
+Цель: каменоломня, мраморная каменоломня, гранитный карьер
+Длительность: 24 часа
+Базовое время производства: 24 часа
 Трансмутация камней
 Эффект: преобразует камень, мрамор и селитру в гранит
-Объект: ратуша
-Базовое время производства: 24 часа
-
-Камнедробилки
-Эффект: +200% к скорости производства
-Объект: фабрика растворов
-Продолжительность: 12 часов
-Базовое время производства: 24 часа
-
-Можно снизить базовое время производства, если разместить дополнительные здания этого же типа.',
+Цель: Ратуша
+Базовое время производства: 2 часа
+Камнедробилка
+Эффект: +200% производительности
+Цель: фабрика растворов
+Длительность: 48 часов
+Базовое время производства: 24 часа
+Базовое время производства можно снизить, если разместить дополнительные здания этого типа.',
         'StoneLvl1' => 'Вы получаете:
 • 100 камней.',
         'StoneRefillGuild' => 'Используйте на залежах камня:
 • Восстанавливает 1000 ед. камня.',
-        'StorageBasket' => 'NT: Stores 20000, and up to 60000 of each resource. (Requires Striped Eggs)
-6 upgrade levels
-Size: 2x2',
         'Stronghold' => 'Тип: универсальная мастерская, возобновляемая
 Эффект: можно производить различные усилители
 Размер: 3x3
@@ -45921,40 +46518,37 @@ Size: 2x2',
 • целовашки-обнимашки x5
 
 • престижный усилитель друзей x1',
-        'SummerBundle2025_Large' => 'NT: Contains:
-
-1x Benevolent Explorer  
-1x Classy Hotel 
-1x Token Mint (Token Coinage) 
-1x Oil Refinery 
-1x Sunflower Farm 
-30 Premium Days
-5x Harvest Ritual
-5x Miracle Bait
-5x Whips and Carrots
-10x Grilled Steak
-10x Smoked Fish Steak',
-        'SummerBundle2025_Medium' => 'NT: Contains:
-
-1x Tree House 
-1x Siege Workshop 
-1x Grand Field Hospital 
-7 Premium Days
-5x Harvest Ritual
-5x Miracle Bait
-5x Whips and Carrots
-10x Grilled Steak
-10x Smoked Fish Steak',
-        'SummerBundle2025_Small' => 'NT: Contains:
-
-1x General Juan 
-1x Storage Tower 
-7 Premium Days
-5x Harvest Ritual
-5x Miracle Bait
-5x Whips and Carrots
-10x Grilled Steak
-10x Smoked Fish Steak',
+        'SummerBundle2026_Large' => 'Содержит следующие предметы:
+исследователь-авантюрист (1 ед.)
+прилавок с закусками (1 ед.)
+маслозавод (1 ед.)
+улучшенная лавка художника (1 ед.)
+престижный усилитель друзей (1 ед.)
+ритуал сбора урожая (5 ед.)
+чудесная наживка (5 ед.)
+кнут и морковка (5 ед.)
+стейк на гриле (10 ед.)
+копченый рыбный стейк (10 ед.)',
+        'SummerBundle2026_Medium' => 'Содержит следующие предметы:
+башня-склад (1 ед.)
+генерал Хуан (1 ед.)
+геолог на отдыхе (1 ед.)
+монашеское братство (1 ед.)
+престижный усилитель друзей (1 ед.)
+ритуал сбора урожая (5 ед.)
+чудесная наживка (5 ед.)
+кнут и морковка (5 ед.)
+стейк на гриле (10 ед.)
+копченый рыбный стейк (10 ед.)',
+        'SummerBundle2026_Small' => 'Содержит следующие предметы:
+чудесный летний дом (1 ед.)
+5 лицензий на строительство
+престижный усилитель друзей (1 ед.)
+ритуал сбора урожая (5 ед.)
+чудесная наживка (5 ед.)
+кнут и морковка (5 ед.)
+стейк на гриле (10 ед.)
+копченый рыбный стейк (10 ед.)',
         'SummerBundle3' => 'Содержимое набора:
 
 • генерал Сильвана x1
@@ -46074,13 +46668,14 @@ Size: 2x2',
         'SunflowerFertilizer' => 'Эффект: +1000% к базовой производительности
 Объект: подсолнечная ферма
 Продолжительность: 24 часа',
-        'TheSmuggler' => 'NT: Brings coffers with weapons or gold after completing a trip',
         'TikiStorehouse' => 'Тип: склад, возобновляемый
 Эффект: +40 000 места
 Размер: 2x2
 Улучшения: 2, увеличивается вместимость',
         'TitanOreLv1' => 'Используйте на складе:
 • получите 500 ед. титановой руды.',
+        'TitanicGeologist' => 'Навык: титаническая геология
+После успешных поисков с некоторым шансом приносит запасы титановой руды. Кроме того, все обнаруженные им залежи титановой руды в 3 раза больше.',
         'TitaniumMine_Mini' => 'Эффект: производит 1 ед. титановой руды
 
 Продолжительность: 48 мин.
@@ -46097,12 +46692,6 @@ Size: 2x2',
 • 150 жетонов',
         'ToolsLvl2' => 'Вы получаете:
 • 100 инструментов.',
-        'TowerOfBraggingRights' => 'NT: Type: Culture Building
-Effect: Provides a zone buff that improves most productions on the island and speeds up recruitment.
-Additionally increase resource storage.
-Upgrades: 6. Requires achievements. 
-Size: 2x2
-Limit: 1',
         'ToyFactory' => 'Это здание производит несколько продуктов:
 Игрушечные солдатики
 
@@ -46146,6 +46735,12 @@ Limit: 1',
 Стоимость: 1 золотая монета
 Продолжительность: 12 часов
 Размер: 2x2',
+        'UnityEvent_Residence' => 'Тип: особая резиденция
+Размер: 2х2
+Уровень: 1
+Эффект:
+Население: +100
+Склад: +1000',
         'Valentine2024_LargeBundle' => 'Вы получаете:
 
 пост разведчиков x1
@@ -46195,52 +46790,51 @@ Limit: 1',
 ливень из горящих стрел x2
 баллисту x2
 цветочный дождь x1',
-        'Valentine2025_LargeBundle' => 'NT: You get:
-
-1x Ranger Watchtower 
-1x Keener Explorer 
-1x Observatory 
-1x Love Tree 
-1x Titanium Mine Tribute
-3x 1 Premium Day
-2x 3 Premium Days
-3x 7 Premium Days
-2x Hugs & Kisses 
-2x Love-crazed 
-2x Bottled Innocence 
-2x Elixier 
-2x Romantic Date 
-2x True Soul Mate 
-2x Kitty Lure',
-        'Valentine2025_MediumBundle' => 'NT: You get:
-
-1x Charming Geologist 
-1x Chocolatier 
-1x Enchanted Castle 
-1x Improved Bronze Weaponsmith
-1x 1 Premium Day
-2x 3 Premium Days
-2x Hugs & Kisses 
-2x Love-crazed 
-2x Bottled Innocence 
-2x Elixier 
-2x Romantic Date 
-2x True Soul Mate 
-2x Kitty Lure',
-        'Valentine2025_SmallBundle' => 'NT: You get:
-
-1x Large Riverhouse
-1x Ranger Watchtower
-1x Iron Mine Tribute
-1x 1 Premium Day
-2x 3 Premium Days
-2x Hugs & Kisses 
-2x Love-crazed 
-2x Bottled Innocence 
-2x Elixier 
-2x Romantic Date 
-2x True Soul Mate 
-2x Kitty Lure',
+        'Valentine2026_LargeBundle' => 'Содержит:
+Пост разведчиков х1
+Дерево любви х1
+Чудесный романтичный дом х1
+Генерал-одиночка х1
+Романтичный исследователь х1
+1 день премиум статуса х3
+3 дня премиум-статуса х2
+7 дней премиум-статуса х2
+Целовашки-обнимашки х2
+Любовная лихорадка х2
+Праздник любви х2
+Концентрат непорочности х3
+Ливень из стрел х3
+Ливень из горящих стрел х2
+Убийца х2',
+        'Valentine2026_MediumBundle' => 'Содержит:
+Станция управления погодой х1
+Улучшенная сеялка х1
+Улучшенная ферма х1
+Интендант Золотое сердце х1
+Геолог-марафонист х1
+1 день премиум статуса х3
+3 дня премиум-статуса х2
+Целовашки-обнимашки х2
+Любовная лихорадка х2
+Праздник любви х2
+Концентрат непорочности х3
+Ливень из стрел х3
+Ливень из горящих стрел х2
+Убийца х2',
+        'Valentine2026_SmallBundle' => 'Содержит:
+Белый замок х1
+Улучшенная сеялка х1
+Улучшенная ферма х1
+Улучшенная пекарня х1
+1 день премиум статуса х2
+3 дня премиум-статуса х1
+Целовашки-обнимашки х2
+Любовная лихорадка х2
+Праздник любви х2
+Концентрат непорочности х3
+Ливень из стрел х3
+Ливень из горящих стрел х2
+Убийца х2',
         'ValentineMysteryBox' => 'Откройте:
 • получите произвольный предмет, например усилитель или приключение.',
         'Valentines2021MilitaryBundle' => 'Содержимое набора:
@@ -46289,7 +46883,6 @@ Limit: 1',
 • приворотное зелье x5
 • любовный эликсир x5',
         'VersedGeologist' => 'В два раза быстрее обычного находит залежи на 50% крупнее. Может найти дополнительную залежь с шансом в 50%. Действует на все типы залежей!',
-        'VesyGeologist' => 'NT: Has a chance of returning from successful Stone, Marble, Coal, and Granite searches with an adventure. But it takes 3 times as much time.',
         'WMBananaLvl1' => 'Используйте на Ратуше, чтобы получить:
 • Банановая кожура x10
 Предупреждение: эти ресурсы пропадут, когда закончится футбольный турнир!',
@@ -46335,35 +46928,25 @@ Limit: 1',
 Продолжительность: 7 дней (10,5 дней для друга/члена гильдии)',
         'WeatherTropical' => 'Эффект зоны: наполняет ваш остров солнечным светом.
 Продолжительность: 7 дней (10,5 дней для друга/члена гильдии)',
+        'WeddingChapel' => 'Тип: Производитель усилителей, возобновляемое
+Эффект: Производит усилители свадебных историй
+Уровни: 3
+Размер: 2х2
+Производство:
+Уровень 1:
+Свадебные истории — 12 дней, население: 1000, 5000 монет.
+Свадебная история: Лучший друг человека? — 20 дней, население: 2500, 1500 звёздных монет, 100 жетонов.
+Уровень 2:
+Свадебная история: Заносчивая невеста. — 20 дней, население: 2500, 1500 звёздных монет, 100 жетонов.
+Уровень 3:
+Свадебная история: рьяный флорист — 20 дней, население: 2500, 1500 звёздных монет, 100 жетонов.',
+        'WeddingChapelAid' => 'Тип: Здание поддержки, возобновляемое
+Эффект: +15% к скорости производства венчальной часовни
+Уровни: 1
+Размер: 1х1',
         'WinterGarden' => 'Преобразует 500 ед. древесины из сосны, 250 ед. древесины из дуба и 50 ед. древесины из красного дерева в 1 махагониевое дерево каждые 12 часов.
 
 Можно улучшить 2 раза при помощи подарков.',
-        'WitchCoven' => 'NT: Produces the following buffs: 
-
-Dark Ritual: Warmongery
-
-Shortens the production time of weapons by 80% for 2h but they cost 3 times as much resources.
-In addition in any adventures started during the effect, your forces deal 30% more damage, but they have 25% less health, and your enemies deal 15% more damage. 
-
-
-Dark Ritual: Risen Army
-
-Creates 50 Mercenary Soldiers at a blazing speed with a dark ritual. Performing this ritual will cause apply Famine in your island for 6h.
-
-Dark Curse: Famine
-
-Food production is reduced by 66%
-
-Dark Ritual: Reckless Speed
-
-You generals move 500% faster for 1h. After they will move 50% slower and their accuracy is reduced by 50% for 2h.
-
-
-Size: 2x3 
-Upgrade: 3, unlocks addition buffs and quests',
-        'WitchCovenAid' => 'NT: Type: Support Decoration
-Effect: Reduces Witch Coven production time by 15%
-Size: 1x1',
         'WoodPackage' => 'Содержит следующие ресурсы:
 
 • 750 ед. древесины (сосна)
@@ -46486,50 +47069,48 @@ Size: 1x1',
 горячий чай с лимоном x5
 печенье x5
 зимнюю краску x1',
-        'XMAS2024_LargeBundle' => 'NT: Contains:
-1x Steadfast General
-1x Snowy Explorer
-1x Outdoors Canteen
-1x Pōhutukawa Christmas Tree 
-1x Oil Mill
-3x 1 Premium Day
-2x 3 Premium Days
-3x 7 Premium Days
-1x Prestigious Friend Buff
-5x The Fermentation Accelerator
-5x Krampus
-5x Christmas Feast
-5x Hot Lemon Tea
-5x Cookies
-1x Winter Paint',
-        'XMAS2024_MediumBundle' => 'NT: Contains:
-1x Gingerbread Geologist
-1x Christmas Bakery
-1x Igloo Storehouse
-1x Cozy Cabin
-1x Snowman
-1x 1 Premium Day
-2x 3 Premium Days
-5x The Fermentation Accelerator
-5x Krampus
-5x Christmas Feast
-5x Hot Lemon Tea
-5x Cookies
-1x Winter Paint',
-        'XMAS2024_SmallBundle' => 'NT: Contains:
+        'XMAS2025_LargeBundle' => 'Содержит:
+Стойкий генерал х1 
+Пряник-геолог x1
+Скромный исследователь x1
+Искренний исследователь х1 
+Замёрзшее озеро для катания х1 
+1 день премиум-статуса х3
+3 дня премиум-статуса х2
+7 дней премиум-статуса х3
+Престижный усилитель друзей х1
+Ускоритель брожения х5
+Крампус х5
+Новогодний пир х5
+Горячий чай с лимоном х5
+Печенье х5
+Зимняя краска х1',
+        'XMAS2025_MediumBundle' => 'Содержит:
+Снежный исследователь х1
+Уличная столовая х1
+1 день премиум-статуса х1
+3 дня премиум-статуса х2
+Ускоритель брожения х5
+Крампус х5
+Новогодний пир х5
+Горячий чай с лимоном х5
+Печенье х5
+Зимняя краска х1',
+        'XMAS2025_SmallBundle' => 'Содержит:
 
-1x Cozy Cabin
-1x Giant Snow Globe
-1x Improved Watermill
-1x Pile of Gifts
-1x 1 Premium Day
-2x 3 Premium Days
-5x The Fermentation Accelerator
-5x Krampus
-5x Christmas Feast
-5x Hot Lemon Tea
-5x Cookies
-1x Winter Paint',
+Рождественская ярмарка х1
+Щелкунчик-генерал х1
+Смена облика х1: Маленький рождественский дом
+Смена облика х1: Средний рождественский дом
+Смена облика х1: Большой рождественский дом
+1 день премиум-статуса х1
+3 дня премиум-статуса х2
+Ускоритель брожения х5
+Крампус х5
+Новогодний пир х5
+Горячий чай с лимоном х5
+Печенье х5
+Зимняя краска х1',
         'XMAS_BoosterBundle' => 'Содержимое:
 
 • храбрый исследователь х1
@@ -46713,7 +47294,6 @@ Size: 1x1',
         'AddRecipe_SmallGlue' => 'Рецепт: Малый клей',
         'AddRecipe_StoneRefill' => 'Рецепт: Выгодная сделка',
         'AddRecipe_TSR_SheetMusic6' => 'The Settlers: Новые союзники - главная тема (ноты)',
-        'AddRecipe_Tower_Unlock_Upgrade2' => 'NT: Tower Remodeling Work Order',
         'AddRecipe_WeaponsmithBoost' => 'Рецепт: Двойной темп',
         'AddRecipe_WeaponsmithBoost2' => 'Экспедиционная песня',
         'AdditionalAdmiralShop' => 'Маршал',
@@ -46785,7 +47365,6 @@ Size: 1x1',
         'AdventureSonsOfTheVeld' => 'Сыны степей',
         'AdventureSplitCity' => 'Лето в разделенном городе',
         'AdventureStealingFromTheRich' => 'Ограбление богатых',
-        'AdventureStealingFromTheRich02' => 'NT: Desperate Rich',
         'AdventureStormRecovery' => 'Восстановление после бури',
         'AdventureSurpriseAttack' => 'Внезапное нападение',
         'AdventureTheBetrayedLittleTailor' => 'Преданный портняжка',
@@ -46812,7 +47391,6 @@ Size: 1x1',
         'AdventureTheValiantLittleTailor' => 'Храбрый портняжка',
         'AdventureTombRaiders' => 'Грабители могил',
         'AdventureTraitors' => 'Предатели',
-        'AdventureTraitors02' => 'NT: Sir Robin\'s Revenge',
         'AdventureVictorTheVicious' => 'Злобный Виктор',
         'AdventureWhirlwind' => 'Вихрь',
         'AdventureWitchOfTheSwamp' => 'Болотная ведьма',
@@ -46823,9 +47401,9 @@ Size: 1x1',
         'AnniversaryBundle2024_Large' => 'Подарочный сундук',
         'AnniversaryBundle2024_Medium' => 'Подарочный ящик',
         'AnniversaryBundle2024_Small' => 'Подарочный мешок',
-        'AnniversaryBundle2025_Large' => 'NT: Party Hard Chest',
-        'AnniversaryBundle2025_Medium' => 'NT: Party Hard Box',
-        'AnniversaryBundle2025_Small' => 'NT: Party Hard Bag',
+        'AnniversaryBundle2026_Large' => 'Тридцатилетний сундук',
+        'AnniversaryBundle2026_Medium' => 'Тридцатилетний ящик',
+        'AnniversaryBundle2026_Small' => 'Тридцатилетний мешок',
         'ArchebusesLvl1' => 'Аркебузы',
         'ArcheologistGeologist' => 'Геолог-археолог',
         'ArcticTitaniumMine' => 'Арктический титановый рудник',
@@ -46834,6 +47412,7 @@ Size: 1x1',
         'ArtificerStudy' => 'Кабинет мастера',
         'AssassinGeneral' => 'Скрытный генерал',
         'AuctionAchievement' => 'Трофей богатея',
+        'AuroraTower' => 'Башня Авроры',
         'AvatarBuffRedNose' => 'Красный нос для аватара',
         'BM_Valentines2023BuildingBundle00' => 'День святого Валентина 2023 - набор зданий',
         'Bakery_Mini' => 'Воздаяние пекарне',
@@ -46864,7 +47443,6 @@ Size: 1x1',
         'BewitchingBundle' => 'Зачарованный набор',
         'BewitchingExplorer' => 'Зачарованный исследователь',
         'BigHalloweenBundle2023' => 'Пугающий хэллоуинский сундук',
-        'BioFarm' => 'NT: Bio Farm',
         'Birthday2020CakeMap' => 'Туманный "торт"',
         'Birthday2020_Bundle1' => 'Премиум-набор к годовщине 1',
         'Birthday2020_Bundle2' => 'Премиум-набор к годовщине 2',
@@ -46874,8 +47452,7 @@ Size: 1x1',
         'BlackTree_Green' => 'Семя черного дерева (зеленое)',
         'BlackTree_Purple' => 'Семя черного дерева (фиолетовое)',
         'BlackTree_Red' => 'Семя черного дерева (красное)',
-        'BlacktreeExplorer' => 'NT: Blacktree Explorer',
-        'BoatHouse' => 'NT: Boat Residence',
+        'BlastingCartAid' => 'Взрывная телега',
         'BoldExplorer' => 'Дерзкий исследователь',
         'BonabertiBusiness' => 'Беда Бонаберти',
         'BookFittingLvl1' => 'Отделка книги',
@@ -46885,7 +47462,6 @@ Size: 1x1',
         'BowsLvl1' => 'Луки',
         'BreadLvl1' => 'Хлеб',
         'BreweryEndless' => 'Величественная пивоварня',
-        'Brohmann' => 'NT: Brohmann, the raider',
         'BronzeMineEndless' => 'Неисчерпаемый медный рудник',
         'BronzeSwordsLvl1' => 'Бронзовые мечи',
         'BuffAd_Easter2015' => 'Откуда берутся пасхальные яйца?',
@@ -47115,10 +47691,6 @@ Size: 1x1',
         'ChangeDefaultSkin_FlowerBlossomsResidence_green_permanent' => 'Вид: дома (цветущий дом, зеленый)',
         'ChangeDefaultSkin_FlowerBlossomsStorehouse_blue_permanent' => 'Вид: склады (цветущий склад, синий)',
         'ChangeDefaultSkin_FlowerBlossomsStorehouse_green_permanent' => 'Вид: склады (цветущий склад, зеленый)',
-        'ChangeDefaultSkin_GuildFestTentIII_Residence' => 'NT: Skin: Residences (Cozy Guild Fest accommodations)',
-        'ChangeDefaultSkin_GuildFestTentII_Residence' => 'NT: Skin: Residences (Comfy Guild Fest accommodations)',
-        'ChangeDefaultSkin_GuildFestTentI_Residence' => 'NT: Skin: Residences (Cushy Guild Fest accommodations)',
-        'ChangeDefaultSkin_HauntedSpiderWarehouse_permanent' => 'NT: Skin: Store Houses (Haunted Spider Warehouse)',
         'ChangeDefaultSkin_InflatableResidence_blue_permanent' => 'Вид: дома (надувной дом, синий)',
         'ChangeDefaultSkin_InflatableResidence_red_permanent' => 'Вид: дома (надувной дом, красный)',
         'ChangeDefaultSkin_InflatableStorehouse_blue_permanent' => 'Вид: склады (надувной склад, синий)',
@@ -47164,7 +47736,6 @@ Size: 1x1',
         'ChangeSkin_Elari_Residence_temp' => '15-дневный вид: дома (дом элари)',
         'ChangeSkin_Elari_TrainingGrounds_temp' => '15-дневный вид: казармы (тренировочная площадка элари)',
         'ChangeSkin_Elari_Warehouse_temp' => '15-дневный вид: склады (склад элари)',
-        'ChangeSkin_HauntedSpiderWarehouse_temp' => 'NT: 15 Days Skin: Store Houses (Haunted Spider Warehouse)',
         'ChangeSkin_ImprovedFloatingResidenceWinterSkin_Shop_long' => '15-дневный вид: улучшенный дом на воде (покрытый льдом)',
         'ChangeSkin_ImprovedFloatingResidenceWinterSkin_Shop_permanent' => 'Вид: улучшенный дом на воде (покрытый льдом)',
         'ChangeSkin_SpiritJourneyMayorhouse_temp' => '5-дневный грандиозный вид: ратуша ("Духовные странствия")',
@@ -47179,6 +47750,7 @@ Size: 1x1',
         'ChangeSkin_mediterranean_mayourhouse_blue_long' => '15-дневный вид: ратуша (величественная, синяя)',
         'ChangeSkin_mediterranean_mayourhouse_red_long' => '15-дневный вид: ратуша (величественная, красная)',
         'ChimneysweepsBag' => 'Сумка трубочиста',
+        'ChocolateDepot' => 'Склад шоколада',
         'ChristmasAThousandSnowflakes' => 'Тысяча снежинок',
         'ChristmasBreweryBuff' => 'Ускоритель брожения',
         'ChristmasBuffKrampus' => 'Крампус',
@@ -47197,17 +47769,17 @@ Size: 1x1',
         'Christmas_Nutcracker' => 'Памятник Щелкунчику',
         'Christmas_Presents' => 'Куча подарков',
         'Christmas_Pyramid' => 'Рождественская пирамида',
-        'ChummyExplorer' => 'NT: Chummy Explorer',
         'ChummyGeologist' => 'Дружелюбный геолог',
         'ClassyHotel' => 'Шикарная гостиница',
         'CoalLvl1' => 'Уголь',
         'CoalLvl2' => 'Доп. уголь',
         'CoalMineEndless' => 'Неисчерпаемая угольная шахта',
         'CoalRefillGuild' => 'Кусок угля',
-        'CoffeeShop' => 'NT: Coffee Shop',
         'CoinsLvl1' => 'Сундук с сокровищами',
         'CollectibleFoodCartGuildShop' => 'Телеги с едой',
         'CollectibleMysteryBox' => 'Коллекционный таинственный сундук',
+        'CommandCenter' => 'Командный пункт',
+        'CommandCenterAid' => 'Дозорный пост',
         'ConcertHall' => 'Концертный зал',
         'ConscientiousGeologist' => 'Старательный геолог',
         'ConversionBattleBuffBomb_random_units' => 'Стрелковая поддержка',
@@ -47260,8 +47832,8 @@ Size: 1x1',
         'Deco_RabbitBush' => 'Дерево в форме Пасхального Кролика',
         'Deco_SkeletonScarecrow' => 'Скелет-пугало',
         'Deco_Tombstone' => 'Надгробие',
+        'Depositorium' => 'Депозиторий',
         'DiligentGeologist' => 'Прилежный геолог',
-        'DimensionalRift' => 'NT: Otherworldly Shack',
         'EMBuildingTrophy' => 'Трофей футбольного турнира',
         'EMBuildingflowerbed_flag_01' => 'Клумба в виде флага Хорватии',
         'EMBuildingflowerbed_flag_02' => 'Клумба в виде флага Чехии',
@@ -47326,6 +47898,20 @@ Size: 1x1',
         'EMFlowerbed_Scotland' => 'Клумба в виде флага Шотландии',
         'EMFlowerbed_UN' => 'Клумба в виде флага ООН',
         'EMFlowerbed_Unionjack' => 'Клумба в виде флага Великобритании',
+        'EMFlowerbed_canada' => 'Клумба в виде флага Канады',
+        'EMFlowerbed_capverdi' => 'Клумба в виде флага Кабо-Верде',
+        'EMFlowerbed_curacao' => 'Клумба в виде флага Кюрасао',
+        'EMFlowerbed_drcongo' => 'Клумба в виде флага Демократической Республики Конго',
+        'EMFlowerbed_ecuador' => 'Клумба в виде флага Эквадора (без герба)',
+        'EMFlowerbed_haiti' => 'Клумба в виде флага Гаити',
+        'EMFlowerbed_iraq' => 'Клумба в виде флага Ирака',
+        'EMFlowerbed_joradan' => 'Клумба в виде флага Иордании',
+        'EMFlowerbed_newzealand' => 'Клумба в виде флага Новой Зеландии',
+        'EMFlowerbed_norway' => 'Клумба в виде флага Норвегии',
+        'EMFlowerbed_paraguay' => 'Клумба в виде флага Парагвая',
+        'EMFlowerbed_qatar' => 'Клумба в виде флага Катара',
+        'EMFlowerbed_southafrica' => 'Клумба в виде флага ЮАР',
+        'EMFlowerbed_uzbekistan' => 'Клумба в виде флага Узбекистана',
         'EMIncreaseMaxBuildings' => '5 разрешений на строительство',
         'EMProductionBoost' => 'Закуски на стадионе',
         'EMResourceBoxLvl1' => 'Маленький фанатский пакет',
@@ -47337,6 +47923,9 @@ Size: 1x1',
         'Easter2021BuildingsBundle' => 'Набор зданий "Пасха"',
         'Easter2021SpecialistsBundle' => 'Набор специалистов "Пасха"',
         'Easter2021SuperBundle' => 'Супернабор "Пасха"',
+        'Easter2026_LargeBundle' => 'Сундук с сокровищами Пухлохолмса',
+        'Easter2026_MediumBundle' => 'Ящик сюрпризов Пухлохолмса',
+        'Easter2026_SmallBundle' => 'Набор угощений Пухлохолмса',
         'EasterAreaBuff' => 'Воодушевляющая речь',
         'EasterEggPraline' => 'Шоколадные пралине',
         'EasterGeneral2015' => 'Мастер защиты',
@@ -47354,11 +47943,8 @@ Size: 1x1',
         'EffectBuff_pumpkinfield_01_resurrector' => 'Удобрение: небольшое кладбище с тыквами',
         'EffectBuff_pumpkinfield_02_resurrector' => 'Удобрение: обычное кладбище с тыквами',
         'EffectBuff_pumpkinfield_03_resurrector' => 'Удобрение: большое кладбище с тыквами',
-        'EfficientAdvancedToolmaker' => 'NT: Efficient Advanced Toolmaker',
-        'EfficientPlatinumSmelter' => 'NT: Efficient Platinum Smelter',
+        'EfficientCrossbowsmith' => 'Эффективная оружейная (арбалеты)',
         'EggLvl1' => 'Яйца',
-        'ElderTreeLH' => 'NT: Elder Tree Lighthouse',
-        'EliteGuildBanner_Deco' => 'NT: Elite Guild Fest Banner',
         'EmphaticExplorer' => 'Настойчивый исследователь',
         'EnchantedCastle' => 'Заколдованный замок',
         'EoWEventAdventure' => 'Конец света',
@@ -47400,8 +47986,8 @@ Size: 1x1',
         'FlowerPackageLarge' => 'Большой набор цветов',
         'FlowerPackageSmall' => 'Малый набор цветов',
         'FluffyButteExplorer' => 'Исследователь Пухлохолмс',
+        'FluffyLogistics' => 'Логистический офис Пухлохолмса',
         'ForgottenCemetery_Residence' => 'Забытое кладбище',
-        'FrankenHouse' => 'NT: Dr Totenstein Dwelling',
         'FrostyGeneral' => 'Морозный генерал',
         'GFF' => 'Самоцветы для друзей',
         'GemPit' => 'Прииск самоцветов',
@@ -47429,10 +48015,10 @@ Size: 1x1',
         'GenerousBundle6' => 'НАБОР СИЛЫ',
         'GenerousBundle_Halloween2021' => 'Ужасный набор к Хэллоуину',
         'GeologistOnVacation' => 'Геолог на отдыхе',
-        'GhostExplorer' => 'NT: Ghost Explorer',
         'GhostGeneral' => 'Призрачный генерал',
         'GiantBarrel' => 'Нелепая огромная бочка',
         'GingerbreadGeologist' => 'Пряник-геолог',
+        'GloryExploriExplorer' => 'Исследовательница Нора',
         'GoldMineEndless' => 'Неисчерпаемый золотой рудник',
         'GoldOreLvl1' => 'Золотая руда',
         'GoldheartedGeologist' => 'Геолог с золотым сердцем',
@@ -47442,15 +48028,10 @@ Size: 1x1',
         'GroutFactory' => 'Фабрика растворов',
         'Groutlvl1' => 'Раствор',
         'GuildAdventure1' => 'Пиратский остров',
-        'GuildBanner_Deco' => 'NT: Guild Fest Banner',
-        'GuildFestBundle1' => 'NT: Gold Guild Fest Bundle',
-        'GuildFestBundle2' => 'NT: Silver Guild Fest Bundle',
-        'GuildFestBundle3' => 'NT: Bronze Guild Fest Bundle',
         'GuildFestTentI' => 'Достойное жилье при фестивале гильдий',
         'GuildFestTentII' => 'Удобное жилье при фестивале гильдий',
         'GuildFestTentIII' => 'Уютное жилье при фестивале гильдий',
         'GuildFillMarble' => 'Скрытый мрамор',
-        'GuildHouse_Mini' => 'NT: Guild Office Tribute',
         'GuildMasterGeologistLvl1' => 'Веселый геолог',
         'Halloween2019General' => 'Младший генерал-близнец',
         'Halloween2021Bundle1' => 'Жуткий набор к Хэллоуину',
@@ -47504,11 +48085,11 @@ Size: 1x1',
         'HiredMilitary_Swordsmen50' => 'Мечники-наемники',
         'HiredMilitary_Swordsmen5000' => 'Мечники-наемники',
         'HoliFestivalGrounds' => 'Площадка фестиваля Холи',
+        'HoneygladeResidence' => 'Резиденция «Медовая опушка»',
         'HorsesLvl1' => 'Лошади',
         'HumbleExplorer' => 'Скромный исследователь',
         'IcePalace' => 'Ледяной дворец',
         'IceSculpture' => 'Ледяная скульптура',
-        'IceSkatingLake' => 'NT: Ice Skating Lake',
         'IglooStorehouse' => 'Иглу-склад',
         'ImprovedBakery' => 'Улучшенная пекарня',
         'ImprovedBronzeWeaponsmith' => 'Улучшенная оружейная (бронза)',
@@ -47532,29 +48113,23 @@ Size: 1x1',
         'IronSwordsLvl1' => 'Железные мечи',
         'IronWilledGeologist' => 'Геолог с железной волей',
         'JaguarBundle' => 'Набор ягуара',
-        'Jewelcrafter' => 'NT: Jewel Crafter Workshop',
-        'JewelsBundle' => 'NT: Outrageous Jewels Bundle',
         'KeenerExplorer' => 'Безудержный исследователь',
+        'KrampusPit' => 'Угольная шахта Крампуса',
         'Laboratory' => 'Лаборатория',
         'LaboratoryForGems' => 'Лаборатория',
         'LargeDefBuild' => 'Большой набор для защиты крепости',
         'LargeEasterBundle2024' => 'Красочный сундук',
-        'LargeEasterBundle2025' => 'NT: Sugary Chest',
-        'LargeHalloweenBundle2024' => 'NT: Chest from a Nightmare',
-        'LargeHalloweenBundle2025' => 'NT: Leathery Chest',
         'LetterLvl1' => 'Буквенный регистр для печатного станка',
         'LevelUp_ExpeditionLevel' => 'Уровни PvP',
         'LevelUp_PlayerLevel' => 'Уровни игрока',
         'LevelUp_PlayerLevel10' => '10 уровней игрока',
-        'LevitatingHauntedWarehouse' => 'NT: Levitating Haunted Warehouse',
         'LightingBlackAndWhite' => '255 оттенков черного',
         'LightingDesert' => 'Солнечный мираж',
         'LightingSpooky' => 'Блуждающие огни',
-        'LoggingHut' => 'NT: Logging Hut',
+        'LonelyHeartInn' => 'Таверна «Одинокое сердце»',
         'LonerGeneral' => 'Генерал-одиночка',
         'LongboatStorehouse' => 'Судно-склад',
         'LongbowsLvl1' => 'Длинные луки',
-        'Loottable_GrimoirePages_MysteryBox' => 'NT: Weathered Notebook',
         'Loottable_HalloweenMysteryBox' => 'Сюрприз на Хэллоуин',
         'Loottable_RewardBoxAtTheFootOfTheMountain' => 'Сундук с наградой "У подножия горы"',
         'Loottable_RewardBoxBuccaneerRoundup' => 'Сундук с наградой "Облава на пиратов"',
@@ -47568,7 +48143,6 @@ Size: 1x1',
         'Loottable_RewardBoxTombRaiders' => 'Сундук с наградой "Грабители могил"',
         'Loottable_RewardBoxUnknownRegions' => 'Сундук с наградой "Неизведанных земель"',
         'Loottable_RewardBoxWhirlwind' => 'Сундук с наградой "Вихрь"',
-        'Loottable_Valentines2025DecorationMysteryBox' => 'NT: Rosy Mystery Decoration Box',
         'Loottable_XmasDecorationMysteryBox' => 'Таинственный сундук с рождественским украшением',
         'LoveStruckExplorer' => 'Влюбленный исследователь',
         'LovelyExplorer' => 'Милый исследователь',
@@ -47579,7 +48153,6 @@ Size: 1x1',
         'MahoganyWoodLv1' => 'Махагониевое дерево',
         'MajorGeneral' => 'Генерал-майор',
         'ManEatingPlant' => 'Растение-антропофаг Отри III',
-        'MarathonGeologist' => 'NT: Marathon Geologist',
         'MarbleLvl1' => 'Мрамор',
         'MarbleLvl2' => 'Доп. мрамор',
         'MasterEasterExplorer' => 'Опытный исследователь',
@@ -47592,10 +48165,7 @@ Size: 1x1',
         'MeatLvl1' => 'Мясо',
         'MedicGeneral' => 'Генерал-полевой медик',
         'MediumEasterBundle2024' => 'Красочный ящик',
-        'MediumEasterBundle2025' => 'NT: Sugary Box',
         'MediumHalloweenBundle2023' => 'Забытый хэллоуинский ящик',
-        'MediumHalloweenBundle2024' => 'NT: Box from a Nightmare',
-        'MediumHalloweenBundle2025' => 'NT: Leathery Box',
         'MiadArcticExplosion' => 'Взрывной нордический характер',
         'MiadBastilleIsland' => 'Остров Бастилия',
         'MiadTikkiIsland' => 'Остров Тикки',
@@ -47605,25 +48175,28 @@ Size: 1x1',
         'MoonstoneHammer' => 'Лунный молот',
         'MortarsLvl1' => 'Мортиры',
         'MotherlyExplorer' => 'Заботливая исследовательница',
-        'MountainClanColossus' => 'NT: Mountain Clan Colossus',
         'MountainDemolition_L' => 'Команда разрушителей',
         'MountainDemolition_M' => 'Взрывник',
         'MountainDemolition_S' => 'Пороховых дел мастер',
         'MultiplierBuffZone1' => 'Любовная лихорадка',
         'MultiplierBuffZone2_PremiumFriendBuff1Day' => 'Престижный усилитель друзей',
         'MultiplierBuffZone2_PremiumFriendBuff1DaySoccer' => 'Престижный усилитель друзей',
+        'MultiplierBuffZone2_PremiumFriendBuff_Christmas' => 'Рождественский усилитель друга',
         'MummifiedGeologist' => 'Геолог-мумия',
         'MysteryBoxAdventure' => 'Таинственный сундук с приключениями',
         'MysteryBoxBlackKnights' => 'Черный сундук',
+        'NarcissisticGeneral' => 'Самолюбивый генерал',
         'NibLvl1' => 'Комплект начинающего переписчика',
         'NordsResidence' => 'Дом северян',
         'NormalResourceBox' => 'Обычная коробка ресурсов',
         'NutcrackerGeneral' => 'Щелкунчик-генерал',
+        'OffshoreLighthouse' => 'Маяк у побережья',
         'OilRefinery' => 'Маслозавод',
         'Oillvl1' => 'Бочка масла',
         'OrePackage' => 'Комплект базовых видов руды',
         'Ostereierbaum' => 'Пасхальное дерево',
         'OutdoorCanteen' => 'Открытая столовая',
+        'OutdoorCanteenAid' => 'Телега с запасами для готовки',
         'PalmTreeDeco01' => 'Декоративная пальма 1',
         'PalmTreeDeco02' => 'Декоративная пальма 2',
         'PalmTreeDeco03' => 'Декоративная пальма 3',
@@ -47664,20 +48237,19 @@ Size: 1x1',
         'ProductivityBuffEW3' => 'Плоды невзгод',
         'ProductivityBuffEWBalloonsLv2' => 'Громадный праздничный торт',
         'ProductivityBuffLvl12' => 'Мешок радужного снега',
+        'ProductivityBuffLvl22' => 'Машинное масло',
         'ProductivityBuffLvl25' => 'Мистер Круа Сан',
         'ProductivityBuffLvl27' => 'Всадник без головы',
         'ProductivityBuffLvl28' => 'Ведро сладостей',
         'ProductivityBuffZoneEW_WitchesFamiliars' => 'Фамильяры ведьм',
-        'Prospector' => 'NT: Prospector Workshop',
         'ProvisionerBuffLvl3' => 'Баразек',
         'ProvisionerBuffLvl301' => 'Интенсивная работа',
-        'ProvisionerBuffLvlGuildFestGrounds1' => 'NT: Cheer!',
-        'ProvisionerBuffLvlGuildFestGrounds2' => 'NT: Cheer harder!',
         'PumpkinFieldDeco' => 'Декоративное кладбище с тыквами',
         'PumpkinMansion' => 'Тыквенный особняк',
         'QuestStart_ANewStone' => 'Блестящий драгоценный камень',
         'QuestStart_Harbour' => 'Проект "Гавань"',
         'QuestStart_MysteriousCoin' => 'Необычная монета',
+        'QuestStart_OreRefinery' => 'Задание: экзотическая металлургия',
         'QuestStart_SavetheDeers' => 'Искатель оленей',
         'QuestStart_SilkCat' => 'Изысканный кошачий ошейник',
         'QuestStart_TheLittlePanda' => 'Маленькая панда',
@@ -47708,6 +48280,8 @@ Size: 1x1',
         'ResourceCodex' => 'Кодекс',
         'ResourceManuscript' => 'Рукопись',
         'ResourceTome' => 'Фолиант',
+        'RetirementHome' => 'Деревня престарелых',
+        'RetirementHomeAid' => 'Почтовый ящик Санты',
         'RevealCollectiblesBuff01' => 'Огонь фей',
         'RevealCollectiblesBuff02' => 'Свет фей',
         'RinaTheExplorer' => 'Исследовательница Рина',
@@ -47715,8 +48289,6 @@ Size: 1x1',
         'RomanticRestaurant' => 'Романтический ресторан',
         'RoseArbor' => 'Арка с розами',
         'RoseTrellis' => 'Шпалера с розами',
-        'RosyIronMine' => 'NT: Rosy Iron Mine',
-        'RosyStorage' => 'NT: Rosy Storage',
         'RoyalExplorer' => 'Королевский исследователь',
         'S4Barracks' => 'Старомодные казармы',
         'S4Lazaret' => 'Лазарет',
@@ -47734,6 +48306,7 @@ Size: 1x1',
         'ScenarioBundle2' => 'Набор для сценария II',
         'ScenarioBundle3' => 'Набор для сценария III',
         'Settlers2HQ' => 'Штаб поселенцев',
+        'Settlers2HQDeco' => 'Штаб поселенцев',
         'ShamanBundle' => 'Набор шамана',
         'ShopBookbinderBuffLvl2' => 'Смола дикого дерева',
         'ShopIslandDeed_FreeIsland' => 'Лицензия на сектор',
@@ -47754,11 +48327,9 @@ Size: 1x1',
         'Skyscraper_Residence_Xmas' => 'Чудесный зимний дом',
         'SmallDefBuild' => 'Малый набор для защиты крепости',
         'SmallEasterBundle2024' => 'Красочный мешок',
-        'SmallEasterBundle2025' => 'NT: Sugary Bag',
         'SmallHalloweenBundle2023' => 'Пыльный хэллоуинский мешок',
-        'SmallHalloweenBundle2024' => 'NT: Bag from a Nightmare',
-        'SmallHalloweenBundle2025' => 'NT: Leathery Bag',
         'Smokehouse' => 'Коптильня',
+        'Smokehouse_Mini' => 'Воздаяние коптильне',
         'Snowglobe' => 'Огромный снежный шар',
         'SnowyExplorer' => 'Снежный исследователь',
         'SnowyExplorerGems' => 'Снежный исследователь',
@@ -47784,6 +48355,7 @@ Size: 1x1',
         'SpringBundle9' => 'Весенний набор IX',
         'SpringPark' => 'Весенний парк',
         'StandardDrillPlan' => 'Стандартный план муштры',
+        'StargazingGeologist' => 'Геолог-астроном',
         'StarterPack' => 'Стартовый набор',
         'SteelSwordsLvl1' => 'Стальные мечи',
         'StoneColdGeologist' => 'Геолог с каменным сердцем',
@@ -47792,14 +48364,13 @@ Size: 1x1',
         'StoneLvl1' => 'Камни',
         'StoneLvl2' => 'Остатки обвала',
         'StoneRefillGuild' => 'Каменные кубы',
-        'StorageBasket' => 'NT: Storage Basket',
         'Stronghold' => 'Крепость',
         'SummerBoosterBundle' => 'Летнее усиление',
         'SummerBundle1' => 'Летний набор I',
         'SummerBundle2' => 'Летний набор II',
-        'SummerBundle2025_Large' => 'NT: Aestival Chest',
-        'SummerBundle2025_Medium' => 'NT: Aestival Box',
-        'SummerBundle2025_Small' => 'NT: Aestival Bag',
+        'SummerBundle2026_Large' => 'Сундук летнего ветерка',
+        'SummerBundle2026_Medium' => 'Ящик летнего ветерка',
+        'SummerBundle2026_Small' => 'Мешок летнего ветерка',
         'SummerBundle3' => 'Летний набор III',
         'SummerBundle_Large' => 'Солнечный сундук',
         'SummerBundle_Medium' => 'Солнечный ящик',
@@ -47814,10 +48385,10 @@ Size: 1x1',
         'SylvanaGeneralHardCurrency' => 'Генерал Сильвана',
         'SylvanaGeneralSoccerBalls' => 'Генерал Сильвана',
         'TempBuildSlot' => 'Временная ячейка в очереди на строительство ({0}/{1}) {2}',
-        'TheSmuggler' => 'NT: The Smuggler',
         'ThoroughGeologist' => 'Скрупулезный геолог',
         'TikiStorehouse' => 'Тики-склад',
         'TitanOreLv1' => 'Титановые слитки',
+        'TitanicGeologist' => 'Титанический геолог',
         'TitaniumMine_Mini' => 'Воздаяние титановому руднику',
         'TitaniumSwordsLvl1' => 'Булатные мечи',
         'TokenCoinage' => 'Жетонный двор',
@@ -47825,26 +48396,25 @@ Size: 1x1',
         'TokenLvl2' => 'Большой набор жетонов',
         'ToolsLvl1' => 'Инструменты',
         'ToolsLvl2' => 'Инструментарий',
-        'TowerOfBraggingRights' => 'NT: Tower of Bragging Rights',
         'ToyFactory' => 'Фабрика игрушек',
         'TransporterAdmiral' => 'Поставщик экспедиции',
         'TransporterGeneral' => 'Генерал-интендант',
         'TransporterGeneralBjoern' => 'Интендант Бьерн',
         'TribesmanBundle' => 'Набор члена племени',
         'TunnelOfLove' => 'Туннель любви',
+        'UnityEvent_Residence' => 'Мобильное научное и жилое здание',
         'Valentine2024_LargeBundle' => 'Сундук любви',
         'Valentine2024_MediumBundle' => 'Ящик любви',
         'Valentine2024_SmallBundle' => 'Мешочек любви',
-        'Valentine2025_LargeBundle' => 'NT: Rosy Chest',
-        'Valentine2025_MediumBundle' => 'NT: Rosy Box',
-        'Valentine2025_SmallBundle' => 'NT: Rosy Bag',
+        'Valentine2026_LargeBundle' => 'Сундук разбитого сердца',
+        'Valentine2026_MediumBundle' => 'Короб разбитого сердца',
+        'Valentine2026_SmallBundle' => 'Сумка разбитого сердца',
         'ValentineMysteryBox' => 'Валентинов сюрприз',
         'Valentines2021MilitaryBundle' => 'Военный набор',
         'Valentines2021SpecialistsBundle' => 'Набор специалистов',
         'Valentines2021WondrousBundle' => 'Чудесный набор',
         'ValentinesTransporterGeneral' => 'Интендант Золотое сердце',
         'VersedGeologist' => 'Бывалый геолог',
-        'VesyGeologist' => 'NT: Vesy, the Clueless Digger',
         'WMBananaLvl1' => 'Банановая кожура',
         'WMDummyLvl1' => 'Манекены для тренировок',
         'WMElasticSpringLvl1' => 'Упругие пружины',
@@ -47862,9 +48432,9 @@ Size: 1x1',
         'WeaponBoost' => 'Усиление оружия',
         'WeatherSnowlight' => 'Зимняя краска',
         'WeatherTropical' => 'Талисман хорошей погоды',
+        'WeddingChapel' => 'Венчальная часовня',
+        'WeddingChapelAid' => 'Шарик-сердечко',
         'WinterGarden' => 'Зимний сад',
-        'WitchCoven' => 'NT: Witch Coven',
-        'WitchCovenAid' => 'NT: Witches\' Effigy',
         'WoodPackage' => 'Комплект базовых видов древесины',
         'XMAS2020_BuildingBundle' => 'Рождественский премиум-набор',
         'XMAS2020_GingerbreadBundle' => 'Пряничный набор',
@@ -47874,9 +48444,9 @@ Size: 1x1',
         'XMAS2023_LargeBundle' => 'Морозный сундук',
         'XMAS2023_MediumBundle' => 'Морозный ящик',
         'XMAS2023_SmallBundle' => 'Морозный мешок',
-        'XMAS2024_LargeBundle' => 'NT: Jolly Winter Chest',
-        'XMAS2024_MediumBundle' => 'NT: Jolly Winter Box',
-        'XMAS2024_SmallBundle' => 'NT: Jolly Winter Bag',
+        'XMAS2025_LargeBundle' => 'Зимний сундук',
+        'XMAS2025_MediumBundle' => 'Зимний короб',
+        'XMAS2025_SmallBundle' => 'Зимняя сумка',
         'XMAS_BoosterBundle' => 'Рождественский набор усилений',
         'XMAS_SheetMusic1' => 'Jingle All the Way (ноты)',
         'XMAS_SheetMusic2' => 'Silent Night (ноты)',
@@ -48059,7 +48629,6 @@ Size: 1x1',
 • Преобразует 5 бочек в 100 ед. камня.
 • Не подходит для обычной универсальной мастерской!',
         'AddRecipe_TSR_SheetMusic6' => 'Навсегда открывает следующий усилитель для концертного зала: "The Settlers: Новые союзники - главная тема" (ноты)',
-        'AddRecipe_Tower_Unlock_Upgrade2' => 'NT: Buff the unlocks an upgrade for the Tower of Bragging Rights',
         'AddRecipe_WeaponsmithBoost' => 'При использовании на универсальной мастерской редкостей данный рецепт открывает возможность производства следующего предмета:
 
 Двойной темп
@@ -48478,9 +49047,9 @@ Size: 1x1',
         'AnniversaryBundle2024_Large' => 'Отпразднуйте годовщину игры в компании генералов и в окружении новых зданий!',
         'AnniversaryBundle2024_Medium' => 'Отпразднуйте годовщину игры в компании генерала и в окружении новых зданий!',
         'AnniversaryBundle2024_Small' => 'Отпразднуйте годовщину игры в окружении новых зданий!',
-        'AnniversaryBundle2025_Large' => 'NT: A small Anniversary-themed bundle',
-        'AnniversaryBundle2025_Medium' => 'NT: A medium Anniversary-themed bundle',
-        'AnniversaryBundle2025_Small' => 'NT: A great Anniversary-themed bundle',
+        'AnniversaryBundle2026_Large' => 'Большой набор в честь годовщины',
+        'AnniversaryBundle2026_Medium' => 'Средний набор в честь годовщины',
+        'AnniversaryBundle2026_Small' => 'Небольшой набор в честь годовщины',
         'ArcheologistGeologist' => 'Может при успешном поиске определенных залежей найти сокровище.',
         'ArcticTitaniumMine' => 'Титановый рудник, производительность которого в 5 раз выше.',
         'ArmillarySphere' => 'Украшение размером 1x1.',
@@ -48497,6 +49066,7 @@ Size: 1x1',
 • Урон по области.
 • Засада: снижает здоровье боссов и защитных войск на 25%. Снижает урон боссов на 25%.',
         'AuctionAchievement' => 'Такому все позавидуют!',
+        'AuroraTower' => 'Особая резиденция 2х2',
         'AvatarBuffRedNose' => 'Используйте на ратуше:
 - У вашего аватара на 7 дней появится красный нос',
         'BM_Valentines2023BuildingBundle00' => 'Включает в себя смотровую вышку рейнджера, ярмарочную площадку, шикарную гостиницу и склад на воде.',
@@ -48553,11 +49123,6 @@ Size: 1x1',
         'BewitchingExplorer' => '+100% к скорости заданий
 Очарование: вдвое больше добычи с максимально возможным количеством ресурсов.',
         'BigHalloweenBundle2023' => 'Заполучите пугающий сундук, таящий жутких специалистов, здания и усилители.',
-        'BioFarm' => 'NT: Type: Workyard, recurring
-Effect: produces 1 Wheat without depleting deposit
-Duration: 10 min
-Size: 2x2
-Upgrades: 6, increase output',
         'Birthday2020CakeMap' => 'Цель: зачистите загадочный остров.
 Тип: миссия
 Тема: ретро
@@ -48571,9 +49136,7 @@ Upgrades: 6, increase output',
         'BlackTree_Green' => 'Производит различные мощные и уникальные усилители за ресурсы после улучшения с помощью тыкв.',
         'BlackTree_Purple' => 'Производит различные мощные и уникальные усилители за ресурсы после улучшения с помощью тыкв.',
         'BlackTree_Red' => 'Производит различные мощные и уникальные усилители за ресурсы после улучшения с помощью тыкв.',
-        'Blacktree Explorer' => 'NT: Always brings back one of the Blacktree buffs from treasure searches.',
-        'BlacktreeExplorer' => 'NT: Always brings back one of the Blacktree buffs from long, very long and prolonged treasure searches.',
-        'BoatHouse' => 'NT: Water residence which increases population by up to 180',
+        'BlastingCartAid' => 'Украшение поддержки 1х1',
         'BoldExplorer' => '+150% к скорости заданий
 Дерзость: приносит на +50% больше наград, когда занимается поиском сокровищ. Всегда находит усилитель во время поиска приключений и сокровищ.',
         'BonabertiBusiness' => 'Цель: разгромите всех разбойников на острове.
@@ -48604,7 +49167,6 @@ Upgrades: 6, increase output',
 Продолжительность: 1 мин.
 Размер: 2x2
 Улучшения: нет',
-        'Brohmann' => 'NT: General specialized in cavalry, and stealing loot',
         'BronzeMineEndless' => 'Тип: мастерская, возобновляемая
 Эффект: производит 2 ед. меди, источник не истощается
 Продолжительность: 3 мин.
@@ -49325,22 +49887,6 @@ Upgrades: 6, increase output',
 Объект: склад размера 2x2
 Продолжительность: постоянно
 Повторное применение: можно убрать и вновь установить в любой момент',
-        'ChangeDefaultSkin_GuildFestTentIII_Residence' => 'NT: Effect: Changes appearance to "Cozy Guild Fest Accommodation"
-Target: 2x2 land based Residences
-Duration: Permanent
-Reusable: Can be removed and reapplied at any time',
-        'ChangeDefaultSkin_GuildFestTentII_Residence' => 'NT: Effect: Changes appearance to "Comfy Guild Fest Accommodation"
-Target: 2x2 land based Residences
-Duration: Permanent
-Reusable: Can be removed and reapplied at any time',
-        'ChangeDefaultSkin_GuildFestTentI_Residence' => 'NT: Effect: Changes appearance to "Cushy Guild Fest Accommodation"
-Target: 2x2 land based Residences
-Duration: Permanent
-Reusable: Can be removed and reapplied at any time',
-        'ChangeDefaultSkin_HauntedSpiderWarehouse_permanent' => 'NT: Effect: Changes appearance to "Haunted Spider Warehouse"
-Target: 2x2 land based Storehouses
-Duration: Permanent
-Reusable: Can be removed and reapplied at any time',
         'ChangeDefaultSkin_InflatableResidence_blue_permanent' => 'Эффект: устанавливает вид "Надувной дом, синий"
 Объект: наземные дома размера 2x2
 Продолжительность: постоянно
@@ -49520,10 +50066,6 @@ Reusable: Can be removed and reapplied at any time',
 Объект: склад размера 2x2
 Продолжительность: 15 дней
 Повторное применение: недоступно',
-        'ChangeSkin_HauntedSpiderWarehouse_temp' => 'NT: Effect: Changes appearance to "Haunted Spider Warehouse"
-Target: 2x2 land based Storehouses
-Duration: 15 days
-Reusable: No',
         'ChangeSkin_ImprovedFloatingResidenceWinterSkin_Shop_long' => 'Эффект: устанавливает вид "Покрытый льдом"
 Объект: улучшенный дом на воде
 Продолжительность: 15 дней
@@ -49578,6 +50120,7 @@ Reusable: No',
 Повторное применение: недоступно',
         'ChimneysweepsBag' => 'Используйте на залежах угля:
 • Добавляет 1000 ед. угля',
+        'ChocolateDepot' => 'Особый склад 2х2',
         'ChristmasAThousandSnowflakes' => 'Эффект зоны: покрывает ваш остров снегом
 Продолжительность: 7 дней (10,5 дней для друга/члена гильдии)',
         'ChristmasBreweryBuff' => 'Эффект: +300% к производительности
@@ -49616,7 +50159,6 @@ Reusable: No',
 Размер: 1x1',
         'Christmas_Pyramid' => 'Тип: украшение, возобновляемое
 Размер: 2x2',
-        'ChummyExplorer' => 'NT: Faster explorer that brings chocolaty buffs after longer searches.',
         'ChummyGeologist' => 'Чтобы порадовать вас, он очень быстро находит залежи и возвращается с вкусным шоколадом почти из каждого второго продолжительного поиска.',
         'ClassyHotel' => 'Увеличивает предел населения на 100 и ускоряет прирост населения на 1/6 ч. за каждый уровень.
 Улучшения: 3
@@ -49629,12 +50171,13 @@ Reusable: No',
 Улучшения: 5, увеличивается производительность',
         'CoalRefillGuild' => 'Используйте на залежах угля:
 • Восстанавливает 1000 ед. угля.',
-        'CoffeeShop' => 'NT: Buff producing building, 2x2',
         'CoinsLvl1' => 'Получите 100 золотых монет.',
         'CollectibleFoodCartGuildShop' => 'Вы получаете:
 • 50 телег с едой.',
         'CollectibleMysteryBox' => 'Откройте:
 • Получите произвольный собираемый ресурс.',
+        'CommandCenter' => 'Производитель усилителей 2х2',
+        'CommandCenterAid' => 'Украшение поддержки 1х1',
         'ConcertHall' => 'Тип: культура, возобновляемое
 Эффект: нотные усилители позволяют изменить фоновую музыку и дополнительно активировать мощный усилитель зоны
 Размер: 3x2',
@@ -49731,9 +50274,9 @@ Reusable: No',
 Размер: 1x1',
         'Deco_Tombstone' => 'Тип: украшение, возобновляемое
 Размер: 1x1',
+        'Depositorium' => 'Особый склад 3х2',
         'DiligentGeologist' => 'Требуется в 6 раз больше времени на большинство поисков, зато есть шанс найти целых два великих сокровища в пути.
 Найденные залежи из большинства поисков на 50% больше.',
-        'DimensionalRift' => 'NT: Special Storehouse that can store up to 40000 resources, and applies random buffs.',
         'EMBuildingTrophy' => 'Тип: украшение, возобновляемое
 Размер: 2x2',
         'EMBuildingflowerbed_flag_01' => 'Тип: украшение, возобновляемое
@@ -49862,6 +50405,34 @@ Reusable: No',
 Размер: 2x3',
         'EMFlowerbed_Unionjack' => 'Тип: украшение, возобновляемое
 Размер: 2x3',
+        'EMFlowerbed_canada' => 'Тип: украшение, возобновляемое
+Размер: 2x3',
+        'EMFlowerbed_capverdi' => 'Тип: украшение, возобновляемое
+Размер: 2x3',
+        'EMFlowerbed_curacao' => 'Тип: украшение, возобновляемое
+Размер: 2x3',
+        'EMFlowerbed_drcongo' => 'Тип: украшение, возобновляемое
+Размер: 2x3',
+        'EMFlowerbed_ecuador' => 'Тип: украшение, возобновляемое
+Размер: 2x3',
+        'EMFlowerbed_haiti' => 'Тип: украшение, возобновляемое
+Размер: 2x3',
+        'EMFlowerbed_iraq' => 'Тип: украшение, возобновляемое
+Размер: 2x3',
+        'EMFlowerbed_joradan' => 'Тип: украшение, возобновляемое
+Размер: 2x3',
+        'EMFlowerbed_newzealand' => 'Тип: украшение, возобновляемое
+Размер: 2x3',
+        'EMFlowerbed_norway' => 'Тип: украшение, возобновляемое
+Размер: 2x3',
+        'EMFlowerbed_paraguay' => 'Тип: украшение, возобновляемое
+Размер: 2x3',
+        'EMFlowerbed_qatar' => 'Тип: украшение, возобновляемое
+Размер: 2x3',
+        'EMFlowerbed_southafrica' => 'Тип: украшение, возобновляемое
+Размер: 2x3',
+        'EMFlowerbed_uzbekistan' => 'Тип: украшение, возобновляемое
+Размер: 2x3',
         'EMIncreaseMaxBuildings' => 'Используйте на ратуше
 • Увеличивает максимальное количество разрешений на строительство на 5',
         'EMProductionBoost' => 'Используйте на мастерской
@@ -49909,6 +50480,9 @@ Reusable: No',
 • ливень из стрел x2
 • ливень из горящих стрел x2
 • баллиста x2',
+        'Easter2026_LargeBundle' => 'Большой пасхальный набор',
+        'Easter2026_MediumBundle' => 'Средний пасхальный набор',
+        'Easter2026_SmallBundle' => 'Небольшой пасхальный набор',
         'EasterAreaBuff' => 'Используйте на мастерской для повышения эффективности мастерских в радиусе 3 клеток на 200% на 12 часов.',
         'EasterEggPraline' => 'Эффект: +200% к скорости производства
 Объект: универсальная мастерская, универсальная мастерская редкостей
@@ -49942,12 +50516,8 @@ Reusable: No',
         'EffectBuff_pumpkinfield_01_resurrector' => 'Восстанавливает 10 тыкв на истощенном небольшом кладбище с тыквами.',
         'EffectBuff_pumpkinfield_02_resurrector' => 'Восстанавливает 10 тыкв на истощенном обычном кладбище с тыквами.',
         'EffectBuff_pumpkinfield_03_resurrector' => 'Восстанавливает 10 тыкв на истощенном большом кладбище с тыквами.',
-        'EfficientAdvancedToolmaker' => 'NT: Workyard 2x2',
-        'EfficientPlatinumSmelter' => 'NT: Workyard 2x2',
+        'EfficientCrossbowsmith' => 'Мастерская 2x2',
         'EggLvl1' => 'Получите 40 яиц',
-        'ElderTreeLH' => 'NT: Special Culture Building which applies Fairy Fire. In addition increases population by 80',
-        'EliteGuildBanner_Deco' => 'NT: Decoration
-Size: 1x1',
         'EmphaticExplorer' => '+100% к скорости заданий
 Решительность: втрое больше добычи при поиске сокровищ. Точка. За дело!',
         'EnchantedCastle' => 'Увеличивает предел населения на 160
@@ -50017,10 +50587,10 @@ Size: 1x1',
 Размер: 2x2',
         'FluffyButteExplorer' => '+200% к скорости заданий
 Приносит на 400% больше наград за ресурсы события.',
+        'FluffyLogistics' => 'Особый производитель усилителей 2х2',
         'ForgottenCemetery_Residence' => '+160 к пределу населения.
 +1 поселенец каждые 3 часа
 Размер: 2x2',
-        'FrankenHouse' => 'NT: Special residence that uses Wool and Meat to produce population.',
         'GFF' => 'Подарите самоцветы другу.',
         'GemPit' => 'Тип: мастерская
 Эффект: производит 1 самоцвет, содержит 40 000 самоцветов
@@ -50119,11 +50689,11 @@ Size: 1x1',
         'GenerousBundle6' => 'Весомое пополнение любого арсенала с огромной скидкой!',
         'GenerousBundle_Halloween2021' => 'Ужасно полезный набор! Подойдет всем! Содержит самые необходимые здания, специалистов и усилители.',
         'GeologistOnVacation' => 'Находит ресурсы события во время событий.',
-        'GhostExplorer' => 'NT: An explorer who brings coffers with Halloween themed buffs after treasure searches',
         'GhostGeneral' => 'Здоровье бойцов +20%, точность врагов -50%, скорость перемещения x3, восстановление x4, восстанавливает 20% потерянных войск. 1 дополнительная жизнь, не сочетается с другими навыками.',
         'GiantBarrel' => 'Вмещает до 40 000 ед. каждого ресурса.
 Размер: 2x2',
         'GingerbreadGeologist' => 'Находит залежи размером на 50% больше. Есть шанс отыскать предметы. Требуется в 3 раза больше времени.',
+        'GloryExploriExplorer' => 'Исследовательница в поисках новых приключений.',
         'GoldMineEndless' => 'Тип: мастерская, возобновляемая
 Эффект: производит 2 ед. золотой руды, источник не истощается
 Продолжительность: 9 мин. 36 сек.
@@ -50147,11 +50717,6 @@ Size: 1x1',
         'Groutlvl1' => '• Вы получаете 200 ед. раствора.
 • Он используется для строительства и улучшения некоторых зданий.',
         'GuildAdventure1' => 'Приключение: "Пиратский остров"',
-        'GuildBanner_Deco' => 'NT: Type: Decoration
-Size: 1x1',
-        'GuildFestBundle1' => 'NT: A large bundle of useful buffs',
-        'GuildFestBundle2' => 'NT: A moderate bundle of useful buffs',
-        'GuildFestBundle3' => 'NT: A modest bundle of useful buffs',
         'GuildFestTentI' => 'Временное здание фестиваля гильдий, которое обеспечивает дополнительную линию производства для преобразования жетонов фестиваля гильдий.
 Размер: 2x2',
         'GuildFestTentII' => 'Временное здание фестиваля гильдий, которое обеспечивает дополнительную линию производства для преобразования жетонов фестиваля гильдий.
@@ -50159,8 +50724,6 @@ Size: 1x1',
         'GuildFestTentIII' => 'Временное здание фестиваля гильдий, которое обеспечивает дополнительную линию производства для преобразования жетонов фестиваля гильдий.
 Размер: 2x2',
         'GuildFillMarble' => 'Добавьте к залежам мрамора 500 ед. этого материала.',
-        'GuildHouse_Mini' => 'NT: Effect: Produces 1 Guild Coins ever 14.4 hours.
-Size: 1x1',
         'GuildMasterGeologistLvl1' => 'Этот специалист ищет новые залежи быстрее обычного геолога.',
         'Halloween2019General' => '• В 2 раза быстрее перемещается к приключениям.
 • Повышенное здоровье, точность и огромный урон!
@@ -50183,9 +50746,6 @@ Size: 1x1',
         'HalloweenResourceLvl1' => 'Получите 50 тыкв.',
         'HalloweenResourceLvl2' => 'Получите 300 тыкв.',
         'HalloweenResourceLvl3' => 'Получите 4200 тыкв.',
-        'HarborTowerWarehouse' => 'NT: Type: Storage, recurring
-Effect: +3000 storage
-Size: 2x2',
         'HardPlanksLvl1' => 'Получите 100 дубовых досок.',
         'HardPlanksLvl2' => 'Добавьте в ваше звездное меню 500 дубовых досок',
         'HardWoodLvl1' => 'Добавьте в ваше звездное меню 100 ед. древесины (дуб)',
@@ -50270,11 +50830,11 @@ Size: 2x2',
         'HoliFestivalGrounds' => 'Тип: общественное, возобновляемое
 Эффект: активирует усилитель для соседних производственных зданий
 Размер: 2x2',
+        'HoneygladeResidence' => 'Дом 2х2',
         'HumbleExplorer' => 'Скромность: во время быстрых и средних поисков сокровищ приносит в 6 раз больше наград.',
         'IcePalace' => '+160 к пределу населения.
 Размер: 2x2',
         'IceSculpture' => 'Наземное украшение размером 1x1',
-        'IceSkatingLake' => 'NT: 4x4 Special Culture Building',
         'IglooStorehouse' => 'Вмещает до 40 000 ед. каждого ресурса.
 Размер: 2x2',
         'ImprovedBakery' => 'Тип: мастерская, возобновляемая
@@ -50336,10 +50896,9 @@ Size: 2x2',
 • "К нам едет знаменитость" x5
 • Красный летающий поселенец x5
 • баразек x5',
-        'Jewelcrafter' => 'NT: Buff producing building, 1x1',
-        'JewelsBundle' => 'NT: A convenient Jewel-themed bundle',
         'KeenerExplorer' => '+100% к скорости заданий
 Ловкость: +100% к скорости заданий. +2 броска в заданиях по поиску приключений.',
+        'KrampusPit' => 'Особый склад 2х2',
         'Laboratory' => 'Тип: универсальная мастерская, возобновляемая
 Эффект: можно обменивать ресурсы
 Размер: 4x3',
@@ -50348,20 +50907,10 @@ Size: 2x2',
 Размер: 4x3',
         'LargeDefBuild' => 'Содержит не менее 3 случайных крепостей с вероятностью получения смешанного лагеря. Также есть дополнительная возможность получить случайный четвертый укрепленный лагерь (ур. 2).',
         'LargeEasterBundle2024' => 'Внутри красочного сундука вы найдете множество зданий, трудолюбивых специалистов и полезных усилителей.',
-        'LargeEasterBundle2025' => 'NT: A great Easter-themed bundle',
-        'LargeHalloweenBundle2024' => 'NT: This is from a nightmare but it includes valuable items!',
-        'LargeHalloweenBundle2025' => 'NT: A great Halloween themed bundle',
         'LetterLvl1' => 'Вы получили типографские шрифты (100 шт.)',
         'LevelUp_ExpeditionLevel' => 'Эффект: повышает ваш уровень PvP.',
         'LevelUp_PlayerLevel' => 'Эффект: повышает ваш уровень.',
         'LevelUp_PlayerLevel10' => 'Эффект: повышает ваш уровень на 10.',
-        'LevitatingHauntedWarehouse' => 'NT: Type: Storage, recurring
-Effect: + 40.000 storage
-Size: 2x2
-Upgrades: No
-Cannot be used to claim sectors.
-Cannot be used as a resource drop-off point.
-Only placeable on water.',
         'LightingBlackAndWhite' => 'Эффект зоны: окрашивает ваш остров в черно-белые цвета
 Продолжительность: 7 дней (10,5 дней для друга/члена гильдии)',
         'LightingDesert' => 'Эффект зоны: из-за горячего воздуха и яркого солнца на вашем острове становится нереально жарко!
@@ -50370,16 +50919,16 @@ Only placeable on water.',
 Продолжительность: 7 дней (10,5 дней для друга/члена гильдии)',
         'LightingTundra' => 'Эффект зоны: на вашем острове пасмурная погода и дуют холодные ветра!
 Продолжительность: 7 дней (10,5 дней для друга/члена гильдии)',
-        'LoggingHut' => 'NT: 2x2 Special Residence',
+        'LonelyHeartInn' => 'Дом 2х2',
         'LonerGeneral' => 'Генерал-одиночка',
         'LongboatStorehouse' => 'Тип: склад
 
 Эффект: вмещает до 40 000 ед. каждого ресурса.
 
 Размер: 2x2',
+        'Loottable_GrimoirePages_MysteryBox' => 'Содержит 2 из 20 возможных страниц ведьмовского фолианта.',
         'Loottable_HalloweenMysteryBox' => 'Откройте:
 •  Получите один из полезных предметов, например приключения "Вторжение северян" или "Ограбление богатых", а также многое другое.',
-        'Loottable_Valentines2025DecorationMysteryBox' => 'NT: A box containing a mystery Valentines themes decoration.',
         'Loottable_XmasDecorationMysteryBox' => 'Сундук, внутри которого сокрыто украшение к Рождеству.',
         'LoveStruckExplorer' => 'Совершает действия в два раза медленнее обычного исследователя.
 Всегда находит маслосемена во время поиска приключений.',
@@ -50415,7 +50964,6 @@ Only placeable on water.',
 Эффект: производит волшебные бобы, потребляет мясо
 Размер: 2x2
 Улучшения: 2',
-        'MarathonGeologist' => 'NT: Super fast but only finds deposits half of their size but also finds refiller.',
         'MarbleLvl1' => 'Получите 500 единиц мрамора.',
         'MarbleLvl2' => 'Добавьте в ваше звездное меню 500 единиц мрамора',
         'MasterEasterExplorer' => 'Выполняет задания в два раза быстрее, чем обычный исследователь.',
@@ -50450,10 +50998,7 @@ Only placeable on water.',
 Особенность:
 • Военно-полевая хирургия: восстанавливает 30% потерянных войск после каждого сражения.',
         'MediumEasterBundle2024' => 'Внутри красочного ящика вы найдете несколько зданий, трудолюбивых специалистов и полезных усилителей.',
-        'MediumEasterBundle2025' => 'NT: A medium Easter-themed bundle',
         'MediumHalloweenBundle2023' => 'Заполучите забытый ящик, таящий жутких специалистов и усилители.',
-        'MediumHalloweenBundle2024' => 'NT: This is from a nightmare but it includes valuable items!',
-        'MediumHalloweenBundle2025' => 'NT: A modest Halloween themed bundle',
         'MiadTikkiIsland' => 'Цель: разгромите всех разбойников.
 
 Тип: мини-миссия
@@ -50468,7 +51013,6 @@ Only placeable on water.',
 
 400-800 ед. урона, 300 ОЗ, 80% точности',
         'MotherlyExplorer' => 'Поистине заботливая исследовательница. Во время всех поисков сокровищ, диковинок и артефактов приносит в 4 раза больше наград.',
-        'MountainClanColossus' => 'NT: Special Storehouse that can stop up to 140000 resources, and produce gold ore',
         'MountainDemolition_L' => 'Применяйте к горам:
 • Навсегда убирает объект
 • Освобождает место для строительства (до 9 ячеек)',
@@ -50485,6 +51029,8 @@ Only placeable on water.',
 Нельзя использовать на родном острове - только на острове друга.',
         'MultiplierBuffZone2_PremiumFriendBuff1DaySoccer' => 'Знак признательности дорогому другу, дающий несколько усилений сразу!
 Нельзя использовать на родном острове - только на острове друга.',
+        'MultiplierBuffZone2_PremiumFriendBuff_Christmas' => 'Знак признательности дорогому другу, дающий несколько усилений сразу!
+Нельзя использовать на собственном острове — только на острове друга.',
         'MummifiedGeologist' => 'Ему требуется в три раза больше времени при поиске залежей, но он находит залежи в четыре раза крупнее.',
         'MysteryBoxAdventure' => 'Откройте таинственный сундук и получите одно из случайных приключений!',
         'MysteryBoxBlackKnights' => 'Шанс получить:
@@ -50494,12 +51040,14 @@ Only placeable on water.',
 Темный замок x1
 Церковь из костей x1
 Башня ведьмы x1',
+        'NarcissisticGeneral' => 'Генерал, специализирующийся на управлении малыми отрядами',
         'NibLvl1' => 'Вы получили перья (100 шт.)',
         'NordsResidence' => 'Тип: дом, возобновляемый
 Эффект: +140 населения
 Размер: 2x2
 Улучшения: 3, увеличивается предел населения',
         'NormalResourceBox' => 'Откройте коробку и получите случайным образом выбранный ресурс, возможно, даже уголь или золотую руду.',
+        'OffshoreLighthouse' => 'Особая резиденция 2х2',
         'OilRefinery' => 'Тип: универсальная мастерская, возобновляемая
 Эффект: можно обменивать масло и ресурсы на еще больше масла.',
         'Oillvl1' => '• Вы получаете 100 ед. масла.
@@ -50515,6 +51063,7 @@ Only placeable on water.',
         'OutdoorCanteen' => 'Культурное сооружение
 Активирует усилитель, делающий бойцов мощнее в приключениях.
 Размер: 2x2',
+        'OutdoorCanteenAid' => 'Украшение поддержки 1х1',
         'PalmTreeDeco01' => 'Тип: украшение, возобновляемое
 Размер: 1x1',
         'PalmTreeDeco02' => 'Тип: украшение, возобновляемое
@@ -50626,6 +51175,9 @@ Only placeable on water.',
         'ProductivityBuffLvl12' => 'Эффект: +300% к производительности
 Объект: мастерская
 Продолжительность: 96 часов',
+        'ProductivityBuffLvl22' => 'Эффект: +400% к производительности
+Объект: мастерская
+Продолжительность: 6 часов (9 часов для друга/члена гильдии)',
         'ProductivityBuffLvl25' => 'Прославленный пекарь из далекой страны!
 
 Эффект: +200% к производительности
@@ -50640,7 +51192,6 @@ Only placeable on water.',
         'ProductivityBuffZoneEW_WitchesFamiliars' => 'Эффект зоны: +100% к производительности
 Объект: грандиозные мастерские
 Продолжительность: 4 часа (6 часов для друга/члена гильдии)',
-        'Prospector' => 'NT: Buff producing building, 1x1',
         'ProvisionerBuffLvl3' => 'Эффект: +300% к скорости производства
 Объект: универсальная мастерская, универсальная мастерская редкостей
 Продолжительность: 12 часов (18 часов для друга/члена гильдии)',
@@ -50650,14 +51201,13 @@ Only placeable on water.',
         'ProvisionerBuffLvl301' => 'Эффект: +200% к скорости производства
 Объект: арсенал
 Продолжительность: 6 часов (9 часов для друга/члена гильдии)',
-        'ProvisionerBuffLvlGuildFestGrounds1' => 'NT: Increase Guild Fest Grounds and Guild Fest Accommodation Buildings production speed by 100%',
-        'ProvisionerBuffLvlGuildFestGrounds2' => 'NT: Increase Guild Fest Grounds and Guild Fest Accommodation Buildings production speed by 200%',
         'PumpkinFieldDeco' => 'Тип: украшение, возобновляемое
 Размер: 2x2',
         'PumpkinMansion' => 'Увеличивает предел населения.
 +160 населения',
         'QuestStart_ANewStone' => 'Эффект: начинает задание "Новый драгоценный камень"',
         'QuestStart_Harbour' => 'Эффект: начинает задание "Поддержка Тавоса"',
+        'QuestStart_OreRefinery' => 'Цепочка заданий, открывающая особую мастерскую размером 3x3',
         'QuestStart_SavetheDeers' => 'Эффект: начинает задание "Спасите оленей!"',
         'QuestStart_WolfPuppy' => 'Эффект: начинает задание "Волчонок!"',
         'RabbitFood' => 'Используйте на источнике мяса:
@@ -50721,6 +51271,8 @@ Only placeable on water.',
 Объект: ратуша',
         'ResourceTome' => 'Эффект: фолиант x1
 Объект: ратуша',
+        'RetirementHome' => 'Особый производитель усилителей 2х3',
+        'RetirementHomeAid' => 'Украшение поддержки 1х1',
         'RevealCollectiblesBuff01' => 'Эффект зоны: указывает на все коллекционные предметы на вашем родном острове при помощи синей стрелки
 Продолжительность: 5 минут',
         'RevealCollectiblesBuff02' => 'Эффект зоны: указывает на все коллекционные предметы на острове приключения при помощи желтой стрелки
@@ -50731,13 +51283,6 @@ Only placeable on water.',
 Размер: 2x2',
         'RoseArbor' => 'Наземное украшение размером 1x1',
         'RoseTrellis' => 'Наземное украшение размером 1x1',
-        'RosyIronMine' => 'NT: Type: Workyard
-Effect: Produces Iron (12) without the need of Coal and with halved deposit consumption (6)
-Size: 2x2',
-        'RosyStorage' => 'NT: Type: Storage, recurring
-Effect: +40.000 storage
-Size: 2x2
-Upgrades: No',
         'RoyalExplorer' => 'Королевский исследователь поистине королевский. Он невероятно быстр и порой при поиске приключений находит жетоны, которые просто обожает, но потом всегда отдает их вам.',
         'S4Barracks' => 'Тип: пристройка, возобновляемая
 Эффект: +50% к скорости найма новобранцев для обычных и элитных бойцов
@@ -50800,6 +51345,7 @@ Upgrades: No',
 • 500 ед. масла
 • 500 отличных инструментов
 • 500 ед. раствора',
+        'Settlers2HQDeco' => 'Дом 2х3',
         'ShamanBundle' => '• романтичный исследователь x1
 • генерал-одиночка x1
 • улучшенная хижина охотника x1
@@ -50847,16 +51393,14 @@ Upgrades: No',
 • При улучшении увеличится вместимость вплоть до 650 чел.',
         'SmallDefBuild' => 'Содержит не менее 2 случайных крепостей. Есть дополнительная возможность получить случайный третий укрепленный лагерь (ур. 2).',
         'SmallEasterBundle2024' => 'Внутри красочного мешка вы найдете немного зданий и полезных усилителей.',
-        'SmallEasterBundle2025' => 'NT: A small Easter-themed bundle',
         'SmallHalloweenBundle2023' => 'Заполучите пыльный мешок, таящий жуткие здания и усилители.',
-        'SmallHalloweenBundle2024' => 'NT: This is from a nightmare but it includes valuable items!',
-        'SmallHalloweenBundle2025' => 'NT: A Small Halloween themed bundle',
         'Smokehouse' => 'Тип: универсальная мастерская, возобновляемая
 Эффект: можно производить различные усилители
 Размер: 2x2
 Время производства можно снизить, если разместить дополнительные здания
 
 Копченый рыбный стейк: +100% к производительности на 72 часа в мастерской',
+        'Smokehouse_Mini' => 'Воздаяние 1х1',
         'Snowglobe' => 'Усиливает производство в близлежащих зданиях.',
         'SnowyExplorer' => 'Этот исследователь проявляет огромный интерес к ресурсам события.',
         'SnowyExplorerGems' => 'Этот исследователь проявляет огромный интерес к ресурсам события.',
@@ -50904,6 +51448,7 @@ Upgrades: No',
 Весенняя уборка: +200% к производительности на 6 часов в улучшенных зданиях
 Вальпургиева ночь: подсвечивает все коллекционные предметы на 5 мин.
 Детские пасхальные рассказы: +100% к производительности на 6 часов на бумажной фабрике (обычной, улучшенной, усовершенствованной), в лавке каллиграфа, лавке печатника, улучшенной лавке печатника, лавке художника',
+        'StargazingGeologist' => 'Особый геолог с шансом найти осколки звёзд.',
         'StarterPack' => 'Вы получаете:
 • 9999 досок из сосны
 • 9999 камней
@@ -50919,7 +51464,6 @@ Upgrades: No',
         'StoneLvl1' => 'Получите 100 камней.',
         'StoneRefillGuild' => 'Используйте на залежах камня:
 • Восстанавливает 1000 ед. камня.',
-        'StorageBasket' => 'NT: 2x2 Land based storehouse',
         'Stronghold' => 'Тип: универсальная мастерская, возобновляемая
 Эффект: можно производить различные усилители
 Размер: 3x3
@@ -50966,9 +51510,9 @@ Upgrades: No',
 • целовашки-обнимашки x5
 
 • престижный усилитель друзей x1',
-        'SummerBundle2025_Large' => 'NT: A great Summer-themed bundle',
-        'SummerBundle2025_Medium' => 'NT: A medium Summer-themed bundle',
-        'SummerBundle2025_Small' => 'NT: A small Summer-themed bundle',
+        'SummerBundle2026_Large' => 'Большой летний набор',
+        'SummerBundle2026_Medium' => 'Средний летний набор',
+        'SummerBundle2026_Small' => 'Небольшой летний набор',
         'SummerBundle3' => 'Содержимое набора:
 
 • генерал Сильвана x1
@@ -51040,9 +51584,9 @@ Upgrades: No',
 Размер: 4x4
 Пусть подсолнухи радуют глаз! Используйте усилитель "Удобрение для подсолнухов", чтобы намного увеличить производительность!',
         'SunflowerFertilizer' => 'Один из ваших поселенцев разработал особое удобрение для выращивания подсолнухов, которое намного увеличивает производительность подсолнечной фермы.',
-        'TheSmuggler' => 'NT: A transporter general who brings coffers with weapons or gold after completing a trip',
         'TikiStorehouse' => 'Вмещает до 40 000 ед. каждого ресурса.
 Размер: 2x2',
+        'TitanicGeologist' => 'Геолог, специализирующийся на титане',
         'TitaniumMine_Mini' => 'Эффект: производит 1 ед. титановой руды
 
 Продолжительность: 48 мин.
@@ -51054,12 +51598,6 @@ Upgrades: No',
         'TokenLvl2' => 'Вы получаете:
 • 150 жетонов',
         'ToolsLvl1' => 'Получите 100 инструментов.',
-        'TowerOfBraggingRights' => 'NT: Type: Culture Building
-Effect: Provides a zone buff that improves most productions on the island and speeds up recruitment.
-Additionally increase resource storage.
-Upgrades: 6. Requires achievements. 
-Size: 2x2
-Limit: 1',
         'ToyFactory' => 'Производит различные усилители производства.',
         'TransporterAdmiral' => 'Не умеет сражаться.
 Количество бойцов увеличено до 500.',
@@ -51081,19 +51619,19 @@ Limit: 1',
 Стоимость: 1 золотая монета
 Продолжительность: 12 часов
 Размер: 2x2',
+        'UnityEvent_Residence' => 'Особая резиденция 2х2',
         'Valentine2024_LargeBundle' => 'Огромный ящик большой-пребольшой любви.',
         'Valentine2024_MediumBundle' => 'Внушительный ящик большой-пребольшой любви.',
         'Valentine2024_SmallBundle' => 'Скромный мешочек большой-пребольшой любви.',
-        'Valentine2025_LargeBundle' => 'NT: Roses can brighten up your day! Like this huge bundle.',
-        'Valentine2025_MediumBundle' => 'NT: Roses can brighten up your day! Like this decent bundle.',
-        'Valentine2025_SmallBundle' => 'NT: Roses can brighten up your day! Like this little bundle.',
+        'Valentine2026_LargeBundle' => 'Большой подарок, лечащий разбитое сердце',
+        'Valentine2026_MediumBundle' => 'Подарок, лечащий разбитое сердце',
+        'Valentine2026_SmallBundle' => 'Маленький подарок, лечащий разбитое сердце',
         'ValentineMysteryBox' => 'Откройте:
 • получите произвольный предмет, например усилитель или приключение.',
         'Valentines2021MilitaryBundle' => 'Целых 4 генерала и кое-что крутое в придачу!',
         'Valentines2021SpecialistsBundle' => 'Целых 4 специалиста и кое-что полезное в придачу!',
         'Valentines2021WondrousBundle' => 'Целых 3 чудесных дома и кое-что классное в придачу!',
         'VersedGeologist' => 'В два раза быстрее обычного находит залежи на 50% крупнее. Может найти дополнительную залежь с шансом в 50%. Действует на все типы залежей!',
-        'VesyGeologist' => 'NT: A Geologist with a chance of returning from successful Stone, Marble, Coal, and Granite searches with an adventure. But it takes 3 times as much time.',
         'WMBananaLvl1' => 'Используйте на Ратуше, чтобы получить:
 • Банановая кожура x10',
         'WMDummyLvl1' => 'Используйте на Ратуше, чтобы получить:
@@ -51126,9 +51664,9 @@ Limit: 1',
 Продолжительность: 7 дней (10,5 дней для друга/члена гильдии)',
         'WeatherTropical' => 'Эффект зоны: наполняет ваш остров солнечным светом.
 Продолжительность: 7 дней (10,5 дней для друга/члена гильдии)',
+        'WeddingChapel' => 'Производитель усилителей 2х2',
+        'WeddingChapelAid' => 'Здание поддержки 1х1',
         'WinterGarden' => 'Мастерская, которая превращает низкие сорта древесины в махагониевое дерево.',
-        'WitchCoven' => 'NT: A buff producer with a powerful effect and a terrible price.',
-        'WitchCovenAid' => 'NT: A decoration that improves the production speed of the Witch Coven.',
         'WoodPackage' => 'Содержит следующие ресурсы:
 
 • 750 ед. древесины (сосна)
@@ -51167,9 +51705,9 @@ Limit: 1',
         'XMAS2023_LargeBundle' => 'Огромный набор к Рождеству.',
         'XMAS2023_MediumBundle' => 'Достойный набор к Рождеству.',
         'XMAS2023_SmallBundle' => 'Скромный набор к Рождеству.',
-        'XMAS2024_LargeBundle' => 'NT: A big Christmas themed bundle',
-        'XMAS2024_MediumBundle' => 'NT: A medium Christmas themed bundle',
-        'XMAS2024_SmallBundle' => 'NT: A small Christmas themed bundle',
+        'XMAS2025_LargeBundle' => 'Большой рождественский набор',
+        'XMAS2025_MediumBundle' => 'Средний рождественский набор',
+        'XMAS2025_SmallBundle' => 'Маленький рождественский набор',
         'XMAS_BoosterBundle' => 'Превосходный набор для начинающих или для повышения эффективности:
 • храбрый исследователь х1
 • геолог-археолог х1
@@ -51224,12 +51762,9 @@ Limit: 1',
         'BenevolentExplorer' => 'Добродушный исследователь',
         'BewitchingExplorer' => 'Зачарованный исследователь',
         'BlackMarshal' => 'Черный маршал',
-        'BlacktreeExplorer' => 'NT: Blacktree Explorer',
         'BoldExplorer' => 'Дерзкий исследователь',
         'BorisGeneral' => 'Генерал Борис',
-        'Brohmann' => 'NT: Brohmann, the raider',
         'CandidExplorer' => 'Искренний исследователь',
-        'ChummyExplorer' => 'NT: Chummy Explorer',
         'ChummyGeologist' => 'Дружелюбный геолог',
         'ConscientiousGeologist' => 'Старательный геолог',
         'CorageousExplorer' => 'Храбрый исследователь',
@@ -51255,9 +51790,9 @@ Limit: 1',
         'GeneralVargus' => 'Чемпион Варгус',
         'Geologist' => 'Геолог',
         'GeologistOnVacation' => 'Геолог на отдыхе',
-        'GhostExplorer' => 'NT: Ghost Explorer',
         'GhostGeneral' => 'Призрачный генерал',
         'GingerbreadGeologist' => 'Пряник-геолог',
+        'GloryExploriExplorer' => 'Исследовательница Нора',
         'GoldheartedGeologist' => 'Геолог с золотым сердцем',
         'Halloween2019General' => 'Младший генерал-близнец',
         'HalloweenGeneral' => 'Генерал Мрачный жнец',
@@ -51272,18 +51807,17 @@ Limit: 1',
         'LovelyGeologist' => 'Прелестный геолог',
         'MadScientistGeneral' => 'Безумный ученый',
         'MajorGeneral' => 'Генерал-майор',
-        'MarathonGeologist' => 'NT: Marathon Geologist',
         'MasterExplorer' => 'Следопыт',
         'MasterGeneral' => 'Опытный генерал',
         'MasterGeologist' => 'Веселый геолог',
         'Max Mana' => 'Максимум маны: {0}',
         'Max Units' => 'Максимум бойцов: {0}',
         'MedicGeneral' => 'Генерал-полевой медик',
-        'MercenaryExplorer' => 'NT: Mercenary Explorer',
         'Minus Mana / Loss' => 'Понижение маны за каждого потерянного бойца: {0}',
         'MiraculousGeneral' => 'Чудесный генерал',
         'MotherlyExplorer' => 'Заботливая исследовательница',
         'MummifiedGeologist' => 'Геолог-мумия',
+        'NarcissisticGeneral' => 'Самолюбивый генерал',
         'NutcrackerGeneral' => 'Щелкунчик-генерал',
         'PirateExplorer' => 'Исследователь-пират',
         'Plus Mana / Kill' => 'Повышение маны за каждого побежденного врага: {0}',
@@ -51303,17 +51837,17 @@ Limit: 1',
         'SophisticatedGeologist' => 'Бывалый геолог',
         'StarGeneral2' => 'Мастер защиты',
         'StarGeneral3' => 'Мастер боевых искусств',
+        'StargazingGeologist' => 'Геолог-астроном',
         'StoneColdGeologist' => 'Геолог с каменным сердцем',
         'SylvanaGeneral' => 'Генерал Сильвана',
-        'TheSmuggler' => 'NT: The Smuggler',
         'ThoroughGeologist' => 'Скрупулезный геолог',
+        'TitanicGeologist' => 'Титанический геолог',
         'TmpArmyTransporter' => 'Войсковой транспорт',
         'TransporterAdmiral' => 'Поставщик экспедиции',
         'TransporterGeneral' => 'Генерал-интендант',
         'TransporterGeneralBjoern' => 'Интендант Бьерн',
         'ValentinesTransporterGeneral' => 'Интендант Золотое сердце',
         'VersedGeologist' => 'Бывалый геолог',
-        'VesyGeologist' => 'NT: Vesy, the Clueless Digger',
         'Xmas2019General' => 'Стойкий генерал',
     ],
     'TOT' => [
@@ -51346,6 +51880,7 @@ Limit: 1',
 Объект: приключения
 Продолжительность: -
 Примечание: усилитель влияет на приключения, начатые во время действия данного усилителя. После активации он останется на время всего приключения, даже если изначальный усилитель в домашней зоне более не активен.',
+        'AreaBuffFluffyLogistics1' => 'Применяется «Лучшая доставка!», что на 24 часа повышает количество ресурсов за приключение на 10%.',
         'AreaBuffLoveGardenLvl1' => 'Эффект: усиливает дома, накладывая различные эффекты в зависимости от количества усиленных домов
 
 15 домов: усилитель населения зоны "Кулоны-сердечки ур. 1", который ускоряет прирост населения на 200%
@@ -51354,6 +51889,7 @@ Limit: 1',
 
 Объект: дома
 Продолжительность: 12 часов',
+        'AuroraTowerStoryTime' => 'Применяет «Время историй», что на некоторое время ускоряет поиск сокровищ и приключений.',
         'BonusOnColonyYield' => '+ {0}% к доходу с колоний',
         'BonusOnResourcePool' => '+ {0} к максимальному объему добываемых ресурсов',
         'BuffAdv_TMC_V4_Sub2' => 'Завершите 2 из следующего списка: "Заброшенная каменоломня", "Защита посевов", "Ведьма-отшельница", "Выход из строя".',
@@ -51398,9 +51934,7 @@ Limit: 1',
         'CGLetter' => 'Соберите письмо, и тогда вы получите в награду цепочку заданий.',
         'CGRollButton' => 'Используйте указанное количество кристаллов и самоцветов в качестве топлива для кузницы.',
         'CGTravelGuide' => 'Соберите письмо, и тогда вы получите в награду затею.',
-        'CancelBLoodust' => 'NT: Removes the effects of "Warmongery"',
         'CancelQueuedConstruction' => 'Снести это здание',
-        'CancelRisenArmy' => 'NT: Removes the effects of "Famine"',
         'ChangeDefaultSkin_default_market_permanent' => 'Эффект: устанавливает вид "По умолчанию"
 Объект: рождественская ярмарка
 Продолжительность: постоянно
@@ -51417,12 +51951,12 @@ Limit: 1',
         'DuplicateBuildingTimedProductionTip' => 'Скорость производства увеличивается с каждой копией пристройки к зданию на вашем острове.
 
 Вы разместили пристройку к этому здание на своем острове {0} р. Скорость производства составляет {1}% от основного значения.',
-        'DuplicatedBuildingCultureTip' => 'Время восстановления постройки уменьшается с каждой копией этого здания на вашем острове.
+        'DuplicatedBuildingCultureTip' => 'Каждая копия этого строения на вашем острове сокращает его время восстановления.
 
-Вы разместили это здание на своем острове {0} р. Скорость восстановления составляет {1}% от основного значения.',
-        'DuplicatedBuildingSimpleProductionTip' => 'Скорость производства увеличивается с каждой копией этого здания на вашем острове.
+Вы разместили это строение на своем острове {0} р. Время восстановления составляет {1}% от базового значения.',
+        'DuplicatedBuildingSimpleProductionTip' => 'Скорость производства этого строения увеличивается с каждой копией пристройки к нему на вашем острове.
 
-Вы разместили это здание на своем острове {0} р. Скорость производства составляет {1}% от основного значения.',
+Вы разместили пристройку к этому строению на своем острове {0} р. Скорость производства составляет {1}% от базового значения.',
         'DuplicatedBuildingTimedProductionTip' => 'Дополнительные пристройки могут повысить вашу скорость найма и производства. Текущая скорость производства: {1}%.',
         'EffectBuffFlowerBouquet' => 'Эффект: выполнение условия
 Объект: жилое здание
@@ -51561,6 +52095,7 @@ Limit: 1',
 Условие: 5 активных букетов цветов',
         'StarfallShipshape' => 'В полном порядке',
         'StarsOnAdventure' => 'На время проведения события некоторые награды из этого приключения улучшены.',
+        'StarsOnQuestRewards' => 'На награду за это задание сейчас влияют модификаторы.',
         'StarsOnSpecialist' => 'Этот специалист выполняет сейчас некоторые из своих задач более эффективно.',
         'TheMountainClan' => 'Кампания "Горный клан"',
         'TravelGuide' => 'Содержание: затея
@@ -51598,10 +52133,6 @@ Limit: 1',
 Продолжительность: пока выполняются условия
 Условие: 3 активные валентинки',
         'ValorPointAwarded' => 'В награду за завоевание островов, принадлежащих другим игрокам, выдаются очки доблести.',
-        'WitchCovenUpgrade_Upgrade1' => 'NT: Grimoire of Black Magic
-Unlocks Witch Coven level 2 upgrade',
-        'WitchCovenUpgrade_Upgrade2' => 'NT: Grimoire of Blacker Magic
-Unlocks Witch Coven level 3 upgrade',
         'cancelZoneBuff' => 'Отмените действие этого усилителя досрочно.',
         'changelog' => 'Журнал изменений',
         'disabledCategory' => 'Требование: уровень {0}',
@@ -51613,6 +52144,7 @@ Unlocks Witch Coven level 3 upgrade',
         'eventpanelbutton_shop' => 'К купцу',
         'eventpanelbutton_voucher' => 'О купонах',
         'eventpanelbutton_webshop' => 'В онлайн-магазин',
+        'industrialfuelUnlock' => 'Позволяет производить в универсальной мастерской топливо для промышленного рудоперерабатывающего завода.',
         'modifiedMoveCost' => 'Сейчас здания можно перемещать бесплатно.',
         'pvpXp' => 'Всего опыта в PvP: {0}',
         'pvpXpRequired' => 'До следующего уровня: {0}',
