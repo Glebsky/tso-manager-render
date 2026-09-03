@@ -118,7 +118,7 @@
                                     @click="selectedKind = k"
                                     class="px-2 sm:px-2.5 py-0.5 rounded text-[9px] sm:text-[10px] font-bold uppercase transition-all"
                                     :class="selectedKind === k ? 'bg-indigo-600 text-white' : 'text-white/50 hover:text-white'">
-                                {{ k === 'all' ? 'All' : (k === 'resource' ? 'Res' : (k === 'buff' ? 'Buff' : (k === 'adventure' ? 'ADV' : 'BLD'))) }}
+                                {{ getKindLabel(k) }}
                             </button>
                         </div>
                     </div>
@@ -700,7 +700,9 @@
         <!-- TAB 2: SETTINGS & SERVERS -->
         <div v-else-if="activeTab === 'settings'" class="space-y-6">
             <!-- Section 1: Server Connections Table -->
-            <div class="glass-card p-4 sm:p-6 transition-all duration-300">
+            <div class="glass-card p-4 sm:p-6 transition-all duration-300 relative">
+                <loading-overlay :show="loadingServers && servers.length > 0" :label="t('market.loading_servers')" />
+
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6 border-b border-white/5 pb-3 sm:pb-4">
                     <div class="flex items-center gap-3 cursor-pointer select-none group" @click="isServersCollapsed = !isServersCollapsed">
                         <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shrink-0 group-hover:scale-105 transition-transform">
@@ -712,7 +714,7 @@
                             <div class="flex items-center gap-2">
                                 <h2 class="text-base sm:text-lg font-semibold text-white group-hover:text-emerald-400 transition-colors">{{ t('market.servers_title') }}</h2>
                                 <span class="badge bg-white/10 text-white/70 text-[11px] font-mono py-0.5 px-2">
-                                    {{ servers.length }}
+                                    {{ loadingServers && servers.length === 0 ? '...' : servers.length }}
                                 </span>
                             </div>
                             <p class="text-xs text-white/40">{{ t('market.servers_subtitle') }}</p>
@@ -740,7 +742,13 @@
                 </div>
 
                 <div v-show="!isServersCollapsed">
-                    <market-data-table :columns="serverColumns" :rows="servers" :empty-text="t('market.no_servers_row')">
+                    <!-- Loading placeholder while servers initial load is running and list is empty -->
+                    <div v-if="loadingServers && servers.length === 0" class="py-12 sm:py-16 flex flex-col items-center justify-center gap-3 text-emerald-400">
+                        <spinner size="lg" />
+                        <p class="text-xs text-white/40">{{ t('market.loading_servers') }}</p>
+                    </div>
+
+                    <market-data-table v-else :columns="serverColumns" :rows="servers" :empty-text="t('market.no_servers_row')" breakpoint="xl" :card-grid="true">
                         <template #cell-locale="{ row }">
                             <div class="flex items-center gap-2 min-w-0">
                                 <span class="text-base flex-shrink-0">{{ getLocaleFlag(row.locale) }}</span>
@@ -754,7 +762,7 @@
                             <div v-if="row.account" class="flex flex-col items-end sm:flex-row sm:items-center gap-1 sm:gap-1.5 min-w-0 max-w-full text-right sm:text-left">
                                 <div class="flex items-center gap-1.5 min-w-0 max-w-full">
                                     <span class="w-2 h-2 rounded-full shrink-0" :class="row.account.status === 'online' ? 'bg-emerald-500' : 'bg-white/30'"></span>
-                                    <span class="font-medium text-white/90 truncate max-w-[140px] xs:max-w-[180px] sm:max-w-none" :title="row.account.username">{{ row.account.username }}</span>
+                                    <span class="font-medium text-white/90 truncate max-w-[120px] xs:max-w-[150px] sm:max-w-[180px] xl:max-w-[140px] 2xl:max-w-none" :title="row.account.username">{{ row.account.username }}</span>
                                 </div>
                                 <div class="flex items-center gap-1.5 flex-wrap justify-end">
                                     <span class="text-xs text-white/40">({{ row.account.nickname || t('market.no_nick') }})</span>
@@ -784,20 +792,20 @@
                             </div>
                         </template>
                         <template #cell-actions="{ row }">
-                            <div class="flex items-center justify-end flex-wrap gap-1.5 sm:gap-2">
-                                <button @click="verifyServer(row)" :disabled="verifyingId === row.id" class="btn-secondary py-1 px-2.5 text-[11px]" :title="t('market.verify_hint')">
+                            <div class="flex items-center justify-end flex-wrap gap-1 sm:gap-1.5">
+                                <button @click="verifyServer(row)" :disabled="verifyingId === row.id" class="btn-secondary py-1 px-2 text-[11px]" :title="t('market.verify_hint')">
                                     {{ verifyingId === row.id ? '...' : t('market.verify') }}
                                 </button>
-                                <button @click="syncServerNow(row)" :disabled="syncing || !row.account_id" class="btn-secondary py-1 px-2.5 text-[11px] text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/10 inline-flex items-center gap-1.5 disabled:opacity-50">
+                                <button @click="syncServerNow(row)" :disabled="syncing || !row.account_id" class="btn-secondary py-1 px-2 text-[11px] text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/10 inline-flex items-center gap-1 disabled:opacity-50">
                                     <svg v-if="syncingServerId === row.id" class="animate-spin w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                                     </svg>
                                     <span>{{ syncingServerId === row.id ? '...' : t('market.sync_now') }}</span>
                                 </button>
-                                <button @click="openEditServerModal(row)" class="btn-secondary py-1 px-2.5 text-[11px]">
+                                <button @click="openEditServerModal(row)" class="btn-secondary py-1 px-2 text-[11px]">
                                     {{ t('market.edit') }}
                                 </button>
-                                <button @click="deleteServer(row)" class="btn-secondary py-1 px-2.5 text-[11px] text-red-400 hover:bg-red-500/10 border-red-500/20">
+                                <button @click="deleteServer(row)" class="btn-secondary py-1 px-2 text-[11px] text-red-400 hover:bg-red-500/10 border-red-500/20">
                                     {{ t('market.delete') }}
                                 </button>
                             </div>
@@ -1292,9 +1300,11 @@ const router = useRouter();
 
         const getKindLabel = (kind) => {
             switch (kind) {
-                case 'adventure': return 'ADV';
-                case 'buff': return 'Buff';
-                case 'building': return 'BLD';
+                case 'all': return t('market.filter_all');
+                case 'resource': return t('market.filter_res');
+                case 'buff': return t('market.filter_buff');
+                case 'adventure': return t('market.filter_adv');
+                case 'building': return t('market.filter_bld');
                 default: return kind;
             }
         };

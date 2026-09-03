@@ -88,7 +88,7 @@
                                 @click="selectedKind = k"
                                 class="px-2 sm:px-2.5 py-0.5 rounded text-[9px] sm:text-[10px] font-bold uppercase transition-all"
                                 :class="selectedKind === k ? 'bg-indigo-600 text-white' : 'text-white/50 hover:text-white'">
-                            {{ k === 'all' ? 'All' : (k === 'resource' ? 'Res' : (k === 'buff' ? 'Buff' : (k === 'adventure' ? 'ADV' : 'BLD'))) }}
+                            {{ getKindLabel(k) }}
                         </button>
                     </div>
                 </div>
@@ -807,9 +807,11 @@ const router = useRouter();
 
         const getKindLabel = (kind) => {
             switch (kind) {
-                case 'adventure': return 'ADV';
-                case 'buff': return 'Buff';
-                case 'building': return 'BLD';
+                case 'all': return t('market.filter_all');
+                case 'resource': return t('market.filter_res');
+                case 'buff': return t('market.filter_buff');
+                case 'adventure': return t('market.filter_adv');
+                case 'building': return t('market.filter_bld');
                 default: return kind;
             }
         };
