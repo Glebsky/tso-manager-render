@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Laravel\Sanctum\PersonalAccessToken;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -94,14 +95,27 @@ class AuthController extends Controller
         return redirect('/admin');
     }
 
-    public function logout(Request $request): RedirectResponse
+    public function logout(Request $request): Response
     {
-        Auth::logout();
+        $user = $request->user();
+        $token = $user?->currentAccessToken();
+        if ($token instanceof PersonalAccessToken) {
+            $token->delete();
+        }
+
+        Auth::guard('web')->logout();
 
         if ($request->hasSession()) {
             $session = $request->session();
             $session->invalidate();
             $session->regenerateToken();
+        }
+
+        if ($request->expectsJson()) {
+            return new JsonResponse([
+                'success' => true,
+                'redirect' => url('/admin/login'),
+            ]);
         }
 
         return redirect()->route('login');
