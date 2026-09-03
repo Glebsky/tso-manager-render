@@ -1,5 +1,7 @@
 <?php
 
+use Sentry\Logger\DebugFileLogger;
+
 /**
  * Sentry Laravel SDK configuration file.
  *
