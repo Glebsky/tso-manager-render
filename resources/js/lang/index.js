@@ -76,10 +76,9 @@ export const intlLocale = INTL_LOCALES[locale] || locale;
 
 /**
  * Order in which game sections are scanned when a legacy caller looks up an
- * id without knowing its section (central compatibility map, replaces the
- * old per-component translation maps fed by /api/lang/res).
+ * id without knowing its section (RES -> BUI -> LAB -> SPE -> ADN).
  */
-const GAME_SECTION_LOOKUP_ORDER = ['RES', 'ADN', 'BUI', 'SPE', 'LAB'];
+const GAME_SECTION_LOOKUP_ORDER = ['RES', 'BUI', 'LAB', 'SPE', 'ADN'];
 
 const MAX_PLACEHOLDER_DEPTH = 3;
 
@@ -183,9 +182,13 @@ export function gameLookup(section, id) {
     return null;
 }
 
-/** Raw lookup without a known section (RES -> SPE -> LAB); null when missing. */
-export function gameAnyLookup(id) {
-    for (const section of GAME_SECTION_LOOKUP_ORDER) {
+/** Raw lookup without a known section (or with a custom prioritized section list); null when missing. */
+export function gameAnyLookup(id, customSections = null) {
+    const sections = Array.isArray(customSections) && customSections.length > 0
+        ? customSections
+        : GAME_SECTION_LOOKUP_ORDER;
+
+    for (const section of sections) {
         const text = gameLookup(section, id);
 
         if (text !== null) {

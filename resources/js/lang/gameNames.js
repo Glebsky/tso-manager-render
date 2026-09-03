@@ -12,7 +12,7 @@
 import { gameAnyLookup, gameLookup } from './index';
 import { isBuffableBuildingName } from './buffTargets';
 
-const KIND_SECTION = { adventure: 'ADN', building: 'BUI', buff: 'RES' };
+const KIND_SECTION = { adventure: 'ADN', building: 'BUI', buff: 'RES', specialist: 'SPE' };
 
 export function parseTradeableId(rawId) {
     const [head, ...rest] = String(rawId ?? '').split(':');
@@ -35,10 +35,11 @@ export function humanizeGameId(id) {
         .replace(/\w\S*/g, (w) => w.replace(/^\w/, (c) => c.toUpperCase()));
 }
 
-/** Resource / buff / any catalog id -> localized name (catalog first). */
+/** Resource / buff / any catalog id -> localized name (RES section first, then catalog). */
 export function resourceName(id) {
     if (!id) return '';
-    return gameAnyLookup(String(id)) ?? humanizeGameId(id);
+    const str = String(id);
+    return gameLookup('RES', str) ?? gameAnyLookup(str) ?? humanizeGameId(str);
 }
 
 /**
@@ -59,10 +60,17 @@ export function marketItemName(name, id) {
     const targetKey = subject ?? base;
 
     let translated = null;
-    if (kind !== 'resource' && KIND_SECTION[kind]) {
-        translated = gameLookup(KIND_SECTION[kind], targetKey);
+    if (kind === 'buff') {
+        translated = gameLookup('RES', targetKey) || gameLookup('LAB', targetKey) || gameAnyLookup(targetKey);
+    } else if (kind === 'building') {
+        const baseId = buildingBaseId(targetKey);
+        translated = gameLookup('BUI', targetKey)
+            || (baseId ? gameLookup('BUI', baseId) : null)
+            || gameAnyLookup(targetKey);
+    } else if (kind !== 'resource' && KIND_SECTION[kind]) {
+        translated = gameLookup(KIND_SECTION[kind], targetKey) || gameAnyLookup(targetKey);
     } else if (rawId) {
-        translated = gameAnyLookup(rawId);
+        translated = gameLookup('RES', rawId) || gameAnyLookup(rawId);
     }
 
     if (!translated && rawName) {
@@ -86,7 +94,12 @@ export function buildingName(rawOrObject) {
         ? (rawOrObject.buildingName_string || rawOrObject.buildingName || '')
         : (rawOrObject || '');
     if (!raw) return '';
-    return gameAnyLookup(raw) ?? gameAnyLookup(buildingBaseId(raw)) ?? humanizeGameId(raw);
+    const baseId = buildingBaseId(raw);
+    return gameLookup('BUI', raw)
+        ?? (baseId ? gameLookup('BUI', baseId) : null)
+        ?? gameAnyLookup(raw)
+        ?? (baseId ? gameAnyLookup(baseId) : null)
+        ?? humanizeGameId(raw);
 }
 
 const BUILDING_MAP = {
