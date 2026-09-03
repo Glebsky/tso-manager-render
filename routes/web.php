@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -57,3 +58,5 @@ Route::get('/login', function () {
 Route::get('/register', function () {
     return redirect('/admin/register');
 });
+
+Route::match(['get', 'post'], '/logout', [AuthController::class, 'logout'])->name('legacy.logout');
