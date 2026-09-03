@@ -23,6 +23,11 @@ return [
     // When left empty or `null` the Laravel environment will be used (usually discovered from `APP_ENV` in your `.env`)
     'environment' => env('SENTRY_ENVIRONMENT'),
 
+    // Key-value pairs of tags that will be sent with each event, log, or transaction
+    'tags' => array_filter([
+        'project' => env('SENTRY_PROJECT_TAG', env('APP_NAME')),
+    ]),
+
     // Override the organization ID used for trace continuation checks.
     'org_id' => env('SENTRY_ORG_ID') === null ? null : (int) env('SENTRY_ORG_ID'),
 
