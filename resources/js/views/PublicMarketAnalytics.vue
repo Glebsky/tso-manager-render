@@ -50,6 +50,19 @@
                         <span>{{ t('market.live_title') }}</span>
                     </div>
 
+                    <!-- Combat Simulator External Link -->
+                    <a v-if="combatSimulatorUrl"
+                       :href="combatSimulatorUrl"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       :title="t('market.combat_simulator_tooltip')"
+                       class="btn-secondary py-2 px-3 sm:px-3.5 text-xs font-semibold rounded-xl inline-flex items-center gap-1.5 border border-emerald-500/30 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 hover:text-emerald-300 transition-all duration-300 hover:scale-105 flex-shrink-0 whitespace-nowrap">
+                        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                        </svg>
+                        <span>{{ t('market.combat_simulator') }}</span>
+                    </a>
+
                     <!-- Admin Panel Link for Authenticated Users -->
                     <router-link v-if="isAuthenticated" to="/admin/market" class="btn-primary py-2 px-3 sm:px-3.5 text-xs font-semibold rounded-xl inline-flex items-center gap-1.5 shadow-lg shadow-emerald-500/20 transition-all duration-300 hover:scale-105 flex-shrink-0 whitespace-nowrap">
                         <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -903,6 +916,7 @@ const router = useRouter();
         const servers = ref(defaultPublicServers);
         const selectedServerId = ref(localStorage.getItem('tso_market_selected_server') || 'ru');
         const isAuthenticated = computed(() => !!(window.__AUTH_USER__ && window.__AUTH_USER__.id));
+        const combatSimulatorUrl = ref('');
 
         const getLocaleFlag = (locale) => {
             switch (String(locale).toUpperCase()) {
@@ -967,6 +981,17 @@ const router = useRouter();
             } catch (e) {
                 console.error('Failed to load public market servers:', e);
                 servers.value = [];
+            }
+        };
+
+        const loadSettings = async () => {
+            try {
+                const data = await cachedGet('/api/public/market/settings', { ttlMs: 300000 });
+                if (data && data.combat_simulator_url) {
+                    combatSimulatorUrl.value = data.combat_simulator_url;
+                }
+            } catch (e) {
+                console.error('Failed to load public market settings:', e);
             }
         };
 
@@ -1409,7 +1434,7 @@ const router = useRouter();
             if (queryServer) {
                 selectedServerId.value = String(queryServer);
             }
-            await Promise.all([loadServers(), loadInitialData()]);
+            await Promise.all([loadServers(), loadSettings(), loadInitialData()]);
 
             const queryItem = route.query.item || route.query.item_id;
             const queryTarget = route.query.target || route.query.target_item_id;

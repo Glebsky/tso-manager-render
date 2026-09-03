@@ -71,10 +71,12 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Presentation
+    | Presentation & External Links
     |--------------------------------------------------------------------------
     */
     'display_name_suffix' => 'Settlers Market',
+
+    'combat_simulator_url' => env('MARKET_COMBAT_SIMULATOR_URL', 'https://settlersonlinesimulator.com'),
 
     /*
     |--------------------------------------------------------------------------

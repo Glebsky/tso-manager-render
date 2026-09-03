@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateSettingsRequest;
 use App\Http\Resources\SettingResource;
 use App\Models\ScheduledTask;
 use App\Models\Setting;
+use App\Services\Market\MarketSettingsService;
 use App\Services\SystemLogCleanupService;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
@@ -19,6 +20,7 @@ class SettingsController extends Controller
 {
     public function __construct(
         private readonly SystemLogCleanupService $logCleanupService,
+        private readonly MarketSettingsService $marketSettings,
     ) {}
 
     public function index(): SettingResource
@@ -26,6 +28,7 @@ class SettingsController extends Controller
         return new SettingResource([
             'sync_interval' => (int) Setting::get('sync_interval', 30),
             'log_retention_days' => (int) Setting::get('log_retention_days', 30),
+            'combat_simulator_url' => $this->marketSettings->combatSimulatorUrl(),
         ]);
     }
 
@@ -35,6 +38,12 @@ class SettingsController extends Controller
 
         Setting::set('sync_interval', $validated['sync_interval']);
         Setting::set('log_retention_days', $validated['log_retention_days']);
+
+        if (array_key_exists('combat_simulator_url', $validated)) {
+            $this->marketSettings->updateCombatSimulatorUrl($validated['combat_simulator_url']);
+        }
+
+        $validated['combat_simulator_url'] = $this->marketSettings->combatSimulatorUrl();
 
         return new SettingResource($validated);
     }

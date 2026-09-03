@@ -70,6 +70,17 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Combat Simulator URL -->
+                    <div class="sm:col-span-2">
+                        <label for="settings-combat-simulator-url" class="block text-xs font-medium text-white/40 mb-1.5 sm:mb-2 uppercase tracking-wider">{{ t('settings.combat_simulator_url') }}</label>
+                        <input id="settings-combat-simulator-url"
+                               type="url"
+                               v-model="form.combat_simulator_url"
+                               :placeholder="t('settings.combat_simulator_url_placeholder') || 'https://settlersonlinesimulator.com'"
+                               class="glass-input w-full text-xs sm:text-sm" />
+                        <p class="text-xs text-white/30 mt-1.5">{{ t('settings.combat_simulator_url_hint') }}</p>
+                    </div>
                 </div>
 
                 <button type="submit" :disabled="saving" class="btn-primary w-full sm:w-auto flex items-center justify-center gap-2 py-2.5 px-5 text-xs sm:text-sm disabled:opacity-60">
@@ -138,7 +149,8 @@ const stoppingTasks = ref(false);
 
 const form = ref({
     sync_interval: 30,
-    log_retention_days: 30
+    log_retention_days: 30,
+    combat_simulator_url: ''
 });
 
 const loadSettings = async () => {
@@ -147,7 +159,8 @@ const loadSettings = async () => {
         const data = res?.data || res || {};
         form.value = {
             sync_interval: Number(data.sync_interval ?? 30),
-            log_retention_days: Number(data.log_retention_days ?? 30)
+            log_retention_days: Number(data.log_retention_days ?? 30),
+            combat_simulator_url: data.combat_simulator_url || ''
         };
     } catch {
         showToast(t('settings.load_failed'), 'error');
@@ -161,7 +174,8 @@ const saveSettings = async () => {
     try {
         const payload = {
             sync_interval: Number(form.value.sync_interval),
-            log_retention_days: Number(form.value.log_retention_days)
+            log_retention_days: Number(form.value.log_retention_days),
+            combat_simulator_url: form.value.combat_simulator_url ? form.value.combat_simulator_url.trim() : null
         };
         const res = await settingsApi.updateSettings(payload);
         const data = res.data || res.settings || res;
@@ -170,6 +184,9 @@ const saveSettings = async () => {
         }
         if (data.log_retention_days !== undefined) {
             form.value.log_retention_days = Number(data.log_retention_days);
+        }
+        if (data.combat_simulator_url !== undefined) {
+            form.value.combat_simulator_url = data.combat_simulator_url || '';
         }
         showToast(t('settings.saved'));
     } catch {
