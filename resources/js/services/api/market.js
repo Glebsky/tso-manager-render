@@ -3,6 +3,10 @@ import windowAxios from 'axios';
 const http = window.axios || windowAxios;
 
 export const marketApi = {
+    async fetchPublicSettings() {
+        const res = await http.get('/api/public/market/settings');
+        return res.data;
+    },
     async fetchMarketServers() {
         const res = await http.get('/api/market/servers');
         return res.data;

@@ -95,8 +95,6 @@ class DomainExceptionHandlingTest extends TestCase
 
     public function test_unhandled_exception_redacts_sensitive_details(): void
     {
-        config(['app.debug' => false]);
-
         $response = $this->getJson('/api/test-unhandled-exception');
 
         $response->assertStatus(500);

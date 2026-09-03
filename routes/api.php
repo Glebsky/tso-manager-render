@@ -14,6 +14,7 @@ use App\Http\Controllers\Market\ArbitrageController;
 use App\Http\Controllers\Market\BulkController;
 use App\Http\Controllers\Market\CatalogController;
 use App\Http\Controllers\Market\PopularController;
+use App\Http\Controllers\Market\PublicMarketSettingsController;
 use App\Http\Controllers\Market\PublicServerController;
 use App\Http\Controllers\Market\ServerController;
 use App\Http\Controllers\Market\SettingsController as MarketSettingsController;
@@ -124,6 +125,7 @@ Route::prefix('public/market')
     ->middleware('throttle:public-market')
     ->group(function () {
         Route::get('/version', VersionController::class);
+        Route::get('/settings', PublicMarketSettingsController::class);
 
         Route::middleware(HttpCacheHeaders::class)->group(function () {
             Route::get('/servers', PublicServerController::class);

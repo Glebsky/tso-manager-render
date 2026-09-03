@@ -18,6 +18,29 @@ final class MarketSettingsService
 
     private const string KEY_CUSTOM_MINUTES = 'market_custom_interval_minutes';
 
+    private const string KEY_COMBAT_SIMULATOR_URL = 'market_combat_simulator_url';
+
+    public function combatSimulatorUrl(): ?string
+    {
+        $setting = Setting::get(self::KEY_COMBAT_SIMULATOR_URL);
+        if ($setting !== null && trim((string) $setting) !== '') {
+            return trim((string) $setting);
+        }
+
+        $fallback = config('market.combat_simulator_url');
+        if ($fallback !== null && trim((string) $fallback) !== '') {
+            return trim((string) $fallback);
+        }
+
+        return null;
+    }
+
+    public function updateCombatSimulatorUrl(?string $url): void
+    {
+        $trimmed = $url !== null ? trim($url) : null;
+        Setting::set(self::KEY_COMBAT_SIMULATOR_URL, $trimmed !== '' ? $trimmed : null);
+    }
+
     public function syncInterval(): string
     {
         return (string) Setting::get(self::KEY_INTERVAL, (string) $this->defaultMinutes());
