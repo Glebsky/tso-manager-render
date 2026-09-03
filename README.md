@@ -59,47 +59,113 @@ php artisan migrate
 
 ## Конфигурация окружения (.env)
 
-В проекте используются как стандартные параметры Laravel, так и специализированные настройки автоматизации TSO и Маркета:
+Ниже приведено подробное описание всех ключей конфигурации из `.env.example`, сгруппированных по функциональным модулям:
 
-### Настройки автоматизации TSO (`config/game.php`)
-```env
-# Режим планировщика: 'queue' (по умолчанию), 'cron' или 'sync'
-TSO_SCHEDULER_MODE=queue
+### 1. Основные параметры приложения (Application)
+| Ключ | Значение по умолчанию | Описание |
+| :--- | :--- | :--- |
+| `APP_NAME` | `"TSO Manager"` | Название приложения, используется в заголовках, письмах и UI. |
+| `APP_ENV` | `local` | Окружение приложения (`local`, `production`, `testing`). |
+| `APP_KEY` | *(генерируется)* | Ключ шифрования сессий и токенов (генерируется через `php artisan key:generate`). |
+| `APP_DEBUG` | `true` | Режим отладки. В `production` обязательно `false` для безопасности. |
+| `APP_TIMEZONE` | `UTC` | Базовый часовой пояс приложения. |
+| `APP_URL` | `http://localhost` | Базовый URL приложения для генерации ссылок и работы роутера. |
+| `APP_LOCALE` | `en` | Язык приложения по умолчанию (`ru`, `en`, `uk`). |
+| `APP_FALLBACK_LOCALE` | `en` | Резервный язык, если перевод ключа отсутствует в текущей локали. |
 
-# Таймаут зависших задач в минутах (автоматический сброс статуса 'running' в 'pending')
-TSO_STALE_TASK_TIMEOUT=10
+### 2. Логирование (Logging)
+| Ключ | Значение по умолчанию | Описание |
+| :--- | :--- | :--- |
+| `LOG_CHANNEL` | `stack` / `daily` | Основной канал логирования (`stack`, `daily`, `single`, `sentry`, `sentry_logs`). |
+| `LOG_DEPRECATIONS_CHANNEL` | `null` | Канал для предупреждений об устаревших функциях PHP/библиотек. |
+| `LOG_LEVEL` | `debug` | Минимальный уровень логирования (`debug`, `info`, `warning`, `error`). |
+| `LOG_STACK` | `single,sentry_logs` | Список каналов через запятую, объединяемых в составной канал `stack`. |
+| `LOG_STDERR_FORMATTER` | `Monolog\Formatter\JsonFormatter` | Форматтер для потока `stderr` (полезно для контейнеров Docker/K8s). |
 
-# Проверка SSL-сертификатов при обращении к серверам Ubisoft/TSO
-TSO_SSL_VERIFY=true
+### 3. База данных (PostgreSQL)
+| Ключ | Значение по умолчанию | Описание |
+| :--- | :--- | :--- |
+| `DB_CONNECTION` | `pgsql` | Драйвер БД (`pgsql`, `mysql`, `sqlite`). Основной стек — PostgreSQL. |
+| `DB_HOST` | `127.0.0.1` | Хост сервера базы данных. |
+| `DB_PORT` | `5432` | Порт PostgreSQL (по умолчанию `5432`). |
+| `DB_DATABASE` | `tso_manager` | Имя рабочей базы данных. |
+| `DB_USERNAME` | `tso_admin` | Имя пользователя базы данных. |
+| `DB_PASSWORD` | `secret` | Пароль пользователя базы данных. |
 
-# Таймаут HTTP-запросов к серверам TSO (в секундах)
-TSO_HTTP_TIMEOUT=30
-```
+### 4. Кэш, Сессии, Очереди и Файловое хранилище
+| Ключ | Значение по умолчанию | Описание |
+| :--- | :--- | :--- |
+| `BROADCAST_DRIVER` | `log` | Драйвер широковещания событий (`log`, `pusher`, `null`). |
+| `CACHE_DRIVER` | `file` / `redis` | Драйвер кэша (`file`, `redis`, `database`). В продакшене рекомендуется `redis`. |
+| `FILESYSTEM_DISK` | `local` | Диск хранения файлов (`local`, `public`, `s3`). |
+| `QUEUE_CONNECTION` | `sync` / `database` | Драйвер очереди задач (`database`, `redis`, `sync`). |
+| `SESSION_DRIVER` | `file` / `redis` | Хранилище сессий пользователей (`redis`, `file`, `database`). |
+| `SESSION_LIFETIME` | `120` | Время жизни сессии пользователя в минутах. |
 
-### Настройки рынка (`config/market.php`)
-```env
-# Сервер по умолчанию для публичной аналитики рынка
-MARKET_DEFAULT_SERVER_ID=ru
+### 5. Redis и Memcached
+| Ключ | Значение по умолчанию | Описание |
+| :--- | :--- | :--- |
+| `REDIS_HOST` | `127.0.0.1` | IP-адрес или хост сервера Redis. |
+| `REDIS_PASSWORD` | `null` | Пароль для доступа к Redis (если настроен). |
+| `REDIS_PORT` | `6379` | Порт подключения к Redis. |
+| `MEMCACHED_HOST` | `127.0.0.1` | Хост Memcached (если используется в качестве кэша). |
 
-# Время жизни активного рыночного предложения в часах
-MARKET_OFFER_LIFETIME_HOURS=6
+### 6. Почтовый сервис (Mail)
+| Ключ | Значение по умолчанию | Описание |
+| :--- | :--- | :--- |
+| `MAIL_MAILER` | `smtp` | Драйвер почты (`smtp`, `sendmail`, `log`). |
+| `MAIL_HOST` | `mailpit` | Хост SMTP сервера (локально `mailpit` или `mailhog`). |
+| `MAIL_PORT` | `1025` | Порт SMTP сервера. |
+| `MAIL_USERNAME` | `null` | Логин пользователя SMTP. |
+| `MAIL_PASSWORD` | `null` | Пароль пользователя SMTP. |
+| `MAIL_ENCRYPTION` | `null` | Тип шифрования (`tls`, `ssl`, `null`). |
+| `MAIL_FROM_ADDRESS`| `"hello@example.com"` | Email отправителя системных уведомлений. |
+| `MAIL_FROM_NAME` | `"${APP_NAME}"` | Имя отправителя в письмах. |
 
-# Стратегия кэширования рынка: 'bulk' или 'individual'
-MARKET_CACHE_STRATEGY=bulk
-```
+### 7. AWS / S3 Хранилище (Опционально)
+| Ключ | Описание |
+| :--- | :--- |
+| `AWS_ACCESS_KEY_ID` | Идентификатор ключа доступа к AWS / S3-совместимому хранилищу. |
+| `AWS_SECRET_ACCESS_KEY` | Секретный ключ доступа AWS / S3. |
+| `AWS_DEFAULT_REGION` | Регион S3 (например, `us-east-1`). |
+| `AWS_BUCKET` | Имя корзины (bucket) для хранения файлов. |
+| `AWS_USE_PATH_STYLE_ENDPOINT` | Использование path-style адресации (актуально для MinIO / локальных S3). |
 
-### Мониторинг и наблюдаемость (Observability)
-```env
-# Sentry DSN (ошибки и трейсинг производительности)
-SENTRY_LARAVEL_DSN=
+### 8. Pusher / WebSockets и Vite
+| Ключ | Описание |
+| :--- | :--- |
+| `PUSHER_APP_ID` / `KEY` / `SECRET` | Учетные данные для Pusher / Soketi при работе с WebSocket в реальном времени. |
+| `PUSHER_HOST` / `PORT` / `SCHEME` | Параметры кастомного WebSocket-сервера. |
+| `VITE_*` | Проброс соответствующих переменных в сборку фронтенда через Vite. |
 
-# Включение дашборда метрик Laravel Pulse (/pulse)
-PULSE_ENABLED=true
+### 9. Игровой клиент TSO и Планировщик (`config/game.php`)
+| Ключ | Значение по умолчанию | Описание |
+| :--- | :--- | :--- |
+| `TSO_SCHEDULER_MODE` | `queue` | Режим работы планировщика: `queue` (отправка в очереди `tso-tasks`/`tso-market`), `cron` (выполнение через cron-воркер) или `sync` (синхронно). |
+| `TSO_STALE_TASK_TIMEOUT` | `10` | Таймаут зависших задач в минутах (автоматический сброс зависших `running` задач). |
+| `TSO_SSL_VERIFY` | `true` | Проверка валидности SSL-сертификатов при обращении к игровым серверам Ubisoft/TSO. |
+| `TSO_HTTP_TIMEOUT` | `30` | Таймаут HTTP-запросов к игровым шлюзам TSO (в секундах). |
+| `TSO_SESSION_TTL` | `300` | Время жизни активной AMF-сессии игрового сервера в секундах до повторной инициализации. |
+| `TSO_SESSION_LOCK_WAIT`| `20` | Максимальное время ожидания блокировки сессии (секунды) для предотвращения параллельных конфликтов. |
 
-# Включение Laravel Telescope для локальной разработки (/telescope)
-TELESCOPE_ENABLED=true
-TELESCOPE_ALLOWED_EMAILS=
-```
+### 10. Аналитика и синхронизация рынка (`config/market.php`)
+| Ключ | Значение по умолчанию | Описание |
+| :--- | :--- | :--- |
+| `MARKET_DEFAULT_SERVER_ID` | `ru` | Сервер по умолчанию для отображения публичной аналитики рынка. |
+| `MARKET_OFFER_LIFETIME_HOURS` | `6` | Время жизни рыночного лота в часах (для фильтрации активных предложений). |
+| `MARKET_CACHE_STRATEGY` | `individual` | Стратегия кэширования и выборки предложений рынка: `individual` или `bulk`. |
+
+### 11. Наблюдаемость и мониторинг (Sentry, Pulse, Telescope)
+| Ключ | Значение по умолчанию | Описание |
+| :--- | :--- | :--- |
+| `SENTRY_LARAVEL_DSN` | *(DSN)* | DSN адрес проекта в Sentry для отправки ошибок и трейсов. |
+| `SENTRY_ENABLE_LOGS` | `true` | Включение отправки структурированных логов в Sentry Logs. |
+| `SENTRY_SEND_DEFAULT_PII` | `false` | Разрешение на передачу персональных данных (IP, email) в Sentry. |
+| `SENTRY_ENVIRONMENT` | `local` | Имя окружения в панели Sentry (`local`, `staging`, `production`). |
+| `SENTRY_TRACES_SAMPLE_RATE` | `0.0` | Доля трейсинга производительности транзакций (от `0.0` до `1.0`). |
+| `SENTRY_PROFILES_SAMPLE_RATE` | `0.0` | Доля профилирования выполнения кода в Sentry (от `0.0` до `1.0`). |
+| `PULSE_ENABLED` | `true` | Включение встроенного дашборда метрик Laravel Pulse (`/pulse`). |
+| `TELESCOPE_ENABLED` | `true` | Включение инструмента локальной отладки Laravel Telescope (`/telescope`). |
 
 ---
 
