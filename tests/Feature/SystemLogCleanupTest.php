@@ -6,6 +6,7 @@ namespace Tests\Feature;
 
 use App\Models\Account;
 use App\Models\BotLog;
+use App\Models\MarketSyncLog;
 use App\Models\Setting;
 use App\Models\User;
 use App\Services\SystemLogCleanupService;
@@ -59,6 +60,14 @@ class SystemLogCleanupTest extends TestCase
             'created_at' => Carbon::now()->subDays(40),
         ]);
 
+        MarketSyncLog::create([
+            'account_id' => $this->account->id,
+            'action' => 'SYNC',
+            'status' => 'SUCCESS',
+            'message' => 'Old market log',
+            'created_at' => Carbon::now()->subDays(40),
+        ]);
+
         // Recent log (5 days ago) - should be kept
         BotLog::create([
             'account_id' => $this->account->id,
@@ -67,13 +76,25 @@ class SystemLogCleanupTest extends TestCase
             'created_at' => Carbon::now()->subDays(5),
         ]);
 
+        MarketSyncLog::create([
+            'account_id' => $this->account->id,
+            'action' => 'SYNC',
+            'status' => 'SUCCESS',
+            'message' => 'Recent market log',
+            'created_at' => Carbon::now()->subDays(5),
+        ]);
+
         $this->assertEquals(2, BotLog::count());
+        $this->assertEquals(2, MarketSyncLog::count());
 
         Artisan::call('tso:run-scheduler');
 
         $this->assertEquals(1, BotLog::count());
+        $this->assertEquals(1, MarketSyncLog::count());
         $this->assertDatabaseMissing('bot_logs', ['message' => 'Old log message']);
         $this->assertDatabaseHas('bot_logs', ['message' => 'Recent log message']);
+        $this->assertDatabaseMissing('market_sync_logs', ['message' => 'Old market log']);
+        $this->assertDatabaseHas('market_sync_logs', ['message' => 'Recent market log']);
         $this->assertNotNull(Setting::get('last_log_cleanup_at'));
     }
 
@@ -154,12 +175,22 @@ class SystemLogCleanupTest extends TestCase
             'created_at' => Carbon::now(),
         ]);
 
+        MarketSyncLog::create([
+            'account_id' => $this->account->id,
+            'action' => 'SYNC',
+            'status' => 'SUCCESS',
+            'message' => 'Market Log 1',
+            'created_at' => Carbon::now(),
+        ]);
+
         $this->assertEquals(2, BotLog::count());
+        $this->assertEquals(1, MarketSyncLog::count());
 
         $response = $this->actingAs($user)->deleteJson('/api/settings/logs');
 
         $response->assertNoContent();
 
         $this->assertEquals(0, BotLog::count());
+        $this->assertEquals(0, MarketSyncLog::count());
     }
 }

@@ -13,6 +13,9 @@ use Illuminate\Http\Middleware\SetCacheHeaders;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use Sentry\Laravel\Http\FlushEventsMiddleware;
+use Sentry\Laravel\Http\SetRequestIpMiddleware;
+use Sentry\Laravel\Http\SetRequestMiddleware;
 use Sentry\Laravel\Integration;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
@@ -25,6 +28,9 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->append(SecurityHeadersMiddleware::class);
+        $middleware->append(SetRequestMiddleware::class);
+        $middleware->append(SetRequestIpMiddleware::class);
+        $middleware->append(FlushEventsMiddleware::class);
 
         $middleware->web(prepend: [
             SetLocale::class,
