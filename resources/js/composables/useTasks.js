@@ -43,6 +43,16 @@ export function useTasks() {
         return res;
     }
 
+    async function duplicateTask(id) {
+        const res = await tasksApi.duplicateTask(id);
+        await loadTasks();
+        return res;
+    }
+
+    async function reorderTasks(taskIds) {
+        return await tasksApi.reorderTasks(taskIds);
+    }
+
     async function executeTask(id) {
         return await tasksApi.executeTask(id);
     }
@@ -55,6 +65,8 @@ export function useTasks() {
         error,
         loadTasks,
         createTask,
+        duplicateTask,
+        reorderTasks,
         toggleTask,
         deleteTask,
         executeTask,

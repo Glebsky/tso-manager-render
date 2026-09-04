@@ -754,9 +754,14 @@
                         </h3>
                     </div>
 
-                    <div class="p-2.5 sm:p-5 space-y-3 sm:space-y-4">
+                    <div class="p-2.5 sm:p-5 space-y-3 sm:space-y-4"
+                         @dragover.prevent
+                         @drop="onDropGroup($event, accountName, groupTasks)">
                         <TaskCard v-for="task in groupTasks" :key="task.id"
                                   :task="task"
+                                  :isDragging="draggedTaskId === task.id"
+                                  :isDragOver="dropTargetTaskId === task.id"
+                                  :dropPosition="dropTargetTaskId === task.id ? dropPosition : null"
                                   :typeIcons="typeIcons"
                                   :typeLabels="typeLabels"
                                   :isExpanded="expandedTasks[task.id]"
@@ -780,7 +785,12 @@
                                   @toggle-active="toggleTask"
                                   @execute="runTaskNow"
                                   @edit="editTask"
-                                  @delete="deleteTask" />
+                                  @duplicate="handleDuplicateTask"
+                                  @delete="deleteTask"
+                                  @dragstart="onTaskDragStart($event, task, accountName)"
+                                  @dragover="onTaskDragOver($event, task, accountName)"
+                                  @dragleave="onTaskDragLeave($event, task)"
+                                  @dragend="onTaskDragEnd" />
                     </div>
                 </div>
             </TaskList>
@@ -2255,7 +2265,12 @@ import TaskList from '../components/tasks/TaskList.vue';
 
         const groupedTasks = computed(() => {
             const groups = {};
-            const sortedTasks = [...filteredTasks.value].sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
+            const sortedTasks = [...filteredTasks.value].sort((a, b) => {
+                const orderA = a.sort_order ?? 0;
+                const orderB = b.sort_order ?? 0;
+                if (orderA !== orderB) return orderA - orderB;
+                return (Number(a.id) || 0) - (Number(b.id) || 0);
+            });
             sortedTasks.forEach(taskItem => {
                 const name = taskItem.account ? (taskItem.account.nickname || taskItem.account.username) : t('tasks.unknown_account');
                 if (!groups[name]) groups[name] = [];
@@ -2551,6 +2566,145 @@ import TaskList from '../components/tasks/TaskList.vue';
                 }
             } catch (e) {
                 showToast(t('tasks.toast.delete_failed'), 'error');
+            }
+        };
+
+        const duplicatingTaskId = ref(null);
+
+        const handleDuplicateTask = async (task) => {
+            const id = typeof task === 'object' && task !== null ? task.id : task;
+            if (!id || id === 'undefined') return;
+            duplicatingTaskId.value = id;
+            try {
+                const res = await axios.post(`/api/tasks/${id}/duplicate`);
+                if (res.status === 201 || res.data?.success || res.data?.data) {
+                    showToast(t('tasks.toast.task_duplicated'));
+                    await loadPlanner();
+                }
+            } catch (e) {
+                const errorMsg = e.response?.data?.message || e.message || t('tasks.toast.save_failed');
+                showToast(errorMsg, 'error');
+            } finally {
+                duplicatingTaskId.value = null;
+            }
+        };
+
+        const reorderingTasks = ref(false);
+        const draggedTaskId = ref(null);
+        const draggedAccountName = ref(null);
+        const dropTargetTaskId = ref(null);
+        const dropPosition = ref(null); // 'top' | 'bottom'
+
+        const onTaskDragStart = (e, task, accountName) => {
+            if (reorderingTasks.value) return;
+            draggedTaskId.value = task.id;
+            draggedAccountName.value = accountName;
+            dropTargetTaskId.value = null;
+            dropPosition.value = null;
+
+            if (e.dataTransfer) {
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', String(task.id));
+            }
+        };
+
+        const onTaskDragOver = (e, targetTask, accountName) => {
+            if (!draggedTaskId.value || draggedTaskId.value === targetTask.id) return;
+            if (draggedAccountName.value !== accountName) return;
+
+            e.preventDefault();
+            if (e.dataTransfer) {
+                e.dataTransfer.dropEffect = 'move';
+            }
+
+            const targetElement = e.currentTarget;
+            if (targetElement) {
+                const rect = targetElement.getBoundingClientRect();
+                const offsetY = e.clientY - rect.top;
+                dropPosition.value = offsetY < rect.height / 2 ? 'top' : 'bottom';
+            } else {
+                dropPosition.value = 'bottom';
+            }
+
+            dropTargetTaskId.value = targetTask.id;
+        };
+
+        const onTaskDragLeave = (e, task) => {
+            if (dropTargetTaskId.value === task.id) {
+                // If leaving the card to outside, clear
+                const related = e.relatedTarget;
+                if (!related || !e.currentTarget.contains(related)) {
+                    dropTargetTaskId.value = null;
+                    dropPosition.value = null;
+                }
+            }
+        };
+
+        const onTaskDragEnd = () => {
+            draggedTaskId.value = null;
+            draggedAccountName.value = null;
+            dropTargetTaskId.value = null;
+            dropPosition.value = null;
+        };
+
+        const onDropGroup = async (e, accountName, groupTasks) => {
+            e.preventDefault();
+
+            const fromId = draggedTaskId.value;
+            const toId = dropTargetTaskId.value;
+            const position = dropPosition.value;
+
+            // Reset drag state
+            onTaskDragEnd();
+
+            if (!fromId || !toId || fromId === toId) return;
+            if (reorderingTasks.value) return;
+
+            const fromIdx = groupTasks.findIndex(t => t.id === fromId);
+            const toIdx = groupTasks.findIndex(t => t.id === toId);
+            if (fromIdx === -1 || toIdx === -1) return;
+
+            // Reorder group items
+            const newGroupList = [...groupTasks];
+            const [movedItem] = newGroupList.splice(fromIdx, 1);
+
+            let insertIdx = newGroupList.findIndex(t => t.id === toId);
+            if (position === 'bottom') {
+                insertIdx += 1;
+            }
+            newGroupList.splice(insertIdx, 0, movedItem);
+
+            // Optimistically update global tasks array
+            const groupTaskIds = new Set(newGroupList.map(t => t.id));
+            const reorderedGlobalTasks = [];
+            let groupIdx = 0;
+
+            for (const t of tasks.value) {
+                if (groupTaskIds.has(t.id)) {
+                    reorderedGlobalTasks.push(newGroupList[groupIdx++]);
+                } else {
+                    reorderedGlobalTasks.push(t);
+                }
+            }
+
+            tasks.value = reorderedGlobalTasks;
+
+            // Update sort_order on each task so computed groupedTasks preserves the new order
+            tasks.value.forEach((task, idx) => {
+                task.sort_order = idx;
+            });
+
+            // Persist order on backend
+            reorderingTasks.value = true;
+            try {
+                const taskIds = tasks.value.map(t => t.id);
+                await axios.post('/api/tasks/reorder', { task_ids: taskIds });
+                showToast(t('tasks.toast.order_updated'));
+            } catch (err) {
+                showToast(t('tasks.toast.reorder_failed'), 'error');
+                await loadPlanner();
+            } finally {
+                reorderingTasks.value = false;
             }
         };
 

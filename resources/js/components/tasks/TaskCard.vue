@@ -1,12 +1,35 @@
 <template>
-    <div class="glass-card p-3 sm:p-4.5 transition-all duration-300 hover:border-white/20"
-         :class="{ 'border-emerald-500/30 bg-emerald-500/[0.02]': task.is_active }">
+    <div class="glass-card p-3 sm:p-4.5 transition-all duration-200 hover:border-white/20 relative"
+         :class="{
+             'border-emerald-500/30 bg-emerald-500/[0.02]': task.is_active && !isDragging,
+             'opacity-40 border-dashed border-emerald-500/60 bg-emerald-500/5': isDragging,
+             'border-t-2 !border-t-emerald-400': isDragOver && dropPosition === 'top',
+             'border-b-2 !border-b-emerald-400': isDragOver && dropPosition === 'bottom'
+         }"
+         :draggable="canDrag"
+         @dragstart="onDragStart"
+         @dragenter="$emit('dragenter', $event)"
+         @dragover="$emit('dragover', $event)"
+         @dragleave="$emit('dragleave', $event)"
+         @dragend="onDragEnd">
         <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-3 sm:gap-4">
             <!-- Тип и иконка -->
-            <div class="flex items-start gap-2.5 sm:gap-3 min-w-0 flex-1">
+            <div class="flex items-start gap-2 sm:gap-2.5 min-w-0 flex-1">
+                <!-- Drag Handle -->
+                <div class="drag-handle cursor-grab active:cursor-grabbing p-1 text-white/30 hover:text-emerald-400 hover:bg-white/5 rounded-lg transition-colors flex items-center justify-center flex-shrink-0 self-center select-none"
+                     :title="t('tasks.drag_to_reorder')"
+                     :aria-label="t('tasks.drag_to_reorder')"
+                     @mouseenter="canDrag = true"
+                     @mouseleave="if (!isDragging) canDrag = false;"
+                     @touchstart.passive="canDrag = true">
+                    <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M7 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 2zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 14zm6-12a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 2zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 14z"/>
+                    </svg>
+                </div>
+
                 <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl border flex items-center justify-center text-base sm:text-lg flex-shrink-0"
                      :class="task.is_active ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-white/5 border-white/10 text-white/40'">
-                    {{ task.task_type === 'sequence' ? '⛓️' : (typeIcons[task.task_type] || '📋') }}
+                    {{ taskPrimaryIcon }}
                 </div>
 
                 <!-- Название и теги -->
@@ -201,6 +224,13 @@
                     </button>
 
                     <div class="flex items-center gap-1.5 shrink-0">
+                        <button type="button" @click="$emit('duplicate', task)"
+                                class="btn-secondary btn-sm text-xs py-1.5 px-2 text-white/60 hover:text-white border-white/10 hover:border-white/20"
+                                :aria-label="t('tasks.duplicate_task') || 'Duplicate task'"
+                                :title="t('tasks.duplicate_task')">
+                            📋
+                        </button>
+
                         <button type="button" @click="$emit('edit', task)"
                                 class="btn-secondary btn-sm text-xs py-1.5 px-2 text-white/60 hover:text-white border-white/10 hover:border-white/20"
                                 :aria-label="t('tasks.edit_task') || 'Edit task'"
@@ -382,9 +412,10 @@
 </template>
 
 <script setup>
+import { ref, computed } from 'vue';
 import { t } from '../../lang';
 
-defineProps({
+const props = defineProps({
     task: { type: Object, required: true },
     typeIcons: { type: Object, required: true },
     typeLabels: { type: Object, required: true },
@@ -404,8 +435,45 @@ defineProps({
     getSpecialistInfo: { type: Function, required: true },
     handleBuildingIconError: { type: Function, default: () => {} },
     handleBuffIconError: { type: Function, default: () => {} },
-    handleSpecialistIconError: { type: Function, default: () => {} }
+    handleSpecialistIconError: { type: Function, default: () => {} },
+    isDragging: { type: Boolean, default: false },
+    isDragOver: { type: Boolean, default: false },
+    dropPosition: { type: String, default: null }
 });
 
-defineEmits(['toggle-expand', 'toggle-active', 'execute', 'edit', 'delete']);
+const emit = defineEmits([
+    'toggle-expand',
+    'toggle-active',
+    'execute',
+    'edit',
+    'delete',
+    'duplicate',
+    'dragstart',
+    'dragenter',
+    'dragover',
+    'dragleave',
+    'dragend'
+]);
+
+const taskPrimaryIcon = computed(() => {
+    if (props.task.task_type === 'sequence') {
+        const actions = props.getTaskActionsList(props.task);
+        if (actions.length > 0) {
+            return props.typeIcons[actions[0].task_type] || '⛓️';
+        }
+        return '⛓️';
+    }
+    return props.typeIcons[props.task.task_type] || '📋';
+});
+
+const canDrag = ref(false);
+
+const onDragStart = (e) => {
+    emit('dragstart', e);
+};
+
+const onDragEnd = (e) => {
+    canDrag.value = false;
+    emit('dragend', e);
+};
 </script>

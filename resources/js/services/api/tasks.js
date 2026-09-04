@@ -26,6 +26,16 @@ export const tasksApi = {
         const res = await http.delete(`/api/tasks/${id}`);
         return res.data;
     },
+    async duplicateTask(id) {
+        if (!id || id === 'undefined') throw new Error('Task ID is required');
+        const res = await http.post(`/api/tasks/${id}/duplicate`);
+        return res.data;
+    },
+    async reorderTasks(taskIds) {
+        if (!Array.isArray(taskIds)) throw new Error('taskIds must be an array');
+        const res = await http.post('/api/tasks/reorder', { task_ids: taskIds });
+        return res.data;
+    },
     async executeTask(id) {
         if (!id || id === 'undefined') throw new Error('Task ID is required');
         const res = await http.post(`/api/tasks/${id}/execute`);
