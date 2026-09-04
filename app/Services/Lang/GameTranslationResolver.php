@@ -89,7 +89,7 @@ final class GameTranslationResolver
 
                 $idLowerClean = str_replace([' ', '_'], '', strtolower($id));
                 foreach ($sec as $k => $v) {
-                    $kLowerClean = str_replace([' ', '_'], '', strtolower($k));
+                    $kLowerClean = str_replace([' ', '_'], '', strtolower((string) $k));
                     if ($kLowerClean === $idLowerClean) {
                         return $v;
                     }
