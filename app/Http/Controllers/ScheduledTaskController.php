@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Tasks\IndexScheduledTaskRequest;
+use App\Http\Requests\Tasks\ReorderScheduledTasksRequest;
 use App\Http\Requests\Tasks\StoreScheduledTaskRequest;
 use App\Http\Requests\Tasks\UpdateScheduledTaskRequest;
 use App\Http\Resources\AccountResource;
@@ -101,6 +102,43 @@ class ScheduledTaskController extends Controller
         $this->tasks->delete($task);
 
         return response()->noContent();
+    }
+
+    /**
+     * Duplicate an existing scheduled task.
+     */
+    public function duplicate(ScheduledTask $task): JsonResponse
+    {
+        $duplicated = $this->tasks->duplicate($task);
+        $resource = new ScheduledTaskResource($duplicated);
+
+        return $resource
+            ->additional([
+                'success' => true,
+                'message' => 'Task duplicated.',
+                'task' => $resource,
+                'meta' => [
+                    'server_time' => now()->toIso8601String(),
+                ],
+            ])
+            ->response()
+            ->setStatusCode(201);
+    }
+
+    /**
+     * Reorder scheduled tasks.
+     */
+    public function reorder(ReorderScheduledTasksRequest $request): JsonResponse
+    {
+        $this->tasks->reorder($request->taskIds());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Tasks reordered.',
+            'meta' => [
+                'server_time' => now()->toIso8601String(),
+            ],
+        ]);
     }
 
     /**

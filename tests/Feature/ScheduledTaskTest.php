@@ -330,4 +330,130 @@ class ScheduledTaskTest extends TestCase
             ->postJson('/api/tasks/undefined/toggle')
             ->assertStatus(404);
     }
+
+    public function test_can_duplicate_scheduled_task(): void
+    {
+        $user = User::factory()->create();
+        $account = Account::create([
+            'username' => 'dupuser',
+            'password' => 'secret',
+            'region' => 'ru',
+            'nickname' => 'dupuser',
+            'zone_data' => json_encode(['buildings' => []]),
+        ]);
+
+        $task1 = ScheduledTask::create([
+            'name' => 'Original Task',
+            'account_id' => $account->id,
+            'task_type' => 'sequence',
+            'payload' => ['actions' => [['task_type' => 'stop_production', 'payload' => ['grid' => 10]]]],
+            'schedule_type' => 'daily',
+            'run_at_time' => '10:00',
+            'is_active' => true,
+            'sort_order' => 1,
+        ]);
+
+        $task2 = ScheduledTask::create([
+            'name' => 'Next Task',
+            'account_id' => $account->id,
+            'task_type' => 'sequence',
+            'payload' => ['actions' => [['task_type' => 'start_production', 'payload' => ['grid' => 10]]]],
+            'schedule_type' => 'daily',
+            'run_at_time' => '11:00',
+            'is_active' => true,
+            'sort_order' => 2,
+        ]);
+
+        $response = $this->actingAs($user)
+            ->postJson("/api/tasks/{$task1->id}/duplicate");
+
+        $response->assertStatus(201);
+        $response->assertJsonPath('data.name', 'Original Task (копия)');
+        $response->assertJsonPath('data.is_active', false);
+        $response->assertJsonPath('data.status', 'pending');
+        $response->assertJsonPath('data.sort_order', 2);
+
+        $task2->refresh();
+        $this->assertSame(3, $task2->sort_order);
+
+        $this->assertDatabaseHas('scheduled_tasks', [
+            'name' => 'Original Task (копия)',
+            'account_id' => $account->id,
+            'is_active' => false,
+            'sort_order' => 2,
+        ]);
+    }
+
+    public function test_can_reorder_scheduled_tasks(): void
+    {
+        $user = User::factory()->create();
+        $account = Account::create([
+            'username' => 'reorderuser',
+            'password' => 'secret',
+            'region' => 'ru',
+            'nickname' => 'reorderuser',
+            'zone_data' => json_encode(['buildings' => []]),
+        ]);
+
+        $t1 = ScheduledTask::create([
+            'name' => 'Task A',
+            'account_id' => $account->id,
+            'task_type' => 'sequence',
+            'payload' => [],
+            'schedule_type' => 'daily',
+            'sort_order' => 1,
+        ]);
+
+        $t2 = ScheduledTask::create([
+            'name' => 'Task B',
+            'account_id' => $account->id,
+            'task_type' => 'sequence',
+            'payload' => [],
+            'schedule_type' => 'daily',
+            'sort_order' => 2,
+        ]);
+
+        $t3 = ScheduledTask::create([
+            'name' => 'Task C',
+            'account_id' => $account->id,
+            'task_type' => 'sequence',
+            'payload' => [],
+            'schedule_type' => 'daily',
+            'sort_order' => 3,
+        ]);
+
+        $response = $this->actingAs($user)
+            ->postJson('/api/tasks/reorder', [
+                'task_ids' => [$t3->id, $t1->id, $t2->id],
+            ]);
+
+        $response->assertStatus(200);
+
+        $t1->refresh();
+        $t2->refresh();
+        $t3->refresh();
+
+        $this->assertSame(1, $t3->sort_order);
+        $this->assertSame(2, $t1->sort_order);
+        $this->assertSame(3, $t2->sort_order);
+
+        $listResponse = $this->actingAs($user)->getJson('/api/tasks');
+        $listResponse->assertStatus(200);
+        $data = $listResponse->json('data');
+        $this->assertSame($t3->id, $data[0]['id']);
+        $this->assertSame($t1->id, $data[1]['id']);
+        $this->assertSame($t2->id, $data[2]['id']);
+    }
+
+    public function test_reorder_validation_fails_with_invalid_ids(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->postJson('/api/tasks/reorder', [
+                'task_ids' => [999999],
+            ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['task_ids.0']);
+    }
 }

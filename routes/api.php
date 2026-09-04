@@ -61,7 +61,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Scheduled tasks
     Route::get('/tasks', [ScheduledTaskController::class, 'index']);
     Route::post('/tasks', [ScheduledTaskController::class, 'store']);
+    Route::post('/tasks/reorder', [ScheduledTaskController::class, 'reorder']);
     Route::put('/tasks/{task}', [ScheduledTaskController::class, 'update'])->whereNumber('task');
+    Route::post('/tasks/{task}/duplicate', [ScheduledTaskController::class, 'duplicate'])->whereNumber('task');
     Route::delete('/tasks/{task}', [ScheduledTaskController::class, 'destroy'])->whereNumber('task');
 
     // Game lookups

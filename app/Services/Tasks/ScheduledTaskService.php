@@ -10,6 +10,7 @@ use App\Models\Account;
 use App\Models\ScheduledTask;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -32,7 +33,7 @@ final class ScheduledTaskService
     {
         return ScheduledTask::with(['account' => static function ($query): void {
             $query->select('id', 'username', 'nickname', 'region', 'status')->withExists('marketServerConnections');
-        }])->orderByDesc('id')->get();
+        }])->orderBy('sort_order')->orderBy('id')->get();
     }
 
     public function find(int $id): ?ScheduledTask
@@ -49,7 +50,7 @@ final class ScheduledTaskService
     public function paginate(int $perPage = 50, ?Collection $preloadedAccounts = null): LengthAwarePaginator
     {
         if ($preloadedAccounts !== null) {
-            $paginator = ScheduledTask::query()->latest()->paginate($perPage);
+            $paginator = ScheduledTask::query()->orderBy('sort_order')->orderBy('id')->paginate($perPage);
             $accountsById = $preloadedAccounts->keyBy('id');
             $paginator->getCollection()->each(static function (ScheduledTask $task) use ($accountsById): void {
                 $task->setRelation('account', $accountsById->get($task->account_id));
@@ -64,7 +65,8 @@ final class ScheduledTaskService
                     $query->select('id', 'username', 'nickname', 'region', 'status')->withExists('marketServerConnections');
                 },
             ])
-            ->latest()
+            ->orderBy('sort_order')
+            ->orderBy('id')
             ->paginate($perPage);
     }
 
@@ -89,6 +91,10 @@ final class ScheduledTaskService
         $payload = is_array($data['payload'] ?? null) ? $data['payload'] : [];
 
         $data['payload'] = $this->enrichPayloadBuildingNames($accountId, $payload);
+
+        if (! isset($data['sort_order'])) {
+            $data['sort_order'] = ((int) ScheduledTask::max('sort_order')) + 1;
+        }
 
         $task = ScheduledTask::create($data);
         $this->logger->scheduled($task);
@@ -259,6 +265,46 @@ final class ScheduledTaskService
         }]);
 
         return $task;
+    }
+
+    public function duplicate(ScheduledTask $task): ScheduledTask
+    {
+        return DB::transaction(function () use ($task): ScheduledTask {
+            ScheduledTask::where('sort_order', '>', $task->sort_order)
+                ->increment('sort_order');
+
+            $duplicateName = ! empty($task->name) ? "{$task->name} (копия)" : 'Серия (копия)';
+
+            $replica = $task->replicate([
+                'last_run_at',
+                'last_result',
+                'queued_at',
+                'execution_token',
+                'completed_steps',
+            ]);
+
+            $replica->name = $duplicateName;
+            $replica->is_active = false;
+            $replica->status = TaskStatus::Pending;
+            $replica->sort_order = $task->sort_order + 1;
+            $replica->save();
+
+            $this->logger->scheduled($replica);
+
+            return $this->withAccount($replica);
+        });
+    }
+
+    /**
+     * @param  list<int>  $taskIds
+     */
+    public function reorder(array $taskIds): void
+    {
+        DB::transaction(function () use ($taskIds): void {
+            foreach ($taskIds as $index => $id) {
+                ScheduledTask::where('id', $id)->update(['sort_order' => $index + 1]);
+            }
+        });
     }
 
     public function withAccount(ScheduledTask $task): ScheduledTask

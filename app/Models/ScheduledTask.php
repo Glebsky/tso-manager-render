@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property ?int $interval_minutes
  * @property ?array<string, mixed> $payload
  * @property bool $is_active
+ * @property int $sort_order
  * @property TaskStatus $status
  * @property ?Carbon $queued_at
  * @property ?string $execution_token
@@ -39,6 +40,7 @@ class ScheduledTask extends Model
     protected $attributes = [
         'status' => 'pending',
         'is_active' => true,
+        'sort_order' => 0,
     ];
 
     protected $fillable = [
@@ -48,6 +50,7 @@ class ScheduledTask extends Model
         'payload',
         'run_at_time',
         'is_active',
+        'sort_order',
         'last_run_at',
         'last_result',
         'schedule_type',
@@ -63,6 +66,7 @@ class ScheduledTask extends Model
     protected $casts = [
         'payload' => 'array',
         'is_active' => 'boolean',
+        'sort_order' => 'integer',
         'last_run_at' => 'datetime',
         'run_at_datetime' => 'datetime',
         'queued_at' => 'datetime',
