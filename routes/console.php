@@ -3,6 +3,6 @@
 use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('tso:run-scheduler --work')
-    ->everyMinute()
+    ->everyTwoMinutes()
     ->withoutOverlapping(10)
     ->onOneServer();
