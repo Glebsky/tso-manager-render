@@ -38,6 +38,8 @@ class AccountResource extends JsonResource
             'dso_auth_user' => $this->dso_auth_user,
             'bb_url' => $this->bb_url,
             'server_name' => $this->server_name,
+            'detected_server_id' => $this->detected_server_id,
+            'detected_locale' => $this->detected_locale,
             'is_market_connected' => $this->is_market_connected,
             'avatar_id' => $this->avatar_id,
             'building_count' => $this->building_count,
