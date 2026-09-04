@@ -968,8 +968,13 @@ const account = ref(null);
         const resourceLimit = computed(() => zoneData.value?.resourceLimit);
         const playerNickname = computed(() => zoneData.value?.playerNickname || account.value?.nickname || account.value?.username);
 
+        watch(playerNickname, (name) => {
+            if (name) {
+                document.title = `${name} · TSO Manager`;
+            }
+        }, { immediate: true });
+
         const getAvatarById = (avatarId) => {
-            if (!avatarId) return null;
             const idNum = parseInt(avatarId);
             if (idNum >= 1 && idNum <= 60) {
                 return `/images/avatars/${idNum}.webp`;
