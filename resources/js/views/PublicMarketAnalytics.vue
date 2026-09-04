@@ -10,10 +10,12 @@
                 <!-- Row 1: brand + language switcher (switcher is in flow, so nothing overlaps) -->
                 <div class="flex items-start justify-between gap-2.5 sm:gap-3">
                     <div class="flex items-start gap-2.5 sm:gap-4 min-w-0">
-                        <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:scale-105 flex-shrink-0">
-                            <svg class="w-5 h-5 sm:w-7 sm:h-7 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18 9 11.25l4.306 4.307a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-3.75-1.002m3.75 1.002-1.002 3.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                            </svg>
+                        <div class="w-10 h-10 xs:w-11 xs:h-11 sm:w-14 sm:h-14 flex items-center justify-center transition-transform duration-300 hover:scale-105 flex-shrink-0">
+                            <img :src="'/images/logo/logo-96.webp'"
+                                 :srcset="'/images/logo/logo-96.webp 1x, /images/logo/logo-192.webp 2x, /images/logo/logo-288.webp 3x'"
+                                 width="96" height="96"
+                                 alt="TSO Market Analytics"
+                                 class="w-full h-full object-contain" />
                         </div>
                         <div class="min-w-0 pill-row gap-x-2 gap-y-1">
                             <h1 class="text-lg xs:text-xl sm:text-3xl font-bold text-white tracking-tight wrap-anywhere">TSO Market Analytics</h1>

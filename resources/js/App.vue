@@ -23,8 +23,12 @@
             <!-- Logo -->
             <div class="px-6 py-6 border-b border-white/5 flex items-center justify-between">
                 <router-link to="/admin" @click="mobileMenuOpen = false" class="flex items-center gap-3 group">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 p-0.5 shadow-lg shadow-emerald-500/25 group-hover:shadow-emerald-500/40 transition-all duration-300 overflow-hidden flex items-center justify-center">
-                        <img :src="'/logo-40.webp'" width="40" height="40" alt="TSO Manager Logo" class="w-full h-full object-cover rounded-[10px]" />
+                    <div class="w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:scale-105">
+                        <img :src="'/images/logo/logo-96.webp'"
+                             :srcset="'/images/logo/logo-96.webp 1x, /images/logo/logo-192.webp 2x, /images/logo/logo-288.webp 3x'"
+                             width="96" height="96"
+                             alt="TSO Manager Logo"
+                             class="w-full h-full object-contain" />
                     </div>
                     <div>
                         <h1 class="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors">TSO Manager</h1>
