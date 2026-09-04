@@ -6,9 +6,11 @@ namespace Tests\Unit;
 
 use App\Models\MarketHistory;
 use App\Models\MarketOffer;
+use App\Models\MarketSyncLog;
 use App\Services\Market\Sync\MarketOfferParser;
 use App\Services\Market\Sync\MarketOfferPersister;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 class MarketSyncTest extends TestCase
@@ -288,5 +290,22 @@ class MarketSyncTest extends TestCase
         $persister->persist($serverId, [], []);
 
         $this->assertEquals(0, MarketOffer::where('server_id', $serverId)->count());
+    }
+
+    public function test_market_sync_log_auto_populates_created_at(): void
+    {
+        $log = MarketSyncLog::create([
+            'account_id' => null,
+            'server_id' => 'cz_kouzelnictvi',
+            'action' => 'Market sync',
+            'status' => 'ERROR',
+            'message' => 'Failed',
+        ]);
+
+        $this->assertInstanceOf(Carbon::class, $log->created_at);
+        $this->assertDatabaseHas('market_sync_logs', [
+            'id' => $log->id,
+            'server_id' => 'cz_kouzelnictvi',
+        ]);
     }
 }

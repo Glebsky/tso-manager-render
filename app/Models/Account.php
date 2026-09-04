@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Casts\SafeEncrypted;
 use App\Casts\ZoneDataCast;
+use App\Services\MarketServerVerificationService;
 use App\Support\Zone\ZoneSnapshot;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
@@ -28,6 +29,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  * @property ?string $server_name
+ * @property ?string $detected_server_id
+ * @property ?string $detected_locale
  * @property ?int $avatar_id
  * @property ?int $building_count
  * @property bool $is_market_connected
@@ -62,6 +65,8 @@ class Account extends Model
 
     protected $appends = [
         'server_name',
+        'detected_server_id',
+        'detected_locale',
         'avatar_id',
         'building_count',
     ];
@@ -119,6 +124,16 @@ class Account extends Model
     public function getServerNameAttribute(): ?string
     {
         return $this->snapshot()->serverName();
+    }
+
+    public function getDetectedServerIdAttribute(): ?string
+    {
+        return app(MarketServerVerificationService::class)->detectServerForAccount($this)['detected_server_id'];
+    }
+
+    public function getDetectedLocaleAttribute(): ?string
+    {
+        return app(MarketServerVerificationService::class)->detectServerForAccount($this)['detected_locale'];
     }
 
     public function getIsMarketConnectedAttribute(): bool
