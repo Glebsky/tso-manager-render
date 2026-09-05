@@ -38,6 +38,21 @@ class TsoAuthService
     ];
 
     /**
+     * Browser fingerprint expected by the game backend. Must stay byte-identical
+     * to what the reference Flash client sends.
+     */
+    private const array BROWSER_HEADERS = [
+        'User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.12 (KHTML, like Gecko) Chrome/9.0.570.0 Safari/534.12',
+        'Referer: http://game-cdn.thesettlersonline.net/prestaging/PS5724/SWMMO/debug/SWMMO.swf',
+    ];
+
+    /** Cache key prefix for the "session was verified recently" flag. */
+    private const string SESSION_OK_KEY = 'tso:session_ok:';
+
+    /** How long a positive verifySession() result is trusted, in seconds. */
+    private const int SESSION_OK_TTL = 300;
+
+    /**
      * Get the cookie file path for a given account.
      */
     public function getCookieFile(Account $account): string
@@ -59,6 +74,8 @@ class TsoAuthService
         if (is_file($cookieFile)) {
             @unlink($cookieFile);
         }
+
+        $this->forgetSessionVerified($account);
     }
 
     /**
@@ -80,6 +97,19 @@ class TsoAuthService
         }
 
         try {
+            if ($locked) {
+                // Another process may have completed a full login while we were
+                // waiting for the lock. Logging in again would create a second
+                // game session and invalidate the fresh one (error 1012).
+                $account->refresh();
+
+                if (Cache::get(self::SESSION_OK_KEY.$account->id) === true) {
+                    Log::info("[TsoAuth] Reusing session established by another process for account #{$account->id}");
+
+                    return $this->sessionParams($account);
+                }
+            }
+
             return $this->performLogin($account);
         } finally {
             if ($locked) {
@@ -153,6 +183,8 @@ class TsoAuthService
             'nickname' => $params['nickName'],
             'status' => 'online',
         ]);
+
+        $this->markSessionVerified($account);
 
         return $params;
     }
@@ -409,6 +441,113 @@ class TsoAuthService
     }
 
     /**
+     * Cheap liveness probe for the stored session, mirroring FastAuth() in the
+     * reference client (client/login.xaml.cs): one POST to bb/authenticate that
+     * both validates the tokens and refreshes the cookie jar.
+     *
+     * Returns false only when we can positively tell the session is unusable.
+     */
+    public function verifySession(Account $account): bool
+    {
+        if (! $this->isAuthenticated($account)) {
+            return false;
+        }
+
+        $cookieFile = $this->getCookieFile($account);
+        if ($cookieFile === '' || ! is_file($cookieFile)) {
+            // Tokens without a cookie jar cannot authenticate against the game.
+            return false;
+        }
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, rtrim((string) $account->bb_url, '/').'/authenticate');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
+            'DSOAUTHUSER' => (string) $account->dso_auth_user,
+            'DSOAUTHTOKEN' => (string) $account->dso_auth_token,
+        ]));
+        curl_setopt($ch, CURLOPT_COOKIEFILE, $cookieFile);
+        curl_setopt($ch, CURLOPT_COOKIEJAR, $cookieFile);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, (bool) config('game.ssl_verify', true));
+        curl_setopt($ch, CURLOPT_TIMEOUT, (int) config('game.http_timeout', 30));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array_merge(
+            ['Content-Type: application/x-www-form-urlencoded'],
+            self::BROWSER_HEADERS,
+        ));
+
+        $response = (string) curl_exec($ch);
+        $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
+        curl_close($ch);
+
+        if ($error !== '') {
+            Log::warning("[TsoAuth] Session probe for account #{$account->id} failed on transport level: {$error}");
+
+            return false;
+        }
+
+        $alive = $status === 200 && ! str_contains($response, 'ERROR');
+
+        Log::info("[TsoAuth] Session probe for account #{$account->id}: HTTP {$status}, alive=".($alive ? 'yes' : 'no'));
+
+        return $alive;
+    }
+
+    /**
+     * The only entry point application services should use: make sure the
+     * account can talk to the game server, reusing the existing session
+     * whenever possible and logging in only when it is actually dead.
+     *
+     * @throws Exception
+     */
+    public function ensureAuthenticated(Account $account): void
+    {
+        if (Cache::get(self::SESSION_OK_KEY.$account->id) === true) {
+            return;
+        }
+
+        if ($this->verifySession($account)) {
+            $this->markSessionVerified($account);
+
+            return;
+        }
+
+        $this->login($account);
+        $account->refresh();
+    }
+
+    private function markSessionVerified(Account|int $account): void
+    {
+        $id = $account instanceof Account ? $account->id : $account;
+
+        Cache::put(self::SESSION_OK_KEY.$id, true, self::SESSION_OK_TTL);
+    }
+
+    private function forgetSessionVerified(Account|int $account): void
+    {
+        $id = $account instanceof Account ? $account->id : $account;
+
+        Cache::forget(self::SESSION_OK_KEY.$id);
+    }
+
+    /**
+     * Current session parameters in the same shape performLogin() returns.
+     *
+     * @return array<string, mixed>
+     */
+    private function sessionParams(Account $account): array
+    {
+        return [
+            'dsoAuthToken' => (string) $account->dso_auth_token,
+            'dsoAuthUser' => (string) $account->dso_auth_user,
+            'bburl' => (string) $account->bb_url,
+            'zoneId' => null,
+            'nickName' => (string) $account->nickname,
+        ];
+    }
+
+    /**
      * Check if the account already has valid tokens.
      */
     public function isAuthenticated(Account $account): bool
@@ -498,10 +637,7 @@ class TsoAuthService
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         }
 
-        $defaultHeaders = [
-            'User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.12 (KHTML, like Gecko) Chrome/9.0.570.0 Safari/534.12',
-            'Referer: http://game-cdn.thesettlersonline.net/prestaging/PS5724/SWMMO/debug/SWMMO.swf',
-        ];
+        $defaultHeaders = self::BROWSER_HEADERS;
 
         if ($headers) {
             $defaultHeaders = array_merge($defaultHeaders, $headers);
