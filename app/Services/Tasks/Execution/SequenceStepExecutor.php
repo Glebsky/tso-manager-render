@@ -140,10 +140,7 @@ final readonly class SequenceStepExecutor
 
         $this->stateWriter->markRunning($task, $payload);
 
-        if (! $this->authService->isAuthenticated($account)) {
-            $this->authService->login($account);
-            $account->refresh();
-        }
+        $this->authService->ensureAuthenticated($account);
 
         $action = $actions[$index];
         $actionType = (string) $action['task_type'];

@@ -27,10 +27,7 @@ readonly class MarketOfferFetcher
      */
     public function fetch(Account $account, callable $logCallback): array
     {
-        if (! $this->authService->isAuthenticated($account)) {
-            $this->authService->login($account);
-            $account->refresh();
-        }
+        $this->authService->ensureAuthenticated($account);
 
         $maxRetries = 3;
         $retryDelay = 3;

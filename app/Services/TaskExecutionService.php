@@ -44,10 +44,7 @@ readonly class TaskExecutionService
         $this->stateWriter->markRunning($task);
 
         try {
-            if (! $this->authService->isAuthenticated($account)) {
-                $this->authService->login($account);
-                $account->refresh();
-            }
+            $this->authService->ensureAuthenticated($account);
 
             $payload = $task->payload ?? [];
 

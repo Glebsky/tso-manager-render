@@ -132,11 +132,7 @@ readonly class AccountSyncFetcher
      */
     private function ensureAuthenticated(Account $account): void
     {
-        if (! $this->authService->isAuthenticated($account)) {
-            Log::info("[AccountSync] Session token for account #{$account->id} is missing or expired; logging in");
-            $this->authService->login($account);
-            $account->refresh();
-        }
+        $this->authService->ensureAuthenticated($account);
     }
 
     /**

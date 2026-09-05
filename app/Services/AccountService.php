@@ -44,10 +44,7 @@ readonly class AccountService
     public function executeAction(Account $account, string $actionType, array $params): array
     {
         try {
-            if (! $this->authService->isAuthenticated($account)) {
-                $this->authService->login($account);
-                $account->refresh();
-            }
+            $this->authService->ensureAuthenticated($account);
 
             switch ($actionType) {
                 case 'stop_production':
@@ -188,10 +185,7 @@ readonly class AccountService
             $friendZoneData = json_decode((string) $cachedZone, true, 512, JSON_THROW_ON_ERROR);
         } else {
             try {
-                if (! $this->authService->isAuthenticated($account)) {
-                    $this->authService->login($account);
-                    $account->refresh();
-                }
+                $this->authService->ensureAuthenticated($account);
 
                 Log::info("[FriendZone] Loading zone of friend #{$friendId} for account #{$account->id}");
                 $rawAmf = $this->amfService->getZone($account, $friendId);
