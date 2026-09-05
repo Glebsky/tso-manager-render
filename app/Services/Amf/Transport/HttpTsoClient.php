@@ -442,11 +442,15 @@ class HttpTsoClient implements TsoClientInterface
             Log::info("[TsoAmf] Game server assigned DSId {$serverDsId} for account #{$accountId} (was {$clientDsId})");
 
             $session['ds_id'] = $serverDsId;
-            $session['resolved_at'] = microtime(true);
-            $this->clients[$clientKey] = $session;
             $this->dsIds[$accountId] = $serverDsId;
-            $this->writeSharedSession($accountId, $zoneId, $session);
         }
+
+        // Sliding TTL: a session that keeps being used must not expire, because
+        // re-resolving it creates a brand-new game session (error 1012). This
+        // runs inside the per-account lock taken by sendCommand().
+        $session['resolved_at'] = microtime(true);
+        $this->clients[$clientKey] = $session;
+        $this->writeSharedSession($accountId, $zoneId, $session);
 
         return $response;
     }
