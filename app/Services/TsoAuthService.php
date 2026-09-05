@@ -52,6 +52,9 @@ class TsoAuthService
     /** How long a positive verifySession() result is trusted, in seconds. */
     private const int SESSION_OK_TTL = 300;
 
+    /** Cache key prefix remembering which login flow last succeeded. */
+    private const string AUTH_FLOW_KEY = 'tso:auth_flow:';
+
     /**
      * Get the cookie file path for a given account.
      */
@@ -142,36 +145,41 @@ class TsoAuthService
 
         $server = self::SERVERS[$region];
         $cookieFile = $this->getCookieFile($account);
-        //        $this->resetSession($account);
+        $this->resetSession($account);
 
-        try {
-            $params = $this->loginLegacy($account, $cookieFile, $server);
-        } catch (Exception $e) {
-            $errMsg = $e->getMessage();
-            Log::warning("[TsoAuth] Legacy (CipMigrated) login failed for account #{$account->id}: ".CredentialRedactor::redact($errMsg, $account));
+        $order = $this->preferredFlow($account) === 'oauth'
+            ? ['oauth', 'legacy']
+            : ['legacy', 'oauth'];
 
-            if ($this->isCaptchaOr2faError($errMsg)) {
-                Cache::put($cooldownKey, $errMsg, 900);
-                $account->update(['status' => 'session_expired']);
+        $params = null;
+        $firstException = null;
 
-                throw $e;
-            }
-
+        foreach ($order as $flow) {
             try {
-                $params = $this->loginOAuth($account, $cookieFile, $server);
-            } catch (Exception $e2) {
-                $oauthErrMsg = $e2->getMessage();
-                Log::warning("[TsoAuth] OAuth fallback login also failed for account #{$account->id}: ".CredentialRedactor::redact($oauthErrMsg, $account));
+                $params = $flow === 'oauth'
+                    ? $this->loginOAuth($account, $cookieFile, $server)
+                    : $this->loginLegacy($account, $cookieFile, $server);
 
-                if ($this->isCaptchaOr2faError($oauthErrMsg)) {
-                    Cache::put($cooldownKey, $oauthErrMsg, 900);
+                $this->rememberFlow($account, $flow);
+
+                break;
+            } catch (Exception $e) {
+                $errMsg = $e->getMessage();
+                Log::warning("[TsoAuth] {$flow} login failed for account #{$account->id}: ".CredentialRedactor::redact($errMsg, $account));
+
+                if ($this->isCaptchaOr2faError($errMsg)) {
+                    Cache::put($cooldownKey, $errMsg, 900);
                     $account->update(['status' => 'session_expired']);
 
-                    throw $e2;
+                    throw $e;
                 }
 
-                throw $e;
+                $firstException ??= $e;
             }
+        }
+
+        if ($params === null) {
+            throw $firstException ?? new RuntimeException("Login failed for account #{$account->id}");
         }
 
         Cache::forget($cooldownKey);
@@ -545,6 +553,23 @@ class TsoAuthService
             'zoneId' => null,
             'nickName' => (string) $account->nickname,
         ];
+    }
+
+    /**
+     * Which login flow to try first. Mirrors the cipMigrated switch of the
+     * reference client, but learned from the last successful login instead of
+     * being configured by hand.
+     *
+     * @return 'legacy'|'oauth'
+     */
+    private function preferredFlow(Account $account): string
+    {
+        return Cache::get(self::AUTH_FLOW_KEY.$account->id) === 'oauth' ? 'oauth' : 'legacy';
+    }
+
+    private function rememberFlow(Account $account, string $flow): void
+    {
+        Cache::put(self::AUTH_FLOW_KEY.$account->id, $flow, now()->addDays(30));
     }
 
     /**
