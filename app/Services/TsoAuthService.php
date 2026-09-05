@@ -46,6 +46,16 @@ class TsoAuthService
         'Referer: http://game-cdn.thesettlersonline.net/prestaging/PS5724/SWMMO/debug/SWMMO.swf',
     ];
 
+    /**
+     * Browser headers simulating a modern browser for web login and warmup to avoid bot CAPTCHA triggers.
+     */
+    private const array WEB_BROWSER_HEADERS = [
+        'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+        'Accept-Language: ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
+        'Upgrade-Insecure-Requests: 1',
+    ];
+
     /** Cache key prefix for the "session was verified recently" flag. */
     private const string SESSION_OK_KEY = 'tso:session_ok:';
 
@@ -224,6 +234,10 @@ class TsoAuthService
      */
     public function loginLegacy(Account $account, string $cookieFile, array $server): array
     {
+        // Pre-warm cookies and Cloudflare tokens by visiting the homepage first
+        $mainUrl = $server['domain'].$server['main'];
+        $this->cipMigratedRequest($mainUrl, null, $cookieFile);
+
         $loginUrl = $server['domain'].str_replace('uplay', 'login', $server['uplay']);
         $loginRes = $this->cipMigratedRequest($loginUrl, [
             'name' => $account->username,
@@ -240,7 +254,6 @@ class TsoAuthService
             throw new RuntimeException('Login failed: '.CredentialRedactor::redact($formattedError, $account));
         }
 
-        $mainUrl = $server['domain'].$server['main'];
         $this->cipMigratedRequest($mainUrl, ['start' => '1'], $cookieFile);
 
         $playUrl = $server['domain'].$server['play'];
@@ -278,10 +291,13 @@ class TsoAuthService
             curl_setopt($ch, CURLOPT_HEADER, true);
             curl_setopt($ch, CURLOPT_TIMEOUT, (int) config('game.http_timeout', 30));
 
-            $headers = [
-                'Content-Type: application/x-www-form-urlencoded',
-                'Connection: close',
-            ];
+            $headers = array_merge(
+                [
+                    'Content-Type: application/x-www-form-urlencoded',
+                    'Connection: close',
+                ],
+                self::WEB_BROWSER_HEADERS,
+            );
             curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
             if ($isPost && $i === 0) {
@@ -525,14 +541,14 @@ class TsoAuthService
         $account->refresh();
     }
 
-    private function markSessionVerified(Account|int $account): void
+    public function markSessionVerified(Account|int $account): void
     {
         $id = $account instanceof Account ? $account->id : $account;
 
         Cache::put(self::SESSION_OK_KEY.$id, true, self::SESSION_OK_TTL);
     }
 
-    private function forgetSessionVerified(Account|int $account): void
+    public function forgetSessionVerified(Account|int $account): void
     {
         $id = $account instanceof Account ? $account->id : $account;
 

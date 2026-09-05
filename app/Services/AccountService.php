@@ -123,7 +123,13 @@ readonly class AccountService
             'status' => 'online',
         ]);
 
-        $this->cache->forget("account_login_cooldown:{$account->id}");
+        $cookieFile = $this->authService->getCookieFile($account);
+        if (! is_file($cookieFile)) {
+            @file_put_contents($cookieFile, '');
+        }
+
+        $this->authService->clearCooldown($account);
+        $this->authService->markSessionVerified($account);
         $this->cache->forget("tso:login_lock:{$account->id}");
         $this->amfService->invalidateSession($account->id);
         $this->amfService->resetClient();
