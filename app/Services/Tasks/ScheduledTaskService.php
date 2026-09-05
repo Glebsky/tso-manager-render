@@ -300,11 +300,41 @@ final class ScheduledTaskService
      */
     public function reorder(array $taskIds): void
     {
-        DB::transaction(function () use ($taskIds): void {
-            foreach ($taskIds as $index => $id) {
-                ScheduledTask::where('id', $id)->update(['sort_order' => $index + 1]);
-            }
-        });
+        if ($taskIds === []) {
+            return;
+        }
+
+        $cases = [];
+        $bindings = [];
+
+        foreach ($taskIds as $index => $id) {
+            $cases[] = 'WHEN ? THEN ?';
+            $bindings[] = $id;
+            $bindings[] = $index + 1;
+        }
+
+        $placeholders = implode(',', array_fill(0, count($taskIds), '?'));
+
+        DB::update(
+            sprintf(
+                <<<'SQL'
+                UPDATE scheduled_tasks
+                SET
+                    sort_order = CAST(CASE id
+                        %s
+                    END AS integer),
+                    updated_at = ?
+                WHERE id IN (%s)
+                SQL,
+                implode("\n", $cases),
+                $placeholders,
+            ),
+            [
+                ...$bindings,
+                now(),
+                ...$taskIds,
+            ],
+        );
     }
 
     public function withAccount(ScheduledTask $task): ScheduledTask

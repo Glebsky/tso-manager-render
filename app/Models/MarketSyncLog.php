@@ -22,6 +22,13 @@ class MarketSyncLog extends Model
         'created_at' => 'datetime',
     ];
 
+    protected static function booted(): void
+    {
+        static::creating(static function (self $log): void {
+            $log->created_at ??= now();
+        });
+    }
+
     /**
      * @return BelongsTo<Account, $this>
      */

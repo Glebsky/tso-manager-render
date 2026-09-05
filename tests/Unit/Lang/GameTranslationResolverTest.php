@@ -12,8 +12,8 @@ use PHPUnit\Framework\TestCase;
 class GameTranslationResolverTest extends TestCase
 {
     /**
-     * @param  array<string, array<array-key, string>>  $en
-     * @param  array<string, array<array-key, string>>  $ru
+     * @param  array<string, array<int|string, string>>  $en
+     * @param  array<string, array<int|string, string>>  $ru
      */
     private function makeResolver(array $en, array $ru = [], string $locale = 'en'): GameTranslationResolver
     {
@@ -124,5 +124,19 @@ class GameTranslationResolverTest extends TestCase
         ]);
 
         $this->assertSame('Deed: Leaf', $resolver->resolve('RES', 'Wrap', ['Inner']));
+    }
+
+    public function test_handles_numeric_array_keys_without_type_error(): void
+    {
+        $resolver = $this->makeResolver([
+            'BUI' => [
+                '265' => 'Wondrous Togetherness Chest of Wonderful Wonders',
+                'Castle' => 'Castle',
+            ],
+        ]);
+
+        $this->assertSame('Wondrous Togetherness Chest of Wonderful Wonders', $resolver->name('BUI', '265'));
+        $this->assertSame('Castle', $resolver->name('BUI', 'castle'));
+        $this->assertSame('Unknown', $resolver->name('BUI', 'unknown_building', 'Unknown'));
     }
 }
