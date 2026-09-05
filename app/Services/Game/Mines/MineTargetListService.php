@@ -26,15 +26,21 @@ final readonly class MineTargetListService
         return "buildable_deposits_{$accountId}";
     }
 
-    public static function upgradableCacheKey(int $accountId): string
+    public static function upgradableCacheKey(int $accountId, ?int $maxLevel = null): string
     {
-        return "upgradable_mines_{$accountId}";
+        $suffix = ($maxLevel !== null && $maxLevel > 0) ? "_{$maxLevel}" : '';
+
+        return "upgradable_mines_{$accountId}{$suffix}";
     }
 
     public static function clearCache(int $accountId): void
     {
         Cache::forget(self::buildableCacheKey($accountId));
         Cache::forget(self::upgradableCacheKey($accountId));
+        foreach ([2, 3, 4, 5, 6, 7] as $lvl) {
+            Cache::forget(self::upgradableCacheKey($accountId, $lvl));
+        }
+        AmfZoneSnapshotProvider::clearCache($accountId);
     }
 
     /**
@@ -62,7 +68,7 @@ final readonly class MineTargetListService
                 continue;
             }
 
-            $decision = $this->placementPolicy->decide($zone, $deposit->grid);
+            $decision = $this->placementPolicy->decide($zone, $deposit->grid, $deposit->name, $def->buildingName);
 
             $result[] = [
                 'grid' => $deposit->grid,
@@ -85,9 +91,9 @@ final readonly class MineTargetListService
      *
      * @throws GameServerErrorException
      */
-    public function upgradableMines(Account $account, bool $skipCache = false): array
+    public function upgradableMines(Account $account, bool $skipCache = false, ?int $maxLevel = null): array
     {
-        $cacheKey = self::upgradableCacheKey($account->id);
+        $cacheKey = self::upgradableCacheKey($account->id, $maxLevel);
 
         if (! $skipCache && Cache::has($cacheKey)) {
             /** @var list<array{grid: int, building_name: string, deposit_name: string, level: int, max_level: int, is_active: bool, upgrade_in_progress: bool, allowed: bool, reason: string}> $cached */
@@ -100,12 +106,16 @@ final readonly class MineTargetListService
         $result = [];
 
         foreach ($zone->buildings() as $building) {
+            if (str_starts_with($building->name, 'MineDepletedDeposit')) {
+                continue;
+            }
+
             $def = $this->catalog->findByBuilding($building->name);
             if ($def === null) {
                 continue;
             }
 
-            $decision = $this->upgradePolicy->decide($zone, $building->grid);
+            $decision = $this->upgradePolicy->decide($zone, $building->grid, $maxLevel);
 
             $result[] = [
                 'grid' => $building->grid,

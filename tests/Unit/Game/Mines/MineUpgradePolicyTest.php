@@ -8,6 +8,7 @@ use App\Enums\UpgradeRejectionReason;
 use App\Services\Game\Mines\BuildingSnapshot;
 use App\Services\Game\Mines\BuildQueueSnapshot;
 use App\Services\Game\Mines\ConfigMineCatalog;
+use App\Services\Game\Mines\DepositSnapshot;
 use App\Services\Game\Mines\MineUpgradePolicy;
 use App\Services\Game\Mines\ZoneSnapshot;
 use PHPUnit\Framework\TestCase;
@@ -161,5 +162,61 @@ final class MineUpgradePolicyTest extends TestCase
 
         $this->assertFalse($decision->allowed);
         $this->assertSame(UpgradeRejectionReason::BuildQueueFull, $decision->reason);
+    }
+
+    public function test_it_rejects_when_building_name_indicates_depleted_mine_ruin(): void
+    {
+        $zone = new ZoneSnapshot(
+            depositsByGrid: [],
+            buildingsByGrid: [6431 => new BuildingSnapshot(grid: 6431, name: 'MineDepletedDepositIronOre', upgradeLevel: 1, isProductionActive: false, upgradeInProgress: false)],
+            buildQueue: new BuildQueueSnapshot(used: 1, total: 3),
+        );
+
+        $decision = $this->policy->decide($zone, 6431);
+
+        $this->assertFalse($decision->allowed);
+        $this->assertSame(UpgradeRejectionReason::MineDepleted, $decision->reason);
+    }
+
+    public function test_it_rejects_when_building_is_under_construction(): void
+    {
+        $zone = new ZoneSnapshot(
+            depositsByGrid: [],
+            buildingsByGrid: [6431 => new BuildingSnapshot(grid: 6431, name: 'IronMine', upgradeLevel: 0, isProductionActive: false, upgradeInProgress: false)],
+            buildQueue: new BuildQueueSnapshot(used: 1, total: 3),
+        );
+
+        $decision = $this->policy->decide($zone, 6431);
+
+        $this->assertFalse($decision->allowed);
+        $this->assertSame(UpgradeRejectionReason::BuildingUnderConstruction, $decision->reason);
+    }
+
+    public function test_it_rejects_when_underlying_deposit_is_depleted(): void
+    {
+        $zone = new ZoneSnapshot(
+            depositsByGrid: [6431 => new DepositSnapshot(grid: 6431, name: 'IronOre', amount: 0, maxAmount: 1000)],
+            buildingsByGrid: [6431 => new BuildingSnapshot(grid: 6431, name: 'IronMine', upgradeLevel: 2, isProductionActive: true, upgradeInProgress: false)],
+            buildQueue: new BuildQueueSnapshot(used: 1, total: 3),
+        );
+
+        $decision = $this->policy->decide($zone, 6431);
+
+        $this->assertFalse($decision->allowed);
+        $this->assertSame(UpgradeRejectionReason::MineDepleted, $decision->reason);
+    }
+
+    public function test_it_rejects_when_underlying_deposit_is_not_accessible(): void
+    {
+        $zone = new ZoneSnapshot(
+            depositsByGrid: [6431 => new DepositSnapshot(grid: 6431, name: 'IronOre', amount: 1000, maxAmount: 1000, accessible: 0)],
+            buildingsByGrid: [6431 => new BuildingSnapshot(grid: 6431, name: 'IronMine', upgradeLevel: 2, isProductionActive: true, upgradeInProgress: false)],
+            buildQueue: new BuildQueueSnapshot(used: 1, total: 3),
+        );
+
+        $decision = $this->policy->decide($zone, 6431);
+
+        $this->assertFalse($decision->allowed);
+        $this->assertSame(UpgradeRejectionReason::MineDepleted, $decision->reason);
     }
 }

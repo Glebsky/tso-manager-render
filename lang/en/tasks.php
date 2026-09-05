@@ -49,6 +49,7 @@ return [
             'deposit_empty' => 'Mine: skipped, deposit at grid :grid is depleted',
             'grid_occupied' => 'Mine: skipped, grid :grid is occupied by a building',
             'deposit_not_accessible' => 'Mine: skipped, deposit at grid :grid is not accessible',
+            'deposit_type_mismatch' => 'Mine: skipped, deposit at grid :grid does not match required type (:name)',
             'build_queue_full' => 'Mine: skipped, build queue is full',
         ],
     ],
@@ -59,6 +60,8 @@ return [
         'rejected' => [
             'no_building_at_grid' => 'Mine: skipped, no building found at grid :grid',
             'not_a_mine' => 'Mine: skipped, building :name is not a valid mine',
+            'mine_depleted' => 'Mine: skipped, mine at grid :grid (:name) is depleted',
+            'building_under_construction' => 'Mine: skipped, mine at grid :grid (:name) is still under construction',
             'max_level_reached' => 'Mine: skipped, :name is already at max level :level',
             'upgrade_already_in_progress' => 'Mine: skipped, upgrade is already in progress at grid :grid',
             'production_inactive' => 'Mine: skipped, production is inactive at grid :grid',

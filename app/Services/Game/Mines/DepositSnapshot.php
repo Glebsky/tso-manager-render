@@ -18,4 +18,9 @@ final readonly class DepositSnapshot
     {
         return $this->amount <= 0;
     }
+
+    public function isAccessible(): bool
+    {
+        return $this->accessible === null || $this->accessible === 2;
+    }
 }

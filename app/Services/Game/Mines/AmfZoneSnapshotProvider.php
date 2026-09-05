@@ -10,24 +10,44 @@ use App\Services\Game\Mines\Contracts\ZoneSnapshotProviderInterface;
 use App\Services\GameErrorResolver;
 use App\Services\TsoAmfService;
 use App\Services\ZoneParserService;
+use Illuminate\Support\Facades\Cache;
 
 final readonly class AmfZoneSnapshotProvider implements ZoneSnapshotProviderInterface
 {
+    public const int ZONE_CACHE_TTL_SECONDS = 60;
+
     public function __construct(
         private TsoAmfService $amf,
         private ZoneParserService $zones,
     ) {}
 
+    public static function cacheKey(int $accountId): string
+    {
+        return "tso:mine_zone:{$accountId}";
+    }
+
+    public static function clearCache(int $accountId): void
+    {
+        Cache::forget(self::cacheKey($accountId));
+    }
+
     /**
      * @throws GameServerErrorException
-     * @throws \Exception
      * @throws \Exception
      */
     public function forAccount(Account $account, bool $forceRefresh = false): ZoneSnapshot
     {
+        $cacheKey = self::cacheKey($account->id);
         $zone = null;
-        if (! $forceRefresh && ! empty($account->zone_data) && ! empty($account->zone_data['buildings'])) {
-            $zone = $account->zone_data;
+
+        if (! $forceRefresh) {
+            $cached = Cache::get($cacheKey);
+            if (is_array($cached) && ! empty($cached['buildings'])) {
+                $zone = $cached;
+            } elseif (! empty($account->zone_data) && ! empty($account->zone_data['buildings']) && $account->last_sync_at !== null && $account->last_sync_at->diffInSeconds(now()) < self::ZONE_CACHE_TTL_SECONDS) {
+                $zone = $account->zone_data;
+                Cache::put($cacheKey, $zone, self::ZONE_CACHE_TTL_SECONDS);
+            }
         }
 
         if ($zone === null) {
@@ -38,6 +58,8 @@ final readonly class AmfZoneSnapshotProvider implements ZoneSnapshotProviderInte
             if ($errorCode !== 0) {
                 throw new GameServerErrorException($errorCode, GameErrorResolver::getMessage($errorCode));
             }
+
+            Cache::put($cacheKey, $zone, self::ZONE_CACHE_TTL_SECONDS);
 
             if ($account->exists) {
                 $account->update([

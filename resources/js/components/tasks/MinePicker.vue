@@ -8,6 +8,12 @@
                     <span class="badge badge-emerald text-[10px] sm:text-xs font-mono">{{ t('tasks.modal.selected_count', { count: selectedMines.length }) }}</span>
                 </div>
                 <div class="flex items-center gap-1.5 sm:gap-2">
+                    <button type="button" @click="$emit('refresh')" :disabled="loading" class="btn-secondary btn-sm text-[10px] sm:text-[11px] py-1 px-2 sm:px-2.5 flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5" :class="{ 'animate-spin': loading }" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                        </svg>
+                        <span>{{ t('common.refresh') }}</span>
+                    </button>
                     <button type="button" @click="$emit('select-all')" class="btn-secondary btn-sm text-[10px] sm:text-[11px] py-1 px-2 sm:px-2.5">
                         {{ t('tasks.modal.select_all') }}
                     </button>
@@ -51,9 +57,12 @@
                 </div>
                 <div v-else-if="filteredMines.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
                     <div v-for="m in filteredMines" :key="m.grid"
-                         @click="$emit('toggle-mine', m)"
-                         class="glass-card p-3 cursor-pointer hover:border-emerald-500/40 transition-all duration-200 flex items-center justify-between gap-3"
-                         :class="isSelectedMine(m.grid) ? 'border-emerald-500/70 bg-emerald-500/15 shadow-lg shadow-emerald-500/5' : 'border-transparent hover:bg-white/[0.02]'">
+                         @click="isUpgradable(m) && $emit('toggle-mine', m)"
+                         class="glass-card p-3 transition-all duration-200 flex items-center justify-between gap-3"
+                         :class="[
+                             isUpgradable(m) ? 'cursor-pointer hover:border-emerald-500/40' : 'opacity-50 cursor-not-allowed',
+                             isSelectedMine(m.grid) ? 'border-emerald-500/70 bg-emerald-500/15 shadow-lg shadow-emerald-500/5' : 'border-transparent hover:bg-white/[0.02]'
+                         ]">
                         <div class="flex items-center gap-3 min-w-0">
                             <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-dark-900/50 border border-white/5">
                                 <img v-if="getBuildingIcon(m.building_name)" :src="getBuildingIcon(m.building_name)" :alt="m.building_name" class="w-7 h-7 object-contain" @error="handleBuildingIconError($event, m.building_name)">
@@ -62,11 +71,11 @@
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center gap-1.5 min-w-0">
                                     <p class="text-xs font-semibold text-white/90 truncate">{{ getBuildingName(m.building_name) }}</p>
-                                    <span v-if="m.allowed" class="badge badge-emerald text-[9px] flex-shrink-0">
+                                    <span v-if="isUpgradable(m)" class="badge badge-emerald text-[9px] flex-shrink-0">
                                         {{ t('tasks.modal.status_allowed') }}
                                     </span>
                                     <span v-else class="badge badge-neutral text-[9px] flex-shrink-0 text-white/50">
-                                        {{ reasonLabel(m.reason) }}
+                                        {{ reasonLabel(getMineReason(m)) }}
                                     </span>
                                 </div>
                                 <p class="text-[10px] text-white/40 mt-0.5">
@@ -75,7 +84,10 @@
                             </div>
                         </div>
                         <div class="w-5 h-5 rounded-md flex items-center justify-center border transition-all flex-shrink-0"
-                             :class="isSelectedMine(m.grid) ? 'bg-emerald-500 border-emerald-400 text-dark-950 font-bold' : 'border-white/20 bg-white/5'">
+                             :class="[
+                                 isSelectedMine(m.grid) ? 'bg-emerald-500 border-emerald-400 text-dark-950 font-bold' : 'border-white/20 bg-white/5',
+                                 !isUpgradable(m) ? 'opacity-30' : ''
+                             ]">
                             <span v-if="isSelectedMine(m.grid)" class="text-xs">✓</span>
                         </div>
                     </div>
@@ -105,7 +117,17 @@ const props = defineProps({
     handleBuildingIconError: { type: Function, required: true },
 });
 
-defineEmits(['close', 'select-all', 'clear', 'toggle-mine', 'update:mineSearch', 'update:maxLevel']);
+defineEmits(['close', 'select-all', 'clear', 'toggle-mine', 'update:mineSearch', 'update:maxLevel', 'refresh']);
+
+const isUpgradable = (m) => {
+    if (m.level >= props.maxLevel) return false;
+    return m.allowed;
+};
+
+const getMineReason = (m) => {
+    if (m.level >= props.maxLevel) return 'max_level_reached';
+    return m.reason;
+};
 
 const reasonLabel = (reason) => {
     const reasons = {
@@ -115,6 +137,8 @@ const reasonLabel = (reason) => {
         build_queue_full: t('tasks.modal.status_queue_full'),
         not_a_mine: t('tasks.modal.status_not_a_mine'),
         no_building_at_grid: t('tasks.modal.status_no_building'),
+        mine_depleted: t('tasks.modal.status_mine_depleted'),
+        building_under_construction: t('tasks.modal.status_under_construction'),
     };
     return reasons[reason] || reason;
 };

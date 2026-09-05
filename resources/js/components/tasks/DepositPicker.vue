@@ -8,6 +8,12 @@
                     <span class="badge badge-emerald text-[10px] sm:text-xs font-mono">{{ t('tasks.modal.selected_count', { count: selectedDeposits.length }) }}</span>
                 </div>
                 <div class="flex items-center gap-1.5 sm:gap-2">
+                    <button type="button" @click="$emit('refresh')" :disabled="loading" class="btn-secondary btn-sm text-[10px] sm:text-[11px] py-1 px-2 sm:px-2.5 flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5" :class="{ 'animate-spin': loading }" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                        </svg>
+                        <span>{{ t('common.refresh') }}</span>
+                    </button>
                     <button type="button" @click="$emit('select-all')" class="btn-secondary btn-sm text-[10px] sm:text-[11px] py-1 px-2 sm:px-2.5">
                         {{ t('tasks.modal.select_all') }}
                     </button>
@@ -43,9 +49,12 @@
                 </div>
                 <div v-else-if="filteredDeposits.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
                     <div v-for="d in filteredDeposits" :key="d.grid"
-                         @click="$emit('toggle-deposit', d)"
-                         class="glass-card p-3 cursor-pointer hover:border-emerald-500/40 transition-all duration-200 flex items-center justify-between gap-3"
-                         :class="isSelectedDeposit(d.grid) ? 'border-emerald-500/70 bg-emerald-500/15 shadow-lg shadow-emerald-500/5' : 'border-transparent hover:bg-white/[0.02]'">
+                         @click="d.allowed && $emit('toggle-deposit', d)"
+                         class="glass-card p-3 transition-all duration-200 flex items-center justify-between gap-3"
+                         :class="[
+                             d.allowed ? 'cursor-pointer hover:border-emerald-500/40' : 'opacity-50 cursor-not-allowed',
+                             isSelectedDeposit(d.grid) ? 'border-emerald-500/70 bg-emerald-500/15 shadow-lg shadow-emerald-500/5' : 'border-transparent hover:bg-white/[0.02]'
+                         ]">
                         <div class="flex items-center gap-3 min-w-0">
                             <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-dark-900/50 border border-white/5">
                                 <img v-if="getBuildingIcon(d.mine_name)" :src="getBuildingIcon(d.mine_name)" :alt="d.mine_name" class="w-7 h-7 object-contain" @error="handleBuildingIconError($event, d.mine_name)">
@@ -67,7 +76,10 @@
                             </div>
                         </div>
                         <div class="w-5 h-5 rounded-md flex items-center justify-center border transition-all flex-shrink-0"
-                             :class="isSelectedDeposit(d.grid) ? 'bg-emerald-500 border-emerald-400 text-dark-950 font-bold' : 'border-white/20 bg-white/5'">
+                             :class="[
+                                 isSelectedDeposit(d.grid) ? 'bg-emerald-500 border-emerald-400 text-dark-950 font-bold' : 'border-white/20 bg-white/5',
+                                 !d.allowed ? 'opacity-30' : ''
+                             ]">
                             <span v-if="isSelectedDeposit(d.grid)" class="text-xs">✓</span>
                         </div>
                     </div>
@@ -97,7 +109,7 @@ const props = defineProps({
     handleBuildingIconError: { type: Function, required: true },
 });
 
-defineEmits(['close', 'select-all', 'clear', 'toggle-deposit', 'update:depositSearch']);
+defineEmits(['close', 'select-all', 'clear', 'toggle-deposit', 'update:depositSearch', 'refresh']);
 
 const formatNumber = (num) => {
     return Number(num || 0).toLocaleString();
@@ -110,6 +122,7 @@ const reasonLabel = (reason) => {
         deposit_empty: t('tasks.modal.status_empty'),
         deposit_not_accessible: t('tasks.modal.status_not_accessible'),
         unknown_deposit_type: t('tasks.modal.status_unknown_type'),
+        deposit_type_mismatch: t('tasks.modal.status_type_mismatch'),
     };
     return reasons[reason] || reason;
 };
