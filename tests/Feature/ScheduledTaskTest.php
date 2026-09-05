@@ -113,7 +113,7 @@ class ScheduledTaskTest extends TestCase
             'is_active' => true,
         ]);
 
-        $this->authMock->shouldReceive('isAuthenticated')->with(Mockery::any())->andReturn(true);
+        $this->authMock->shouldReceive('ensureAuthenticated')->with(Mockery::any())->andReturnNull();
 
         $this->amfMock->shouldReceive('stopProduction')
             ->once()
@@ -176,7 +176,7 @@ class ScheduledTaskTest extends TestCase
             'is_active' => true,
         ]);
 
-        $this->authMock->shouldReceive('isAuthenticated')->with(Mockery::any())->andReturn(true);
+        $this->authMock->shouldReceive('ensureAuthenticated')->with(Mockery::any())->andReturnNull();
         $this->amfMock->shouldReceive('stopProduction')
             ->once()
             ->with(Mockery::any(), 505)
@@ -285,7 +285,7 @@ class ScheduledTaskTest extends TestCase
             'is_active' => true,
         ]);
 
-        $this->authMock->shouldReceive('isAuthenticated')->with(Mockery::any())->andReturn(true);
+        $this->authMock->shouldReceive('ensureAuthenticated')->with(Mockery::any())->andReturnNull();
 
         // Step 1 fails
         $this->amfMock->shouldReceive('stopProduction')

@@ -84,7 +84,7 @@ class TaskExecutionCharacterizationTest extends TestCase
             'status' => TaskStatus::Pending,
         ]);
 
-        $this->authMock->shouldReceive('isAuthenticated')->andReturn(true);
+        $this->authMock->shouldReceive('ensureAuthenticated')->andReturnNull();
         $this->amfMock->shouldReceive('stopProduction')->once()->with(Mockery::any(), 100)->andReturn('stop_ok');
 
         $service = $this->app->make(TaskExecutionService::class);
@@ -138,7 +138,7 @@ class TaskExecutionCharacterizationTest extends TestCase
             'status' => TaskStatus::Pending,
         ]);
 
-        $this->authMock->shouldReceive('isAuthenticated')->andReturn(true);
+        $this->authMock->shouldReceive('ensureAuthenticated')->andReturnNull();
         $this->amfMock->shouldReceive('stopProduction')->once()->with(Mockery::any(), 101)->andReturn('stop_ok');
 
         $service = $this->app->make(TaskExecutionService::class);
@@ -168,7 +168,7 @@ class TaskExecutionCharacterizationTest extends TestCase
             'status' => TaskStatus::Pending,
         ]);
 
-        $this->authMock->shouldReceive('isAuthenticated')->andReturn(true);
+        $this->authMock->shouldReceive('ensureAuthenticated')->andReturnNull();
         $this->authMock->shouldReceive('resetSession')->once()->with(Mockery::any());
         $this->authMock->shouldReceive('getCookieFile')->andReturn(storage_path('app/cookies/test.txt'));
         $this->authMock->shouldReceive('login')->once()->with(Mockery::any())->andReturn([]);
@@ -213,7 +213,7 @@ class TaskExecutionCharacterizationTest extends TestCase
             'status' => TaskStatus::Pending,
         ]);
 
-        $this->authMock->shouldReceive('isAuthenticated')->andReturn(true);
+        $this->authMock->shouldReceive('ensureAuthenticated')->andReturnNull();
         $this->authMock->shouldReceive('resetSession')->once()->with(Mockery::any());
         $this->authMock->shouldReceive('login')->once()->with(Mockery::any())->andReturn([]);
 

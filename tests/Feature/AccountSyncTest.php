@@ -143,7 +143,7 @@ class AccountSyncTest extends TestCase
         $this->assertTrue(Cache::add("account_sync_lock:{$account->id}", true, 300));
 
         // Mock dependencies
-        $this->authMock->shouldReceive('isAuthenticated')->andReturn(true);
+        $this->authMock->shouldReceive('ensureAuthenticated')->andReturnNull();
         $this->amfMock->shouldReceive('getZone')->once()->andReturn('zone-amf-bytes');
 
         $parserMock = Mockery::mock(ZoneParserService::class);
@@ -244,7 +244,7 @@ class AccountSyncTest extends TestCase
             'nickname' => 'sync_1012_user',
         ]);
 
-        $this->authMock->shouldReceive('isAuthenticated')->andReturn(true);
+        $this->authMock->shouldReceive('ensureAuthenticated')->andReturnNull();
         $this->authMock->shouldReceive('resetSession')->once()->with(Mockery::any());
         $this->authMock->shouldReceive('login')->once()->with(Mockery::any())->andReturn([]);
 

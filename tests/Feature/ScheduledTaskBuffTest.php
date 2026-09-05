@@ -232,7 +232,7 @@ class ScheduledTaskBuffTest extends TestCase
             'is_active' => true,
         ]);
 
-        $this->authMock->shouldReceive('isAuthenticated')->with(Mockery::any())->andReturn(true);
+        $this->authMock->shouldReceive('ensureAuthenticated')->with(Mockery::any())->andReturnNull();
 
         $this->amfMock->shouldReceive('applyBuff')
             ->once()
@@ -277,7 +277,7 @@ class ScheduledTaskBuffTest extends TestCase
             'is_active' => true,
         ]);
 
-        $this->authMock->shouldReceive('isAuthenticated')->with(Mockery::any())->andReturn(true);
+        $this->authMock->shouldReceive('ensureAuthenticated')->with(Mockery::any())->andReturnNull();
 
         // Should load zone fresh from game server
         $this->amfMock->shouldReceive('getZone')
@@ -336,7 +336,7 @@ class ScheduledTaskBuffTest extends TestCase
             'is_active' => true,
         ]);
 
-        $this->authMock->shouldReceive('isAuthenticated')->with(Mockery::any())->andReturn(true);
+        $this->authMock->shouldReceive('ensureAuthenticated')->with(Mockery::any())->andReturnNull();
 
         $this->amfMock->shouldReceive('applyBuff')
             ->once()
@@ -363,7 +363,7 @@ class ScheduledTaskBuffTest extends TestCase
             []
         );
 
-        $this->authMock->shouldReceive('isAuthenticated')->with(Mockery::any())->andReturn(true);
+        $this->authMock->shouldReceive('ensureAuthenticated')->with(Mockery::any())->andReturnNull();
 
         // 1st request should hit TsoAmfService and ZoneParserService
         $this->amfMock->shouldReceive('getZone')
@@ -419,7 +419,7 @@ class ScheduledTaskBuffTest extends TestCase
             'is_active' => true,
         ]);
 
-        $this->authMock->shouldReceive('isAuthenticated')->with(Mockery::any())->andReturn(true);
+        $this->authMock->shouldReceive('ensureAuthenticated')->with(Mockery::any())->andReturnNull();
 
         $this->amfMock->shouldReceive('getZone')
             ->twice()
