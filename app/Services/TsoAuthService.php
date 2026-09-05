@@ -9,7 +9,6 @@ use App\Support\Security\CredentialRedactor;
 use Exception;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 use Throwable;
 
@@ -457,14 +456,9 @@ class TsoAuthService
             $nickName = $matches[1];
         }
 
-        Storage::disk('local')->put('debug/play_page.html', $html);
-
         if (empty($params) || ! isset($params['dsoAuthToken'])) {
             throw new RuntimeException('Could not extract auth tokens from play page. Possible captcha or maintenance.');
         }
-
-        Storage::disk('local')->put('debug/flash_vars.json', (string) json_encode($params, JSON_THROW_ON_ERROR
-                                                                                          | JSON_PRETTY_PRINT));
 
         return [
             'dsoAuthToken' => $params['dsoAuthToken'],
