@@ -12,5 +12,6 @@ enum PlacementRejectionReason: string
     case DepositEmpty = 'deposit_empty';
     case GridOccupied = 'grid_occupied';
     case DepositNotAccessible = 'deposit_not_accessible';
+    case DepositTypeMismatch = 'deposit_type_mismatch';
     case BuildQueueFull = 'build_queue_full';
 }

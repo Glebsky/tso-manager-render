@@ -25,11 +25,13 @@ class BuildableDepositController extends Controller
     {
         $validated = $request->validate([
             'account_id' => ['required', 'integer', 'min:1'],
+            'refresh' => ['nullable', 'boolean'],
         ]);
 
         $account = Account::findOrFail((int) $validated['account_id']);
+        $forceRefresh = $request->boolean('refresh');
 
-        $items = $this->service->buildableDeposits($account);
+        $items = $this->service->buildableDeposits($account, $forceRefresh);
 
         return BuildableDepositResource::collection($items);
     }

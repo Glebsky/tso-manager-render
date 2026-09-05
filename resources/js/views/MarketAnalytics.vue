@@ -732,11 +732,14 @@
                             </svg>
                         </button>
 
-                        <button @click="openAddServerModal" class="btn-primary py-2 px-4 text-xs flex items-center justify-center gap-1.5 flex-1 sm:flex-initial">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <button @click="openAddServerModal" :disabled="openingAddServer" class="btn-primary py-2 px-4 text-xs flex items-center justify-center gap-1.5 flex-1 sm:flex-initial disabled:opacity-50">
+                            <svg v-if="openingAddServer" class="animate-spin w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                            </svg>
+                            <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                             </svg>
-                            {{ t('market.add_server') }}
+                            <span>{{ openingAddServer ? t('common.loading') : t('market.add_server') }}</span>
                         </button>
                     </div>
                 </div>
@@ -802,8 +805,11 @@
                                     </svg>
                                     <span>{{ syncingServerId === row.id ? '...' : t('market.sync_now') }}</span>
                                 </button>
-                                <button @click="openEditServerModal(row)" class="btn-secondary py-1 px-2 text-[11px]">
-                                    {{ t('market.edit') }}
+                                <button @click="openEditServerModal(row)" :disabled="openingEditServerId === row.id" class="btn-secondary py-1 px-2 text-[11px] inline-flex items-center gap-1 disabled:opacity-50">
+                                    <svg v-if="openingEditServerId === row.id" class="animate-spin w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                    </svg>
+                                    <span>{{ openingEditServerId === row.id ? '...' : t('market.edit') }}</span>
                                 </button>
                                 <button @click="deleteServer(row)" class="btn-secondary py-1 px-2 text-[11px] text-red-400 hover:bg-red-500/10 border-red-500/20">
                                     {{ t('market.delete') }}
@@ -831,10 +837,10 @@
                             <label for="market-settings-sync-interval" class="block text-xs font-medium text-white/40 mb-1.5 sm:mb-2 uppercase tracking-wider">{{ t('market.sync_interval') }}</label>
                             <div class="relative">
                                 <select id="market-settings-sync-interval" v-model="settingsForm.sync_interval" :aria-label="t('market.sync_interval')" class="glass-select w-full text-xs sm:text-sm">
-                                    <option value="5" class="bg-dark-900">5 minutes</option>
-                                    <option value="15" class="bg-dark-900">15 minutes</option>
-                                    <option value="30" class="bg-dark-900">30 minutes</option>
-                                    <option value="60" class="bg-dark-900">1 hour</option>
+                                    <option value="5" class="bg-dark-900">{{ t('settings.every_5') || '5 minutes' }}</option>
+                                    <option value="15" class="bg-dark-900">{{ t('settings.every_15') || '15 minutes' }}</option>
+                                    <option value="30" class="bg-dark-900">{{ t('settings.every_30') || '30 minutes' }}</option>
+                                    <option value="60" class="bg-dark-900">{{ t('settings.every_hour') || '1 hour' }}</option>
                                     <option value="custom" class="bg-dark-900">{{ t('market.custom') }}</option>
                                 </select>
                             </div>
@@ -846,9 +852,21 @@
                         </div>
                     </div>
 
-                    <button type="submit" :disabled="saving" class="btn-primary flex items-center justify-center gap-2 text-xs w-full sm:w-auto">
-                        {{ t('market.save_schedule') }}
-                    </button>
+                    <div class="flex items-center gap-3">
+                        <button type="submit" :disabled="saving" class="btn-primary flex items-center justify-center gap-2 py-2 px-4 text-xs sm:text-sm w-full sm:w-auto disabled:opacity-60 disabled:cursor-not-allowed transition-all">
+                            <spinner v-if="saving" size="sm" />
+                            <svg v-else class="w-4 h-4 text-emerald-300" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                            </svg>
+                            <span>{{ saving ? (t('market.saving') || 'Сохранение...') : t('market.save_schedule') }}</span>
+                        </button>
+                        <span v-if="savedRecently" class="text-xs text-emerald-400 font-medium flex items-center gap-1.5 animate-fade-in">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                            </svg>
+                            {{ t('market.schedule_saved') }}
+                        </span>
+                    </div>
                 </form>
             </div>
 
@@ -978,8 +996,9 @@
 
                     <div class="flex justify-end gap-2 sm:gap-3 pt-3 sm:pt-4 border-t border-white/10">
                         <button type="button" @click="closeServerModal" class="btn-secondary text-xs py-2 px-3 sm:px-4">{{ t('market.cancel') }}</button>
-                        <button type="submit" :disabled="savingServer || !serverForm.account_id || !!(detectedServerInfo && detectedServerInfo.error)" class="btn-primary text-xs py-2 px-3 sm:px-4">
-                            {{ savingServer ? t('market.saving') : t('market.save') }}
+                        <button type="submit" :disabled="savingServer || !serverForm.account_id || !!(detectedServerInfo && detectedServerInfo.error)" class="btn-primary text-xs py-2 px-3 sm:px-4 flex items-center justify-center gap-1.5 disabled:opacity-60 disabled:cursor-not-allowed">
+                            <spinner v-if="savingServer" size="sm" />
+                            <span>{{ savingServer ? (t('market.saving') || 'Сохранение...') : t('market.save') }}</span>
                         </button>
                     </div>
                 </form>
@@ -1070,6 +1089,8 @@ const router = useRouter();
         const loadingChart = ref(false);
         const loadingSyncLogs = ref(false);
         const saving = ref(false);
+        const savedRecently = ref(false);
+        let savedRecentlyTimer = null;
         const syncing = ref(false);
         const syncingServerId = ref(null);
         const showPopularItems = ref(true);
@@ -1179,6 +1200,8 @@ const router = useRouter();
         const showServerModal = ref(false);
         const editingServer = ref(null);
         const savingServer = ref(false);
+        const openingEditServerId = ref(null);
+        const openingAddServer = ref(false);
         const serverForm = ref({
             account_id: null,
         });
@@ -1205,23 +1228,42 @@ const router = useRouter();
             if (!serverForm.value.account_id) return null;
             const acc = accounts.value.find(a => a.id === serverForm.value.account_id);
             if (!acc) return null;
-            const region = String(acc.region || '').toLowerCase();
-            if (!region) {
+            const detectedRegion = String(acc.region || '').toLowerCase();
+            if (!detectedRegion) {
                 return { error: t('market.err_no_region', { username: acc.username }) };
             }
-            if (editingServer.value && region !== String(editingServer.value.server_id).toLowerCase()) {
-                return { error: t('market.err_wrong_server', { username: acc.username, detected: region, server: editingServer.value.server_id }) };
+            const detectedServerId = String(acc.detected_server_id || detectedRegion).toLowerCase();
+
+            if (editingServer.value) {
+                const targetServerId = String(editingServer.value.server_id || '').toLowerCase();
+                const targetRegion = targetServerId.split('_')[0];
+
+                const isMatch = (detectedServerId === targetServerId)
+                    || (targetServerId === detectedRegion)
+                    || (detectedServerId === targetRegion);
+
+                if (!isMatch) {
+                    return {
+                        error: t('market.err_wrong_server', {
+                            username: acc.username,
+                            detected: detectedServerId || detectedRegion,
+                            server: editingServer.value.server_id,
+                        }),
+                    };
+                }
             }
-            if (!editingServer.value && servers.value.some(s => String(s.server_id).toLowerCase() === region)) {
-                return { error: t('market.err_server_exists', { server: region }) };
+
+            if (!editingServer.value && servers.value.some(s => String(s.server_id).toLowerCase() === detectedServerId)) {
+                return { error: t('market.err_server_exists', { server: acc.server_name || detectedServerId }) };
             }
-            const locale = REGION_LOCALES[region] || region.toUpperCase();
+
+            const locale = acc.detected_locale || REGION_LOCALES[detectedRegion] || detectedRegion.toUpperCase();
             const displayName = acc.server_name
                 ? `${acc.server_name} Settlers Market`
-                : `${region.toUpperCase()} Settlers Market`;
+                : `${detectedRegion.toUpperCase()} Settlers Market`;
 
             return {
-                server_id: region,
+                server_id: detectedServerId,
                 locale,
                 display_name: displayName,
                 server_name: acc.server_name || null,
@@ -1634,21 +1676,31 @@ const router = useRouter();
         };
 
         const openAddServerModal = async () => {
-            await refreshAccounts();
-            editingServer.value = null;
-            serverForm.value = {
-                account_id: null,
-            };
-            showServerModal.value = true;
+            openingAddServer.value = true;
+            try {
+                await refreshAccounts();
+                editingServer.value = null;
+                serverForm.value = {
+                    account_id: null,
+                };
+                showServerModal.value = true;
+            } finally {
+                openingAddServer.value = false;
+            }
         };
 
         const openEditServerModal = async (srv) => {
-            await refreshAccounts();
-            editingServer.value = srv;
-            serverForm.value = {
-                account_id: srv.account_id,
-            };
-            showServerModal.value = true;
+            openingEditServerId.value = srv.id;
+            try {
+                await refreshAccounts();
+                editingServer.value = srv;
+                serverForm.value = {
+                    account_id: srv.account_id,
+                };
+                showServerModal.value = true;
+            } finally {
+                openingEditServerId.value = null;
+            }
         };
 
         const closeServerModal = () => {
@@ -1729,9 +1781,15 @@ const router = useRouter();
 
         const saveSettings = async () => {
             saving.value = true;
+            savedRecently.value = false;
             try {
                 await marketApi.updateMarketSettings(settingsForm.value);
                 showToast(t('market.schedule_saved'));
+                savedRecently.value = true;
+                if (savedRecentlyTimer) clearTimeout(savedRecentlyTimer);
+                savedRecentlyTimer = setTimeout(() => {
+                    savedRecently.value = false;
+                }, 4000);
             } catch (e) {
                 showToast(t('market.save_settings_failed'), 'error');
             } finally {
@@ -1955,5 +2013,6 @@ const router = useRouter();
 
         onUnmounted(() => {
             if (countdownInterval) clearInterval(countdownInterval);
+            if (savedRecentlyTimer) clearTimeout(savedRecentlyTimer);
         });
 </script>

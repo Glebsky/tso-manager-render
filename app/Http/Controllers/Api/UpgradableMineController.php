@@ -25,11 +25,15 @@ class UpgradableMineController extends Controller
     {
         $validated = $request->validate([
             'account_id' => ['required', 'integer', 'min:1'],
+            'refresh' => ['nullable', 'boolean'],
+            'max_level' => ['nullable', 'integer', 'min:2', 'max:7'],
         ]);
 
         $account = Account::findOrFail((int) $validated['account_id']);
+        $forceRefresh = $request->boolean('refresh');
+        $maxLevel = isset($validated['max_level']) ? (int) $validated['max_level'] : null;
 
-        $items = $this->service->upgradableMines($account);
+        $items = $this->service->upgradableMines($account, $forceRefresh, $maxLevel);
 
         return UpgradableMineResource::collection($items);
     }

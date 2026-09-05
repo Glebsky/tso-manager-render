@@ -25,7 +25,7 @@ use Throwable;
  */
 final class MarketServerService
 {
-    private const string ACCOUNT_COLUMNS = 'account:id,username,nickname,region,status';
+    private const string ACCOUNT_COLUMNS = 'account:id,username,nickname,region,status,zone_data';
 
     private const string ACCOUNT_COLUMNS_WITH_ZONE = 'account:id,username,nickname,region,status,zone_data';
 

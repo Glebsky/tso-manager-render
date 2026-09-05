@@ -21,7 +21,7 @@ final class GameTranslationResolver
 {
     private const int MAX_PLACEHOLDER_DEPTH = 3;
 
-    /** @var array<string, array<string, array<string, string>>> */
+    /** @var array<string, array<string, array<array-key, string>>> */
     private array $catalogs = [];
 
     public function __construct(private readonly Translator $translator) {}
@@ -89,9 +89,9 @@ final class GameTranslationResolver
 
                 $idLowerClean = str_replace([' ', '_'], '', strtolower($id));
                 foreach ($sec as $k => $v) {
-                    $kLowerClean = str_replace([' ', '_'], '', strtolower($k));
+                    $kLowerClean = str_replace([' ', '_'], '', strtolower((string) $k));
                     if ($kLowerClean === $idLowerClean) {
-                        return $v;
+                        return (string) $v;
                     }
                 }
             }
@@ -111,7 +111,7 @@ final class GameTranslationResolver
     }
 
     /**
-     * @return array<string, array<string, string>>
+     * @return array<string, array<array-key, string>>
      */
     private function catalog(string $locale): array
     {

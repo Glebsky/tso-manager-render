@@ -12,8 +12,8 @@ use PHPUnit\Framework\TestCase;
 class GameTranslationResolverTest extends TestCase
 {
     /**
-     * @param  array<string, array<string, string>>  $en
-     * @param  array<string, array<string, string>>  $ru
+     * @param  array<string, array<int|string, string>>  $en
+     * @param  array<string, array<int|string, string>>  $ru
      */
     private function makeResolver(array $en, array $ru = [], string $locale = 'en'): GameTranslationResolver
     {
@@ -57,6 +57,20 @@ class GameTranslationResolverTest extends TestCase
         $this->assertSame('Legacy Name', $resolver->name('RES', 'Unknown_Id', 'Legacy Name'));
         $this->assertSame('Unknown_Id', $resolver->name('RES', 'Unknown_Id'));
         $this->assertFalse($resolver->has('RES', 'Unknown_Id'));
+    }
+
+    public function test_handles_sections_with_integer_keys_without_type_error(): void
+    {
+        $resolver = $this->makeResolver([
+            'BUI' => [
+                265 => 'Special Building',
+                'IronMine' => 'Iron Mine',
+            ],
+        ]);
+
+        $this->assertSame('Special Building', $resolver->name('BUI', '265'));
+        $this->assertSame('Iron Mine', $resolver->name('BUI', 'Iron Mine'));
+        $this->assertSame('Unknown', $resolver->name('BUI', 'NonExistentBuilding', 'Unknown'));
     }
 
     public function test_ru_locale_falls_back_to_english(): void
@@ -110,5 +124,19 @@ class GameTranslationResolverTest extends TestCase
         ]);
 
         $this->assertSame('Deed: Leaf', $resolver->resolve('RES', 'Wrap', ['Inner']));
+    }
+
+    public function test_handles_numeric_array_keys_without_type_error(): void
+    {
+        $resolver = $this->makeResolver([
+            'BUI' => [
+                '265' => 'Wondrous Togetherness Chest of Wonderful Wonders',
+                'Castle' => 'Castle',
+            ],
+        ]);
+
+        $this->assertSame('Wondrous Togetherness Chest of Wonderful Wonders', $resolver->name('BUI', '265'));
+        $this->assertSame('Castle', $resolver->name('BUI', 'castle'));
+        $this->assertSame('Unknown', $resolver->name('BUI', 'unknown_building', 'Unknown'));
     }
 }

@@ -164,4 +164,46 @@ final class MinePlacementPolicyTest extends TestCase
         $this->assertFalse($decision->allowed);
         $this->assertNull($decision->definition);
     }
+
+    public function test_it_rejects_when_deposit_is_not_accessible(): void
+    {
+        $zone = new ZoneSnapshot(
+            depositsByGrid: [6431 => new DepositSnapshot(grid: 6431, name: 'IronOre', amount: 1000, maxAmount: 1000, accessible: 0)],
+            buildingsByGrid: [],
+            buildQueue: new BuildQueueSnapshot(used: 1, total: 3),
+        );
+
+        $decision = $this->policy->decide($zone, 6431);
+
+        $this->assertFalse($decision->allowed);
+        $this->assertSame(PlacementRejectionReason::DepositNotAccessible, $decision->reason);
+    }
+
+    public function test_it_rejects_when_deposit_name_mismatches_expected(): void
+    {
+        $zone = new ZoneSnapshot(
+            depositsByGrid: [6431 => new DepositSnapshot(grid: 6431, name: 'IronOre', amount: 1000, maxAmount: 1000)],
+            buildingsByGrid: [],
+            buildQueue: new BuildQueueSnapshot(used: 1, total: 3),
+        );
+
+        $decision = $this->policy->decide($zone, 6431, expectedDepositName: 'GoldOre');
+
+        $this->assertFalse($decision->allowed);
+        $this->assertSame(PlacementRejectionReason::DepositTypeMismatch, $decision->reason);
+    }
+
+    public function test_it_rejects_when_mine_name_mismatches_expected(): void
+    {
+        $zone = new ZoneSnapshot(
+            depositsByGrid: [6431 => new DepositSnapshot(grid: 6431, name: 'IronOre', amount: 1000, maxAmount: 1000)],
+            buildingsByGrid: [],
+            buildQueue: new BuildQueueSnapshot(used: 1, total: 3),
+        );
+
+        $decision = $this->policy->decide($zone, 6431, expectedMineName: 'GoldMine');
+
+        $this->assertFalse($decision->allowed);
+        $this->assertSame(PlacementRejectionReason::DepositTypeMismatch, $decision->reason);
+    }
 }

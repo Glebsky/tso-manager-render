@@ -108,6 +108,7 @@ class MarketSyncJob implements ShouldQueue
             'action' => 'Market sync',
             'status' => 'ERROR',
             'message' => __('logs.market.sync_job_failed', ['error' => $exception->getMessage()]),
+            'created_at' => now(),
         ]);
 
         try {

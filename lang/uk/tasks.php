@@ -49,6 +49,7 @@ return [
             'deposit_empty' => 'Шахта: пропуск, поклади на гріді :grid вичерпано',
             'grid_occupied' => 'Шахта: пропуск, грід :grid зайнятий будівлею',
             'deposit_not_accessible' => 'Шахта: пропуск, поклади на гріді :grid недоступні',
+            'deposit_type_mismatch' => 'Шахта: пропуск, тип покладів на гріді :grid не відповідає потрібному (:name)',
             'build_queue_full' => 'Шахта: пропуск, немає вільних слотів черги будівництва',
         ],
     ],
@@ -59,6 +60,8 @@ return [
         'rejected' => [
             'no_building_at_grid' => 'Шахта: пропуск, будівлю на гріді :grid не знайдено',
             'not_a_mine' => 'Шахта: пропуск, будівля :name не є шахтою',
+            'mine_depleted' => 'Шахта: пропуск, шахта на гріді :grid (:name) виснажена',
+            'building_under_construction' => 'Шахта: пропуск, шахта на гріді :grid (:name) ще будується',
             'max_level_reached' => 'Шахта: пропуск, :name вже рівня :level',
             'upgrade_already_in_progress' => 'Шахта: пропуск, покращення на гріді :grid вже триває',
             'production_inactive' => 'Шахта: пропуск, виробництво на гріді :grid зупинено',

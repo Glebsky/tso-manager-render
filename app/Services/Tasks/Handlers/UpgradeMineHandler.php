@@ -7,6 +7,7 @@ namespace App\Services\Tasks\Handlers;
 use App\Enums\TaskType;
 use App\Exceptions\GameServerErrorException;
 use App\Exceptions\InvalidTaskTypeException;
+use App\Exceptions\TaskExecutionException;
 use App\Models\Account;
 use App\Services\Game\Mines\Contracts\MineCommandGatewayInterface;
 use App\Services\Game\Mines\Contracts\ZoneSnapshotProviderInterface;
@@ -40,6 +41,7 @@ final readonly class UpgradeMineHandler implements TaskActionHandlerInterface
      *
      * @throws GameServerErrorException
      * @throws InvalidTaskTypeException
+     * @throws TaskExecutionException
      */
     public function handle(Account $account, array $payload): string
     {
@@ -66,7 +68,7 @@ final readonly class UpgradeMineHandler implements TaskActionHandlerInterface
         ));
 
         if (! $decision->allowed || $decision->definition === null) {
-            return __('tasks.upgrade_mine.rejected.'.$decision->reason->value, [
+            throw new TaskExecutionException('upgrade_mine.rejected.'.$decision->reason->value, [
                 'grid' => $grid,
                 'name' => $decision->buildingName,
                 'level' => $decision->currentLevel,
@@ -100,7 +102,7 @@ final readonly class UpgradeMineHandler implements TaskActionHandlerInterface
 
         Log::warning("[UpgradeMine] Account #{$account->id}: grid {$grid} failed with game error {$responseCode}");
 
-        return __('tasks.upgrade_mine.game_error', ['message' => GameErrorResolver::getMessage($responseCode)]);
+        throw new TaskExecutionException('upgrade_mine.game_error', ['message' => GameErrorResolver::getMessage($responseCode)]);
     }
 
     private function extractErrorCode(string $rawAmf): int
