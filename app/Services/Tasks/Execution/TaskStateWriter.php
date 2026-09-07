@@ -59,7 +59,7 @@ final readonly class TaskStateWriter
             LogLevel::Success,
             __('logs.task.completed', [
                 'type' => $taskTypeStr,
-                'result' => strlen($resultSummary) > 100 ? substr($resultSummary, 0, 97).'...' : $resultSummary,
+                'result' => $resultSummary,
             ])
         );
     }
@@ -129,7 +129,7 @@ final readonly class TaskStateWriter
             $logLevel,
             __($logKey, [
                 'type' => $taskTypeStr,
-                'result' => strlen($resultSummary) > 100 ? substr($resultSummary, 0, 97).'...' : $resultSummary,
+                'result' => $resultSummary,
             ])
         );
     }

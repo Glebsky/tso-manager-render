@@ -39,7 +39,7 @@ return [
     |--------------------------------------------------------------------------
     */
     'tasks' => [
-        'max_result_length' => 150,
+        'max_result_length' => (int) env('TSO_MAX_TASK_RESULT_LENGTH', 1000),
         'max_action_attempts' => 3,
 
         /*

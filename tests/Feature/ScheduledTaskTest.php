@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Exceptions\TaskExecutionException;
 use App\Models\Account;
+use App\Models\BotLog;
 use App\Models\ScheduledTask;
 use App\Models\User;
 use App\Services\TaskExecutionService;
@@ -312,6 +314,72 @@ class ScheduledTaskTest extends TestCase
         $this->assertStringContainsString('Building not found on grid 101', (string) $stepResults[0]['error']);
         $this->assertEquals('completed', $stepResults[1]['status']);
         $this->assertNull($stepResults[1]['error']);
+    }
+
+    public function test_sequence_task_error_log_is_not_truncated_to_100_chars_and_formats_clean_error(): void
+    {
+        $account = Account::create([
+            'username' => 'longerroruser',
+            'password' => 'secret',
+            'region' => 'ru',
+            'nickname' => 'longerroruser',
+            'zone_data' => json_encode(['buildings' => []]),
+        ]);
+
+        $task = ScheduledTask::create([
+            'account_id' => $account->id,
+            'task_type' => 'sequence',
+            'payload' => [
+                'actions' => [
+                    [
+                        'task_type' => 'stop_production',
+                        'payload' => ['grid' => 101],
+                        'delay_seconds' => 0,
+                    ],
+                    [
+                        'task_type' => 'build_mine',
+                        'payload' => ['grid' => 202],
+                        'delay_seconds' => 0,
+                    ],
+                ],
+            ],
+            'schedule_type' => 'once',
+            'run_at_datetime' => now()->subMinute(),
+            'is_active' => true,
+        ]);
+
+        $this->authMock->shouldReceive('ensureAuthenticated')->with(Mockery::any())->andReturnNull();
+
+        $this->amfMock->shouldReceive('stopProduction')
+            ->once()
+            ->with(Mockery::any(), 101)
+            ->andReturn('ok');
+
+        $this->amfMock->shouldReceive('buildMine')
+            ->once()
+            ->andThrow(new TaskExecutionException('build_mine.game_error', [
+                'message' => 'This is a very long and detailed error message describing that building a copper mine on grid 202 failed due to an invalid deposit state',
+            ]));
+
+        $service = $this->app->make(TaskExecutionService::class);
+        $service->execute($task);
+
+        $task->refresh();
+        $this->assertEquals('failed', $task->status->value);
+
+        // Verify summary contains clean human-readable text and is not truncated to 100 characters
+        $this->assertStringNotContainsString('{"key":"tasks.build_mine.game_error"', (string) $task->last_result);
+        $this->assertStringContainsString('This is a very long and detailed error message', (string) $task->last_result);
+
+        // Verify bot_logs entry is not truncated to 100 characters
+        $log = BotLog::where('account_id', $account->id)
+            ->where('message', 'like', '%finished with errors%')
+            ->first();
+
+        $this->assertNotNull($log);
+        $this->assertGreaterThan(100, strlen($log->message));
+        $this->assertStringContainsString('This is a very long and detailed error message', $log->message);
+        $this->assertStringNotContainsString('{"key":"tasks.build_mine.game_error"', $log->message);
     }
 
     public function test_invalid_non_numeric_task_parameter_returns_404(): void

@@ -62,6 +62,13 @@ final readonly class AmfZoneSnapshotProvider implements ZoneSnapshotProviderInte
             Cache::put($cacheKey, $zone, self::ZONE_CACHE_TTL_SECONDS);
 
             if ($account->exists) {
+                $existingFriends = is_array($account->zone_data) && is_array($account->zone_data['friends'] ?? null)
+                    ? $account->zone_data['friends']
+                    : [];
+                if (! empty($existingFriends)) {
+                    $zone['friends'] = $existingFriends;
+                }
+
                 $account->update([
                     'zone_data' => json_encode($zone, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE),
                     'last_sync_at' => now(),

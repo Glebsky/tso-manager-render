@@ -78,6 +78,7 @@ final class AccountController extends Controller
      */
     public function sync(Account $account): AccountResource
     {
+        $this->accountService->clearCooldown($account);
         $this->syncService->sync($account);
         $freshAccount = $account->fresh() ?? $account;
 

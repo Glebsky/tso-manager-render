@@ -460,4 +460,87 @@ class ScheduledTaskBuffTest extends TestCase
 
         $this->assertStringContainsString('OK:', (string) $task->last_result);
     }
+
+    public function test_refreshes_friend_list_from_server_when_friend_not_in_cache_and_succeeds(): void
+    {
+        $friendId = 30003;
+        // Account has EMPTY friends list initially
+        $account = $this->createAccount(
+            [],
+            [['uniqueId1' => 11, 'uniqueId2' => 22, 'amount' => 5, 'buffName_string' => 'AuntIrma']]
+        );
+
+        $task = ScheduledTask::create([
+            'account_id' => $account->id,
+            'task_type' => 'apply_buff',
+            'payload' => [
+                'target_scope' => 'friend',
+                'target_player_id' => $friendId,
+                'target_player_name' => 'RecoveredFriend',
+                'grid' => 888,
+                'unique_id1' => 11,
+                'unique_id2' => 22,
+                'amount' => 1,
+            ],
+            'schedule_type' => 'once',
+            'run_at_datetime' => now()->subMinute(),
+            'is_active' => true,
+        ]);
+
+        $this->authMock->shouldReceive('ensureAuthenticated')->with(Mockery::any())->andReturnNull();
+
+        // When friend is not found in cache, ApplyBuffHandler should query getFriendList
+        $this->amfMock->shouldReceive('getFriendList')
+            ->once()
+            ->with(Mockery::any())
+            ->andReturn('raw_friends_amf');
+
+        $this->parserMock->shouldReceive('parse')
+            ->once()
+            ->with('raw_friends_amf')
+            ->andReturn([
+                'errorCode' => 0,
+                'friends' => [
+                    ['id' => $friendId, 'nickname' => 'RecoveredFriend', 'playerLevel' => 50],
+                ],
+            ]);
+
+        // Then it loads the friend zone
+        $this->amfMock->shouldReceive('getZone')
+            ->once()
+            ->with(Mockery::any(), $friendId)
+            ->andReturn('raw_friend_zone_amf');
+
+        $this->parserMock->shouldReceive('parse')
+            ->once()
+            ->with('raw_friend_zone_amf')
+            ->andReturn([
+                'errorCode' => 0,
+                'buildings' => [
+                    ['buildingGrid' => 888, 'buildingName' => 'Woodcutter'],
+                ],
+            ]);
+
+        // Then applies buff
+        $this->amfMock->shouldReceive('applyBuff')
+            ->once()
+            ->with(Mockery::any(), 888, 11, 22, 1, $friendId)
+            ->andReturn('buff_ok_amf_response');
+
+        $this->parserMock->shouldReceive('parse')
+            ->once()
+            ->with('buff_ok_amf_response')
+            ->andReturn(['errorCode' => 0]);
+
+        Artisan::call('tso:execute-tasks');
+
+        $task->refresh();
+        $this->assertFalse($task->is_active);
+        $this->assertNotNull($task->last_run_at);
+        $this->assertStringContainsString('OK:', (string) $task->last_result);
+
+        // Account zone_data should now have the recovered friends list
+        $account->refresh();
+        $this->assertSame($friendId, $account->zone_data['friends'][0]['id'] ?? null);
+    }
 }

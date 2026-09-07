@@ -162,7 +162,7 @@ class TsoAuthService
             : ['legacy', 'oauth'];
 
         $params = null;
-        $firstException = null;
+        $exceptions = [];
 
         foreach ($order as $flow) {
             try {
@@ -184,12 +184,19 @@ class TsoAuthService
                     throw $e;
                 }
 
-                $firstException ??= $e;
+                $exceptions[$flow] = $e;
             }
         }
 
         if ($params === null) {
-            throw $firstException ?? new RuntimeException("Login failed for account #{$account->id}");
+            $preferred = $this->preferredFlow($account);
+            $chosenException = $exceptions[$preferred]
+                ?? $exceptions['oauth']
+                ?? $exceptions['legacy']
+                ?? reset($exceptions)
+                ?? new RuntimeException("Login failed for account #{$account->id}");
+
+            throw $chosenException;
         }
 
         Cache::forget($cooldownKey);
@@ -251,6 +258,9 @@ class TsoAuthService
                 throw new RuntimeException((string) __('ui.auth.captcha_required'));
             }
             $formattedError = $this->formatAuthResponse($loginRes);
+            if (stripos($formattedError, 'Ubisoft') !== false) {
+                $this->rememberFlow($account, 'oauth');
+            }
             throw new RuntimeException('Login failed: '.CredentialRedactor::redact($formattedError, $account));
         }
 
@@ -382,7 +392,12 @@ class TsoAuthService
         $oauthTokenData = json_decode($oauthTokenRes, true, 512, JSON_THROW_ON_ERROR);
         $accessToken = is_array($oauthTokenData) ? ($oauthTokenData['accessToken'] ?? null) : null;
         if (! is_string($accessToken) || $accessToken === '') {
-            throw new RuntimeException('Ubisoft login failed (could not get oauthToken): '.$this->formatAuthResponse($oauthTokenRes));
+            $formattedOauthError = $this->formatAuthResponse($oauthTokenRes);
+            if (stripos($formattedOauthError, 'captcha') !== false) {
+                throw new RuntimeException((string) __('ui.auth.captcha_required'));
+            }
+
+            throw new RuntimeException('Ubisoft login failed (could not get oauthToken): '.$formattedOauthError);
         }
 
         $authTokenUrl = 'https://api.partners.ubisoft.com/v1/profiles/authentication/token';
@@ -403,6 +418,18 @@ class TsoAuthService
 
         $token = is_array($authTokenData) ? ($authTokenData['token'] ?? null) : null;
         if (! is_string($token) || $token === '') {
+            if (is_array($authTokenData)) {
+                $errCode = $authTokenData['errorCode'] ?? null;
+                $httpCode = $authTokenData['httpCode'] ?? null;
+                $message = (string) ($authTokenData['message'] ?? '');
+                if ($errCode === 3 || $httpCode === 401 || stripos($message, 'Invalid credentials') !== false) {
+                    throw new RuntimeException((string) __('ui.auth.invalid_credentials'));
+                }
+                if (stripos($message, 'captcha') !== false) {
+                    throw new RuntimeException((string) __('ui.auth.captcha_required'));
+                }
+            }
+
             throw new RuntimeException('Ubisoft authentication failed (could not get token): '.$this->formatAuthResponse($authTokenRes));
         }
 
@@ -478,9 +505,12 @@ class TsoAuthService
         }
 
         $cookieFile = $this->getCookieFile($account);
-        if ($cookieFile === '' || ! is_file($cookieFile)) {
-            // Tokens without a cookie jar cannot authenticate against the game.
+        if ($cookieFile === '') {
             return false;
+        }
+
+        if (! is_file($cookieFile)) {
+            @file_put_contents($cookieFile, '');
         }
 
         $ch = curl_init();
