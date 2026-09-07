@@ -4,6 +4,7 @@ use App\Exceptions\Contracts\HasApiPresentation;
 use App\Http\Middleware\RequestId;
 use App\Http\Middleware\SecurityHeadersMiddleware;
 use App\Http\Middleware\SetLocale;
+use App\Http\Middleware\ValidateTrustedHost;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
@@ -27,12 +28,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->append(ValidateTrustedHost::class);
         $middleware->append(SecurityHeadersMiddleware::class);
         $middleware->append(SetRequestMiddleware::class);
         $middleware->append(SetRequestIpMiddleware::class);
         $middleware->append(FlushEventsMiddleware::class);
 
         $middleware->web(prepend: [
+            ValidateTrustedHost::class,
             SetLocale::class,
         ]);
 
@@ -42,8 +45,37 @@ return Application::configure(basePath: dirname(__DIR__))
             'cache.headers' => SetCacheHeaders::class,
         ]);
 
-        $middleware->trustProxies(at: '*');
+        $trustedProxies = app()->has('config') ? config('app.trusted_proxies') : null;
+        if (is_string($trustedProxies) && $trustedProxies !== '') {
+            $middleware->trustProxies(at: array_map('trim', explode(',', $trustedProxies)));
+        } else {
+            $middleware->trustProxies(at: [
+                '127.0.0.1',
+                '::1',
+                '10.0.0.0/8',
+                '172.16.0.0/12',
+                '192.168.0.0/16',
+            ]);
+        }
 
+        $middleware->trustHosts(at: function () {
+            $allowedHosts = [
+                '127.0.0.1',
+                'localhost',
+                'localhost:80',
+                'localhost:443',
+            ];
+
+            $appUrl = config('app.url');
+            if (is_string($appUrl) && $appUrl !== '') {
+                $parsedHost = parse_url($appUrl, PHP_URL_HOST);
+                if (is_string($parsedHost) && $parsedHost !== '') {
+                    $allowedHosts[] = $parsedHost;
+                }
+            }
+
+            return array_values(array_unique($allowedHosts));
+        });
         $middleware->redirectTo(
             guests: '/admin/login',
             users: '/admin'

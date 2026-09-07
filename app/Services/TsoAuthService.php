@@ -190,10 +190,11 @@ class TsoAuthService
 
         if ($params === null) {
             $preferred = $this->preferredFlow($account);
+            $firstException = reset($exceptions);
             $chosenException = $exceptions[$preferred]
                 ?? $exceptions['oauth']
                 ?? $exceptions['legacy']
-                ?? reset($exceptions)
+                ?? ($firstException instanceof Throwable ? $firstException : null)
                 ?? new RuntimeException("Login failed for account #{$account->id}");
 
             throw $chosenException;

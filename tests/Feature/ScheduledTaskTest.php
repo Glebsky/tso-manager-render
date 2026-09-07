@@ -7,6 +7,11 @@ use App\Models\Account;
 use App\Models\BotLog;
 use App\Models\ScheduledTask;
 use App\Models\User;
+use App\Services\Game\Mines\BuildQueueSnapshot;
+use App\Services\Game\Mines\Contracts\MineCommandGatewayInterface;
+use App\Services\Game\Mines\Contracts\ZoneSnapshotProviderInterface;
+use App\Services\Game\Mines\DepositSnapshot;
+use App\Services\Game\Mines\ZoneSnapshot;
 use App\Services\TaskExecutionService;
 use App\Services\TsoAmfService;
 use App\Services\TsoAuthService;
@@ -326,6 +331,23 @@ class ScheduledTaskTest extends TestCase
             'zone_data' => json_encode(['buildings' => []]),
         ]);
 
+        $mockZones = Mockery::mock(ZoneSnapshotProviderInterface::class);
+        $mockZones->shouldReceive('forAccount')
+            ->andReturn(new ZoneSnapshot(
+                depositsByGrid: [202 => new DepositSnapshot(grid: 202, name: 'IronOre', amount: 500, maxAmount: 500)],
+                buildingsByGrid: [],
+                buildQueue: new BuildQueueSnapshot(used: 0, total: 3),
+            ));
+        $this->app->instance(ZoneSnapshotProviderInterface::class, $mockZones);
+
+        $mockGateway = Mockery::mock(MineCommandGatewayInterface::class);
+        $mockGateway->shouldReceive('buildMine')
+            ->once()
+            ->andThrow(new TaskExecutionException('build_mine.game_error', [
+                'message' => 'This is a very long and detailed error message describing that building a copper mine on grid 202 failed due to an invalid deposit state',
+            ]));
+        $this->app->instance(MineCommandGatewayInterface::class, $mockGateway);
+
         $task = ScheduledTask::create([
             'account_id' => $account->id,
             'task_type' => 'sequence',
@@ -354,12 +376,6 @@ class ScheduledTaskTest extends TestCase
             ->once()
             ->with(Mockery::any(), 101)
             ->andReturn('ok');
-
-        $this->amfMock->shouldReceive('buildMine')
-            ->once()
-            ->andThrow(new TaskExecutionException('build_mine.game_error', [
-                'message' => 'This is a very long and detailed error message describing that building a copper mine on grid 202 failed due to an invalid deposit state',
-            ]));
 
         $service = $this->app->make(TaskExecutionService::class);
         $service->execute($task);

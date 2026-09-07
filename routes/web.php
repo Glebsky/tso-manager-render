@@ -58,4 +58,10 @@ Route::get('/register', function () {
     return redirect('/admin/register');
 });
 
-Route::match(['get', 'post'], '/logout', [AuthController::class, 'logout'])->name('legacy.logout');
+Route::get('/logout', function () {
+    return redirect('/admin/login');
+});
+
+Route::post('/logout', [AuthController::class, 'logout'])
+    ->middleware('auth:sanctum')
+    ->name('legacy.logout');

@@ -42,6 +42,13 @@ class AppServiceProvider extends ServiceProvider
             ]);
         });
 
+        if ($this->app->isProduction()) {
+            $appKey = (string) config('app.key');
+            if ($appKey === '') {
+                throw new \RuntimeException('Production environment requires a valid persistent APP_KEY.');
+            }
+        }
+
         $this->setRateLimiter();
 
         $this->bootLoggingContext();

@@ -71,8 +71,13 @@ class AuthController extends Controller
         ]);
 
         $user = DB::transaction(static function () use ($validated): User {
-            // Serialize the first-user check to reduce the risk of two admins
-            // being created by simultaneous registration requests.
+            // In PostgreSQL, lock_for_update on an empty table does not prevent phantom inserts.
+            // We acquire a transaction-level advisory lock specifically for initial registration.
+            if (DB::getDriverName() === 'pgsql') {
+                DB::statement("SELECT pg_advisory_xact_lock(hashtext('tso_admin_registration'))");
+            }
+
+            // Serialize the first-user check to guarantee only a single admin is created.
             if (User::query()->lockForUpdate()->exists()) {
                 throw ValidationException::withMessages([
                     'email' => __('ui.auth.registration_closed'),

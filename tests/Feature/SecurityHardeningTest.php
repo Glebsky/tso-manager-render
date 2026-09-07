@@ -34,7 +34,12 @@ class SecurityHardeningTest extends TestCase
             $response->assertHeader('X-XSS-Protection', '1; mode=block');
             $response->assertHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
             $response->assertHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+            $response->assertHeader('Content-Security-Policy-Report-Only');
         }
+
+        // Verify HSTS is emitted on HTTPS
+        $secureResponse = $this->get('https://localhost/');
+        $secureResponse->assertHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
     }
 
     public function test_public_market_endpoints_are_rate_limited(): void
@@ -169,5 +174,24 @@ class SecurityHardeningTest extends TestCase
 
         $this->assertStringContainsString('account_9999.txt', $cookiePath);
         $this->assertTrue(is_dir(dirname($cookiePath)));
+    }
+
+    public function test_untrusted_host_header_is_rejected(): void
+    {
+        $response = $this->get('http://evil-attacker.com/');
+
+        // Suspicious/untrusted host should result in 400 Bad Request
+        $response->assertStatus(400);
+    }
+
+    public function test_client_cannot_spoof_client_ip_from_untrusted_source(): void
+    {
+        $response = $this->withServerVariables([
+            'REMOTE_ADDR' => '198.51.100.1', // Public IP (not in trusted proxies)
+            'HTTP_X_FORWARDED_FOR' => '1.2.3.4',
+        ])->get('/');
+
+        // With untrusted REMOTE_ADDR, client IP remains 198.51.100.1 and does NOT become 1.2.3.4
+        $this->assertEquals('198.51.100.1', $response->baseResponse->headers->get('X-Request-Id') ? request()->ip() : request()->ip());
     }
 }

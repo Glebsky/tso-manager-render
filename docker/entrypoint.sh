@@ -22,36 +22,41 @@ if [ -d "/tmp/build_assets" ] && [ "$1" = "php-fpm" ]; then
     cp -r /tmp/build_assets/* /var/www/html/public/build/ 2>/dev/null || true
 fi
 
-# Ensure TLS certificate directory and certs exist
+# Ensure TLS certificate directory and certs exist (only for web server / php-fpm)
 CERTS_DIR="/var/www/html/docker/nginx/certs"
-if [ "$APP_ENV" = "production" ]; then
-    if [ ! -f "$CERTS_DIR/fullchain.pem" ] || [ ! -f "$CERTS_DIR/privkey.pem" ]; then
-        echo "ERROR: Production TLS certificates ($CERTS_DIR/fullchain.pem and $CERTS_DIR/privkey.pem) are missing!" >&2
-        echo "Please mount or supply valid TLS certificates before starting in production mode." >&2
-        exit 1
-    fi
-else
-    mkdir -p "$CERTS_DIR"
-    if [ ! -f "$CERTS_DIR/fullchain.pem" ] || [ ! -f "$CERTS_DIR/privkey.pem" ]; then
-        echo "Generating self-signed TLS certs for development..."
-        openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-            -keyout "$CERTS_DIR/privkey.pem" \
-            -out "$CERTS_DIR/fullchain.pem" \
-            -subj "/CN=localhost" 2>/dev/null || true
+if [ "$1" = "php-fpm" ]; then
+    if [ "$APP_ENV" = "production" ]; then
+        if [ ! -f "$CERTS_DIR/fullchain.pem" ] || [ ! -f "$CERTS_DIR/privkey.pem" ]; then
+            echo "ERROR: Production TLS certificates ($CERTS_DIR/fullchain.pem and $CERTS_DIR/privkey.pem) are missing!" >&2
+            echo "Please mount or supply valid TLS certificates before starting in production mode." >&2
+            exit 1
+        fi
+    else
+        mkdir -p "$CERTS_DIR"
+        if [ ! -f "$CERTS_DIR/fullchain.pem" ] || [ ! -f "$CERTS_DIR/privkey.pem" ]; then
+            echo "Generating self-signed TLS certs for development..."
+            openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+                -keyout "$CERTS_DIR/privkey.pem" \
+                -out "$CERTS_DIR/fullchain.pem" \
+                -subj "/CN=localhost" 2>/dev/null || true
+        fi
     fi
 fi
 
 # Clear runtime config caches first
-
 php artisan config:clear || true
 php artisan cache:clear || true
 
-# Auto-generate APP_KEY if not specified in environment
+# APP_KEY validation & persistent secret check
 if [ -z "$APP_KEY" ]; then
-    echo "APP_KEY is not specified. Generating a temporary key for this container session..."
+    if [ "$APP_ENV" = "production" ]; then
+        echo "FATAL: APP_KEY is not specified in production environment!" >&2
+        echo "All application, queue worker, and scheduler processes must share a persistent APP_KEY secret." >&2
+        exit 1
+    fi
+    echo "APP_KEY is not specified. Generating a temporary key for this development container session..."
     GENERATED_KEY=$(php -r "echo 'base64:' . base64_encode(random_bytes(32));")
     export APP_KEY="$GENERATED_KEY"
-    # Update Laravel config directly so it takes effect even if config is cached later
     php artisan config:clear || true
 fi
 
