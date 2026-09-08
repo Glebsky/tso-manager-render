@@ -30,4 +30,9 @@ final class UpdateScheduledTaskRequest extends ScheduledTaskRequest
 
         return $rules;
     }
+
+    protected function requireFriendZoneCache(): bool
+    {
+        return false;
+    }
 }

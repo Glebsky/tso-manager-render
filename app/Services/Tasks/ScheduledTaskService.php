@@ -9,6 +9,7 @@ use App\Jobs\ExecuteScheduledTaskJob;
 use App\Models\Account;
 use App\Models\ScheduledTask;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -96,7 +97,18 @@ final class ScheduledTaskService
             $data['sort_order'] = ((int) ScheduledTask::max('sort_order')) + 1;
         }
 
-        $task = ScheduledTask::create($data);
+        try {
+            $task = ScheduledTask::create($data);
+        } catch (UniqueConstraintViolationException $e) {
+            if ($this->isPostgresPrimaryKeyCollision($e)) {
+                Log::warning('[ScheduledTaskService] Detected postgres sequence desynchronization for scheduled_tasks, resyncing and retrying...');
+                $this->resyncPostgresSequence();
+                $task = ScheduledTask::create($data);
+            } else {
+                throw $e;
+            }
+        }
+
         $this->logger->scheduled($task);
 
         return $task->fresh() ?? $task;
@@ -287,7 +299,18 @@ final class ScheduledTaskService
             $replica->is_active = false;
             $replica->status = TaskStatus::Pending;
             $replica->sort_order = $task->sort_order + 1;
-            $replica->save();
+
+            try {
+                $replica->save();
+            } catch (UniqueConstraintViolationException $e) {
+                if ($this->isPostgresPrimaryKeyCollision($e)) {
+                    Log::warning('[ScheduledTaskService] Detected postgres sequence desynchronization on duplicate, resyncing and retrying...');
+                    $this->resyncPostgresSequence();
+                    $replica->save();
+                } else {
+                    throw $e;
+                }
+            }
 
             $this->logger->scheduled($replica);
 
@@ -349,5 +372,27 @@ final class ScheduledTaskService
     public function isBusy(ScheduledTask $task): bool
     {
         return $task->status->isBusy();
+    }
+
+    private function isPostgresPrimaryKeyCollision(UniqueConstraintViolationException $e): bool
+    {
+        return DB::getDriverName() === 'pgsql' && str_contains($e->getMessage(), 'scheduled_tasks_pkey');
+    }
+
+    private function resyncPostgresSequence(): void
+    {
+        if (DB::getDriverName() === 'pgsql') {
+            try {
+                DB::statement("
+                    SELECT setval(
+                        pg_get_serial_sequence('scheduled_tasks', 'id'),
+                        COALESCE((SELECT MAX(id) FROM \"scheduled_tasks\"), 1),
+                        (SELECT MAX(id) IS NOT NULL FROM \"scheduled_tasks\")
+                    )
+                ");
+            } catch (\Throwable $e) {
+                Log::warning('[ScheduledTaskService] Failed to resync postgres sequence: '.$e->getMessage());
+            }
+        }
     }
 }

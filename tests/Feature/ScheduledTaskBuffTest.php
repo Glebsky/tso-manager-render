@@ -210,6 +210,124 @@ class ScheduledTaskBuffTest extends TestCase
         $response2->assertStatus(422);
     }
 
+    public function test_can_update_friend_buff_task_when_friend_zone_not_cached(): void
+    {
+        $friendId = 20002;
+        $account = $this->createAccount(
+            [['id' => $friendId, 'username' => 'MyFriend', 'playerLevel' => 45]],
+            [['uniqueId1' => 11, 'uniqueId2' => 22, 'amount' => 5, 'buffName_string' => 'AuntIrma']]
+        );
+
+        $task = ScheduledTask::create([
+            'account_id' => $account->id,
+            'name' => 'Original Friend Buff Task',
+            'task_type' => 'apply_buff',
+            'schedule_type' => 'once',
+            'run_at_datetime' => now()->addDay(),
+            'payload' => [
+                'target_scope' => 'friend',
+                'target_player_id' => $friendId,
+                'target_player_name' => 'MyFriend',
+                'grid' => 888,
+                'unique_id1' => 11,
+                'unique_id2' => 22,
+                'amount' => 1,
+            ],
+            'is_active' => true,
+        ]);
+
+        // Ensure friend zone is NOT in cache
+        Cache::forget("friend-zone:{$account->id}:{$friendId}");
+
+        $response = $this->putJson("/api/tasks/{$task->id}", [
+            'name' => 'Updated Friend Buff Task Name',
+            'account_id' => $account->id,
+            'task_type' => 'apply_buff',
+            'schedule_type' => 'once',
+            'run_at_datetime' => now()->addDays(2)->toIso8601String(),
+            'payload' => [
+                'target_scope' => 'friend',
+                'target_player_id' => $friendId,
+                'target_player_name' => 'MyFriend',
+                'grid' => 888,
+                'unique_id1' => 11,
+                'unique_id2' => 22,
+                'amount' => 1,
+            ],
+        ]);
+
+        $response->assertStatus(200);
+        $task->refresh();
+        $this->assertSame('Updated Friend Buff Task Name', $task->name);
+    }
+
+    public function test_can_update_sequence_with_friend_buff_task_when_friend_zone_not_cached(): void
+    {
+        $friendId = 20002;
+        $account = $this->createAccount(
+            [['id' => $friendId, 'username' => 'MyFriend', 'playerLevel' => 45]],
+            [['uniqueId1' => 11, 'uniqueId2' => 22, 'amount' => 5, 'buffName_string' => 'AuntIrma']]
+        );
+
+        $task = ScheduledTask::create([
+            'account_id' => $account->id,
+            'name' => 'Sequence with Friend Buff',
+            'task_type' => 'sequence',
+            'schedule_type' => 'daily',
+            'run_at_time' => '08:00',
+            'payload' => [
+                'actions' => [
+                    [
+                        'task_type' => 'apply_buff',
+                        'delay_seconds' => 5,
+                        'payload' => [
+                            'target_scope' => 'friend',
+                            'target_player_id' => $friendId,
+                            'target_player_name' => 'MyFriend',
+                            'grid' => 888,
+                            'unique_id1' => 11,
+                            'unique_id2' => 22,
+                            'amount' => 1,
+                        ],
+                    ],
+                ],
+            ],
+            'is_active' => true,
+        ]);
+
+        Cache::forget("friend-zone:{$account->id}:{$friendId}");
+
+        $response = $this->putJson("/api/tasks/{$task->id}", [
+            'name' => 'Updated Sequence with Friend Buff',
+            'account_id' => $account->id,
+            'task_type' => 'sequence',
+            'schedule_type' => 'daily',
+            'run_at_time' => '09:30',
+            'payload' => [
+                'actions' => [
+                    [
+                        'task_type' => 'apply_buff',
+                        'delay_seconds' => 10,
+                        'payload' => [
+                            'target_scope' => 'friend',
+                            'target_player_id' => $friendId,
+                            'target_player_name' => 'MyFriend',
+                            'grid' => 888,
+                            'unique_id1' => 11,
+                            'unique_id2' => 22,
+                            'amount' => 1,
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $response->assertStatus(200);
+        $task->refresh();
+        $this->assertSame('Updated Sequence with Friend Buff', $task->name);
+        $this->assertStringStartsWith('09:30', (string) $task->run_at_time);
+    }
+
     public function test_executes_self_buff_task_successfully(): void
     {
         $account = $this->createAccount(

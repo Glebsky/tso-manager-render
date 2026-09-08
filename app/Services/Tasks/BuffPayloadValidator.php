@@ -29,8 +29,12 @@ final readonly class BuffPayloadValidator
      * @throws InvalidArgumentException
      * @throws InvalidArgumentException
      */
-    public function validate(Account $account, array $payload, string $prefix = 'payload.'): array
-    {
+    public function validate(
+        Account $account,
+        array $payload,
+        string $prefix = 'payload.',
+        bool $requireFriendZoneCache = true
+    ): array {
         $targetScope = $payload['target_scope'] ?? 'self';
         $amount = $payload['amount'] ?? 1;
         $zoneData = $this->zoneData($account);
@@ -65,7 +69,7 @@ final readonly class BuffPayloadValidator
             return [];
         }
 
-        return $this->validateFriendTarget($account, $payload, $prefix, $zoneData);
+        return $this->validateFriendTarget($account, $payload, $prefix, $zoneData, $requireFriendZoneCache);
     }
 
     /**
@@ -75,8 +79,13 @@ final readonly class BuffPayloadValidator
      *
      * @throws InvalidArgumentException
      */
-    private function validateFriendTarget(Account $account, array $payload, string $prefix, array $zoneData): array
-    {
+    private function validateFriendTarget(
+        Account $account,
+        array $payload,
+        string $prefix,
+        array $zoneData,
+        bool $requireFriendZoneCache = true
+    ): array {
         $friendId = (int) ($payload['target_player_id'] ?? 0);
 
         if ($friendId < 1) {
@@ -85,6 +94,10 @@ final readonly class BuffPayloadValidator
 
         if (! $this->isKnownFriend($zoneData, $friendId)) {
             return [$prefix.'target_player_id' => [__('tasks.error.friend_not_in_list')]];
+        }
+
+        if (! $requireFriendZoneCache) {
+            return [];
         }
 
         $cachedZone = $this->cache->get("friend-zone:{$account->id}:{$friendId}");

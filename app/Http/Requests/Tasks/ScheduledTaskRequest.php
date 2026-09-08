@@ -378,6 +378,14 @@ abstract class ScheduledTaskRequest extends FormRequest
     }
 
     /**
+     * Whether friend zone must be present in cache to pass validation.
+     */
+    protected function requireFriendZoneCache(): bool
+    {
+        return true;
+    }
+
+    /**
      * @throws InvalidArgumentException
      */
     private function validateBuffPayloads(Validator $validator): void
@@ -402,7 +410,12 @@ abstract class ScheduledTaskRequest extends FormRequest
         $errorBag = $validator->errors();
 
         foreach ($prefixes as $prefix => $inputKey) {
-            $errors = $buffValidator->validate($account, (array) $this->input($inputKey, []), $prefix);
+            $errors = $buffValidator->validate(
+                $account,
+                (array) $this->input($inputKey, []),
+                $prefix,
+                $this->requireFriendZoneCache()
+            );
 
             foreach ($errors as $field => $messages) {
                 foreach ($messages as $message) {
