@@ -6,6 +6,7 @@ namespace Tests\Feature;
 
 use App\Exceptions\AccountSyncException;
 use App\Exceptions\FriendNotFoundException;
+use App\Exceptions\GameServerMaintenanceException;
 use App\Exceptions\InvalidTaskTypeException;
 use App\Exceptions\MarketOperationException;
 use App\Exceptions\TaskInactiveException;
@@ -37,6 +38,10 @@ class DomainExceptionHandlingTest extends TestCase
 
         Route::get('/api/test-invalid-task-type', function () {
             throw new InvalidTaskTypeException('Task #1 is not a sequence task.', 422);
+        });
+
+        Route::get('/api/test-server-maintenance', function () {
+            throw GameServerMaintenanceException::fromResponse(202, 'queuePos=2&queueSize=2');
         });
 
         Route::get('/api/test-unhandled-exception', function () {
@@ -91,6 +96,16 @@ class DomainExceptionHandlingTest extends TestCase
                 'message' => 'Task #1 is not a sequence task.',
                 'code' => 422,
             ]);
+    }
+
+    public function test_game_server_maintenance_exception_renders_503_json(): void
+    {
+        $response = $this->getJson('/api/test-server-maintenance');
+
+        $response->assertStatus(503)
+            ->assertJsonStructure(['message', 'code']);
+        $this->assertSame(503, $response->json('code'));
+        $this->assertMatchesRegularExpression('/maintenance|обслуживан/i', (string) $response->json('message'));
     }
 
     public function test_unhandled_exception_redacts_sensitive_details(): void

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Account\Sync;
 
 use App\Models\Account;
+use App\Support\Zone\ZoneSnapshot;
 
 /**
  * Handles updating Account database state during sync lifecycle (syncing, online, error, zone_data).
@@ -26,8 +27,13 @@ class AccountSyncPersister
      */
     public function saveSuccess(Account $account, array $zoneData): void
     {
+        $snapshot = ZoneSnapshot::fromData($zoneData);
+
         $account->update([
             'zone_data' => json_encode($zoneData, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE),
+            'avatar_id' => $snapshot->avatarId(),
+            'building_count' => $snapshot->buildingCount(),
+            'game_world_name' => $snapshot->serverName(),
             'last_sync_at' => now(),
             'status' => 'online',
         ]);

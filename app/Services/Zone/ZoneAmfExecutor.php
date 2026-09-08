@@ -77,6 +77,8 @@ class ZoneAmfExecutor
         }
     }
 
+    private static ?string $cachedPythonBin = null;
+
     /**
      * Locate a working Python binary.
      *
@@ -84,14 +86,24 @@ class ZoneAmfExecutor
      */
     private function findPython(): string
     {
+        if (self::$cachedPythonBin !== null) {
+            return self::$cachedPythonBin;
+        }
+
+        $configured = config('game.python_bin');
+        if (is_string($configured) && $configured !== '') {
+            return self::$cachedPythonBin = $configured;
+        }
+
         foreach (['python', 'python3', 'py'] as $bin) {
             $out = [];
             $code = 0;
             exec(escapeshellarg($bin).' --version 2>&1', $out, $code);
             if ($code === 0) {
-                return $bin;
+                return self::$cachedPythonBin = $bin;
             }
         }
+
         throw new \RuntimeException('Python not found. Install Python and ensure it is on PATH.');
     }
 }

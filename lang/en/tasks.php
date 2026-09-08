@@ -20,6 +20,9 @@ return [
         'friend_building_not_found_grid' => 'Building with Grid #:grid not found in friend zone.',
         'friend_zone_not_cached' => 'Friend zone is not loaded or cache has expired. Please refresh it in the interface.',
         'building_not_clickable' => 'Building :name is not clickable for collection',
+        'server_maintenance' => 'Game server is under maintenance.',
+        'server_maintenance_queue' => 'Game server is under maintenance (queue: :pos/:size).',
+        'server_maintenance_details' => 'Game server is under maintenance (:details).',
     ],
     'step' => [
         'skipped' => 'Step :step [:type]: SKIPPED (already executed)',

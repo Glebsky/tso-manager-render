@@ -1,14 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\LogoutRequest;
+use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Laravel\Sanctum\PersonalAccessToken;
@@ -26,18 +30,13 @@ class AuthController extends Controller
         return view('auth.login');
     }
 
-    public function login(Request $request): RedirectResponse
+    public function login(LoginRequest $request): RedirectResponse
     {
         if (! User::query()->exists()) {
             return redirect()->route('register');
         }
 
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required', 'string'],
-        ]);
-
-        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+        if (! Auth::attempt($request->credentials(), $request->remember())) {
             throw ValidationException::withMessages([
                 'email' => __('auth.failed'),
             ]);
@@ -64,11 +63,17 @@ class AuthController extends Controller
      */
     public function register(Request $request): Response
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'confirmed', Password::min(8)],
-        ]);
+        $formRequest = $request instanceof RegisterRequest
+            ? $request
+            : RegisterRequest::createFrom($request);
+
+        if (! $request instanceof RegisterRequest) {
+            $formRequest->setContainer(app());
+            $formRequest->validateResolved();
+        }
+
+        /** @var array<string, mixed> $validated */
+        $validated = $formRequest->validated();
 
         $user = DB::transaction(static function () use ($validated): User {
             // In PostgreSQL, lock_for_update on an empty table does not prevent phantom inserts.
@@ -100,7 +105,7 @@ class AuthController extends Controller
         return redirect('/admin');
     }
 
-    public function logout(Request $request): Response
+    public function logout(LogoutRequest $request): Response
     {
         $user = $request->user();
         $token = $user?->currentAccessToken();

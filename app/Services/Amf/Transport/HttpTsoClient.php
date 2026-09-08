@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Amf\Transport;
 
+use App\Exceptions\GameServerMaintenanceException;
 use App\Exceptions\SessionExpiredException;
 use App\Models\Account;
 use App\Services\Amf\Amf3Encoder;
@@ -172,6 +173,17 @@ class HttpTsoClient implements TsoClientInterface
         return in_array($status, [401, 403], true) || ($status >= 300 && $status < 400);
     }
 
+    private function isMaintenanceResponse(int $status, string $body): bool
+    {
+        if ($status === 503) {
+            return true;
+        }
+
+        $lower = strtolower($body);
+
+        return str_contains($lower, 'maintenance') || str_contains($lower, 'wartung') || str_contains($lower, 'обслуживан');
+    }
+
     /**
      * @throws Exception
      */
@@ -222,6 +234,10 @@ class HttpTsoClient implements TsoClientInterface
             );
         }
 
+        if ($this->isMaintenanceResponse($authStatus, $authRes)) {
+            throw GameServerMaintenanceException::fromResponse($authStatus, $authRes);
+        }
+
         if ($authStatus !== 200) {
             Log::warning("[TsoAmf] Unexpected load server authentication status for account #{$account->id}: HTTP {$authStatus}");
         }
@@ -260,17 +276,31 @@ class HttpTsoClient implements TsoClientInterface
 
             Log::info("[TsoAmf] Load server attempt {$i}: HTTP {$lsStatus}, URL {$requestUrl}, response: ".substr($lsRes, 0, 300));
 
-            if ($lsStatus !== 202) {
+            if ($this->isMaintenanceResponse($lsStatus, $lsRes)) {
+                throw GameServerMaintenanceException::fromResponse($lsStatus, $lsRes);
+            }
+
+            if ($lsStatus >= 300 && $lsStatus < 400) {
+                throw new SessionExpiredException("Load Server returned status {$lsStatus}: session expired or invalid.");
+            }
+
+            if ($lsStatus === 200) {
                 $amfServerUrl = str_replace(':123443', '', trim($lsRes));
                 break;
             }
+
+            if ($lsStatus !== 202) {
+                Log::warning("[TsoAmf] Unexpected load server status {$lsStatus}, response: ".substr($lsRes, 0, 200));
+            }
+
             sleep(2);
         }
 
         if ($amfServerUrl === '') {
-            if ($lsStatus >= 300 && $lsStatus < 400) {
-                throw new SessionExpiredException("Load Server returned status {$lsStatus}: session expired or invalid.");
+            if ($lsStatus === 202 || str_contains($lsRes, 'queuePos') || str_contains($lsRes, 'queueSize')) {
+                throw GameServerMaintenanceException::fromResponse($lsStatus, $lsRes);
             }
+
             throw new \RuntimeException("Timeout waiting for Load Server. Last status: {$lsStatus}, Resp: {$lsRes}");
         }
 

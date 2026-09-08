@@ -29,7 +29,7 @@ final class AccountController extends Controller
 
     public function index(): AnonymousResourceCollection
     {
-        $accounts = Account::withExists('marketServerConnections')->latest()->get();
+        $accounts = Account::lite()->withExists('marketServerConnections')->latest()->get();
 
         return AccountResource::collection($accounts)
             ->additional([

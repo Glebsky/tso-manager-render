@@ -20,6 +20,9 @@ return [
         'friend_building_not_found_grid' => 'Здание с сеткой #:grid не найдено в зоне друга.',
         'friend_zone_not_cached' => 'Зона друга не загружена или истек срок кеша. Пожалуйста, обновите ее в интерфейсе.',
         'building_not_clickable' => 'Здание :name нельзя собрать кликом',
+        'server_maintenance' => 'Сервер игры на обслуживании.',
+        'server_maintenance_queue' => 'Сервер игры на обслуживании (очередь: :pos/:size).',
+        'server_maintenance_details' => 'Сервер игры на обслуживании (:details).',
     ],
     'step' => [
         'skipped' => 'Шаг :step [:type]: пропущен (уже выполнен)',
