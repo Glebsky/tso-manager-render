@@ -57,6 +57,10 @@ final readonly class ApplyBuffHandler implements TaskActionHandlerInterface
             }
 
             if (! $friend) {
+                $friend = $this->refreshFriendFromLiveServer($account, $targetPlayerIdInt);
+            }
+
+            if (! $friend) {
                 throw new FriendNotFoundException;
             }
 
@@ -88,5 +92,58 @@ final readonly class ApplyBuffHandler implements TaskActionHandlerInterface
         }
 
         return $this->amfService->applyBuff($account, $grid, $uniqueId1, $uniqueId2, $amount);
+    }
+
+    /**
+     * Attempt to refresh the friends list from the game server if a friend was not found in cache.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function refreshFriendFromLiveServer(Account $account, int $targetPlayerIdInt): ?array
+    {
+        try {
+            $rawFriendsAmf = $this->amfService->getFriendList($account);
+            $friendsData = $this->zoneParser->parse($rawFriendsAmf);
+
+            $errorCode = (int) ($friendsData['errorCode'] ?? 0);
+            if ($errorCode !== 0 || ! isset($friendsData['friends']) || ! is_array($friendsData['friends'])) {
+                return null;
+            }
+
+            $zoneData = is_array($account->zone_data) ? $account->zone_data : [];
+            $ownerUid = $zoneData['userID'] ?? null;
+            $friendsList = [];
+            $foundFriend = null;
+
+            foreach ($friendsData['friends'] as $p) {
+                $puid = $p['id'] ?? $p['userID'] ?? null;
+                if ($puid !== null && $ownerUid !== null && (int) $puid === (int) $ownerUid) {
+                    continue;
+                }
+                $item = [
+                    'id' => $puid,
+                    'username' => $p['username_string'] ?? $p['username'] ?? $p['nickname'] ?? 'Unknown',
+                    'nickname' => $p['nickname'] ?? $p['username_string'] ?? $p['username'] ?? 'Unknown',
+                    'playerLevel' => $p['playerLevel'] ?? $p['level'] ?? 1,
+                    'level' => $p['playerLevel'] ?? $p['level'] ?? 1,
+                    'avatarId' => $p['avatarId'] ?? 1,
+                    'friendSince' => $p['friendSince'] ?? null,
+                ];
+                $friendsList[] = $item;
+
+                if ($puid !== null && (int) $puid === $targetPlayerIdInt) {
+                    $foundFriend = $item;
+                }
+            }
+
+            $zoneData['friends'] = $friendsList;
+            $account->update([
+                'zone_data' => json_encode($zoneData, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE),
+            ]);
+
+            return $foundFriend;
+        } catch (\Throwable) {
+            return null;
+        }
     }
 }

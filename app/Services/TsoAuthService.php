@@ -5,16 +5,29 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\Account;
+use App\Services\Auth\TsoPlayPageParser;
+use App\Services\Auth\UbisoftConnectAuthClient;
 use App\Support\Security\CredentialRedactor;
 use Exception;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 use Throwable;
 
 class TsoAuthService
 {
+    private readonly TsoPlayPageParser $playPageParser;
+
+    private readonly UbisoftConnectAuthClient $ubiClient;
+
+    public function __construct(
+        ?TsoPlayPageParser $playPageParser = null,
+        ?UbisoftConnectAuthClient $ubiClient = null,
+    ) {
+        $this->playPageParser = $playPageParser ?? new TsoPlayPageParser;
+        $this->ubiClient = $ubiClient ?? new UbisoftConnectAuthClient($this->playPageParser);
+    }
+
     /**
      * Server configurations per region.
      *
@@ -39,6 +52,34 @@ class TsoAuthService
     ];
 
     /**
+     * Browser fingerprint expected by the game backend. Must stay byte-identical
+     * to what the reference Flash client sends.
+     */
+    private const array BROWSER_HEADERS = [
+        'User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.12 (KHTML, like Gecko) Chrome/9.0.570.0 Safari/534.12',
+        'Referer: http://game-cdn.thesettlersonline.net/prestaging/PS5724/SWMMO/debug/SWMMO.swf',
+    ];
+
+    /**
+     * Browser headers simulating a modern browser for web login and warmup to avoid bot CAPTCHA triggers.
+     */
+    private const array WEB_BROWSER_HEADERS = [
+        'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+        'Accept-Language: ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
+        'Upgrade-Insecure-Requests: 1',
+    ];
+
+    /** Cache key prefix for the "session was verified recently" flag. */
+    private const string SESSION_OK_KEY = 'tso:session_ok:';
+
+    /** How long a positive verifySession() result is trusted, in seconds. */
+    private const int SESSION_OK_TTL = 300;
+
+    /** Cache key prefix remembering which login flow last succeeded. */
+    private const string AUTH_FLOW_KEY = 'tso:auth_flow:';
+
+    /**
      * Get the cookie file path for a given account.
      */
     public function getCookieFile(Account $account): string
@@ -60,6 +101,8 @@ class TsoAuthService
         if (is_file($cookieFile)) {
             @unlink($cookieFile);
         }
+
+        $this->forgetSessionVerified($account);
     }
 
     /**
@@ -81,6 +124,19 @@ class TsoAuthService
         }
 
         try {
+            if ($locked) {
+                // Another process may have completed a full login while we were
+                // waiting for the lock. Logging in again would create a second
+                // game session and invalidate the fresh one (error 1012).
+                $account->refresh();
+
+                if (Cache::get(self::SESSION_OK_KEY.$account->id) === true) {
+                    Log::info("[TsoAuth] Reusing session established by another process for account #{$account->id}");
+
+                    return $this->sessionParams($account);
+                }
+            }
+
             return $this->performLogin($account);
         } finally {
             if ($locked) {
@@ -113,36 +169,49 @@ class TsoAuthService
 
         $server = self::SERVERS[$region];
         $cookieFile = $this->getCookieFile($account);
-        //        $this->resetSession($account);
+        $this->resetSession($account);
 
-        try {
-            $params = $this->loginLegacy($account, $cookieFile, $server);
-        } catch (Exception $e) {
-            $errMsg = $e->getMessage();
-            Log::warning("[TsoAuth] Legacy (CipMigrated) login failed for account #{$account->id}: ".CredentialRedactor::redact($errMsg, $account));
+        $order = $this->preferredFlow($account) === 'oauth'
+            ? ['oauth', 'legacy']
+            : ['legacy', 'oauth'];
 
-            if ($this->isCaptchaOr2faError($errMsg)) {
-                Cache::put($cooldownKey, $errMsg, 900);
-                $account->update(['status' => 'session_expired']);
+        $params = null;
+        $exceptions = [];
 
-                throw $e;
-            }
-
+        foreach ($order as $flow) {
             try {
-                $params = $this->loginOAuth($account, $cookieFile, $server);
-            } catch (Exception $e2) {
-                $oauthErrMsg = $e2->getMessage();
-                Log::warning("[TsoAuth] OAuth fallback login also failed for account #{$account->id}: ".CredentialRedactor::redact($oauthErrMsg, $account));
+                $params = $flow === 'oauth'
+                    ? $this->loginOAuth($account, $cookieFile, $server)
+                    : $this->loginLegacy($account, $cookieFile, $server);
 
-                if ($this->isCaptchaOr2faError($oauthErrMsg)) {
-                    Cache::put($cooldownKey, $oauthErrMsg, 900);
+                $this->rememberFlow($account, $flow);
+
+                break;
+            } catch (Exception $e) {
+                $errMsg = $e->getMessage();
+                Log::warning("[TsoAuth] {$flow} login failed for account #{$account->id}: ".CredentialRedactor::redact($errMsg, $account));
+
+                if ($this->isCaptchaOr2faError($errMsg)) {
+                    Cache::put($cooldownKey, $errMsg, 900);
                     $account->update(['status' => 'session_expired']);
 
-                    throw $e2;
+                    throw $e;
                 }
 
-                throw $e;
+                $exceptions[$flow] = $e;
             }
+        }
+
+        if ($params === null) {
+            $preferred = $this->preferredFlow($account);
+            $firstException = reset($exceptions);
+            $chosenException = $exceptions[$preferred]
+                ?? $exceptions['oauth']
+                ?? $exceptions['legacy']
+                ?? ($firstException instanceof Throwable ? $firstException : null)
+                ?? new RuntimeException("Login failed for account #{$account->id}");
+
+            throw $chosenException;
         }
 
         Cache::forget($cooldownKey);
@@ -154,6 +223,8 @@ class TsoAuthService
             'nickname' => $params['nickName'],
             'status' => 'online',
         ]);
+
+        $this->markSessionVerified($account);
 
         return $params;
     }
@@ -185,6 +256,10 @@ class TsoAuthService
      */
     public function loginLegacy(Account $account, string $cookieFile, array $server): array
     {
+        // Pre-warm cookies and Cloudflare tokens by visiting the homepage first
+        $mainUrl = $server['domain'].$server['main'];
+        $this->cipMigratedRequest($mainUrl, null, $cookieFile);
+
         $loginUrl = $server['domain'].str_replace('uplay', 'login', $server['uplay']);
         $loginRes = $this->cipMigratedRequest($loginUrl, [
             'name' => $account->username,
@@ -198,16 +273,18 @@ class TsoAuthService
                 throw new RuntimeException((string) __('ui.auth.captcha_required'));
             }
             $formattedError = $this->formatAuthResponse($loginRes);
+            if (stripos($formattedError, 'Ubisoft') !== false) {
+                $this->rememberFlow($account, 'oauth');
+            }
             throw new RuntimeException('Login failed: '.CredentialRedactor::redact($formattedError, $account));
         }
 
-        $mainUrl = $server['domain'].$server['main'];
         $this->cipMigratedRequest($mainUrl, ['start' => '1'], $cookieFile);
 
         $playUrl = $server['domain'].$server['play'];
         $playHtml = $this->cipMigratedRequest($playUrl, null, $cookieFile);
 
-        return $this->extractParams($playHtml);
+        return $this->playPageParser->parse($playHtml);
     }
 
     /**
@@ -239,10 +316,13 @@ class TsoAuthService
             curl_setopt($ch, CURLOPT_HEADER, true);
             curl_setopt($ch, CURLOPT_TIMEOUT, (int) config('game.http_timeout', 30));
 
-            $headers = [
-                'Content-Type: application/x-www-form-urlencoded',
-                'Connection: close',
-            ];
+            $headers = array_merge(
+                [
+                    'Content-Type: application/x-www-form-urlencoded',
+                    'Connection: close',
+                ],
+                self::WEB_BROWSER_HEADERS,
+            );
             curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
             if ($isPost && $i === 0) {
@@ -294,119 +374,134 @@ class TsoAuthService
      */
     public function loginOAuth(Account $account, string $cookieFile, array $server): array
     {
-        $oauthStartUrl = $server['domain'].'/oauth/start';
-        $redirectUrl = $this->curlRequest($oauthStartUrl, null, $cookieFile, true);
+        return $this->ubiClient->login($account, $cookieFile, $server);
+    }
 
-        $redirectUrl2 = $this->curlRequest($redirectUrl, null, $cookieFile, true);
-
-        $queryString = parse_url($redirectUrl2, PHP_URL_QUERY);
-        if (! is_string($queryString) || $queryString === '') {
-            throw new RuntimeException('OAuth redirect URL query parameters missing: '.$redirectUrl2);
+    /**
+     * Cheap liveness probe for the stored session, mirroring FastAuth() in the
+     * reference client (client/login.xaml.cs): one POST to bb/authenticate that
+     * both validates the tokens and refreshes the cookie jar.
+     *
+     * Returns false only when we can positively tell the session is unusable.
+     */
+    public function verifySession(Account $account): bool
+    {
+        if (! $this->isAuthenticated($account)) {
+            return false;
         }
-        parse_str($queryString, $redirectUrlOpts);
-        $clientId = $redirectUrlOpts['client_id'] ?? null;
-        if (! $clientId) {
-            throw new RuntimeException('Could not find client_id in Ubisoft redirect URL');
+
+        $cookieFile = $this->getCookieFile($account);
+        if ($cookieFile === '') {
+            return false;
         }
 
-        $oauthTokenUrl = 'https://connect.ubisoft.com/v2/webauth/public/ubiservices/oauthToken';
-        $oauthTokenBody = (string) json_encode([
-            'operationName' => 'SignIn',
-            'variables' => [
-                'input' => [
-                    'rememberMe' => true,
-                ],
-            ],
-            'query' => 'mutation SignIn($input: SignInInput!) { signIn(input: $input) { ... on SignInResultSuccess { accessToken } } }',
-        ], JSON_THROW_ON_ERROR);
-        $oauthTokenHeaders = [
-            'Content-Type: application/json',
-            'Accept: application/json',
+        if (! is_file($cookieFile)) {
+            @file_put_contents($cookieFile, '');
+        }
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, rtrim((string) $account->bb_url, '/').'/authenticate');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
+            'DSOAUTHUSER' => (string) $account->dso_auth_user,
+            'DSOAUTHTOKEN' => (string) $account->dso_auth_token,
+        ]));
+        curl_setopt($ch, CURLOPT_COOKIEFILE, $cookieFile);
+        curl_setopt($ch, CURLOPT_COOKIEJAR, $cookieFile);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, (bool) config('game.ssl_verify', true));
+        curl_setopt($ch, CURLOPT_TIMEOUT, (int) config('game.http_timeout', 30));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array_merge(
+            ['Content-Type: application/x-www-form-urlencoded'],
+            self::BROWSER_HEADERS,
+        ));
+
+        $response = (string) curl_exec($ch);
+        $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
+        curl_close($ch);
+
+        if ($error !== '') {
+            Log::warning("[TsoAuth] Session probe for account #{$account->id} failed on transport level: {$error}");
+
+            return false;
+        }
+
+        $alive = $status === 200 && ! str_contains($response, 'ERROR');
+
+        Log::info("[TsoAuth] Session probe for account #{$account->id}: HTTP {$status}, alive=".($alive ? 'yes' : 'no'));
+
+        return $alive;
+    }
+
+    /**
+     * The only entry point application services should use: make sure the
+     * account can talk to the game server, reusing the existing session
+     * whenever possible and logging in only when it is actually dead.
+     *
+     * @throws Exception
+     */
+    public function ensureAuthenticated(Account $account): void
+    {
+        if (Cache::get(self::SESSION_OK_KEY.$account->id) === true) {
+            return;
+        }
+
+        if ($this->verifySession($account)) {
+            $this->markSessionVerified($account);
+
+            return;
+        }
+
+        $this->login($account);
+        $account->refresh();
+    }
+
+    public function markSessionVerified(Account|int $account): void
+    {
+        $id = $account instanceof Account ? $account->id : $account;
+
+        Cache::put(self::SESSION_OK_KEY.$id, true, self::SESSION_OK_TTL);
+    }
+
+    public function forgetSessionVerified(Account|int $account): void
+    {
+        $id = $account instanceof Account ? $account->id : $account;
+
+        Cache::forget(self::SESSION_OK_KEY.$id);
+    }
+
+    /**
+     * Current session parameters in the same shape performLogin() returns.
+     *
+     * @return array<string, mixed>
+     */
+    private function sessionParams(Account $account): array
+    {
+        return [
+            'dsoAuthToken' => (string) $account->dso_auth_token,
+            'dsoAuthUser' => (string) $account->dso_auth_user,
+            'bburl' => (string) $account->bb_url,
+            'zoneId' => null,
+            'nickName' => (string) $account->nickname,
         ];
-        $oauthTokenRes = $this->curlRequest($oauthTokenUrl, $oauthTokenBody, $cookieFile, false, $oauthTokenHeaders);
-        $oauthTokenData = json_decode($oauthTokenRes, true, 512, JSON_THROW_ON_ERROR);
-        $accessToken = is_array($oauthTokenData) ? ($oauthTokenData['accessToken'] ?? null) : null;
-        if (! is_string($accessToken) || $accessToken === '') {
-            throw new RuntimeException('Ubisoft login failed (could not get oauthToken): '.$this->formatAuthResponse($oauthTokenRes));
-        }
+    }
 
-        $authTokenUrl = 'https://api.partners.ubisoft.com/v1/profiles/authentication/token';
-        $authTokenBody = (string) json_encode(['rememberMe' => true], JSON_THROW_ON_ERROR);
-        $credentials = base64_encode(trim($account->username).':'.trim($account->password));
-        $authTokenHeaders = [
-            'Content-Type: application/json',
-            'Ubi-RequestedPlatformType: uplay',
-            'Authorization: Bearer '.$accessToken,
-            'Ubi-Profile-Authorization: Basic '.$credentials,
-        ];
-        $authTokenRes = $this->curlRequest($authTokenUrl, $authTokenBody, $cookieFile, false, $authTokenHeaders);
-        $authTokenData = json_decode($authTokenRes, true, 512, JSON_THROW_ON_ERROR);
+    /**
+     * Which login flow to try first. Mirrors the cipMigrated switch of the
+     * reference client, but learned from the last successful login instead of
+     * being configured by hand.
+     *
+     * @return 'legacy'|'oauth'
+     */
+    private function preferredFlow(Account $account): string
+    {
+        return Cache::get(self::AUTH_FLOW_KEY.$account->id) === 'oauth' ? 'oauth' : 'legacy';
+    }
 
-        if (is_array($authTokenData) && isset($authTokenData['twoFactorAuthenticationTicket'])) {
-            throw new RuntimeException((string) __('ui.auth.2fa_required'));
-        }
-
-        $token = is_array($authTokenData) ? ($authTokenData['token'] ?? null) : null;
-        if (! is_string($token) || $token === '') {
-            throw new RuntimeException('Ubisoft authentication failed (could not get token): '.$this->formatAuthResponse($authTokenRes));
-        }
-
-        $redirectUrlOpts['token'] = $token;
-        $authorizeCallbackUrl = 'https://api.partners.ubisoft.com/v1/oauth/authorize/callback?'.http_build_query($redirectUrlOpts);
-        $callbackRedirect = $this->curlRequest($authorizeCallbackUrl, null, $cookieFile, true);
-
-        $callbackQuery = parse_url($callbackRedirect, PHP_URL_QUERY);
-        if (! is_string($callbackQuery) || $callbackQuery === '') {
-            throw new RuntimeException('Authorize callback query missing: '.$callbackRedirect);
-        }
-        parse_str($callbackQuery, $callbackOpts);
-        $consentRedirectUrl = $callbackOpts['redirectUrl'] ?? null;
-        if (! is_string($consentRedirectUrl) || $consentRedirectUrl === '') {
-            throw new RuntimeException('Consent redirectUrl missing in callback redirect: '.$callbackRedirect);
-        }
-        $consentQuery = parse_url($consentRedirectUrl, PHP_URL_QUERY);
-        $consentOpts = [];
-        if (is_string($consentQuery) && $consentQuery !== '') {
-            parse_str($consentQuery, $consentOpts);
-        }
-        $profileToken = $consentOpts['profile_token'] ?? null;
-
-        unset($redirectUrlOpts['token']);
-        if (is_string($profileToken)) {
-            $redirectUrlOpts['profile_token'] = $profileToken;
-        }
-        $consentUrl = 'https://api.partners.ubisoft.com/v1/oauth/consents';
-        $consentBody = (string) json_encode([
-            'scopesConsented' => ['offline_access', 'openid', 'profile', 'email'],
-            'isConsented' => true,
-            'redirectUrl' => 'https://api.partners.ubisoft.com/v1/oauth/authorize/callback?'
-                                 .http_build_query($redirectUrlOpts),
-        ], JSON_THROW_ON_ERROR);
-        $clientId = is_string($redirectUrlOpts['client_id'] ?? null) ? $redirectUrlOpts['client_id'] : '';
-        $consentHeaders = [
-            'Content-Type: application/json',
-            'Ubi-RequestedPlatformType: uplay',
-            'ClientId: '.$clientId,
-        ];
-        $consentRes = $this->curlRequest($consentUrl, $consentBody, $cookieFile, true, $consentHeaders);
-
-        $finalCallbackUrl = $this->curlRequest($consentRes, null, $cookieFile, true);
-
-        $login2Url = str_replace('/login?', '/login2?', $finalCallbackUrl);
-        if ($login2Url === $finalCallbackUrl) {
-            $login2Url = str_replace('/login', '/login2', $finalCallbackUrl);
-        }
-        $afterLogin2Url = $this->curlRequest($login2Url, null, $cookieFile, true);
-
-        $this->curlRequest($afterLogin2Url, null, $cookieFile);
-
-        $mainUrl = $server['domain'].$server['main'];
-        $this->curlRequest($mainUrl, null, $cookieFile);
-
-        $playUrl = $server['domain'].$server['play'];
-        $playHtml = $this->curlRequest($playUrl, null, $cookieFile);
-
-        return $this->extractParams($playHtml);
+    private function rememberFlow(Account $account, string $flow): void
+    {
+        Cache::put(self::AUTH_FLOW_KEY.$account->id, $flow, now()->addDays(30));
     }
 
     /**
@@ -435,115 +530,6 @@ class TsoAuthService
     public static function supportedRegions(): array
     {
         return array_keys(self::SERVERS);
-    }
-
-    /**
-     * Extract flash vars from the play page HTML.
-     *
-     * @return array<string, mixed>
-     *
-     * @throws Exception
-     */
-    private function extractParams(string $html): array
-    {
-        $params = [];
-        if (preg_match('/return\s+"([^"]+)"/i', $html, $matches) || preg_match('/thisProgram:\s+"([^"]+)"/i', $html, $matches)) {
-            parse_str($matches[1], $parsedParams);
-            $params = $parsedParams;
-        }
-
-        $nickName = 'Unknown';
-        if (preg_match("/loggedInUserName\s*=\s*'([^']+)'/i", $html, $matches)) {
-            $nickName = $matches[1];
-        }
-
-        Storage::disk('local')->put('debug/play_page.html', $html);
-
-        if (empty($params) || ! isset($params['dsoAuthToken'])) {
-            throw new RuntimeException('Could not extract auth tokens from play page. Possible captcha or maintenance.');
-        }
-
-        Storage::disk('local')->put('debug/flash_vars.json', (string) json_encode($params, JSON_THROW_ON_ERROR
-                                                                                          | JSON_PRETTY_PRINT));
-
-        return [
-            'dsoAuthToken' => $params['dsoAuthToken'],
-            'dsoAuthUser' => $params['dsoAuthUser'],
-            'bburl' => $params['bb'],
-            'zoneId' => $params['zoneID'] ?? null,
-            'nickName' => $nickName,
-        ];
-    }
-
-    /**
-     * Perform a cURL request with cookie support.
-     *
-     * @param  array<string, mixed>|string|null  $postData
-     * @param  list<string>|null  $headers
-     *
-     * @throws Exception
-     */
-    private function curlRequest(string $url, mixed $postData, string $cookieFile, bool $returnRedirect = false, ?array $headers = null): string
-    {
-        if ($url === '' || $cookieFile === '') {
-            throw new RuntimeException('Invalid URL or cookie file.');
-        }
-
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, (bool) config('game.ssl_verify', true));
-        curl_setopt($ch, CURLOPT_TIMEOUT, (int) config('game.http_timeout', 30));
-        curl_setopt($ch, CURLOPT_COOKIEJAR, $cookieFile);
-        curl_setopt($ch, CURLOPT_COOKIEFILE, $cookieFile);
-
-        if ($returnRedirect) {
-            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
-            curl_setopt($ch, CURLOPT_HEADER, true);
-        } else {
-            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        }
-
-        $defaultHeaders = [
-            'User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.12 (KHTML, like Gecko) Chrome/9.0.570.0 Safari/534.12',
-            'Referer: http://game-cdn.thesettlersonline.net/prestaging/PS5724/SWMMO/debug/SWMMO.swf',
-        ];
-
-        if ($headers) {
-            $defaultHeaders = array_merge($defaultHeaders, $headers);
-        }
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $defaultHeaders);
-
-        if ($postData !== null) {
-            curl_setopt($ch, CURLOPT_POST, true);
-            if (is_array($postData)) {
-                curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postData));
-            } else {
-                curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
-            }
-        }
-
-        $response = (string) curl_exec($ch);
-        $error = curl_error($ch);
-        $info = curl_getinfo($ch);
-        curl_close($ch);
-
-        if ($error) {
-            throw new RuntimeException('cURL Error: '.$error);
-        }
-
-        if ($returnRedirect) {
-            if (preg_match('/^Location:\s*([^\r\n]+)/mi', $response, $matches)) {
-                return trim($matches[1]);
-            }
-            if (! empty($info['redirect_url'])) {
-                return (string) $info['redirect_url'];
-            }
-
-            return $response;
-        }
-
-        return $response;
     }
 
     /**

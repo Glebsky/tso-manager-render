@@ -76,9 +76,9 @@ final readonly class ActionRetryPolicy
                 if (in_array($code, $sessionCodes, true) || in_array($code, $transportCodes, true)) {
                     Log::info("[TaskExecution] Action [{$taskTypeStr}] hit session conflict/expired (error {$code}) for account #{$accountId} ({$username}); re-authenticating and retrying (attempt {$attempt}/{$maxAttempts})");
 
-                    $this->authService->resetSession($account);
-                    $this->authService->login($account);
+                    $this->authService->forgetSessionVerified($account);
                     $this->amfService->invalidateSession($accountId);
+                    $this->authService->ensureAuthenticated($account);
                     $account->refresh();
                     sleep(2);
 

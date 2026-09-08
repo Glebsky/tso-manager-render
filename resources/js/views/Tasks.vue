@@ -857,7 +857,8 @@
                        @close="closeDepositModal"
                        @select-all="selectAllDeposits"
                        @clear="clearSelectedDeposits"
-                       @toggle-deposit="toggleDepositSelection" />
+                       @toggle-deposit="toggleDepositSelection"
+                       @refresh="fetchBuildableDeposits(selectedAccountId, true)" />
 
         <MinePicker :showModal="showMineModal"
                     v-model:mineSearch="mineSearch"
@@ -872,7 +873,8 @@
                     @close="closeMineModal"
                     @select-all="selectAllMines"
                     @clear="clearSelectedMines"
-                    @toggle-mine="toggleMineSelection" />
+                    @toggle-mine="toggleMineSelection"
+                    @refresh="fetchUpgradableMines(selectedAccountId, true)" />
 
         <ProducerPicker :showModal="showProducerModal"
                         v-model:producerSearch="producerSearch"
@@ -894,7 +896,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import axios from 'axios';
 import { tasksApi } from '../services/api/tasks';
 import { accountsApi } from '../services/api/accounts';
@@ -1057,11 +1059,11 @@ import TaskList from '../components/tasks/TaskList.vue';
             return clickableBuildings.value.find(item => Number(item.grid) === grid) || null;
         };
 
-        const fetchBuildableDeposits = async (accountId) => {
+        const fetchBuildableDeposits = async (accountId, forceRefresh = false) => {
             if (!accountId) return;
             loadingDeposits.value = true;
             try {
-                const res = await axios.get(`/api/game/buildable-deposits?account_id=${accountId}`);
+                const res = await axios.get(`/api/game/buildable-deposits?account_id=${accountId}${forceRefresh ? '&refresh=1' : ''}`);
                 buildableDeposits.value = res.data?.data || [];
             } catch (err) {
                 buildableDeposits.value = [];
@@ -1070,11 +1072,12 @@ import TaskList from '../components/tasks/TaskList.vue';
             }
         };
 
-        const fetchUpgradableMines = async (accountId) => {
+        const fetchUpgradableMines = async (accountId, forceRefresh = false) => {
             if (!accountId) return;
             loadingMines.value = true;
             try {
-                const res = await axios.get(`/api/game/upgradable-mines?account_id=${accountId}`);
+                const maxLvl = Number(upgradeMaxLevel.value || 7);
+                const res = await axios.get(`/api/game/upgradable-mines?account_id=${accountId}&max_level=${maxLvl}${forceRefresh ? '&refresh=1' : ''}`);
                 upgradableMines.value = res.data?.data || [];
             } catch (err) {
                 upgradableMines.value = [];
@@ -1082,6 +1085,12 @@ import TaskList from '../components/tasks/TaskList.vue';
                 loadingMines.value = false;
             }
         };
+
+        watch(upgradeMaxLevel, () => {
+            if (showMineModal.value && selectedAccountId.value) {
+                fetchUpgradableMines(selectedAccountId.value);
+            }
+        });
 
         const openDepositModal = async () => {
             if (!selectedAccountId.value) return;
@@ -1189,6 +1198,7 @@ import TaskList from '../components/tasks/TaskList.vue';
         };
 
         const toggleDepositSelection = (deposit) => {
+            if (!deposit.allowed) return;
             const idx = selectedDeposits.value.findIndex(d => Number(d.grid) === Number(deposit.grid));
             if (idx >= 0) {
                 selectedDeposits.value.splice(idx, 1);
@@ -1199,7 +1209,7 @@ import TaskList from '../components/tasks/TaskList.vue';
 
         const selectAllDeposits = () => {
             const available = buildableDeposits.value.filter(d => d.allowed);
-            selectedDeposits.value = available.length > 0 ? [...available] : [...buildableDeposits.value];
+            selectedDeposits.value = [...available];
         };
 
         const clearSelectedDeposits = () => {
@@ -1215,6 +1225,8 @@ import TaskList from '../components/tasks/TaskList.vue';
         };
 
         const toggleMineSelection = (mine) => {
+            const maxLvl = Number(upgradeMaxLevel.value || 7);
+            if (!mine.allowed || mine.level >= maxLvl) return;
             const idx = selectedMines.value.findIndex(m => Number(m.grid) === Number(mine.grid));
             if (idx >= 0) {
                 selectedMines.value.splice(idx, 1);
@@ -1224,8 +1236,9 @@ import TaskList from '../components/tasks/TaskList.vue';
         };
 
         const selectAllMines = () => {
-            const available = upgradableMines.value.filter(m => m.allowed);
-            selectedMines.value = available.length > 0 ? [...available] : [...upgradableMines.value];
+            const maxLvl = Number(upgradeMaxLevel.value || 7);
+            const available = upgradableMines.value.filter(m => m.allowed && m.level < maxLvl);
+            selectedMines.value = [...available];
         };
 
         const clearSelectedMines = () => {

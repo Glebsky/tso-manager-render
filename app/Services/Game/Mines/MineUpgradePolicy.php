@@ -30,9 +30,22 @@ final readonly class MineUpgradePolicy
             return UpgradeDecision::reject(UpgradeRejectionReason::NoBuildingAtGrid, $grid, 0, null, 0, '', $freeSlots);
         }
 
+        if (str_starts_with($building->name, 'MineDepletedDeposit')) {
+            return UpgradeDecision::reject(UpgradeRejectionReason::MineDepleted, $grid, 0, null, 0, $building->name, $freeSlots);
+        }
+
         $definition = $this->catalog->findByBuilding($building->name);
         if ($definition === null) {
             return UpgradeDecision::reject(UpgradeRejectionReason::NotAMine, $grid, $building->upgradeLevel, null, 0, $building->name, $freeSlots);
+        }
+
+        if ($building->upgradeLevel <= 0) {
+            return UpgradeDecision::reject(UpgradeRejectionReason::BuildingUnderConstruction, $grid, $building->upgradeLevel, $definition, 0, $building->name, $freeSlots);
+        }
+
+        $deposit = $zone->depositAt($grid);
+        if ($deposit !== null && ($deposit->isDepleted() || ! $deposit->isAccessible())) {
+            return UpgradeDecision::reject(UpgradeRejectionReason::MineDepleted, $grid, $building->upgradeLevel, $definition, 0, $building->name, $freeSlots);
         }
 
         $requested = ($requestedMaxLevel !== null && $requestedMaxLevel > 0) ? $requestedMaxLevel : $definition->maxUpgradeLevel;

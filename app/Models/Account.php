@@ -51,6 +51,9 @@ class Account extends Model
         'dso_auth_token',
         'bb_url',
         'status',
+        'game_world_name',
+        'avatar_id',
+        'building_count',
         'zone_data',
         'last_sync_at',
     ];
@@ -60,6 +63,8 @@ class Account extends Model
         'dso_auth_user' => SafeEncrypted::class,
         'dso_auth_token' => SafeEncrypted::class,
         'last_sync_at' => 'datetime',
+        'avatar_id' => 'integer',
+        'building_count' => 'integer',
         'zone_data' => ZoneDataCast::class,
     ];
 
@@ -75,6 +80,19 @@ class Account extends Model
         'password',
         'zone_data',
     ];
+
+    protected static function booted(): void
+    {
+        static::saving(static function (Account $account): void {
+            if ($account->isDirty('zone_data')) {
+                $account->snapshotInstance = null;
+                $snapshot = ZoneSnapshot::fromData($account->attributes['zone_data'] ?? null);
+                $account->avatar_id = $snapshot->avatarId();
+                $account->building_count = $snapshot->buildingCount();
+                $account->game_world_name = $snapshot->serverName();
+            }
+        });
+    }
 
     /**
      * Scope a query to only select lightweight columns excluding heavy zone_data.
@@ -92,6 +110,9 @@ class Account extends Model
             'status',
             'dso_auth_user',
             'bb_url',
+            'game_world_name',
+            'avatar_id',
+            'building_count',
             'last_sync_at',
             'created_at',
             'updated_at',
@@ -113,27 +134,56 @@ class Account extends Model
 
     public function getAvatarIdAttribute(): ?int
     {
+        if (array_key_exists('avatar_id', $this->attributes) && $this->attributes['avatar_id'] !== null) {
+            return (int) $this->attributes['avatar_id'];
+        }
+
         return $this->snapshot()->avatarId();
     }
 
     public function getBuildingCountAttribute(): ?int
     {
+        if (array_key_exists('building_count', $this->attributes) && $this->attributes['building_count'] !== null) {
+            return (int) $this->attributes['building_count'];
+        }
+
         return $this->snapshot()->buildingCount();
     }
 
     public function getServerNameAttribute(): ?string
     {
+        if (array_key_exists('game_world_name', $this->attributes) && $this->attributes['game_world_name'] !== null) {
+            return (string) $this->attributes['game_world_name'];
+        }
+
         return $this->snapshot()->serverName();
+    }
+
+    /**
+     * @var array{detected_server_id: ?string, detected_locale: ?string, game_world: ?string, confidence: string}|null
+     */
+    private ?array $detectedServerCache = null;
+
+    /**
+     * @return array{detected_server_id: ?string, detected_locale: ?string, game_world: ?string, confidence: string}
+     */
+    public function detectedServerInfo(): array
+    {
+        if ($this->detectedServerCache !== null) {
+            return $this->detectedServerCache;
+        }
+
+        return $this->detectedServerCache = app(MarketServerVerificationService::class)->detectServerForAccount($this);
     }
 
     public function getDetectedServerIdAttribute(): ?string
     {
-        return app(MarketServerVerificationService::class)->detectServerForAccount($this)['detected_server_id'];
+        return $this->detectedServerInfo()['detected_server_id'];
     }
 
     public function getDetectedLocaleAttribute(): ?string
     {
-        return app(MarketServerVerificationService::class)->detectServerForAccount($this)['detected_locale'];
+        return $this->detectedServerInfo()['detected_locale'];
     }
 
     public function getIsMarketConnectedAttribute(): bool

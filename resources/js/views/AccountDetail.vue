@@ -613,6 +613,32 @@
                     </div>
 
                     <form @submit.prevent="saveSession" class="space-y-4">
+                        <!-- Quick Smart Paste Section -->
+                        <div class="glass-card p-4 border-emerald-500/20 bg-emerald-500/[0.03] rounded-xl space-y-2">
+                            <div class="flex items-center justify-between">
+                                <label class="block text-xs font-semibold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
+                                    </svg>
+                                    {{ t('account.fast_parse_label') }}
+                                </label>
+                                <span v-if="parseSuccess" class="text-xs text-emerald-400 font-medium flex items-center gap-1 animate-pulse">
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                                    </svg>
+                                    {{ t('account.fast_parse_success') }}
+                                </span>
+                            </div>
+                            <input type="text"
+                                   v-model="rawSessionInput"
+                                   @input="handleSmartSessionParse"
+                                   :placeholder="t('account.fast_parse_placeholder')"
+                                   class="glass-input w-full font-mono text-xs border-dashed border-emerald-500/40 focus:border-emerald-400">
+                            <p class="text-[11px] text-white/40 leading-snug">
+                                {{ t('account.fast_parse_hint') }}
+                            </p>
+                        </div>
+
                         <div>
                             <div class="flex items-center justify-between mb-2">
                                 <label class="block text-xs font-medium text-white/40 uppercase tracking-wider">{{ t('account.login_email') }}</label>
@@ -643,14 +669,38 @@
                         </div>
 
                         <div>
+                            <label for="session-password" class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('account.password_label') }}</label>
+                            <div class="relative">
+                                <input id="session-password"
+                                       :type="showPassword ? 'text' : 'password'"
+                                       v-model="sessionForm.password"
+                                       :placeholder="t('account.password_placeholder')"
+                                       :aria-label="t('account.password_label')"
+                                       autocomplete="new-password"
+                                       class="glass-input w-full font-mono text-sm pr-10">
+                                <button type="button"
+                                        @click="showPassword = !showPassword"
+                                        class="absolute inset-y-0 right-3 flex items-center text-white/30 hover:text-white/70 transition-colors">
+                                    <svg v-if="!showPassword" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                    </svg>
+                                    <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
                             <label for="session-dso-token" class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">DSO Auth Token</label>
-                            <input id="session-dso-token" type="text" required v-model="sessionForm.dso_auth_token" :placeholder="t('account.token_placeholder')" :aria-label="t('account.token_placeholder')" class="glass-input w-full font-mono text-sm">
+                            <input id="session-dso-token" type="text" v-model="sessionForm.dso_auth_token" :placeholder="t('account.token_placeholder')" :aria-label="t('account.token_placeholder')" class="glass-input w-full font-mono text-sm">
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label for="session-dso-user-id" class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">DSO Auth User ID</label>
-                                <input id="session-dso-user-id" type="text" required v-model="sessionForm.dso_auth_user" :placeholder="t('account.user_id_placeholder')" :aria-label="t('account.user_id_placeholder')" class="glass-input w-full font-mono text-sm">
+                                <input id="session-dso-user-id" type="text" v-model="sessionForm.dso_auth_user" :placeholder="t('account.user_id_placeholder')" :aria-label="t('account.user_id_placeholder')" class="glass-input w-full font-mono text-sm">
                             </div>
 
                             <div>
@@ -670,7 +720,6 @@
                                 <!-- Mode 1: Styled Glass Select with Grouped Worlds -->
                                 <div v-if="!isCustomBbUrl" class="relative">
                                     <select id="session-bb-url"
-                                            required
                                             v-model="sessionForm.bb_url"
                                             :aria-label="t('account.bb_url_label')"
                                             class="glass-select w-full text-xs sm:text-sm font-mono pr-10 cursor-pointer">
@@ -691,7 +740,6 @@
                                 <div v-else class="relative">
                                     <input id="session-bb-url-manual"
                                            type="url"
-                                           required
                                            v-model="sessionForm.bb_url"
                                            :placeholder="'https://r01-ls.thesettlersonline.ru/'"
                                            :aria-label="t('account.bb_url_label')"
@@ -1607,11 +1655,60 @@ const account = ref(null);
         };
 
         const sessionSubmitting = ref(false);
+        const showPassword = ref(false);
         const sessionForm = ref({
             dso_auth_token: '',
             dso_auth_user: '',
             bb_url: 'https://r01-ls.thesettlersonline.ru/',
+            password: '',
         });
+
+        const rawSessionInput = ref('');
+        const parseSuccess = ref(false);
+
+        const handleSmartSessionParse = () => {
+            const text = rawSessionInput.value.trim();
+            if (!text) return;
+
+            let token = '';
+            let user = '';
+            let bb = '';
+
+            // 1. Query parameters style (e.g. dsoAuthToken=...&dsoAuthUser=...&bb=...)
+            const tokenMatch = text.match(/dsoAuthToken=([^&"'\s]+)/i);
+            const userMatch = text.match(/dsoAuthUser=([^&"'\s]+)/i);
+            const bbMatch = text.match(/bb=([^&"'\s]+)/i);
+
+            if (tokenMatch) token = decodeURIComponent(tokenMatch[1]);
+            if (userMatch) user = decodeURIComponent(userMatch[1]);
+            if (bbMatch) bb = decodeURIComponent(bbMatch[1]);
+
+            // 2. JSON or console output format (e.g. "dso_auth_token": "..." or "DSO Auth Token: ...")
+            if (!token) {
+                const m = text.match(/(?:dso_?auth_?token|DSO Auth Token)[:=]\s*["']?([^"',\s]+)/i);
+                if (m) token = m[1].trim();
+            }
+            if (!user) {
+                const m = text.match(/(?:dso_?auth_?user(?:_?id)?|DSO Auth User ID)[:=]\s*["']?([^"',\s]+)/i);
+                if (m) user = m[1].trim();
+            }
+            if (!bb) {
+                const m = text.match(/(?:bb(?:_?url)?|BB URL)[:=]\s*["']?([^"',\s]+)/i);
+                if (m) bb = m[1].trim();
+            }
+
+            if (token) sessionForm.value.dso_auth_token = token;
+            if (user) sessionForm.value.dso_auth_user = user;
+            if (bb) {
+                sessionForm.value.bb_url = bb;
+                isCustomBbUrl.value = true;
+            }
+
+            if (token || user || bb) {
+                parseSuccess.value = true;
+                setTimeout(() => { parseSuccess.value = false; }, 4000);
+            }
+        };
 
         const allKnownServerUrls = computed(() => {
             const urls = new Set();
@@ -1638,8 +1735,13 @@ const account = ref(null);
         const saveSession = async () => {
             sessionSubmitting.value = true;
             try {
-                const res = await accountsApi.updateAccountSession(account.value.id, sessionForm.value);
+                const payload = { ...sessionForm.value };
+                if (!payload.password) {
+                    delete payload.password;
+                }
+                const res = await accountsApi.updateAccountSession(account.value.id, payload);
                 showToast(t('account.session_updated'));
+                sessionForm.value.password = '';
                 const updatedAccount = res.data || res.account || account.value;
                 account.value = updatedAccount;
             } catch (e) {

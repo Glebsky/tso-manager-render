@@ -20,6 +20,9 @@ return [
         'friend_building_not_found_grid' => 'Будівлю з сіткою #:grid не знайдено в зоні друга.',
         'friend_zone_not_cached' => 'Зону друга не завантажено або закінчився термін кешу. Будь ласка, оновіть її в інтерфейсі.',
         'building_not_clickable' => 'Будівлю :name не можна зібрати кліком',
+        'server_maintenance' => 'Сервер гри на обслуговуванні.',
+        'server_maintenance_queue' => 'Сервер гри на обслуговуванні (черга: :pos/:size).',
+        'server_maintenance_details' => 'Сервер гри на обслуговуванні (:details).',
     ],
     'step' => [
         'skipped' => 'Крок :step [:type]: пропущено (вже виконано)',
@@ -49,6 +52,7 @@ return [
             'deposit_empty' => 'Шахта: пропуск, поклади на гріді :grid вичерпано',
             'grid_occupied' => 'Шахта: пропуск, грід :grid зайнятий будівлею',
             'deposit_not_accessible' => 'Шахта: пропуск, поклади на гріді :grid недоступні',
+            'deposit_type_mismatch' => 'Шахта: пропуск, тип покладів на гріді :grid не відповідає потрібному (:name)',
             'build_queue_full' => 'Шахта: пропуск, немає вільних слотів черги будівництва',
         ],
     ],
@@ -59,6 +63,8 @@ return [
         'rejected' => [
             'no_building_at_grid' => 'Шахта: пропуск, будівлю на гріді :grid не знайдено',
             'not_a_mine' => 'Шахта: пропуск, будівля :name не є шахтою',
+            'mine_depleted' => 'Шахта: пропуск, шахта на гріді :grid (:name) виснажена',
+            'building_under_construction' => 'Шахта: пропуск, шахта на гріді :grid (:name) ще будується',
             'max_level_reached' => 'Шахта: пропуск, :name вже рівня :level',
             'upgrade_already_in_progress' => 'Шахта: пропуск, покращення на гріді :grid вже триває',
             'production_inactive' => 'Шахта: пропуск, виробництво на гріді :grid зупинено',

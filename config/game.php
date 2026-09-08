@@ -39,7 +39,7 @@ return [
     |--------------------------------------------------------------------------
     */
     'tasks' => [
-        'max_result_length' => 150,
+        'max_result_length' => (int) env('TSO_MAX_TASK_RESULT_LENGTH', 1000),
         'max_action_attempts' => 3,
 
         /*
@@ -82,8 +82,12 @@ return [
     | enough that consecutive jobs share a single session; a re-login
     | invalidates the record automatically because it is bound to the auth token.
     |
+    | The TTL is sliding: every successful AMF command refreshes it, so an
+    | actively used session never expires. The value only limits how long an
+    | idle session is kept before a fresh one is resolved.
+    |
     */
-    'session_ttl_seconds' => (int) env('TSO_SESSION_TTL', 300),
+    'session_ttl_seconds' => (int) env('TSO_SESSION_TTL', 1800),
 
     /*
     | How long a job waits for another process to finish talking to the game

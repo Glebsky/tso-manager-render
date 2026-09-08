@@ -6,10 +6,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Exceptions\GameServerErrorException;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Game\UpgradableMineRequest;
 use App\Http\Resources\UpgradableMineResource;
 use App\Models\Account;
 use App\Services\Game\Mines\MineTargetListService;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class UpgradableMineController extends Controller
@@ -21,15 +21,13 @@ class UpgradableMineController extends Controller
     /**
      * @throws GameServerErrorException
      */
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(UpgradableMineRequest $request): AnonymousResourceCollection
     {
-        $validated = $request->validate([
-            'account_id' => ['required', 'integer', 'min:1'],
-        ]);
+        $account = Account::findOrFail($request->accountId());
+        $forceRefresh = $request->refresh();
+        $maxLevel = $request->maxLevel();
 
-        $account = Account::findOrFail((int) $validated['account_id']);
-
-        $items = $this->service->upgradableMines($account);
+        $items = $this->service->upgradableMines($account, $forceRefresh, $maxLevel);
 
         return UpgradableMineResource::collection($items);
     }

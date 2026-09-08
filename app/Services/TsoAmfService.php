@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Exceptions\SessionExpiredException;
 use App\Models\Account;
 use App\Services\Amf\Transport\TsoClientInterface;
 use App\Services\Amf\Vo\defaultGame_Communication_VO_dGetFriendsVO;
@@ -169,24 +170,21 @@ class TsoAmfService
 
         try {
             return $this->client->sendCommand($account, $call, $destination, $operation, $source, $targetZoneId);
-        } catch (Exception $e) {
-            $errorMsg = $e->getMessage();
+        } catch (SessionExpiredException $e) {
+            Log::info("[TsoAmf] Session rejected for account #{$account->id}; performing a single forced re-login and retry");
 
-            if (str_contains($errorMsg, 'Load Server') || str_contains($errorMsg, '301') || str_contains($errorMsg, 'HTTP 500') || str_contains($errorMsg, 'HTTP 401') || str_contains($errorMsg, 'HTTP 403')) {
-                try {
-                    $this->authService->login($account);
-                    $account->refresh();
-                    $this->invalidateSession($account->id);
+            try {
+                $this->authService->forgetSessionVerified($account);
+                $this->invalidateSession($account->id);
+                $this->authService->ensureAuthenticated($account);
+                $account->refresh();
 
-                    $call = $this->buildServerCall($account, $commandType, $actionData, $targetZoneId);
+                $call = $this->buildServerCall($account, $commandType, $actionData, $targetZoneId);
 
-                    return $this->client->sendCommand($account, $call, $destination, $operation, $source, $targetZoneId);
-                } catch (Exception $retryException) {
-                    throw new \RuntimeException($e->getMessage().' (Auto-relogin also failed: '.$retryException->getMessage().')');
-                }
+                return $this->client->sendCommand($account, $call, $destination, $operation, $source, $targetZoneId);
+            } catch (Exception $retryException) {
+                throw new \RuntimeException($e->getMessage().' (Auto-relogin also failed: '.$retryException->getMessage().')');
             }
-
-            throw $e;
         }
     }
 

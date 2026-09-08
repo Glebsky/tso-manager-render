@@ -20,6 +20,9 @@ return [
         'friend_building_not_found_grid' => 'Building with Grid #:grid not found in friend zone.',
         'friend_zone_not_cached' => 'Friend zone is not loaded or cache has expired. Please refresh it in the interface.',
         'building_not_clickable' => 'Building :name is not clickable for collection',
+        'server_maintenance' => 'Game server is under maintenance.',
+        'server_maintenance_queue' => 'Game server is under maintenance (queue: :pos/:size).',
+        'server_maintenance_details' => 'Game server is under maintenance (:details).',
     ],
     'step' => [
         'skipped' => 'Step :step [:type]: SKIPPED (already executed)',
@@ -49,6 +52,7 @@ return [
             'deposit_empty' => 'Mine: skipped, deposit at grid :grid is depleted',
             'grid_occupied' => 'Mine: skipped, grid :grid is occupied by a building',
             'deposit_not_accessible' => 'Mine: skipped, deposit at grid :grid is not accessible',
+            'deposit_type_mismatch' => 'Mine: skipped, deposit at grid :grid does not match required type (:name)',
             'build_queue_full' => 'Mine: skipped, build queue is full',
         ],
     ],
@@ -59,6 +63,8 @@ return [
         'rejected' => [
             'no_building_at_grid' => 'Mine: skipped, no building found at grid :grid',
             'not_a_mine' => 'Mine: skipped, building :name is not a valid mine',
+            'mine_depleted' => 'Mine: skipped, mine at grid :grid (:name) is depleted',
+            'building_under_construction' => 'Mine: skipped, mine at grid :grid (:name) is still under construction',
             'max_level_reached' => 'Mine: skipped, :name is already at max level :level',
             'upgrade_already_in_progress' => 'Mine: skipped, upgrade is already in progress at grid :grid',
             'production_inactive' => 'Mine: skipped, production is inactive at grid :grid',

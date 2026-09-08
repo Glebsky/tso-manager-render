@@ -7,11 +7,13 @@ namespace App\Services\Tasks\Handlers;
 use App\Enums\TaskType;
 use App\Exceptions\GameServerErrorException;
 use App\Exceptions\InvalidTaskTypeException;
+use App\Exceptions\TaskExecutionException;
 use App\Models\Account;
 use App\Services\Game\Mines\Contracts\MineCommandGatewayInterface;
 use App\Services\Game\Mines\Contracts\ZoneSnapshotProviderInterface;
 use App\Services\Game\Mines\MinePlacementPolicy;
 use App\Services\Game\Mines\MineTargetListService;
+use App\Services\Game\Mines\ZoneSnapshot;
 use App\Services\GameErrorResolver;
 use App\Services\Tasks\Contracts\TaskActionHandlerInterface;
 use App\Services\ZoneParserService;
@@ -40,6 +42,7 @@ final readonly class BuildMineHandler implements TaskActionHandlerInterface
      *
      * @throws GameServerErrorException
      * @throws InvalidTaskTypeException
+     * @throws TaskExecutionException
      */
     public function handle(Account $account, array $payload): string
     {
@@ -48,8 +51,32 @@ final readonly class BuildMineHandler implements TaskActionHandlerInterface
             throw new InvalidTaskTypeException('Invalid building grid parameter.', 422);
         }
 
+        $expectedDepositName = isset($payload['deposit_name']) && is_string($payload['deposit_name']) && $payload['deposit_name'] !== ''
+            ? $payload['deposit_name']
+            : null;
+
+        $expectedMineName = isset($payload['mine_name']) && is_string($payload['mine_name']) && $payload['mine_name'] !== ''
+            ? $payload['mine_name']
+            : null;
+
         $zone = $this->zones->forAccount($account);
-        $decision = $this->policy->decide($zone, $grid);
+        $decision = $this->policy->decide($zone, $grid, $expectedDepositName, $expectedMineName);
+
+        if (! $decision->allowed && ($expectedDepositName !== null || $expectedMineName !== null)) {
+            $fallbackGrid = $this->findFreeDepositGrid($zone, $expectedDepositName, $expectedMineName);
+            if ($fallbackGrid !== null) {
+                Log::info(sprintf(
+                    '[BuildMine] Account #%d: Requested grid %d rejected (%s), falling back to free deposit at grid %d for %s',
+                    $account->id,
+                    $grid,
+                    $decision->reason->value,
+                    $fallbackGrid,
+                    $expectedDepositName ?? $expectedMineName
+                ));
+                $grid = $fallbackGrid;
+                $decision = $this->policy->decide($zone, $grid, $expectedDepositName, $expectedMineName);
+            }
+        }
 
         Log::info(sprintf(
             '[BuildMine] Account #%d: grid=%d, deposit="%s", mine="%s", number=%s, freeSlots=%d, allowed=%s, reason=%s',
@@ -64,7 +91,7 @@ final readonly class BuildMineHandler implements TaskActionHandlerInterface
         ));
 
         if (! $decision->allowed || $decision->definition === null) {
-            return __('tasks.build_mine.rejected.'.$decision->reason->value, [
+            throw new TaskExecutionException('build_mine.rejected.'.$decision->reason->value, [
                 'grid' => $grid,
                 'name' => $decision->depositName,
             ]);
@@ -93,7 +120,22 @@ final readonly class BuildMineHandler implements TaskActionHandlerInterface
 
         Log::warning("[BuildMine] Account #{$account->id}: grid {$grid} failed with game error {$responseCode}");
 
-        return __('tasks.build_mine.game_error', ['message' => GameErrorResolver::getMessage($responseCode)]);
+        throw new TaskExecutionException('build_mine.game_error', ['message' => GameErrorResolver::getMessage($responseCode)]);
+    }
+
+    private function findFreeDepositGrid(
+        ZoneSnapshot $zone,
+        ?string $expectedDepositName,
+        ?string $expectedMineName,
+    ): ?int {
+        foreach ($zone->deposits() as $deposit) {
+            $candidateDecision = $this->policy->decide($zone, $deposit->grid, $expectedDepositName, $expectedMineName);
+            if ($candidateDecision->allowed && $candidateDecision->definition !== null) {
+                return $deposit->grid;
+            }
+        }
+
+        return null;
     }
 
     private function extractErrorCode(string $rawAmf): int

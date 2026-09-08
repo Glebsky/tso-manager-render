@@ -44,10 +44,7 @@ readonly class AccountService
     public function executeAction(Account $account, string $actionType, array $params): array
     {
         try {
-            if (! $this->authService->isAuthenticated($account)) {
-                $this->authService->login($account);
-                $account->refresh();
-            }
+            $this->authService->ensureAuthenticated($account);
 
             switch ($actionType) {
                 case 'stop_production':
@@ -113,20 +110,43 @@ readonly class AccountService
     }
 
     /**
-     * Update manually supplied session tokens.
+     * Update manually supplied session tokens or account credentials.
      *
-     * @param  array{dso_auth_token: string, dso_auth_user: string, bb_url: string}  $data
+     * @param  array<string, string>  $data
      */
     public function updateSession(Account $account, array $data): Account
     {
-        $account->update([
-            'dso_auth_token' => $data['dso_auth_token'],
-            'dso_auth_user' => $data['dso_auth_user'],
-            'bb_url' => $data['bb_url'],
-            'status' => 'online',
-        ]);
+        $updateFields = [];
+        if (! empty($data['dso_auth_token'])) {
+            $updateFields['dso_auth_token'] = $data['dso_auth_token'];
+        }
+        if (! empty($data['dso_auth_user'])) {
+            $updateFields['dso_auth_user'] = $data['dso_auth_user'];
+        }
+        if (! empty($data['bb_url'])) {
+            $updateFields['bb_url'] = $data['bb_url'];
+        }
+        if (! empty($data['password'])) {
+            $updateFields['password'] = $data['password'];
+        }
 
-        $this->cache->forget("account_login_cooldown:{$account->id}");
+        if (! empty($updateFields)) {
+            $updateFields['status'] = 'online';
+            $account->update($updateFields);
+        }
+
+        $cookieFile = $this->authService->getCookieFile($account);
+        if (! is_file($cookieFile)) {
+            @file_put_contents($cookieFile, '');
+        }
+
+        $this->authService->clearCooldown($account);
+        if (! empty($data['dso_auth_token'])) {
+            $this->authService->markSessionVerified($account);
+        } else {
+            $this->authService->forgetSessionVerified($account);
+        }
+
         $this->cache->forget("tso:login_lock:{$account->id}");
         $this->amfService->invalidateSession($account->id);
         $this->amfService->resetClient();
@@ -138,6 +158,11 @@ readonly class AccountService
         ]);
 
         return $account;
+    }
+
+    public function clearCooldown(Account|int $account): void
+    {
+        $this->authService->clearCooldown($account);
     }
 
     /**
@@ -188,10 +213,7 @@ readonly class AccountService
             $friendZoneData = json_decode((string) $cachedZone, true, 512, JSON_THROW_ON_ERROR);
         } else {
             try {
-                if (! $this->authService->isAuthenticated($account)) {
-                    $this->authService->login($account);
-                    $account->refresh();
-                }
+                $this->authService->ensureAuthenticated($account);
 
                 Log::info("[FriendZone] Loading zone of friend #{$friendId} for account #{$account->id}");
                 $rawAmf = $this->amfService->getZone($account, $friendId);

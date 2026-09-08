@@ -55,12 +55,15 @@ readonly class AccountSyncFetcher
                     if ($reloginCount < 2) {
                         Log::info("[AccountSync] Zone locked/superseded (error 1012) for account #{$account->id}; re-authenticating to take over session (relogin #".($reloginCount + 1).')');
                         try {
-                            $this->authService->resetSession($account);
-                            $this->authService->login($account);
+                            $this->authService->forgetSessionVerified($account);
                             $this->amfService->invalidateSession($account->id);
+                            $this->authService->ensureAuthenticated($account);
                             $account->refresh();
                         } catch (Exception $reloginEx) {
                             Log::warning("[AccountSync] Background re-login for account #{$account->id} encountered: {$reloginEx->getMessage()}; proceeding to retry zone fetch");
+                            if ($this->authService->isCaptchaOr2faError($reloginEx->getMessage())) {
+                                throw $reloginEx;
+                            }
                         }
                         $reloginCount++;
                         sleep(3);
@@ -77,12 +80,15 @@ readonly class AccountSyncFetcher
                     if ($reloginCount < 2) {
                         Log::info("[AccountSync] Session expired (error {$errorCode}) for account #{$account->id}; re-authenticating (relogin #".($reloginCount + 1).')');
                         try {
-                            $this->authService->resetSession($account);
-                            $this->authService->login($account);
+                            $this->authService->forgetSessionVerified($account);
                             $this->amfService->invalidateSession($account->id);
+                            $this->authService->ensureAuthenticated($account);
                             $account->refresh();
                         } catch (Exception $reloginEx) {
                             Log::warning("[AccountSync] Background re-login for account #{$account->id} encountered: {$reloginEx->getMessage()}; proceeding to retry zone fetch");
+                            if ($this->authService->isCaptchaOr2faError($reloginEx->getMessage())) {
+                                throw $reloginEx;
+                            }
                         }
                         $reloginCount++;
                         sleep(2);
@@ -90,9 +96,7 @@ readonly class AccountSyncFetcher
                         continue;
                     }
 
-                    sleep($retryDelay);
-
-                    continue;
+                    throw new AccountSyncException(__('ui.game_error.1005'), 401);
                 }
 
                 if ($errorCode === 0 && $buildingCount > 0) {
@@ -117,6 +121,9 @@ readonly class AccountSyncFetcher
             if ($errorCode === 1012) {
                 throw new AccountSyncException(__('ui.sync.zone_locked'), 409);
             }
+            if ($errorCode === 1005) {
+                throw new AccountSyncException(__('ui.game_error.1005'), 401);
+            }
             throw new AccountSyncException("Server error code {$errorCode}. The zone may not be loaded yet — try again in a few seconds.", 502);
         }
 
@@ -132,11 +139,7 @@ readonly class AccountSyncFetcher
      */
     private function ensureAuthenticated(Account $account): void
     {
-        if (! $this->authService->isAuthenticated($account)) {
-            Log::info("[AccountSync] Session token for account #{$account->id} is missing or expired; logging in");
-            $this->authService->login($account);
-            $account->refresh();
-        }
+        $this->authService->ensureAuthenticated($account);
     }
 
     /**
@@ -145,34 +148,51 @@ readonly class AccountSyncFetcher
      */
     private function fetchFriendsListIfPossible(Account $account, array $zoneData): array
     {
+        $existingFriends = is_array($account->zone_data) && is_array($account->zone_data['friends'] ?? null)
+            ? $account->zone_data['friends']
+            : [];
+        $zoneData['friends'] = $existingFriends;
+
         try {
             Log::info("[AccountSync] Loading friend list for account #{$account->id}");
             $rawFriendsAmf = $this->amfService->getFriendList($account);
             $friendsData = $this->zoneParser->parse($rawFriendsAmf);
 
-            $parsedPlayers = $friendsData['friends'] ?? [];
-            if (! empty($parsedPlayers)) {
-                Log::info("[AccountSync] Friend list loaded for account #{$account->id}: ".count($parsedPlayers).' players');
-                $friendsList = [];
-                $ownerUid = $zoneData['userID'] ?? null;
+            $errorCode = (int) ($friendsData['errorCode'] ?? 0);
+            if ($errorCode !== 0) {
+                Log::warning("[AccountSync] Failed to load friend list for account #{$account->id}: Server returned error code {$errorCode}");
 
-                foreach ($parsedPlayers as $p) {
-                    $puid = $p['id'] ?? $p['userID'] ?? null;
-                    if ($puid !== null && $ownerUid !== null && (int) $puid === (int) $ownerUid) {
-                        continue;
-                    }
-                    $friendsList[] = [
-                        'id' => $puid,
-                        'username' => $p['username_string'] ?? $p['username'] ?? $p['nickname'] ?? 'Unknown',
-                        'nickname' => $p['nickname'] ?? $p['username_string'] ?? $p['username'] ?? 'Unknown',
-                        'playerLevel' => $p['playerLevel'] ?? $p['level'] ?? 1,
-                        'level' => $p['playerLevel'] ?? $p['level'] ?? 1,
-                        'avatarId' => $p['avatarId'] ?? 1,
-                        'friendSince' => $p['friendSince'] ?? null,
-                    ];
-                }
-                $zoneData['friends'] = $friendsList;
+                return $zoneData;
             }
+
+            if (! isset($friendsData['friends']) || ! is_array($friendsData['friends'])) {
+                Log::warning("[AccountSync] Friend list response missing 'friends' array for account #{$account->id}");
+
+                return $zoneData;
+            }
+
+            $parsedPlayers = $friendsData['friends'];
+            $friendsList = [];
+            $ownerUid = $zoneData['userID'] ?? null;
+
+            foreach ($parsedPlayers as $p) {
+                $puid = $p['id'] ?? $p['userID'] ?? null;
+                if ($puid !== null && $ownerUid !== null && (int) $puid === (int) $ownerUid) {
+                    continue;
+                }
+                $friendsList[] = [
+                    'id' => $puid,
+                    'username' => $p['username_string'] ?? $p['username'] ?? $p['nickname'] ?? 'Unknown',
+                    'nickname' => $p['nickname'] ?? $p['username_string'] ?? $p['username'] ?? 'Unknown',
+                    'playerLevel' => $p['playerLevel'] ?? $p['level'] ?? 1,
+                    'level' => $p['playerLevel'] ?? $p['level'] ?? 1,
+                    'avatarId' => $p['avatarId'] ?? 1,
+                    'friendSince' => $p['friendSince'] ?? null,
+                ];
+            }
+
+            Log::info("[AccountSync] Friend list loaded for account #{$account->id}: ".count($friendsList).' players');
+            $zoneData['friends'] = $friendsList;
         } catch (Exception $fe) {
             Log::warning("[AccountSync] Failed to load friend list for account #{$account->id}: ".$fe->getMessage());
         }

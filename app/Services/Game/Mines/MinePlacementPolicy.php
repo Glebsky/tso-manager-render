@@ -13,8 +13,12 @@ final readonly class MinePlacementPolicy
         private MineCatalogInterface $catalog,
     ) {}
 
-    public function decide(ZoneSnapshot $zone, int $grid): PlacementDecision
-    {
+    public function decide(
+        ZoneSnapshot $zone,
+        int $grid,
+        ?string $expectedDepositName = null,
+        ?string $expectedMineName = null,
+    ): PlacementDecision {
         $freeSlots = $zone->buildQueueBudget()->freeSlots();
 
         $deposit = $zone->depositAt($grid);
@@ -25,6 +29,18 @@ final readonly class MinePlacementPolicy
         $definition = $this->catalog->findByDeposit($deposit->name);
         if ($definition === null) {
             return PlacementDecision::reject(PlacementRejectionReason::UnknownDepositType, $grid, null, $deposit->name, $freeSlots);
+        }
+
+        if ($expectedDepositName !== null && $expectedDepositName !== '' && $deposit->name !== $expectedDepositName) {
+            return PlacementDecision::reject(PlacementRejectionReason::DepositTypeMismatch, $grid, $definition, $deposit->name, $freeSlots);
+        }
+
+        if ($expectedMineName !== null && $expectedMineName !== '' && $definition->buildingName !== $expectedMineName) {
+            return PlacementDecision::reject(PlacementRejectionReason::DepositTypeMismatch, $grid, $definition, $deposit->name, $freeSlots);
+        }
+
+        if (! $deposit->isAccessible()) {
+            return PlacementDecision::reject(PlacementRejectionReason::DepositNotAccessible, $grid, $definition, $deposit->name, $freeSlots);
         }
 
         if ($deposit->isDepleted()) {

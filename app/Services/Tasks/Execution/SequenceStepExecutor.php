@@ -74,22 +74,23 @@ final readonly class SequenceStepExecutor
                 );
             } catch (Throwable $e) {
                 $hasStepError = true;
-                $errorMsg = $e instanceof TaskExecutionException
+                $readableError = $e->getMessage();
+                $errorPayload = $e instanceof TaskExecutionException
                     ? (string) json_encode($e->toPayload(), JSON_THROW_ON_ERROR)
-                    : $e->getMessage();
+                    : $readableError;
 
                 $stepResults[$index] = [
                     'status' => 'failed',
-                    'error' => $errorMsg,
+                    'error' => $errorPayload,
                 ];
 
-                $resultsSummary[] = __('tasks.step.error', ['step' => $index + 1, 'type' => $actionType, 'error' => $errorMsg]);
+                $resultsSummary[] = __('tasks.step.error', ['step' => $index + 1, 'type' => $actionType, 'error' => $readableError]);
 
                 $this->activityLogger->logTaskEvent(
                     $account->id,
                     $task->id,
                     LogLevel::Error,
-                    __('logs.task.step_failed', ['id' => $task->id, 'step' => $index + 1, 'type' => $actionType, 'error' => $errorMsg])
+                    __('logs.task.step_failed', ['id' => $task->id, 'step' => $index + 1, 'type' => $actionType, 'error' => $readableError])
                 );
             }
 
@@ -140,10 +141,7 @@ final readonly class SequenceStepExecutor
 
         $this->stateWriter->markRunning($task, $payload);
 
-        if (! $this->authService->isAuthenticated($account)) {
-            $this->authService->login($account);
-            $account->refresh();
-        }
+        $this->authService->ensureAuthenticated($account);
 
         $action = $actions[$index];
         $actionType = (string) $action['task_type'];
@@ -165,20 +163,21 @@ final readonly class SequenceStepExecutor
                 __('logs.task.step_completed', ['id' => $task->id, 'step' => $index + 1, 'type' => $actionType])
             );
         } catch (Throwable $e) {
-            $errorMsg = $e instanceof TaskExecutionException
+            $readableError = $e->getMessage();
+            $errorPayload = $e instanceof TaskExecutionException
                 ? (string) json_encode($e->toPayload(), JSON_THROW_ON_ERROR)
-                : $e->getMessage();
+                : $readableError;
 
             $stepResults[$index] = [
                 'status' => 'failed',
-                'error' => $errorMsg,
+                'error' => $errorPayload,
             ];
 
             $this->activityLogger->logTaskEvent(
                 $account->id,
                 $task->id,
                 LogLevel::Error,
-                __('logs.task.step_failed', ['id' => $task->id, 'step' => $index + 1, 'type' => $actionType, 'error' => $errorMsg])
+                __('logs.task.step_failed', ['id' => $task->id, 'step' => $index + 1, 'type' => $actionType, 'error' => $readableError])
             );
         }
 
@@ -213,7 +212,14 @@ final readonly class SequenceStepExecutor
 
             if ($stepStatus === 'failed') {
                 $hasStepError = true;
-                $summaryParts[] = (string) __('tasks.step.error_short', ['step' => $stepNumber, 'error' => $stepError]);
+                $readableError = $stepError;
+                if (is_string($stepError) && str_starts_with($stepError, '{')) {
+                    $decoded = json_decode($stepError, true);
+                    if (is_array($decoded) && ! empty($decoded['message'])) {
+                        $readableError = (string) $decoded['message'];
+                    }
+                }
+                $summaryParts[] = (string) __('tasks.step.error_short', ['step' => $stepNumber, 'error' => $readableError]);
             } else {
                 $hasStepSuccess = true;
                 $summaryParts[] = (string) __('tasks.step.ok_short', ['step' => $stepNumber]);

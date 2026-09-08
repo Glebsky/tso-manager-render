@@ -28,6 +28,18 @@ class SecurityHeadersMiddleware
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
 
+        if ($request->isSecure()) {
+            $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+        }
+
+        $cspPolicy = (string) config('security.csp', "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https: wss:; frame-ancestors 'self';");
+        if ($cspPolicy !== '') {
+            $cspHeader = (bool) config('security.csp_report_only', true)
+                ? 'Content-Security-Policy-Report-Only'
+                : 'Content-Security-Policy';
+            $response->headers->set($cspHeader, $cspPolicy);
+        }
+
         return $response;
     }
 }

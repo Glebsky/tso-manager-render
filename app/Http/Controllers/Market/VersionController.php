@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Market;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Market\MarketVersionRequest;
 use App\Services\MarketCacheService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 /**
  * Exposes the current data version so clients can invalidate their local
@@ -19,9 +19,9 @@ final class VersionController extends Controller
         private readonly MarketCacheService $cache,
     ) {}
 
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(MarketVersionRequest $request): JsonResponse
     {
-        $serverId = $this->cache->resolveServerId($request->input('server_id'));
+        $serverId = $this->cache->resolveServerId($request->serverId());
         $dataVersion = $this->cache->dataVersion($serverId);
 
         $response = new JsonResponse([

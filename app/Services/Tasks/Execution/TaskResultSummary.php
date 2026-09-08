@@ -11,7 +11,7 @@ final class TaskResultSummary
     public static function formatSingle(string $result, bool $isSuccess = true): string
     {
         $prefix = $isSuccess ? TaskResultPrefix::Ok : TaskResultPrefix::Error;
-        $maxLen = (int) config('game.tasks.max_result_length', 150);
+        $maxLen = (int) config('game.tasks.max_result_length', 1000);
         $truncated = strlen($result) > $maxLen ? substr($result, 0, $maxLen - 3).'...' : $result;
 
         return $prefix->format($truncated);
@@ -25,7 +25,7 @@ final class TaskResultSummary
             default => TaskResultPrefix::Ok,
         };
 
-        $maxLen = (int) config('game.tasks.max_result_length', 150);
+        $maxLen = (int) config('game.tasks.max_result_length', 1000);
         $truncated = strlen($summaryText) > $maxLen ? substr($summaryText, 0, $maxLen - 3).'...' : $summaryText;
 
         return $prefix->format($truncated);
