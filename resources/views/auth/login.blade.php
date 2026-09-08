@@ -165,6 +165,11 @@
                 dropdown.classList.add('hidden');
             }
         });
+        if ('serviceWorker' in navigator && (window.isSecureContext || window.location.hostname === 'localhost')) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js').catch(function() {});
+            });
+        }
     </script>
 </body>
 </html>

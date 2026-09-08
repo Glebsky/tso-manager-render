@@ -102,7 +102,7 @@ class TsoSessionIsolationTest extends TestCase
             'status' => TaskStatus::Pending,
         ]);
 
-        $this->authMock->shouldReceive('isAuthenticated')->andReturn(true);
+        $this->authMock->shouldReceive('ensureAuthenticated')->andReturnNull();
 
         $this->amfMock->shouldReceive('sendSpecialist')
             ->twice()

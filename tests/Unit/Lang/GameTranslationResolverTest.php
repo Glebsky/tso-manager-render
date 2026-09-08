@@ -59,6 +59,20 @@ class GameTranslationResolverTest extends TestCase
         $this->assertFalse($resolver->has('RES', 'Unknown_Id'));
     }
 
+    public function test_handles_sections_with_integer_keys_without_type_error(): void
+    {
+        $resolver = $this->makeResolver([
+            'BUI' => [
+                265 => 'Special Building',
+                'IronMine' => 'Iron Mine',
+            ],
+        ]);
+
+        $this->assertSame('Special Building', $resolver->name('BUI', '265'));
+        $this->assertSame('Iron Mine', $resolver->name('BUI', 'Iron Mine'));
+        $this->assertSame('Unknown', $resolver->name('BUI', 'NonExistentBuilding', 'Unknown'));
+    }
+
     public function test_ru_locale_falls_back_to_english(): void
     {
         $resolver = $this->makeResolver(

@@ -168,7 +168,7 @@ class SchedulerArchitectureTest extends TestCase
             'completed_steps' => 1, // Step 1 (stop_production) was already completed in a prior attempt
         ]);
 
-        $this->authMock->shouldReceive('isAuthenticated')->andReturn(true);
+        $this->authMock->shouldReceive('ensureAuthenticated')->andReturnNull();
 
         // Step 1 stopProduction should NOT be called again
         $this->amfMock->shouldNotReceive('stopProduction');

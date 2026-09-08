@@ -143,7 +143,7 @@ class AccountSyncTest extends TestCase
         $this->assertTrue(Cache::add("account_sync_lock:{$account->id}", true, 300));
 
         // Mock dependencies
-        $this->authMock->shouldReceive('isAuthenticated')->andReturn(true);
+        $this->authMock->shouldReceive('ensureAuthenticated')->andReturnNull();
         $this->amfMock->shouldReceive('getZone')->once()->andReturn('zone-amf-bytes');
 
         $parserMock = Mockery::mock(ZoneParserService::class);
@@ -244,9 +244,8 @@ class AccountSyncTest extends TestCase
             'nickname' => 'sync_1012_user',
         ]);
 
-        $this->authMock->shouldReceive('isAuthenticated')->andReturn(true);
-        $this->authMock->shouldReceive('resetSession')->once()->with(Mockery::any());
-        $this->authMock->shouldReceive('login')->once()->with(Mockery::any())->andReturn([]);
+        $this->authMock->shouldReceive('forgetSessionVerified')->once()->with(Mockery::any());
+        $this->authMock->shouldReceive('ensureAuthenticated')->twice()->andReturnNull();
 
         $this->amfMock->shouldReceive('getZone')->twice()->andReturn('zone-amf-bytes');
         $this->amfMock->shouldReceive('invalidateSession')->once()->with((int) $account->id);
@@ -284,5 +283,274 @@ class AccountSyncTest extends TestCase
         $this->assertEquals('online', $account->status);
         $this->assertNotNull($account->last_sync_at);
         $this->assertIsArray($account->zone_data);
+    }
+
+    public function test_sync_preserves_existing_friends_when_get_friend_list_throws_exception(): void
+    {
+        $existingFriends = [
+            ['id' => 8888, 'username' => 'KeepMe', 'nickname' => 'KeepMe', 'playerLevel' => 50, 'level' => 50, 'avatarId' => 2, 'friendSince' => null],
+        ];
+
+        $account = Account::create([
+            'username' => 'test_user_friends_ex',
+            'password' => 'secret',
+            'region' => 'ru',
+            'nickname' => 'test_user',
+            'zone_data' => json_encode([
+                'friends' => $existingFriends,
+            ]),
+        ]);
+
+        $this->authMock->shouldReceive('ensureAuthenticated')->andReturnNull();
+        $this->amfMock->shouldReceive('getZone')->once()->andReturn('zone-amf-bytes');
+
+        $parserMock = Mockery::mock(ZoneParserService::class);
+        $parserMock->shouldReceive('parse')
+            ->with('zone-amf-bytes')
+            ->once()
+            ->andReturn([
+                'errorCode' => 0,
+                'buildings' => [['buildingName' => 'Mayor\'s House', 'grid' => 100]],
+                'userID' => 12345,
+                'level' => 30,
+                'gameWorldName' => 'TestWorld',
+            ]);
+        $this->app->instance(ZoneParserService::class, $parserMock);
+
+        $this->amfMock->shouldReceive('getFriendList')->once()->andThrow(new \Exception('Network timeout'));
+
+        $job = new AccountSyncJob($account);
+        $job->handle($this->app->make(AccountSyncService::class));
+
+        $account->refresh();
+        $this->assertEquals('online', $account->status);
+        $this->assertIsArray($account->zone_data);
+        $this->assertSame(8888, $account->zone_data['friends'][0]['id'] ?? null);
+    }
+
+    public function test_sync_preserves_existing_friends_when_get_friend_list_returns_error_code(): void
+    {
+        $existingFriends = [
+            ['id' => 7777, 'username' => 'KeepMe2', 'nickname' => 'KeepMe2', 'playerLevel' => 40, 'level' => 40, 'avatarId' => 3, 'friendSince' => null],
+        ];
+
+        $account = Account::create([
+            'username' => 'test_user_friends_err',
+            'password' => 'secret',
+            'region' => 'ru',
+            'nickname' => 'test_user',
+            'zone_data' => json_encode([
+                'friends' => $existingFriends,
+            ]),
+        ]);
+
+        $this->authMock->shouldReceive('ensureAuthenticated')->andReturnNull();
+        $this->amfMock->shouldReceive('getZone')->once()->andReturn('zone-amf-bytes');
+
+        $parserMock = Mockery::mock(ZoneParserService::class);
+        $parserMock->shouldReceive('parse')
+            ->with('zone-amf-bytes')
+            ->once()
+            ->andReturn([
+                'errorCode' => 0,
+                'buildings' => [['buildingName' => 'Mayor\'s House', 'grid' => 100]],
+                'userID' => 12345,
+                'level' => 30,
+                'gameWorldName' => 'TestWorld',
+            ]);
+        $this->app->instance(ZoneParserService::class, $parserMock);
+
+        $this->amfMock->shouldReceive('getFriendList')->once()->andReturn('friends-err-amf');
+        $parserMock->shouldReceive('parse')
+            ->with('friends-err-amf')
+            ->once()
+            ->andReturn([
+                'errorCode' => 1005, // Session expired error
+                'friends' => [],
+            ]);
+
+        $job = new AccountSyncJob($account);
+        $job->handle($this->app->make(AccountSyncService::class));
+
+        $account->refresh();
+        $this->assertEquals('online', $account->status);
+        $this->assertIsArray($account->zone_data);
+        $this->assertSame(7777, $account->zone_data['friends'][0]['id'] ?? null);
+    }
+
+    public function test_sync_clears_friends_when_get_friend_list_succeeds_with_zero_friends(): void
+    {
+        $existingFriends = [
+            ['id' => 6666, 'username' => 'OldFriend', 'nickname' => 'OldFriend', 'playerLevel' => 15, 'level' => 15, 'avatarId' => 1, 'friendSince' => null],
+        ];
+
+        $account = Account::create([
+            'username' => 'test_user_friends_empty',
+            'password' => 'secret',
+            'region' => 'ru',
+            'nickname' => 'test_user',
+            'zone_data' => json_encode([
+                'friends' => $existingFriends,
+            ]),
+        ]);
+
+        $this->authMock->shouldReceive('ensureAuthenticated')->andReturnNull();
+        $this->amfMock->shouldReceive('getZone')->once()->andReturn('zone-amf-bytes');
+
+        $parserMock = Mockery::mock(ZoneParserService::class);
+        $parserMock->shouldReceive('parse')
+            ->with('zone-amf-bytes')
+            ->once()
+            ->andReturn([
+                'errorCode' => 0,
+                'buildings' => [['buildingName' => 'Mayor\'s House', 'grid' => 100]],
+                'userID' => 12345,
+                'level' => 30,
+                'gameWorldName' => 'TestWorld',
+            ]);
+        $this->app->instance(ZoneParserService::class, $parserMock);
+
+        $this->amfMock->shouldReceive('getFriendList')->once()->andReturn('friends-empty-amf');
+        $parserMock->shouldReceive('parse')
+            ->with('friends-empty-amf')
+            ->once()
+            ->andReturn([
+                'errorCode' => 0,
+                'friends' => [],
+            ]);
+
+        $job = new AccountSyncJob($account);
+        $job->handle($this->app->make(AccountSyncService::class));
+
+        $account->refresh();
+        $this->assertEquals('online', $account->status);
+        $this->assertIsArray($account->zone_data);
+        $this->assertSame([], $account->zone_data['friends']);
+    }
+
+    public function test_sync_rethrows_captcha_error_when_relogin_encounters_captcha_on_error_1005(): void
+    {
+        $account = Account::create([
+            'username' => 'test_user_captcha',
+            'password' => 'secret',
+            'region' => 'ru',
+            'nickname' => 'test_user',
+        ]);
+
+        $this->authMock->shouldReceive('ensureAuthenticated')->once()->andReturnNull();
+        $this->amfMock->shouldReceive('getZone')->once()->andReturn('zone-amf-bytes');
+
+        $parserMock = Mockery::mock(ZoneParserService::class);
+        $parserMock->shouldReceive('parse')
+            ->with('zone-amf-bytes')
+            ->once()
+            ->andReturn([
+                'errorCode' => 1005,
+            ]);
+        $this->app->instance(ZoneParserService::class, $parserMock);
+
+        $this->authMock->shouldReceive('forgetSessionVerified')->once();
+        $this->amfMock->shouldReceive('invalidateSession')->once()->with((int) $account->id);
+        $this->authMock->shouldReceive('ensureAuthenticated')->once()->andThrow(new \RuntimeException('Ubisoft requires CAPTCHA verification. Please update the session manually in account settings.'));
+        $this->authMock->shouldReceive('isCaptchaOr2faError')->andReturn(true);
+
+        $job = new AccountSyncJob($account);
+        $job->handle($this->app->make(AccountSyncService::class));
+
+        $account->refresh();
+        $this->assertEquals('session_expired', $account->status);
+    }
+
+    public function test_controller_manual_sync_clears_login_cooldown(): void
+    {
+        $account = Account::create([
+            'username' => 'manual_sync_user',
+            'password' => 'secret',
+            'region' => 'ru',
+            'nickname' => 'manual_sync_user',
+        ]);
+
+        Cache::put("account_login_cooldown:{$account->id}", 'Captcha required', 900);
+        $this->assertTrue(Cache::has("account_login_cooldown:{$account->id}"));
+
+        $this->authMock->shouldReceive('clearCooldown')->once()->with(Mockery::on(fn ($arg) => $arg instanceof Account && $arg->id === $account->id))->andReturnUsing(function ($acc) {
+            Cache::forget("account_login_cooldown:{$acc->id}");
+        });
+        $this->authMock->shouldReceive('ensureAuthenticated')->once()->andReturnNull();
+        $this->amfMock->shouldReceive('getZone')->once()->andReturn('zone-amf-bytes');
+
+        $parserMock = Mockery::mock(ZoneParserService::class);
+        $parserMock->shouldReceive('parse')
+            ->with('zone-amf-bytes')
+            ->once()
+            ->andReturn([
+                'errorCode' => 0,
+                'buildings' => [['buildingName' => 'Mayor\'s House', 'grid' => 100]],
+                'userID' => 12345,
+                'level' => 30,
+                'gameWorldName' => 'TestWorld',
+            ]);
+        $this->app->instance(ZoneParserService::class, $parserMock);
+
+        $this->amfMock->shouldReceive('getFriendList')->once()->andReturn('friends-bytes');
+        $parserMock->shouldReceive('parse')->with('friends-bytes')->once()->andReturn(['friends' => []]);
+
+        $response = $this->postJson("/api/accounts/{$account->id}/sync");
+        $response->assertOk();
+
+        $this->assertFalse(Cache::has("account_login_cooldown:{$account->id}"));
+    }
+
+    public function test_update_session_allows_updating_password_and_tokens(): void
+    {
+        $account = Account::create([
+            'username' => 'session_update_user',
+            'password' => 'old_secret',
+            'region' => 'ru',
+            'nickname' => 'session_update_user',
+        ]);
+
+        $this->authMock->shouldReceive('getCookieFile')->once()->andReturn(sys_get_temp_dir().'/cookie_test.txt');
+        $this->authMock->shouldReceive('clearCooldown')->once();
+        $this->authMock->shouldReceive('markSessionVerified')->once();
+        $this->amfMock->shouldReceive('invalidateSession')->once()->with($account->id);
+        $this->amfMock->shouldReceive('resetClient')->once();
+
+        $response = $this->putJson("/api/accounts/{$account->id}/session", [
+            'dso_auth_token' => 'new_dso_token',
+            'dso_auth_user' => 'new_dso_user',
+            'bb_url' => 'https://r01-ls.thesettlersonline.ru/',
+            'password' => 'new_secret_password',
+        ]);
+
+        $response->assertOk();
+        $account->refresh();
+        $this->assertEquals('new_dso_token', $account->dso_auth_token);
+        $this->assertEquals('new_dso_user', $account->dso_auth_user);
+        $this->assertEquals('new_secret_password', $account->password);
+    }
+
+    public function test_update_session_allows_updating_only_password(): void
+    {
+        $account = Account::create([
+            'username' => 'password_only_user',
+            'password' => 'initial_password',
+            'region' => 'ru',
+            'nickname' => 'password_only_user',
+        ]);
+
+        $this->authMock->shouldReceive('getCookieFile')->once()->andReturn(sys_get_temp_dir().'/cookie_test.txt');
+        $this->authMock->shouldReceive('clearCooldown')->once();
+        $this->authMock->shouldReceive('forgetSessionVerified')->once();
+        $this->amfMock->shouldReceive('invalidateSession')->once()->with($account->id);
+        $this->amfMock->shouldReceive('resetClient')->once();
+
+        $response = $this->putJson("/api/accounts/{$account->id}/session", [
+            'password' => 'brand_new_password',
+        ]);
+
+        $response->assertOk();
+        $account->refresh();
+        $this->assertEquals('brand_new_password', $account->password);
     }
 }

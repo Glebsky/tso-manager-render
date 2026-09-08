@@ -210,6 +210,124 @@ class ScheduledTaskBuffTest extends TestCase
         $response2->assertStatus(422);
     }
 
+    public function test_can_update_friend_buff_task_when_friend_zone_not_cached(): void
+    {
+        $friendId = 20002;
+        $account = $this->createAccount(
+            [['id' => $friendId, 'username' => 'MyFriend', 'playerLevel' => 45]],
+            [['uniqueId1' => 11, 'uniqueId2' => 22, 'amount' => 5, 'buffName_string' => 'AuntIrma']]
+        );
+
+        $task = ScheduledTask::create([
+            'account_id' => $account->id,
+            'name' => 'Original Friend Buff Task',
+            'task_type' => 'apply_buff',
+            'schedule_type' => 'once',
+            'run_at_datetime' => now()->addDay(),
+            'payload' => [
+                'target_scope' => 'friend',
+                'target_player_id' => $friendId,
+                'target_player_name' => 'MyFriend',
+                'grid' => 888,
+                'unique_id1' => 11,
+                'unique_id2' => 22,
+                'amount' => 1,
+            ],
+            'is_active' => true,
+        ]);
+
+        // Ensure friend zone is NOT in cache
+        Cache::forget("friend-zone:{$account->id}:{$friendId}");
+
+        $response = $this->putJson("/api/tasks/{$task->id}", [
+            'name' => 'Updated Friend Buff Task Name',
+            'account_id' => $account->id,
+            'task_type' => 'apply_buff',
+            'schedule_type' => 'once',
+            'run_at_datetime' => now()->addDays(2)->toIso8601String(),
+            'payload' => [
+                'target_scope' => 'friend',
+                'target_player_id' => $friendId,
+                'target_player_name' => 'MyFriend',
+                'grid' => 888,
+                'unique_id1' => 11,
+                'unique_id2' => 22,
+                'amount' => 1,
+            ],
+        ]);
+
+        $response->assertStatus(200);
+        $task->refresh();
+        $this->assertSame('Updated Friend Buff Task Name', $task->name);
+    }
+
+    public function test_can_update_sequence_with_friend_buff_task_when_friend_zone_not_cached(): void
+    {
+        $friendId = 20002;
+        $account = $this->createAccount(
+            [['id' => $friendId, 'username' => 'MyFriend', 'playerLevel' => 45]],
+            [['uniqueId1' => 11, 'uniqueId2' => 22, 'amount' => 5, 'buffName_string' => 'AuntIrma']]
+        );
+
+        $task = ScheduledTask::create([
+            'account_id' => $account->id,
+            'name' => 'Sequence with Friend Buff',
+            'task_type' => 'sequence',
+            'schedule_type' => 'daily',
+            'run_at_time' => '08:00',
+            'payload' => [
+                'actions' => [
+                    [
+                        'task_type' => 'apply_buff',
+                        'delay_seconds' => 5,
+                        'payload' => [
+                            'target_scope' => 'friend',
+                            'target_player_id' => $friendId,
+                            'target_player_name' => 'MyFriend',
+                            'grid' => 888,
+                            'unique_id1' => 11,
+                            'unique_id2' => 22,
+                            'amount' => 1,
+                        ],
+                    ],
+                ],
+            ],
+            'is_active' => true,
+        ]);
+
+        Cache::forget("friend-zone:{$account->id}:{$friendId}");
+
+        $response = $this->putJson("/api/tasks/{$task->id}", [
+            'name' => 'Updated Sequence with Friend Buff',
+            'account_id' => $account->id,
+            'task_type' => 'sequence',
+            'schedule_type' => 'daily',
+            'run_at_time' => '09:30',
+            'payload' => [
+                'actions' => [
+                    [
+                        'task_type' => 'apply_buff',
+                        'delay_seconds' => 10,
+                        'payload' => [
+                            'target_scope' => 'friend',
+                            'target_player_id' => $friendId,
+                            'target_player_name' => 'MyFriend',
+                            'grid' => 888,
+                            'unique_id1' => 11,
+                            'unique_id2' => 22,
+                            'amount' => 1,
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $response->assertStatus(200);
+        $task->refresh();
+        $this->assertSame('Updated Sequence with Friend Buff', $task->name);
+        $this->assertStringStartsWith('09:30', (string) $task->run_at_time);
+    }
+
     public function test_executes_self_buff_task_successfully(): void
     {
         $account = $this->createAccount(
@@ -232,7 +350,7 @@ class ScheduledTaskBuffTest extends TestCase
             'is_active' => true,
         ]);
 
-        $this->authMock->shouldReceive('isAuthenticated')->with(Mockery::any())->andReturn(true);
+        $this->authMock->shouldReceive('ensureAuthenticated')->with(Mockery::any())->andReturnNull();
 
         $this->amfMock->shouldReceive('applyBuff')
             ->once()
@@ -277,7 +395,7 @@ class ScheduledTaskBuffTest extends TestCase
             'is_active' => true,
         ]);
 
-        $this->authMock->shouldReceive('isAuthenticated')->with(Mockery::any())->andReturn(true);
+        $this->authMock->shouldReceive('ensureAuthenticated')->with(Mockery::any())->andReturnNull();
 
         // Should load zone fresh from game server
         $this->amfMock->shouldReceive('getZone')
@@ -336,7 +454,7 @@ class ScheduledTaskBuffTest extends TestCase
             'is_active' => true,
         ]);
 
-        $this->authMock->shouldReceive('isAuthenticated')->with(Mockery::any())->andReturn(true);
+        $this->authMock->shouldReceive('ensureAuthenticated')->with(Mockery::any())->andReturnNull();
 
         $this->amfMock->shouldReceive('applyBuff')
             ->once()
@@ -363,7 +481,7 @@ class ScheduledTaskBuffTest extends TestCase
             []
         );
 
-        $this->authMock->shouldReceive('isAuthenticated')->with(Mockery::any())->andReturn(true);
+        $this->authMock->shouldReceive('ensureAuthenticated')->with(Mockery::any())->andReturnNull();
 
         // 1st request should hit TsoAmfService and ZoneParserService
         $this->amfMock->shouldReceive('getZone')
@@ -419,7 +537,7 @@ class ScheduledTaskBuffTest extends TestCase
             'is_active' => true,
         ]);
 
-        $this->authMock->shouldReceive('isAuthenticated')->with(Mockery::any())->andReturn(true);
+        $this->authMock->shouldReceive('ensureAuthenticated')->with(Mockery::any())->andReturnNull();
 
         $this->amfMock->shouldReceive('getZone')
             ->twice()
@@ -459,5 +577,88 @@ class ScheduledTaskBuffTest extends TestCase
         $this->assertNotNull($task->last_run_at);
 
         $this->assertStringContainsString('OK:', (string) $task->last_result);
+    }
+
+    public function test_refreshes_friend_list_from_server_when_friend_not_in_cache_and_succeeds(): void
+    {
+        $friendId = 30003;
+        // Account has EMPTY friends list initially
+        $account = $this->createAccount(
+            [],
+            [['uniqueId1' => 11, 'uniqueId2' => 22, 'amount' => 5, 'buffName_string' => 'AuntIrma']]
+        );
+
+        $task = ScheduledTask::create([
+            'account_id' => $account->id,
+            'task_type' => 'apply_buff',
+            'payload' => [
+                'target_scope' => 'friend',
+                'target_player_id' => $friendId,
+                'target_player_name' => 'RecoveredFriend',
+                'grid' => 888,
+                'unique_id1' => 11,
+                'unique_id2' => 22,
+                'amount' => 1,
+            ],
+            'schedule_type' => 'once',
+            'run_at_datetime' => now()->subMinute(),
+            'is_active' => true,
+        ]);
+
+        $this->authMock->shouldReceive('ensureAuthenticated')->with(Mockery::any())->andReturnNull();
+
+        // When friend is not found in cache, ApplyBuffHandler should query getFriendList
+        $this->amfMock->shouldReceive('getFriendList')
+            ->once()
+            ->with(Mockery::any())
+            ->andReturn('raw_friends_amf');
+
+        $this->parserMock->shouldReceive('parse')
+            ->once()
+            ->with('raw_friends_amf')
+            ->andReturn([
+                'errorCode' => 0,
+                'friends' => [
+                    ['id' => $friendId, 'nickname' => 'RecoveredFriend', 'playerLevel' => 50],
+                ],
+            ]);
+
+        // Then it loads the friend zone
+        $this->amfMock->shouldReceive('getZone')
+            ->once()
+            ->with(Mockery::any(), $friendId)
+            ->andReturn('raw_friend_zone_amf');
+
+        $this->parserMock->shouldReceive('parse')
+            ->once()
+            ->with('raw_friend_zone_amf')
+            ->andReturn([
+                'errorCode' => 0,
+                'buildings' => [
+                    ['buildingGrid' => 888, 'buildingName' => 'Woodcutter'],
+                ],
+            ]);
+
+        // Then applies buff
+        $this->amfMock->shouldReceive('applyBuff')
+            ->once()
+            ->with(Mockery::any(), 888, 11, 22, 1, $friendId)
+            ->andReturn('buff_ok_amf_response');
+
+        $this->parserMock->shouldReceive('parse')
+            ->once()
+            ->with('buff_ok_amf_response')
+            ->andReturn(['errorCode' => 0]);
+
+        Artisan::call('tso:execute-tasks');
+
+        $task->refresh();
+        $this->assertFalse($task->is_active);
+        $this->assertNotNull($task->last_run_at);
+        $this->assertStringContainsString('OK:', (string) $task->last_result);
+
+        // Account zone_data should now have the recovered friends list
+        $account->refresh();
+        $this->assertSame($friendId, $account->zone_data['friends'][0]['id'] ?? null);
     }
 }

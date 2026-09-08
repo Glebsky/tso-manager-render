@@ -22,3 +22,10 @@ async function bootstrap() {
 
 bootstrap();
 
+if ('serviceWorker' in navigator && (window.isSecureContext || window.location.hostname === 'localhost')) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+    });
+}
+
+

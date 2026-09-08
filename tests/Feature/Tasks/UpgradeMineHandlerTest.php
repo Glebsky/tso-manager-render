@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Tests\Feature\Tasks;
 
 use App\Exceptions\InvalidTaskTypeException;
+use App\Exceptions\TaskExecutionException;
 use App\Models\Account;
 use App\Services\Game\Mines\BuildingSnapshot;
 use App\Services\Game\Mines\BuildQueueSnapshot;
 use App\Services\Game\Mines\Contracts\MineCommandGatewayInterface;
 use App\Services\Game\Mines\Contracts\ZoneSnapshotProviderInterface;
+use App\Services\Game\Mines\DepositSnapshot;
 use App\Services\Game\Mines\MineUpgradePolicy;
 use App\Services\Game\Mines\ZoneSnapshot;
 use App\Services\Tasks\Handlers\UpgradeMineHandler;
@@ -108,9 +110,8 @@ final class UpgradeMineHandlerTest extends TestCase
         $policy = $this->app->make(MineUpgradePolicy::class);
         $handler = new UpgradeMineHandler($mockZones, $policy, $mockGateway, $mockParser);
 
-        $result = $handler->handle($this->account, ['grid' => 6431]);
-
-        $this->assertNotEmpty($result);
+        $this->expectException(TaskExecutionException::class);
+        $handler->handle($this->account, ['grid' => 6431]);
     }
 
     public function test_it_does_not_call_the_gateway_at_max_level(): void
@@ -135,9 +136,8 @@ final class UpgradeMineHandlerTest extends TestCase
         $policy = $this->app->make(MineUpgradePolicy::class);
         $handler = new UpgradeMineHandler($mockZones, $policy, $mockGateway, $mockParser);
 
-        $result = $handler->handle($this->account, ['grid' => 6431]);
-
-        $this->assertNotEmpty($result);
+        $this->expectException(TaskExecutionException::class);
+        $handler->handle($this->account, ['grid' => 6431]);
     }
 
     public function test_it_does_not_call_the_gateway_when_upgrade_already_in_progress(): void
@@ -162,9 +162,34 @@ final class UpgradeMineHandlerTest extends TestCase
         $policy = $this->app->make(MineUpgradePolicy::class);
         $handler = new UpgradeMineHandler($mockZones, $policy, $mockGateway, $mockParser);
 
-        $result = $handler->handle($this->account, ['grid' => 6431]);
+        $this->expectException(TaskExecutionException::class);
+        $handler->handle($this->account, ['grid' => 6431]);
+    }
 
-        $this->assertNotEmpty($result);
+    public function test_it_does_not_call_the_gateway_when_mine_is_depleted(): void
+    {
+        /** @var ZoneSnapshotProviderInterface&MockInterface $mockZones */
+        $mockZones = Mockery::mock(ZoneSnapshotProviderInterface::class);
+        $mockZones->expects('forAccount')
+            ->with($this->account)
+            ->andReturn(new ZoneSnapshot(
+                depositsByGrid: [6431 => new DepositSnapshot(grid: 6431, name: 'IronOre', amount: 0, maxAmount: 1000)],
+                buildingsByGrid: [6431 => new BuildingSnapshot(grid: 6431, name: 'IronMine', upgradeLevel: 2, isProductionActive: true, upgradeInProgress: false)],
+                buildQueue: new BuildQueueSnapshot(used: 1, total: 3),
+            ));
+
+        /** @var MineCommandGatewayInterface&MockInterface $mockGateway */
+        $mockGateway = Mockery::mock(MineCommandGatewayInterface::class);
+        $mockGateway->shouldNotReceive('upgradeMine');
+
+        /** @var ZoneParserService&MockInterface $mockParser */
+        $mockParser = Mockery::mock(ZoneParserService::class);
+
+        $policy = $this->app->make(MineUpgradePolicy::class);
+        $handler = new UpgradeMineHandler($mockZones, $policy, $mockGateway, $mockParser);
+
+        $this->expectException(TaskExecutionException::class);
+        $handler->handle($this->account, ['grid' => 6431]);
     }
 
     public function test_it_handles_session_errors_without_throwing_and_returns_unknown_outcome(): void
@@ -197,5 +222,36 @@ final class UpgradeMineHandlerTest extends TestCase
         $result = $handler->handle($this->account, ['grid' => 6431]);
 
         $this->assertStringContainsString('6431', $result);
+    }
+
+    public function test_it_throws_task_execution_exception_for_game_errors(): void
+    {
+        /** @var ZoneSnapshotProviderInterface&MockInterface $mockZones */
+        $mockZones = Mockery::mock(ZoneSnapshotProviderInterface::class);
+        $mockZones->expects('forAccount')
+            ->with($this->account)
+            ->andReturn(new ZoneSnapshot(
+                depositsByGrid: [],
+                buildingsByGrid: [6431 => new BuildingSnapshot(grid: 6431, name: 'IronMine', upgradeLevel: 3, isProductionActive: true, upgradeInProgress: false)],
+                buildQueue: new BuildQueueSnapshot(used: 1, total: 3),
+            ));
+
+        /** @var MineCommandGatewayInterface&MockInterface $mockGateway */
+        $mockGateway = Mockery::mock(MineCommandGatewayInterface::class);
+        $mockGateway->expects('upgradeMine')
+            ->with($this->account, 6431)
+            ->andReturn('dummy_amf_error');
+
+        /** @var ZoneParserService&MockInterface $mockParser */
+        $mockParser = Mockery::mock(ZoneParserService::class);
+        $mockParser->expects('parse')
+            ->with('dummy_amf_error')
+            ->andReturn(['errorCode' => 500]);
+
+        $policy = $this->app->make(MineUpgradePolicy::class);
+        $handler = new UpgradeMineHandler($mockZones, $policy, $mockGateway, $mockParser);
+
+        $this->expectException(TaskExecutionException::class);
+        $handler->handle($this->account, ['grid' => 6431]);
     }
 }

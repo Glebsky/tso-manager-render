@@ -2462,7 +2462,8 @@ import TaskList from '../components/tasks/TaskList.vue';
                 sequenceActions.value = task.payload.actions.map(act => {
                     const meta = act.meta && typeof act.meta === 'object' ? { ...act.meta } : { building: null, buff: null, specialist: null };
 
-                    if (['stop_production', 'start_production', 'collect_building', 'apply_buff'].includes(act.task_type) && !meta.building) {
+                    const isFriendBuff = act.task_type === 'apply_buff' && (act.payload?.target_scope === 'friend' || Boolean(act.payload?.target_player_id));
+                    if (['stop_production', 'start_production', 'collect_building', 'apply_buff'].includes(act.task_type) && !meta.building && !isFriendBuff) {
                         if (zoneData.buildings) {
                             meta.building = zoneData.buildings.find(b => b.buildingGrid == act.payload?.grid) || null;
                         }
