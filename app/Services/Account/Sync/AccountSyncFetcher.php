@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Account\Sync;
 
 use App\Exceptions\AccountSyncException;
+use App\Exceptions\SessionExpiredException;
 use App\Models\Account;
 use App\Services\TsoAmfService;
 use App\Services\TsoAuthService;
@@ -32,7 +33,7 @@ readonly class AccountSyncFetcher
      */
     public function fetchZone(Account $account): array
     {
-        $this->ensureAuthenticated($account);
+        $this->ensureAuthenticatedWithRecovery($account);
 
         $maxRetries = 6;
         $retryDelay = 3;
@@ -55,8 +56,7 @@ readonly class AccountSyncFetcher
                     if ($reloginCount < 2) {
                         Log::info("[AccountSync] Zone locked/superseded (error 1012) for account #{$account->id}; re-authenticating to take over session (relogin #".($reloginCount + 1).')');
                         try {
-                            $this->authService->forgetSessionVerified($account);
-                            $this->amfService->invalidateSession($account->id);
+                            $this->resetSessionState($account);
                             $this->authService->ensureAuthenticated($account);
                             $account->refresh();
                         } catch (Exception $reloginEx) {
@@ -80,8 +80,7 @@ readonly class AccountSyncFetcher
                     if ($reloginCount < 2) {
                         Log::info("[AccountSync] Session expired (error {$errorCode}) for account #{$account->id}; re-authenticating (relogin #".($reloginCount + 1).')');
                         try {
-                            $this->authService->forgetSessionVerified($account);
-                            $this->amfService->invalidateSession($account->id);
+                            $this->resetSessionState($account);
                             $this->authService->ensureAuthenticated($account);
                             $account->refresh();
                         } catch (Exception $reloginEx) {
@@ -110,6 +109,23 @@ readonly class AccountSyncFetcher
                 if ($this->authService->isCaptchaOr2faError($e->getMessage())) {
                     throw $e;
                 }
+
+                if ($e instanceof SessionExpiredException || stripos($e->getMessage(), 'session') !== false) {
+                    if ($reloginCount < 2) {
+                        Log::info("[AccountSync] Caught session error during fetch for account #{$account->id}: {$e->getMessage()}; resetting session and re-authenticating (relogin #".($reloginCount + 1).')');
+                        try {
+                            $this->resetSessionState($account);
+                            $this->authService->ensureAuthenticated($account);
+                            $account->refresh();
+                        } catch (Exception $reloginEx) {
+                            Log::warning("[AccountSync] Recovery re-login for account #{$account->id} encountered: {$reloginEx->getMessage()}");
+                            if ($this->authService->isCaptchaOr2faError($reloginEx->getMessage())) {
+                                throw $reloginEx;
+                            }
+                        }
+                        $reloginCount++;
+                    }
+                }
             }
 
             if ($attempt < $maxRetries) {
@@ -132,6 +148,37 @@ readonly class AccountSyncFetcher
         }
 
         return (array) $zoneData;
+    }
+
+    /**
+     * Completely resets active session state on both Auth and AMF layers.
+     */
+    public function resetSessionState(Account $account): void
+    {
+        $this->authService->resetSession($account);
+        $this->amfService->invalidateSession($account->id);
+        $this->amfService->resetClient($account->id);
+    }
+
+    /**
+     * Authenticate the account, with an automatic clean session reset and retry if initial attempt fails.
+     *
+     * @throws Exception
+     */
+    private function ensureAuthenticatedWithRecovery(Account $account): void
+    {
+        try {
+            $this->ensureAuthenticated($account);
+        } catch (Exception $e) {
+            if ($this->authService->isCaptchaOr2faError($e->getMessage())) {
+                throw $e;
+            }
+
+            Log::warning("[AccountSync] Initial authentication failed for account #{$account->id}: {$e->getMessage()}. Resetting session state and retrying...");
+            $this->resetSessionState($account);
+
+            $this->ensureAuthenticated($account);
+        }
     }
 
     /**

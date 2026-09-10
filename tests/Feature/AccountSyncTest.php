@@ -244,11 +244,12 @@ class AccountSyncTest extends TestCase
             'nickname' => 'sync_1012_user',
         ]);
 
-        $this->authMock->shouldReceive('forgetSessionVerified')->once()->with(Mockery::any());
+        $this->authMock->shouldReceive('resetSession')->once()->with(Mockery::any());
         $this->authMock->shouldReceive('ensureAuthenticated')->twice()->andReturnNull();
 
         $this->amfMock->shouldReceive('getZone')->twice()->andReturn('zone-amf-bytes');
         $this->amfMock->shouldReceive('invalidateSession')->once()->with((int) $account->id);
+        $this->amfMock->shouldReceive('resetClient')->once()->with((int) $account->id);
 
         $parserMock = Mockery::mock(ZoneParserService::class);
         $parserMock->shouldReceive('parse')
@@ -449,8 +450,9 @@ class AccountSyncTest extends TestCase
             ]);
         $this->app->instance(ZoneParserService::class, $parserMock);
 
-        $this->authMock->shouldReceive('forgetSessionVerified')->once();
+        $this->authMock->shouldReceive('resetSession')->once()->with(Mockery::on(fn ($arg) => $arg instanceof Account && $arg->id === $account->id));
         $this->amfMock->shouldReceive('invalidateSession')->once()->with((int) $account->id);
+        $this->amfMock->shouldReceive('resetClient')->once()->with((int) $account->id);
         $this->authMock->shouldReceive('ensureAuthenticated')->once()->andThrow(new \RuntimeException('Ubisoft requires CAPTCHA verification. Please update the session manually in account settings.'));
         $this->authMock->shouldReceive('isCaptchaOr2faError')->andReturn(true);
 
@@ -459,6 +461,65 @@ class AccountSyncTest extends TestCase
 
         $account->refresh();
         $this->assertEquals('session_expired', $account->status);
+    }
+
+    public function test_sync_recovers_from_initial_auth_failure_by_resetting_session_and_retrying(): void
+    {
+        $account = Account::create([
+            'username' => 'recover_user',
+            'password' => 'secret',
+            'region' => 'ru',
+            'nickname' => 'recover_user',
+        ]);
+
+        $this->authMock->shouldReceive('ensureAuthenticated')
+            ->once()
+            ->with(Mockery::on(fn ($arg) => $arg instanceof Account && $arg->id === $account->id))
+            ->andThrow(new \RuntimeException('Login failed: Temporary session error'));
+
+        $this->authMock->shouldReceive('isCaptchaOr2faError')
+            ->with('Login failed: Temporary session error')
+            ->andReturn(false);
+
+        $this->authMock->shouldReceive('resetSession')
+            ->once()
+            ->with(Mockery::on(fn ($arg) => $arg instanceof Account && $arg->id === $account->id));
+        $this->amfMock->shouldReceive('invalidateSession')
+            ->once()
+            ->with((int) $account->id);
+        $this->amfMock->shouldReceive('resetClient')
+            ->once()
+            ->with((int) $account->id);
+
+        $this->authMock->shouldReceive('ensureAuthenticated')
+            ->once()
+            ->with(Mockery::on(fn ($arg) => $arg instanceof Account && $arg->id === $account->id))
+            ->andReturnNull();
+
+        $this->amfMock->shouldReceive('getZone')->once()->andReturn('zone-amf-bytes');
+
+        $parserMock = Mockery::mock(ZoneParserService::class);
+        $parserMock->shouldReceive('parse')
+            ->with('zone-amf-bytes')
+            ->once()
+            ->andReturn([
+                'errorCode' => 0,
+                'buildings' => [['buildingName' => "Mayor's House", 'grid' => 100]],
+                'userID' => 12345,
+                'level' => 30,
+                'gameWorldName' => 'TestWorld',
+            ]);
+        $this->app->instance(ZoneParserService::class, $parserMock);
+
+        $this->amfMock->shouldReceive('getFriendList')->once()->andReturn('friends-bytes');
+        $parserMock->shouldReceive('parse')->with('friends-bytes')->once()->andReturn(['friends' => []]);
+
+        $syncService = $this->app->make(AccountSyncService::class);
+        $result = $syncService->sync($account);
+
+        $this->assertSame(12345, $result['userID']);
+        $account->refresh();
+        $this->assertSame('online', $account->status);
     }
 
     public function test_controller_manual_sync_clears_login_cooldown(): void
@@ -511,7 +572,7 @@ class AccountSyncTest extends TestCase
         ]);
 
         $this->authMock->shouldReceive('getCookieFile')->once()->andReturn(sys_get_temp_dir().'/cookie_test.txt');
-        $this->authMock->shouldReceive('clearCooldown')->once();
+        $this->authMock->shouldReceive('resetSession')->once()->with(Mockery::on(fn ($arg) => $arg instanceof Account && $arg->id === $account->id));
         $this->authMock->shouldReceive('markSessionVerified')->once();
         $this->amfMock->shouldReceive('invalidateSession')->once()->with($account->id);
         $this->amfMock->shouldReceive('resetClient')->once();
@@ -540,8 +601,7 @@ class AccountSyncTest extends TestCase
         ]);
 
         $this->authMock->shouldReceive('getCookieFile')->once()->andReturn(sys_get_temp_dir().'/cookie_test.txt');
-        $this->authMock->shouldReceive('clearCooldown')->once();
-        $this->authMock->shouldReceive('forgetSessionVerified')->once();
+        $this->authMock->shouldReceive('resetSession')->once()->with(Mockery::on(fn ($arg) => $arg instanceof Account && $arg->id === $account->id));
         $this->amfMock->shouldReceive('invalidateSession')->once()->with($account->id);
         $this->amfMock->shouldReceive('resetClient')->once();
 

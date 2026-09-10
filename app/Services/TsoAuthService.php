@@ -93,7 +93,7 @@ class TsoAuthService
     }
 
     /**
-     * Clear active session state (cookie files) for an account.
+     * Clear active session state (cookie files, verification flag, cooldowns, locks, flow overrides) for an account.
      */
     public function resetSession(Account $account): void
     {
@@ -103,6 +103,9 @@ class TsoAuthService
         }
 
         $this->forgetSessionVerified($account);
+        $this->clearCooldown($account);
+        Cache::forget("tso:login_lock:{$account->id}");
+        Cache::forget(self::AUTH_FLOW_KEY.$account->id);
     }
 
     /**
@@ -179,6 +182,10 @@ class TsoAuthService
         $exceptions = [];
 
         foreach ($order as $flow) {
+            if (is_file($cookieFile)) {
+                @unlink($cookieFile);
+            }
+
             try {
                 $params = $flow === 'oauth'
                     ? $this->loginOAuth($account, $cookieFile, $server)
@@ -198,6 +205,10 @@ class TsoAuthService
                     throw $e;
                 }
 
+                if ($this->preferredFlow($account) === $flow) {
+                    Cache::forget(self::AUTH_FLOW_KEY.$account->id);
+                }
+
                 $exceptions[$flow] = $e;
             }
         }
@@ -206,8 +217,8 @@ class TsoAuthService
             $preferred = $this->preferredFlow($account);
             $firstException = reset($exceptions);
             $chosenException = $exceptions[$preferred]
-                ?? $exceptions['oauth']
                 ?? $exceptions['legacy']
+                ?? $exceptions['oauth']
                 ?? ($firstException instanceof Throwable ? $firstException : null)
                 ?? new RuntimeException("Login failed for account #{$account->id}");
 
@@ -273,9 +284,6 @@ class TsoAuthService
                 throw new RuntimeException((string) __('ui.auth.captcha_required'));
             }
             $formattedError = $this->formatAuthResponse($loginRes);
-            if (stripos($formattedError, 'Ubisoft') !== false) {
-                $this->rememberFlow($account, 'oauth');
-            }
             throw new RuntimeException('Login failed: '.CredentialRedactor::redact($formattedError, $account));
         }
 
@@ -294,7 +302,7 @@ class TsoAuthService
      *
      * @throws Exception
      */
-    private function cipMigratedRequest(string $url, ?array $postData, string $cookieFile): string
+    protected function cipMigratedRequest(string $url, ?array $postData, string $cookieFile): string
     {
         $maxRedirects = 10;
         $currentUrl = $url;
