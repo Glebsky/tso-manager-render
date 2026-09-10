@@ -169,8 +169,9 @@ class TaskExecutionCharacterizationTest extends TestCase
         ]);
 
         $this->authMock->shouldReceive('ensureAuthenticated')->andReturnNull();
-        $this->authMock->shouldReceive('forgetSessionVerified')->atLeast()->once()->with(Mockery::any());
+        $this->authMock->shouldReceive('resetSession')->atLeast()->once()->with(Mockery::any());
 
+        $this->amfMock->shouldReceive('resetClient')->atLeast()->once();
         $this->amfMock->shouldReceive('stopProduction')
             ->twice()
             ->andReturnUsing(function () {
@@ -212,7 +213,7 @@ class TaskExecutionCharacterizationTest extends TestCase
         ]);
 
         $this->authMock->shouldReceive('ensureAuthenticated')->andReturnNull();
-        $this->authMock->shouldReceive('forgetSessionVerified')->atLeast()->once()->with(Mockery::any());
+        $this->authMock->shouldReceive('resetSession')->atLeast()->once()->with(Mockery::any());
 
         $this->amfMock->shouldReceive('resetClient')->atLeast()->once();
         $this->amfMock->shouldReceive('ensureZoneLoaded')->once()->andReturn('zone_data');

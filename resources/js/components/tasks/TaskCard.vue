@@ -1,7 +1,9 @@
 <template>
     <div class="glass-card p-3 sm:p-4.5 transition-all duration-200 hover:border-white/20 relative"
          :class="{
-             'border-emerald-500/30 bg-emerald-500/[0.02]': task.is_active && !isDragging,
+             'border-sky-500/50 bg-sky-500/10 shadow-lg shadow-sky-500/10 ring-1 ring-sky-500/25': isRunning && !isDragging,
+             'border-emerald-500/30 bg-emerald-500/[0.04]': !isRunning && task.is_active && !isDragging,
+             'border-white/10 bg-white/[0.02] opacity-80': !isRunning && !task.is_active && !isDragging,
              'opacity-40 border-dashed border-emerald-500/60 bg-emerald-500/5': isDragging,
              'border-t-2 !border-t-emerald-400': isDragOver && dropPosition === 'top',
              'border-b-2 !border-b-emerald-400': isDragOver && dropPosition === 'bottom'
@@ -28,7 +30,7 @@
                 </div>
 
                 <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl border flex items-center justify-center text-base sm:text-lg flex-shrink-0"
-                     :class="task.is_active ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-white/5 border-white/10 text-white/40'">
+                     :class="isRunning ? 'bg-sky-500/15 border-sky-500/30 text-sky-400' : task.is_active ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-white/5 border-white/10 text-white/40'">
                     {{ taskPrimaryIcon }}
                 </div>
 
@@ -36,13 +38,16 @@
                 <div class="min-w-0 flex-1">
                     <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap mb-1">
                         <p class="text-xs sm:text-sm font-bold text-white tracking-wide">
-                            <span v-if="task.name" class="text-emerald-400">{{ task.name }}</span>
+                            <span v-if="task.name" :class="isRunning ? 'text-sky-300' : 'text-emerald-400'">{{ task.name }}</span>
                             <span v-else-if="task.task_type === 'sequence'">{{ t('tasks.task_series') }} ({{ getTaskActionsList(task).length }})</span>
                             <span v-else>{{ typeLabels[task.task_type] || task.task_type }}</span>
                         </p>
 
                         <!-- Статус активности -->
-                        <span class="badge text-[9px] sm:text-[10px] font-semibold uppercase px-1.5 sm:px-2 py-0.5"
+                        <span v-if="isRunning" class="badge text-[9px] sm:text-[10px] font-semibold uppercase px-1.5 sm:px-2 py-0.5 bg-sky-500/15 text-sky-300 border border-sky-500/30 animate-pulse">
+                            ⚡ {{ t('tasks.status.running') }}
+                        </span>
+                        <span v-else class="badge text-[9px] sm:text-[10px] font-semibold uppercase px-1.5 sm:px-2 py-0.5"
                               :class="task.is_active ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'">
                             {{ task.is_active ? '● ' + t('tasks.status.active') : '○ ' + t('tasks.status.paused') }}
                         </span>
@@ -164,10 +169,15 @@
             <!-- Время запуска, Расписание и Кнопки управления -->
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between xl:justify-end gap-2 sm:gap-3 w-full xl:w-auto pt-2.5 sm:pt-3 xl:pt-0 border-t xl:border-t-0 border-white/5">
                 <!-- Блок времени до запуска и расписания -->
-                <div class="flex items-center justify-between gap-3 bg-black/20 border border-white/5 px-3 py-1.5 sm:py-2 rounded-xl flex-1 xl:flex-initial">
+                <div class="flex items-center justify-between gap-3 border px-3 py-1.5 sm:py-2 rounded-xl flex-1 xl:flex-initial transition-colors duration-200"
+                     :class="isRunning ? 'bg-sky-950/30 border-sky-500/20' : 'bg-black/20 border-white/5'">
                     <!-- Время до запуска -->
                     <div class="text-left sm:text-right min-w-0">
-                        <div v-if="!task.is_active" class="flex items-center sm:justify-end gap-1.5 text-xs text-amber-400 font-semibold">
+                        <div v-if="isRunning" class="flex items-center sm:justify-end gap-1.5 text-xs text-sky-400 font-semibold">
+                            <span class="w-1.5 h-1.5 rounded-full bg-sky-400 animate-ping"></span>
+                            <span class="animate-pulse">{{ t('tasks.status.running') }}</span>
+                        </div>
+                        <div v-else-if="!task.is_active" class="flex items-center sm:justify-end gap-1.5 text-xs text-amber-400 font-semibold">
                             <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
                             <span>{{ t('tasks.status.paused') }}</span>
                         </div>
@@ -214,13 +224,14 @@
                         {{ task.is_active ? '⏸ ' + t('tasks.status.pause_short') : '▶ ' + t('tasks.status.resume_short') }}
                     </button>
 
-                    <button type="button" @click="$emit('execute', task)" :disabled="isExecuting"
-                            class="btn-primary btn-sm text-xs py-1.5 px-2.5 sm:px-3 flex items-center justify-center gap-1.5 flex-1 sm:flex-initial whitespace-nowrap">
-                        <svg v-if="isExecuting" class="animate-spin h-3.5 w-3.5 text-dark-950" fill="none" viewBox="0 0 24 24">
+                    <button type="button" @click="$emit('execute', task)" :disabled="isRunning"
+                            class="btn-primary btn-sm text-xs py-1.5 px-2.5 sm:px-3 flex items-center justify-center gap-1.5 flex-1 sm:flex-initial whitespace-nowrap"
+                            :class="{ 'opacity-85 !from-sky-600 !to-blue-600 !shadow-sky-500/25': isRunning }">
+                        <svg v-if="isRunning" class="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        <span class="truncate">{{ isExecuting ? t('tasks.status.running') : '🚀 ' + t('tasks.run_now') }}</span>
+                        <span class="truncate">{{ isRunning ? t('tasks.status.running') : '🚀 ' + t('tasks.run_now') }}</span>
                     </button>
 
                     <div class="flex items-center gap-1.5 shrink-0">
@@ -454,6 +465,10 @@ const emit = defineEmits([
     'dragleave',
     'dragend'
 ]);
+
+const isRunning = computed(() => {
+    return Boolean(props.isExecuting || props.task.status === 'running' || props.task.status === 'queued');
+});
 
 const taskPrimaryIcon = computed(() => {
     if (props.task.task_type === 'sequence') {

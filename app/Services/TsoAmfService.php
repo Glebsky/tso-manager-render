@@ -174,8 +174,9 @@ class TsoAmfService
             Log::info("[TsoAmf] Session rejected for account #{$account->id}; performing a single forced re-login and retry");
 
             try {
-                $this->authService->forgetSessionVerified($account);
+                $this->authService->resetSession($account);
                 $this->invalidateSession($account->id);
+                $this->resetClient($account->id);
                 $this->authService->ensureAuthenticated($account);
                 $account->refresh();
 

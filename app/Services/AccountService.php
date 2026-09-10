@@ -140,14 +140,11 @@ readonly class AccountService
             @file_put_contents($cookieFile, '');
         }
 
-        $this->authService->clearCooldown($account);
+        $this->authService->resetSession($account);
         if (! empty($data['dso_auth_token'])) {
             $this->authService->markSessionVerified($account);
-        } else {
-            $this->authService->forgetSessionVerified($account);
         }
 
-        $this->cache->forget("tso:login_lock:{$account->id}");
         $this->amfService->invalidateSession($account->id);
         $this->amfService->resetClient();
 
