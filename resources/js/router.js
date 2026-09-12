@@ -7,7 +7,7 @@ const routes = [
         path: '/',
         name: 'market-public',
         component: () => import('./views/PublicMarketAnalytics.vue'),
-        meta: { guest: true, publicLayout: true, rawTitle: 'TSO Market Analytics' },
+        meta: { guest: true, publicLayout: true, rawTitle: 'TSO Market — The Settlers Online Market & Combat Simulator' },
     },
     {
         path: '/market/public',
@@ -117,7 +117,7 @@ router.afterEach((to) => {
     if (to.meta?.rawTitle) {
         document.title = to.meta.rawTitle;
     } else if (to.name === 'market-public') {
-        document.title = 'TSO Market Analytics';
+        document.title = 'TSO Market — The Settlers Online Market & Combat Simulator';
     } else if (to.meta?.titleKey) {
         const pageTitle = t(to.meta.titleKey);
         document.title = pageTitle ? `${pageTitle} · TSO Manager` : 'TSO Manager';
