@@ -79,7 +79,7 @@ final readonly class ActionRetryPolicy
                     $this->authService->resetSession($account);
                     $this->amfService->invalidateSession($accountId);
                     $this->amfService->resetClient($accountId);
-                    $this->authService->ensureAuthenticated($account);
+                    $this->authService->ensureAuthenticated($account, force: true);
                     $account->refresh();
                     sleep(2);
 

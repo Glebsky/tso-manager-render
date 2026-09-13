@@ -177,7 +177,7 @@ class TsoAmfService
                 $this->authService->resetSession($account);
                 $this->invalidateSession($account->id);
                 $this->resetClient($account->id);
-                $this->authService->ensureAuthenticated($account);
+                $this->authService->ensureAuthenticated($account, force: true);
                 $account->refresh();
 
                 $call = $this->buildServerCall($account, $commandType, $actionData, $targetZoneId);
