@@ -15,6 +15,7 @@ return [
         'pickups_unavailable' => 'Ответ зоны не содержит список коллекций. Обновите storage/app/parse_zone.py, чтобы он возвращал ключ pickups.',
         'insufficient_buffs' => 'Недостаточно баффов в звездном меню (доступно: :available, требуется: :required).',
         'buff_not_found' => 'Указанный бафф не найден в инвентаре звездного меню.',
+        'buff_unavailable' => 'Бафф :buff отсутствует или закончился в звездном меню.',
         'invalid_friend_id' => 'Неверный ID друга.',
         'friend_not_in_list' => 'Игрок отсутствует в вашем списке друзей.',
         'friend_building_not_found_grid' => 'Здание с сеткой #:grid не найдено в зоне друга.',
@@ -26,9 +27,11 @@ return [
     ],
     'step' => [
         'skipped' => 'Шаг :step [:type]: пропущен (уже выполнен)',
+        'skipped_buff' => 'Шаг :step [:type]: пропущен (бафф :buff отсутствует)',
         'ok' => 'Шаг :step [:type]: OK (:bytes байт)',
         'error' => 'Шаг :step [:type]: ОШИБКА - :error',
         'ok_short' => 'Шаг :step: OK',
+        'skipped_buff_short' => 'Шаг :step: ПРОПУЩЕН',
         'error_short' => 'Шаг :step: ОШИБКА - :error',
     ],
     'pickups' => [

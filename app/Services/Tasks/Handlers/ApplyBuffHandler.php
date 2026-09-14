@@ -4,20 +4,25 @@ declare(strict_types=1);
 
 namespace App\Services\Tasks\Handlers;
 
+use App\Exceptions\BuffUnavailableException;
 use App\Exceptions\FriendBuildingNotFoundException;
 use App\Exceptions\FriendNotFoundException;
 use App\Exceptions\FriendZoneLoadException;
 use App\Models\Account;
 use App\Services\GameErrorResolver;
 use App\Services\Tasks\Contracts\TaskActionHandlerInterface;
+use App\Services\Tasks\Execution\BuffAvailabilityManager;
 use App\Services\TsoAmfService;
 use App\Services\ZoneParserService;
+use Illuminate\Contracts\Cache\Repository as CacheRepository;
 
 final readonly class ApplyBuffHandler implements TaskActionHandlerInterface
 {
     public function __construct(
         private TsoAmfService $amfService,
         private ZoneParserService $zoneParser,
+        private BuffAvailabilityManager $buffAvailabilityManager,
+        private CacheRepository $cache,
     ) {}
 
     public function supports(string $actionType): bool
@@ -26,19 +31,19 @@ final readonly class ApplyBuffHandler implements TaskActionHandlerInterface
     }
 
     /**
+     * @throws BuffUnavailableException
      * @throws FriendBuildingNotFoundException
      * @throws FriendNotFoundException
      * @throws FriendZoneLoadException
      * @throws \Exception
-     * @throws \Exception
-     * @throws \Exception
-     * @throws \Exception
      */
     public function handle(Account $account, array $payload): string
     {
+        $acquiredBuff = $this->buffAvailabilityManager->checkAndAcquire($account, $payload);
+        $uniqueId1 = $acquiredBuff->uniqueId1;
+        $uniqueId2 = $acquiredBuff->uniqueId2;
+
         $grid = (int) ($payload['grid'] ?? 0);
-        $uniqueId1 = (int) ($payload['unique_id1'] ?? 0);
-        $uniqueId2 = (int) ($payload['unique_id2'] ?? 0);
         $amount = (int) ($payload['amount'] ?? 1);
         $targetScope = (string) ($payload['target_scope'] ?? 'self');
         $targetPlayerId = $payload['target_player_id'] ?? null;
@@ -64,13 +69,21 @@ final readonly class ApplyBuffHandler implements TaskActionHandlerInterface
                 throw new FriendNotFoundException;
             }
 
-            $friendZoneAmf = $this->amfService->getZone($account, $targetPlayerIdInt);
-            $friendZoneData = $this->zoneParser->parse($friendZoneAmf);
-            $err = (int) ($friendZoneData['errorCode'] ?? 0);
+            $friendZoneCacheKey = "friend-zone:exec:{$account->id}:{$targetPlayerIdInt}";
+            /** @var array<string, mixed>|null $friendZoneData */
+            $friendZoneData = $this->cache->get($friendZoneCacheKey);
 
-            if ($err !== 0) {
-                $errMsg = GameErrorResolver::getMessage($err);
-                throw new FriendZoneLoadException($err, $errMsg);
+            if (! is_array($friendZoneData)) {
+                $friendZoneAmf = $this->amfService->getZone($account, $targetPlayerIdInt);
+                $friendZoneData = $this->zoneParser->parse($friendZoneAmf);
+                $err = (int) ($friendZoneData['errorCode'] ?? 0);
+
+                if ($err !== 0) {
+                    $errMsg = GameErrorResolver::getMessage($err);
+                    throw new FriendZoneLoadException($err, $errMsg);
+                }
+
+                $this->cache->put($friendZoneCacheKey, $friendZoneData, 180);
             }
 
             $buildings = $friendZoneData['buildings'] ?? [];

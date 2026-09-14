@@ -15,6 +15,7 @@ return [
         'pickups_unavailable' => 'Відповідь зони не містить списку колекцій. Оновіть storage/app/parse_zone.py, щоб він повертав ключ pickups.',
         'insufficient_buffs' => 'Недостатньо бафів у зоряному меню (доступно: :available, потрібно: :required).',
         'buff_not_found' => 'Вказаний баф не знайдено в інвентарі зоряного меню.',
+        'buff_unavailable' => 'Баф :buff відсутній або закінчився у зоряному меню.',
         'invalid_friend_id' => 'Некоректний ID друга.',
         'friend_not_in_list' => 'Гравець відсутній у вашому списку друзів.',
         'friend_building_not_found_grid' => 'Будівлю з сіткою #:grid не знайдено в зоні друга.',
@@ -26,9 +27,11 @@ return [
     ],
     'step' => [
         'skipped' => 'Крок :step [:type]: пропущено (вже виконано)',
+        'skipped_buff' => 'Крок :step [:type]: пропущено (баф :buff відсутній)',
         'ok' => 'Крок :step [:type]: OK (:bytes байт)',
         'error' => 'Крок :step [:type]: ПОМИЛКА - :error',
         'ok_short' => 'Крок :step: OK',
+        'skipped_buff_short' => 'Крок :step: ПРОПУЩЕНО',
         'error_short' => 'Крок :step: ПОМИЛКА - :error',
     ],
     'pickups' => [

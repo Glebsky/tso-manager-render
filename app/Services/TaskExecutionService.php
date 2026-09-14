@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\TaskResultPrefix;
 use App\Enums\TaskType;
+use App\Exceptions\BuffUnavailableException;
 use App\Exceptions\TaskAccountNotFoundException;
 use App\Exceptions\TaskExecutionException;
 use App\Exceptions\TaskInactiveException;
@@ -76,14 +78,26 @@ readonly class TaskExecutionService
     private function executeSingleTask(ScheduledTask $task, Account $account, array $payload): string
     {
         $taskTypeStr = $task->task_type->value;
-        $result = $this->singleActionExecutor->executeWithRetry($account, $taskTypeStr, $payload);
+        $payload['task_id'] = $task->id;
+        $payload['execution_token'] = $task->execution_token;
 
-        $payload['step_results'] = [['status' => 'completed', 'error' => null]];
-        $resultSummary = TaskResultSummary::formatSingle($result);
+        try {
+            $result = $this->singleActionExecutor->executeWithRetry($account, $taskTypeStr, $payload);
 
-        $this->stateWriter->markCompleted($task, $account->id, $resultSummary, $payload);
+            $payload['step_results'] = [['status' => 'completed', 'error' => null]];
+            $resultSummary = TaskResultSummary::formatSingle($result);
 
-        return $result;
+            $this->stateWriter->markCompleted($task, $account->id, $resultSummary, $payload);
+
+            return $result;
+        } catch (BuffUnavailableException $e) {
+            $payload['step_results'] = [['status' => 'skipped', 'error' => null, 'reason' => $e->getMessage()]];
+            $resultSummary = TaskResultPrefix::Skipped->format($e->getMessage());
+
+            $this->stateWriter->markCompleted($task, $account->id, $resultSummary, $payload);
+
+            return $resultSummary;
+        }
     }
 
     /**

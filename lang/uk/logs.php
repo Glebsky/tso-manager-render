@@ -29,6 +29,7 @@ return [
         'failed' => 'Завдання «:type» не виконано: :error',
         'step_completed' => 'Завдання #:id: крок :step (:type) виконано успішно.',
         'step_failed' => 'Завдання #:id: крок :step (:type) не виконано: :error',
+        'step_skipped_buff' => 'Завдання #:id: крок :step (:type) пропущено (баф :buff відсутній у зоряному меню).',
         'job_failed' => 'Завдання #:id «:type» не виконано після всіх повторних спроб: :error',
     ],
     'market' => [

@@ -271,6 +271,7 @@
                  class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 text-xs p-2.5 rounded-lg border transition-all"
                  :class="getActionStepStatus(task, aIdx) === 'running' ? 'bg-amber-500/10 border-amber-500/30 text-amber-200' :
                          getActionStepStatus(task, aIdx) === 'completed' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300' :
+                         getActionStepStatus(task, aIdx) === 'skipped' ? 'bg-amber-500/5 border-amber-500/20 text-amber-300/80' :
                          getActionStepStatus(task, aIdx) === 'failed' ? 'bg-red-500/10 border-red-500/30 text-red-300' : 'bg-white/5 border-white/5 text-white/70'">
                 <div class="flex items-center gap-2.5 min-w-0 flex-1 flex-wrap">
                     <span class="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-mono font-bold text-white/80 flex-shrink-0">
@@ -409,6 +410,9 @@
                 <div class="flex items-center gap-2 flex-shrink-0 font-mono text-[10px] self-end sm:self-center">
                     <span v-if="act.delay_seconds > 0" class="text-white/40">⏱ {{ act.delay_seconds }}s {{ t('tasks.delay_short') }}</span>
                     <span v-if="getActionStepStatus(task, aIdx) === 'completed'" class="text-emerald-400 font-bold">✓ OK</span>
+                    <span v-else-if="getActionStepStatus(task, aIdx) === 'skipped'" class="text-amber-400/90 font-bold" :title="getActionStepError(task, aIdx)">
+                        ⏭ SKIPPED
+                    </span>
                     <span v-else-if="getActionStepStatus(task, aIdx) === 'failed'" class="text-red-400 font-bold" :title="getActionStepError(task, aIdx)">
                         ✕ ERROR
                     </span>

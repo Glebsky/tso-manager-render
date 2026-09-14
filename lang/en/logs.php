@@ -30,6 +30,7 @@ return [
         'failed' => 'Task ":type" failed: :error',
         'step_completed' => 'Task #:id: step :step (:type) completed successfully.',
         'step_failed' => 'Task #:id: step :step (:type) failed: :error',
+        'step_skipped_buff' => 'Task #:id: step :step (:type) skipped (buff :buff is not available in star menu).',
         'job_failed' => 'Task #:id ":type" failed after all retry attempts: :error',
     ],
     'market' => [

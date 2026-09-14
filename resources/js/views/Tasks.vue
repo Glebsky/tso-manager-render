@@ -2918,8 +2918,12 @@ import TaskList from '../components/tasks/TaskList.vue';
 
             let rawMsg = '';
             const stepResults = task.payload?.step_results;
-            if (Array.isArray(stepResults) && stepResults[aIdx] && stepResults[aIdx].status === 'failed') {
-                rawMsg = stepResults[aIdx].error || '';
+            if (Array.isArray(stepResults) && stepResults[aIdx]) {
+                if (stepResults[aIdx].status === 'failed') {
+                    rawMsg = stepResults[aIdx].error || '';
+                } else if (stepResults[aIdx].status === 'skipped') {
+                    rawMsg = stepResults[aIdx].reason || '';
+                }
             } else if (getActionStepStatus(task, aIdx) === 'failed') {
                 rawMsg = task.last_result || '';
             } else {

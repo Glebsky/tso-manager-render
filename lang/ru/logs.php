@@ -29,6 +29,7 @@ return [
         'failed' => 'Задача «:type» не выполнена: :error',
         'step_completed' => 'Задача #:id: шаг :step (:type) выполнен успешно.',
         'step_failed' => 'Задача #:id: шаг :step (:type) не выполнен: :error',
+        'step_skipped_buff' => 'Задача #:id: шаг :step (:type) пропущен (бафф :buff отсутствует в звездном меню).',
         'job_failed' => 'Задача #:id «:type» не выполнена после всех повторных попыток: :error',
     ],
     'market' => [

@@ -15,6 +15,7 @@ return [
         'pickups_unavailable' => 'Zone response contains no collectibles list. Patch storage/app/parse_zone.py so it returns the pickups key.',
         'insufficient_buffs' => 'Insufficient buffs in star menu (available: :available, required: :required).',
         'buff_not_found' => 'Specified buff not found in star menu inventory.',
+        'buff_unavailable' => 'Buff :buff is not available or exhausted in star menu.',
         'invalid_friend_id' => 'Invalid friend ID.',
         'friend_not_in_list' => 'Player is not in your friends list.',
         'friend_building_not_found_grid' => 'Building with Grid #:grid not found in friend zone.',
@@ -26,9 +27,11 @@ return [
     ],
     'step' => [
         'skipped' => 'Step :step [:type]: SKIPPED (already executed)',
+        'skipped_buff' => 'Step :step [:type]: SKIPPED (buff :buff missing)',
         'ok' => 'Step :step [:type]: OK (:bytes bytes)',
         'error' => 'Step :step [:type]: ERROR - :error',
         'ok_short' => 'Step :step: OK',
+        'skipped_buff_short' => 'Step :step: SKIPPED',
         'error_short' => 'Step :step: ERROR - :error',
     ],
     'pickups' => [
