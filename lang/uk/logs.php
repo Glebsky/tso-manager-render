@@ -30,6 +30,11 @@ return [
         'step_completed' => 'Завдання #:id: крок :step (:type) виконано успішно.',
         'step_failed' => 'Завдання #:id: крок :step (:type) не виконано: :error',
         'step_skipped_buff' => 'Завдання #:id: крок :step (:type) пропущено (баф :buff відсутній у зоряному меню).',
+        'step_skipped_reason' => 'Завдання #:id: крок :step (:type) пропущено (:reason).',
+        'stopped_by_user' => 'Завдання #:id зупинено користувачем на кроці :step з :total.',
+        'single_action_completed' => 'Завдання #:id: окрема дія :step (:type) виконана успішно.',
+        'single_action_skipped' => 'Завдання #:id: окрема дія :step (:type) пропущена (:reason).',
+        'single_action_failed' => 'Завдання #:id: окрема дія :step (:type) не виконана: :error',
         'job_failed' => 'Завдання #:id «:type» не виконано після всіх повторних спроб: :error',
     ],
     'market' => [

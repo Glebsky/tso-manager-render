@@ -12,6 +12,7 @@ enum TaskStatus: string
     case Completed = 'completed';
     case Failed = 'failed';
     case Paused = 'paused';
+    case Cancelled = 'cancelled';
 
     public function isBusy(): bool
     {

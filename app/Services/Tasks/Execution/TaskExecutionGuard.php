@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services\Tasks\Execution;
 
+use App\Enums\TaskStatus;
 use App\Exceptions\TaskAccountNotFoundException;
+use App\Exceptions\TaskCancelledException;
 use App\Exceptions\TaskInactiveException;
 use App\Exceptions\TokenMismatchException;
 use App\Models\Account;
@@ -14,6 +16,7 @@ use Illuminate\Support\Facades\Log;
 final class TaskExecutionGuard
 {
     /**
+     * @throws TaskCancelledException
      * @throws TaskInactiveException
      * @throws TaskAccountNotFoundException
      * @throws TokenMismatchException
@@ -21,6 +24,10 @@ final class TaskExecutionGuard
     public function ensureCanExecute(ScheduledTask $task, ?string $expectedToken = null, bool $force = false): Account
     {
         $task->refresh();
+
+        if ($task->status === TaskStatus::Cancelled) {
+            throw new TaskCancelledException($task->id);
+        }
 
         if (! $task->is_active && ! $force) {
             $this->logInactive($task, $expectedToken);
@@ -32,8 +39,8 @@ final class TaskExecutionGuard
             Log::info("[Task] Task #{$task->id} is paused; executing anyway because force=true (manual run)");
         }
 
-        if ($expectedToken !== null && $task->execution_token !== null && $task->execution_token !== $expectedToken) {
-            throw new TokenMismatchException($task->id, $expectedToken, $task->execution_token);
+        if ($expectedToken !== null && $task->execution_token !== $expectedToken) {
+            throw new TokenMismatchException($task->id, $expectedToken, $task->execution_token ?? 'null');
         }
 
         $account = $task->account;

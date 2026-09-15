@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services\Tasks;
 
+use App\Enums\LogLevel;
+use App\Enums\TaskResultPrefix;
 use App\Enums\TaskStatus;
 use App\Jobs\ExecuteScheduledTaskJob;
 use App\Models\Account;
 use App\Models\ScheduledTask;
+use App\Services\TaskExecutionService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -25,7 +28,10 @@ use Illuminate\Support\Str;
  */
 final class ScheduledTaskService
 {
-    public function __construct(private readonly TaskActivityLogger $logger) {}
+    public function __construct(
+        private readonly TaskActivityLogger $logger,
+        private readonly TaskExecutionService $executionService,
+    ) {}
 
     /**
      * @return Collection<int, ScheduledTask>
@@ -277,6 +283,56 @@ final class ScheduledTaskService
         }]);
 
         return $task;
+    }
+
+    /**
+     * Stop/cancel a running or queued task immediately.
+     */
+    public function stop(ScheduledTask $task): ScheduledTask
+    {
+        $totalSteps = count($task->payload['actions'] ?? []);
+        $completedSteps = $task->completed_steps ?? 0;
+
+        $stopMessage = __('tasks.stopped_by_user', [
+            'step' => $completedSteps,
+            'total' => $totalSteps > 0 ? $totalSteps : 1,
+        ]);
+
+        $task->update([
+            'status' => TaskStatus::Cancelled,
+            'execution_token' => null,
+            'last_result' => TaskResultPrefix::Skipped->format($stopMessage),
+        ]);
+
+        $this->logger->logTaskEvent(
+            $task->account_id,
+            $task->id,
+            LogLevel::Warning,
+            __('logs.task.stopped_by_user', [
+                'id' => $task->id,
+                'step' => $completedSteps,
+                'total' => $totalSteps > 0 ? $totalSteps : 1,
+            ])
+        );
+
+        Log::info(sprintf(
+            '[Task] Task #%d cancelled by user (completed_steps: %d, total: %d)',
+            $task->id,
+            $completedSteps,
+            $totalSteps
+        ));
+
+        return $this->withAccount($task);
+    }
+
+    /**
+     * Run a single action of a sequence task manually.
+     *
+     * @return array{status: string, error: ?string, reason?: string}
+     */
+    public function executeAction(ScheduledTask $task, int $actionIndex): array
+    {
+        return $this->executionService->executeSingleSequenceAction($task, $actionIndex);
     }
 
     public function duplicate(ScheduledTask $task): ScheduledTask

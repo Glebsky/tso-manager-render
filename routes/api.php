@@ -75,6 +75,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/tasks/{task}/execute', [ScheduledTaskController::class, 'execute'])
         ->whereNumber('task')
         ->middleware('throttle:api-actions');
+    Route::post('/tasks/{task}/stop', [ScheduledTaskController::class, 'stop'])
+        ->whereNumber('task');
+    Route::post('/tasks/{task}/actions/{actionIndex}/execute', [ScheduledTaskController::class, 'executeAction'])
+        ->whereNumber('task')
+        ->whereNumber('actionIndex')
+        ->middleware('throttle:api-actions');
     Route::get('/tasks/{task}/status', [ScheduledTaskController::class, 'status'])->whereNumber('task');
 
     // Logs

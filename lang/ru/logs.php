@@ -30,6 +30,11 @@ return [
         'step_completed' => 'Задача #:id: шаг :step (:type) выполнен успешно.',
         'step_failed' => 'Задача #:id: шаг :step (:type) не выполнен: :error',
         'step_skipped_buff' => 'Задача #:id: шаг :step (:type) пропущен (бафф :buff отсутствует в звездном меню).',
+        'step_skipped_reason' => 'Задача #:id: шаг :step (:type) пропущен (:reason).',
+        'stopped_by_user' => 'Задача #:id остановлена пользователем на шаге :step из :total.',
+        'single_action_completed' => 'Задача #:id: отдельное действие :step (:type) выполнено успешно.',
+        'single_action_skipped' => 'Задача #:id: отдельное действие :step (:type) пропущено (:reason).',
+        'single_action_failed' => 'Задача #:id: отдельное действие :step (:type) не выполнено: :error',
         'job_failed' => 'Задача #:id «:type» не выполнена после всех повторных попыток: :error',
     ],
     'market' => [

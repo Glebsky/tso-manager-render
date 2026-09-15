@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\LogLevel;
 use App\Enums\TaskResultPrefix;
 use App\Enums\TaskType;
-use App\Exceptions\BuffUnavailableException;
+use App\Exceptions\Contracts\SkippableStepExceptionInterface;
+use App\Exceptions\InvalidTaskTypeException;
 use App\Exceptions\TaskAccountNotFoundException;
 use App\Exceptions\TaskExecutionException;
 use App\Exceptions\TaskInactiveException;
@@ -18,6 +20,7 @@ use App\Services\Tasks\Execution\SingleActionExecutor;
 use App\Services\Tasks\Execution\TaskExecutionGuard;
 use App\Services\Tasks\Execution\TaskResultSummary;
 use App\Services\Tasks\Execution\TaskStateWriter;
+use App\Services\Tasks\TaskActivityLogger;
 use Exception;
 use Throwable;
 
@@ -29,6 +32,7 @@ readonly class TaskExecutionService
         private TaskStateWriter $stateWriter,
         private SingleActionExecutor $singleActionExecutor,
         private SequenceStepExecutor $sequenceStepExecutor,
+        private TaskActivityLogger $activityLogger,
     ) {}
 
     /**
@@ -90,7 +94,7 @@ readonly class TaskExecutionService
             $this->stateWriter->markCompleted($task, $account->id, $resultSummary, $payload);
 
             return $result;
-        } catch (BuffUnavailableException $e) {
+        } catch (SkippableStepExceptionInterface $e) {
             $payload['step_results'] = [['status' => 'skipped', 'error' => null, 'reason' => $e->getMessage()]];
             $resultSummary = TaskResultPrefix::Skipped->format($e->getMessage());
 
@@ -137,5 +141,101 @@ readonly class TaskExecutionService
     public function executeSingleAction(Account $account, TaskType|string $taskType, array $payload): string
     {
         return $this->singleActionExecutor->executeSingleAction($account, $taskType, $payload);
+    }
+
+    /**
+     * Execute a single action inside a sequence task manually (step play button).
+     *
+     * @return array{status: string, error: ?string, reason?: string}
+     *
+     * @throws TaskExecutionException
+     * @throws InvalidTaskTypeException
+     * @throws TaskAccountNotFoundException
+     * @throws Throwable
+     */
+    public function executeSingleSequenceAction(ScheduledTask $task, int $actionIndex): array
+    {
+        if ($task->task_type !== TaskType::Sequence) {
+            throw new InvalidTaskTypeException("Task #{$task->id} is not a sequence task.", 422, ['id' => $task->id, 'type' => $task->task_type->value]);
+        }
+
+        if ($task->status->isBusy()) {
+            throw new TaskExecutionException('error.task_busy', ['id' => $task->id], 422);
+        }
+
+        $payload = $task->payload ?? [];
+        $actions = $payload['actions'] ?? [];
+        if (! isset($actions[$actionIndex])) {
+            throw new TaskExecutionException('error.action_index_invalid', ['index' => $actionIndex], 422);
+        }
+
+        $account = $task->account;
+        if (! $account) {
+            $task->load('account');
+            $account = $task->account;
+        }
+        if (! $account) {
+            throw new TaskAccountNotFoundException($task->id);
+        }
+
+        $this->authService->ensureAuthenticated($account);
+
+        $action = $actions[$actionIndex];
+        $actionType = (string) $action['task_type'];
+        $actionPayload = (array) ($action['payload'] ?? []);
+        $actionPayload['task_id'] = $task->id;
+
+        $stepResults = $payload['step_results'] ?? [];
+
+        try {
+            $this->singleActionExecutor->executeWithRetry($account, $actionType, $actionPayload);
+            $stepResults[$actionIndex] = [
+                'status' => 'completed',
+                'error' => null,
+            ];
+
+            $this->activityLogger->logTaskEvent(
+                $account->id,
+                $task->id,
+                LogLevel::Success,
+                __('logs.task.single_action_completed', ['id' => $task->id, 'step' => $actionIndex + 1, 'type' => $actionType])
+            );
+        } catch (SkippableStepExceptionInterface $e) {
+            $stepResults[$actionIndex] = [
+                'status' => 'skipped',
+                'error' => null,
+                'reason' => $e->getMessage(),
+            ];
+
+            $this->activityLogger->logTaskEvent(
+                $account->id,
+                $task->id,
+                LogLevel::Warning,
+                __('logs.task.single_action_skipped', ['id' => $task->id, 'step' => $actionIndex + 1, 'type' => $actionType, 'reason' => $e->getMessage()])
+            );
+        } catch (Throwable $e) {
+            $readableError = $e->getMessage();
+            $errorPayload = $e instanceof TaskExecutionException
+                ? (string) json_encode($e->toPayload(), JSON_THROW_ON_ERROR)
+                : $readableError;
+
+            $stepResults[$actionIndex] = [
+                'status' => 'failed',
+                'error' => $errorPayload,
+            ];
+
+            $this->activityLogger->logTaskEvent(
+                $account->id,
+                $task->id,
+                LogLevel::Error,
+                __('logs.task.single_action_failed', ['id' => $task->id, 'step' => $actionIndex + 1, 'type' => $actionType, 'error' => $readableError])
+            );
+        }
+
+        $payload['step_results'] = $stepResults;
+        $task->update(['payload' => $payload]);
+
+        /** @var array{status: string, error: ?string, reason?: string} */
+        return $stepResults[$actionIndex];
     }
 }
