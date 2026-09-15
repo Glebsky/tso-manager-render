@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
-class FriendBuildingNotFoundException extends TaskExecutionException
+use App\Exceptions\Contracts\SkippableStepExceptionInterface;
+
+class FriendBuildingNotFoundException extends TaskExecutionException implements SkippableStepExceptionInterface
 {
     public function __construct(int $grid, string $friendName)
     {
@@ -12,5 +14,10 @@ class FriendBuildingNotFoundException extends TaskExecutionException
             'grid' => $grid,
             'friendName' => $friendName,
         ], 404);
+    }
+
+    public function getSkipReason(): string
+    {
+        return $this->getMessage();
     }
 }

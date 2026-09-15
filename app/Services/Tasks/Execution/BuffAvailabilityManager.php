@@ -95,6 +95,41 @@ class BuffAvailabilityManager
     }
 
     /**
+     * Refund a previously acquired buff back to the session state (e.g. when building validation fails).
+     *
+     * @param  array<string, mixed>  $payload
+     */
+    public function release(Account $account, array $payload, BuffAcquisitionResult $buff): void
+    {
+        $sessionKey = $this->sessionKey($account, $payload);
+        $state = $this->loadSessionState($account, $sessionKey);
+        $amount = max(1, (int) ($payload['amount'] ?? 1));
+
+        $restored = false;
+        foreach ($state['buffs'] as $idx => $item) {
+            $u1 = (int) ($item['uniqueId1'] ?? $item['uniqueID1'] ?? $item['uniqueID']['uniqueID1'] ?? $item['uniqueID']['uniqueId1'] ?? $item['uniqueId']['uniqueId1'] ?? 0);
+            $u2 = (int) ($item['uniqueId2'] ?? $item['uniqueID2'] ?? $item['uniqueID']['uniqueID2'] ?? $item['uniqueID']['uniqueId2'] ?? $item['uniqueId']['uniqueId2'] ?? 0);
+
+            if ($u1 === $buff->uniqueId1 && $u2 === $buff->uniqueId2) {
+                $state['buffs'][$idx]['amount'] = ((int) ($item['amount'] ?? 0)) + $amount;
+                $restored = true;
+                break;
+            }
+        }
+
+        if (! $restored) {
+            $state['buffs'][] = [
+                'uniqueId1' => $buff->uniqueId1,
+                'uniqueId2' => $buff->uniqueId2,
+                'amount' => $amount,
+                'buffName_string' => $buff->buffName,
+            ];
+        }
+
+        $this->saveSessionState($sessionKey, $state);
+    }
+
+    /**
      * Clear cached session state (e.g. for testing or when task finishes).
      */
     public function clearSession(Account $account, ?int $taskId = null, ?string $executionToken = null): void
