@@ -766,6 +766,8 @@
                                   :typeLabels="typeLabels"
                                   :isExpanded="expandedTasks[task.id]"
                                   :isExecuting="executingTasks[task.id]"
+                                  :isStopping="stoppingTasks[task.id]"
+                                  :executingActions="executingActions"
                                   :getTaskActionsList="getTaskActionsList"
                                   :getSubTaskLabel="getSubTaskLabel"
                                   :getTaskNextRunText="getTaskNextRunText"
@@ -784,6 +786,8 @@
                                   @toggle-expand="toggleTaskExpanded"
                                   @toggle-active="toggleTask"
                                   @execute="runTaskNow"
+                                  @stop="stopTaskNow"
+                                  @execute-action="runSingleActionNow"
                                   @edit="editTask"
                                   @duplicate="handleDuplicateTask"
                                   @delete="deleteTask"
@@ -921,6 +925,8 @@ import TaskList from '../components/tasks/TaskList.vue';
         const loadingPlanner = ref(true);
         const scheduling = ref(false);
         const executingTasks = ref({});
+        const stoppingTasks = ref({});
+        const executingActions = ref({});
 
         const taskSearchQuery = ref('');
         const taskAccountFilter = ref('');
@@ -1514,6 +1520,13 @@ import TaskList from '../components/tasks/TaskList.vue';
                 const distinctAccountIds = [...new Set(tasks.value.map(t => Number(t.account_id)).filter(Boolean))];
                 distinctAccountIds.forEach(id => {
                     fetchAccountZone(id);
+                });
+
+                // Auto-resume live polling for running or queued tasks upon page load or refresh
+                tasks.value.forEach(t => {
+                    if ((t.status === 'running' || t.status === 'queued') && !activePollTimers[t.id]) {
+                        pollTaskExecution(t.id);
+                    }
                 });
             } catch (e) {
                 showToast(t('tasks.toast.load_failed'), 'error');
@@ -2786,12 +2799,80 @@ import TaskList from '../components/tasks/TaskList.vue';
                 }
 
                 if (executingTasks.value[taskId]) {
-                    activePollTimers[taskId] = setTimeout(doPoll, 5000);
+                    activePollTimers[taskId] = setTimeout(doPoll, 15000);
                 }
             };
 
             executingTasks.value[taskId] = true;
-            activePollTimers[taskId] = setTimeout(doPoll, 5000);
+            activePollTimers[taskId] = setTimeout(doPoll, 15000);
+        };
+
+        const stopTaskNow = async (target) => {
+            const taskId = typeof target === 'object' && target !== null ? target.id : target;
+            if (!taskId || taskId === 'undefined') return;
+
+            if (stoppingTasks.value[taskId]) return;
+            stoppingTasks.value[taskId] = true;
+
+            try {
+                const res = await axios.post(`/api/tasks/${taskId}/stop`);
+                stopPollingTask(taskId);
+
+                const updatedTask = res.data?.task;
+                const idx = tasks.value.findIndex(t => t.id === taskId);
+                if (idx !== -1 && updatedTask) {
+                    const oldAccount = tasks.value[idx].account;
+                    tasks.value[idx] = {
+                        ...tasks.value[idx],
+                        ...updatedTask,
+                        account: updatedTask.account || oldAccount,
+                    };
+                }
+
+                showToast(t('tasks.toast.stopped_success'));
+            } catch (e) {
+                showToast(e.response?.data?.message || t('tasks.toast.stop_failed'), 'error');
+            } finally {
+                stoppingTasks.value[taskId] = false;
+            }
+        };
+
+        const runSingleActionNow = async ({ task, actionIndex }) => {
+            const taskId = task.id;
+            const actionKey = `${taskId}_${actionIndex}`;
+            if (!taskId || actionIndex === undefined || actionIndex === null) return;
+
+            if (executingActions.value[actionKey]) return;
+            executingActions.value[actionKey] = true;
+
+            try {
+                const res = await axios.post(`/api/tasks/${taskId}/actions/${actionIndex}/execute`);
+                const updatedTask = res.data?.task;
+                const idx = tasks.value.findIndex(t => t.id === taskId);
+                if (idx !== -1 && updatedTask) {
+                    const oldAccount = tasks.value[idx].account;
+                    tasks.value[idx] = {
+                        ...tasks.value[idx],
+                        ...updatedTask,
+                        account: updatedTask.account || oldAccount,
+                    };
+                }
+
+                const stepResult = res.data?.step_result;
+                if (stepResult?.status === 'completed') {
+                    showToast(t('tasks.toast.action_completed'));
+                } else if (stepResult?.status === 'skipped') {
+                    showToast(t('tasks.toast.action_skipped') + (stepResult.reason ? ': ' + stepResult.reason : ''), 'warning');
+                } else if (stepResult?.status === 'failed') {
+                    showToast(t('tasks.toast.action_failed') + (stepResult.error ? ': ' + stepResult.error : ''), 'error');
+                } else {
+                    showToast(t('tasks.toast.action_completed'));
+                }
+            } catch (e) {
+                showToast(e.response?.data?.message || t('tasks.toast.action_failed'), 'error');
+            } finally {
+                executingActions.value[actionKey] = false;
+            }
         };
 
         const runTaskNow = async (target) => {
@@ -2966,6 +3047,13 @@ import TaskList from '../components/tasks/TaskList.vue';
         const getTaskLastResultBadge = (task) => {
             if (!task || !task.last_result) return null;
             const res = task.last_result;
+
+            if (task.status === 'cancelled' || res.includes('Остановлено') || res.includes('Stopped by user') || res.includes('Зупинено')) {
+                return {
+                    label: t('tasks.status.cancelled'),
+                    class: 'badge-neutral'
+                };
+            }
 
             if (res.startsWith('WARNING:') || res.includes('timed out') || res.includes('stuck in')) {
                 return {

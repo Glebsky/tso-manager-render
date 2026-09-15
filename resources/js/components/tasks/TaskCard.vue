@@ -224,14 +224,19 @@
                         {{ task.is_active ? '⏸ ' + t('tasks.status.pause_short') : '▶ ' + t('tasks.status.resume_short') }}
                     </button>
 
-                    <button type="button" @click="$emit('execute', task)" :disabled="isRunning"
-                            class="btn-primary btn-sm text-xs py-1.5 px-2.5 sm:px-3 flex items-center justify-center gap-1.5 flex-1 sm:flex-initial whitespace-nowrap"
-                            :class="{ 'opacity-85 !from-sky-600 !to-blue-600 !shadow-sky-500/25': isRunning }">
-                        <svg v-if="isRunning" class="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
+                    <button v-if="isRunning" type="button" @click="$emit('stop', task)" :disabled="isStopping"
+                            class="btn-secondary btn-sm text-xs py-1.5 px-2.5 sm:px-3 flex items-center justify-center gap-1.5 flex-1 sm:flex-initial whitespace-nowrap border-red-500/40 text-red-300 hover:bg-red-500/20 bg-red-500/10 transition-colors">
+                        <svg v-if="isStopping" class="animate-spin h-3.5 w-3.5 text-red-400" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        <span class="truncate">{{ isRunning ? t('tasks.status.running') : '🚀 ' + t('tasks.run_now') }}</span>
+                        <span v-else>⏹</span>
+                        <span class="truncate">{{ t('tasks.stop_task') }}</span>
+                    </button>
+
+                    <button v-else type="button" @click="$emit('execute', task)"
+                            class="btn-primary btn-sm text-xs py-1.5 px-2.5 sm:px-3 flex items-center justify-center gap-1.5 flex-1 sm:flex-initial whitespace-nowrap">
+                        <span class="truncate">🚀 {{ t('tasks.run_now') }}</span>
                     </button>
 
                     <div class="flex items-center gap-1.5 shrink-0">
@@ -420,6 +425,20 @@
                         ⏳ RUNNING
                     </span>
                     <span v-else class="text-white/30">PENDING</span>
+
+                    <button type="button"
+                            @click.stop="$emit('execute-action', { task, actionIndex: aIdx })"
+                            :disabled="isRunning || isActionExecuting(task.id, aIdx)"
+                            class="p-1 rounded bg-white/5 hover:bg-emerald-500/20 text-white/50 hover:text-emerald-300 transition-colors border border-white/10 hover:border-emerald-500/30 disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center ml-1"
+                            :title="t('tasks.run_single_action')">
+                        <svg v-if="isActionExecuting(task.id, aIdx)" class="animate-spin h-3 w-3 text-emerald-400" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <svg v-else class="w-3 h-3 fill-current text-white/60 hover:text-emerald-300" viewBox="0 0 20 20">
+                            <path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                        </svg>
+                    </button>
                 </div>
             </div>
         </div>
@@ -436,6 +455,8 @@ const props = defineProps({
     typeLabels: { type: Object, required: true },
     isExpanded: { type: Boolean, default: false },
     isExecuting: { type: Boolean, default: false },
+    isStopping: { type: Boolean, default: false },
+    executingActions: { type: Object, default: () => ({}) },
     getTaskActionsList: { type: Function, required: true },
     getSubTaskLabel: { type: Function, required: true },
     getTaskNextRunText: { type: Function, required: true },
@@ -460,6 +481,8 @@ const emit = defineEmits([
     'toggle-expand',
     'toggle-active',
     'execute',
+    'stop',
+    'execute-action',
     'edit',
     'delete',
     'duplicate',
@@ -469,6 +492,10 @@ const emit = defineEmits([
     'dragleave',
     'dragend'
 ]);
+
+const isActionExecuting = (taskId, aIdx) => {
+    return Boolean(props.executingActions[`${taskId}_${aIdx}`]);
+};
 
 const isRunning = computed(() => {
     return Boolean(props.isExecuting || props.task.status === 'running' || props.task.status === 'queued');
