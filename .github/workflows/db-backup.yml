@@ -26,6 +26,16 @@ jobs:
           sudo apt-get update -y
           sudo apt-get install -y postgresql-client
 
+      - name: "Normalize Endpoint URL"
+        run: |
+          # Автоматически добавляем https://, если пользователь указал хост без протокола
+          RAW_ENDPOINT="${{ secrets.B2_ENDPOINT_URL }}"
+          CLEAN_ENDPOINT=$(echo "$RAW_ENDPOINT" | xargs | sed 's:/*$::')
+          if [[ ! "$CLEAN_ENDPOINT" =~ ^https?:// ]]; then
+            CLEAN_ENDPOINT="https://$CLEAN_ENDPOINT"
+          fi
+          echo "B2_ENDPOINT=$CLEAN_ENDPOINT" >> "$GITHUB_ENV"
+
       - name: "Create Compressed Dump"
         env:
           PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
@@ -59,9 +69,9 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.B2_APPLICATION_KEY }}
           AWS_DEFAULT_REGION: "auto"
         run: |
-          echo "Uploading $BACKUP_NAME to Backblaze B2..."
+          echo "Uploading $BACKUP_NAME to Backblaze B2 ($B2_ENDPOINT)..."
           aws s3 cp "$BACKUP_NAME" "s3://${{ secrets.B2_BUCKET_NAME }}/database-backups/$BACKUP_NAME" \
-            --endpoint-url "${{ secrets.B2_ENDPOINT_URL }}"
+            --endpoint-url "$B2_ENDPOINT"
 
           echo "Backup uploaded successfully."
 
@@ -75,7 +85,7 @@ jobs:
 
           # Извлекаем имена файлов и сортируем по алфавиту (благодаря ISO датам старые идут первыми)
           BACKUPS=$(aws s3 ls "s3://${{ secrets.B2_BUCKET_NAME }}/database-backups/" \
-            --endpoint-url "${{ secrets.B2_ENDPOINT_URL }}" \
+            --endpoint-url "$B2_ENDPOINT" \
             | grep '\.sql\.gz$' \
             | sort \
             | awk '{print $4}')
@@ -91,7 +101,7 @@ jobs:
               if [ -n "$FILE_TO_DELETE" ]; then
                 echo "Deleting old backup: $FILE_TO_DELETE"
                 aws s3 rm "s3://${{ secrets.B2_BUCKET_NAME }}/database-backups/$FILE_TO_DELETE" \
-                  --endpoint-url "${{ secrets.B2_ENDPOINT_URL }}"
+                  --endpoint-url "$B2_ENDPOINT"
               fi
             done
             echo "Pruning completed."
