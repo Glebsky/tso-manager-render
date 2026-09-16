@@ -95,7 +95,7 @@ services:
       # config/market.php - мультисерверная аналитика рынка.
       # bulk-стратегия дешевле по запросам к БД, что на Free важнее всего.
       - key: MARKET_CACHE_STRATEGY
-        value: bulk
+        value: individual
       - key: MARKET_OFFER_LIFETIME_HOURS
         value: "6"
 
