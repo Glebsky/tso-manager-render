@@ -2,7 +2,7 @@ const IMAGE_FOLDERS = Object.freeze({
     buff: ['buffs', 'other'],
     adventure: ['adventures', 'other'],
     building: ['buildings', 'other'],
-    resource: ['resources', 'other'],
+    resource: ['resources', 'buffs', 'other'],
     unit: ['units', 'other'],
     other: ['other'],
 });
