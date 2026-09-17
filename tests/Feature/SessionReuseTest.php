@@ -88,6 +88,29 @@ final class SessionReuseTest extends TestCase
         $this->assertNull(Cache::get("account_login_cooldown:{$account->id}"));
         $this->assertNull(Cache::get("tso:login_lock:{$account->id}"));
         $this->assertNull(Cache::get("tso:auth_flow:{$account->id}"));
+        $this->assertTrue(Cache::has("tso:session_invalidated:{$account->id}"));
+    }
+
+    public function test_reset_session_causes_verify_session_to_return_false(): void
+    {
+        $account = $this->makeAccount();
+        $authService = $this->app->make(TsoAuthService::class);
+        $authService->resetSession($account);
+
+        // verifySession must return false without attempting HTTP requests because session was invalidated
+        $this->assertFalse($authService->verifySession($account));
+    }
+
+    public function test_ensure_authenticated_with_force_true_bypasses_cache(): void
+    {
+        $account = $this->makeAccount();
+        Cache::put("tso:session_ok:{$account->id}", true, 300);
+
+        $service = Mockery::mock(TsoAuthService::class)->makePartial();
+        $service->shouldReceive('verifySession')->never();
+        $service->shouldReceive('login')->once()->with($account)->andReturn([]);
+
+        $service->ensureAuthenticated($account, force: true);
     }
 
     public function test_login_legacy_does_not_switch_flow_to_oauth_on_error(): void

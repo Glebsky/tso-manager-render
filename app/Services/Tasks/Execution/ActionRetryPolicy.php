@@ -6,9 +6,11 @@ namespace App\Services\Tasks\Execution;
 
 use App\Exceptions\GameServerErrorException;
 use App\Models\Account;
+use App\Services\Tasks\Handlers\ApplyBuffHandler;
 use App\Services\TsoAmfService;
 use App\Services\TsoAuthService;
 use Exception;
+use Illuminate\Contracts\Cache\Repository as CacheRepository;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -17,6 +19,7 @@ final readonly class ActionRetryPolicy
     public function __construct(
         private TsoAuthService $authService,
         private TsoAmfService $amfService,
+        private CacheRepository $cache,
     ) {}
 
     /**
@@ -79,9 +82,19 @@ final readonly class ActionRetryPolicy
                     $this->authService->resetSession($account);
                     $this->amfService->invalidateSession($accountId);
                     $this->amfService->resetClient($accountId);
-                    $this->authService->ensureAuthenticated($account);
+                    $this->authService->ensureAuthenticated($account, force: true);
                     $account->refresh();
                     sleep(2);
+
+                    continue;
+                }
+
+                // 550 (Invalid value provided / visitor session expired):
+                if ($attempt === 1 && $code === 550 && $taskTypeStr === 'apply_buff') {
+                    Log::info("[TaskExecution] Action [{$taskTypeStr}] hit game error 550 (visitor session expired / invalid value) for account #{$accountId} ({$username}); invalidating friend zone cache and retrying in 1s (attempt {$attempt}/{$maxAttempts})");
+
+                    ApplyBuffHandler::invalidateFriendZonesForAccount($this->cache, $accountId);
+                    sleep(1);
 
                     continue;
                 }

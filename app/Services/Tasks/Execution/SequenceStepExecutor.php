@@ -6,6 +6,8 @@ namespace App\Services\Tasks\Execution;
 
 use App\Enums\LogLevel;
 use App\Enums\TaskType;
+use App\Exceptions\BuffUnavailableException;
+use App\Exceptions\Contracts\SkippableStepExceptionInterface;
 use App\Exceptions\InvalidTaskTypeException;
 use App\Exceptions\TaskExecutionException;
 use App\Models\Account;
@@ -37,10 +39,13 @@ final readonly class SequenceStepExecutor
         $stepResults = $payload['step_results'] ?? [];
         $hasStepError = false;
         $hasStepSuccess = false;
+        $hasStepSkipped = false;
 
         foreach ($actions as $index => $action) {
             $actionType = (string) $action['task_type'];
             $actionPayload = (array) ($action['payload'] ?? []);
+            $actionPayload['task_id'] = $task->id;
+            $actionPayload['execution_token'] = $task->execution_token;
             $delay = (int) ($action['delay_seconds'] ?? 0);
 
             if ($index < $completedSteps) {
@@ -72,6 +77,53 @@ final readonly class SequenceStepExecutor
                     LogLevel::Success,
                     __('logs.task.step_completed', ['id' => $task->id, 'step' => $index + 1, 'type' => $actionType])
                 );
+            } catch (SkippableStepExceptionInterface $e) {
+                $hasStepSkipped = true;
+                $stepResults[$index] = [
+                    'status' => 'skipped',
+                    'error' => null,
+                    'reason' => $e->getMessage(),
+                ];
+
+                if ($e instanceof BuffUnavailableException) {
+                    $buffName = (string) ($actionPayload['buff_name'] ?? $actionPayload['buff_raw_name'] ?? 'buff');
+                    $resultsSummary[] = __('tasks.step.skipped_buff', [
+                        'step' => $index + 1,
+                        'type' => $actionType,
+                        'buff' => $buffName,
+                    ]);
+
+                    $this->activityLogger->logTaskEvent(
+                        $account->id,
+                        $task->id,
+                        LogLevel::Warning,
+                        __('logs.task.step_skipped_buff', [
+                            'id' => $task->id,
+                            'step' => $index + 1,
+                            'type' => $actionType,
+                            'buff' => $buffName,
+                        ])
+                    );
+                } else {
+                    $reason = $e->getMessage();
+                    $resultsSummary[] = __('tasks.step.skipped_reason', [
+                        'step' => $index + 1,
+                        'type' => $actionType,
+                        'reason' => $reason,
+                    ]);
+
+                    $this->activityLogger->logTaskEvent(
+                        $account->id,
+                        $task->id,
+                        LogLevel::Warning,
+                        __('logs.task.step_skipped_reason', [
+                            'id' => $task->id,
+                            'step' => $index + 1,
+                            'type' => $actionType,
+                            'reason' => $reason,
+                        ])
+                    );
+                }
             } catch (Throwable $e) {
                 $hasStepError = true;
                 $readableError = $e->getMessage();
@@ -104,7 +156,7 @@ final readonly class SequenceStepExecutor
         }
 
         $result = implode('; ', $resultsSummary);
-        $resultSummary = TaskResultSummary::formatSequence($result, $hasStepError, $hasStepSuccess);
+        $resultSummary = TaskResultSummary::formatSequence($result, $hasStepError, $hasStepSuccess, $hasStepSkipped);
 
         $this->stateWriter->markSequenceFinished($task, $account->id, $resultSummary, $hasStepError, $payload);
 
@@ -146,6 +198,8 @@ final readonly class SequenceStepExecutor
         $action = $actions[$index];
         $actionType = (string) $action['task_type'];
         $actionPayload = (array) ($action['payload'] ?? []);
+        $actionPayload['task_id'] = $task->id;
+        $actionPayload['execution_token'] = $task->execution_token;
         $delay = (int) ($action['delay_seconds'] ?? 0);
 
         try {
@@ -162,6 +216,39 @@ final readonly class SequenceStepExecutor
                 LogLevel::Success,
                 __('logs.task.step_completed', ['id' => $task->id, 'step' => $index + 1, 'type' => $actionType])
             );
+        } catch (SkippableStepExceptionInterface $e) {
+            $stepResults[$index] = [
+                'status' => 'skipped',
+                'error' => null,
+                'reason' => $e->getMessage(),
+            ];
+
+            if ($e instanceof BuffUnavailableException) {
+                $buffName = (string) ($actionPayload['buff_name'] ?? $actionPayload['buff_raw_name'] ?? 'buff');
+                $this->activityLogger->logTaskEvent(
+                    $account->id,
+                    $task->id,
+                    LogLevel::Warning,
+                    __('logs.task.step_skipped_buff', [
+                        'id' => $task->id,
+                        'step' => $index + 1,
+                        'type' => $actionType,
+                        'buff' => $buffName,
+                    ])
+                );
+            } else {
+                $this->activityLogger->logTaskEvent(
+                    $account->id,
+                    $task->id,
+                    LogLevel::Warning,
+                    __('logs.task.step_skipped_reason', [
+                        'id' => $task->id,
+                        'step' => $index + 1,
+                        'type' => $actionType,
+                        'reason' => $e->getMessage(),
+                    ])
+                );
+            }
         } catch (Throwable $e) {
             $readableError = $e->getMessage();
             $errorPayload = $e instanceof TaskExecutionException
@@ -203,6 +290,7 @@ final readonly class SequenceStepExecutor
     {
         $hasStepError = false;
         $hasStepSuccess = false;
+        $hasStepSkipped = false;
         $summaryParts = [];
 
         foreach ($stepResults as $i => $stepResult) {
@@ -220,6 +308,9 @@ final readonly class SequenceStepExecutor
                     }
                 }
                 $summaryParts[] = (string) __('tasks.step.error_short', ['step' => $stepNumber, 'error' => $readableError]);
+            } elseif ($stepStatus === 'skipped') {
+                $hasStepSkipped = true;
+                $summaryParts[] = (string) __('tasks.step.skipped_buff_short', ['step' => $stepNumber]);
             } else {
                 $hasStepSuccess = true;
                 $summaryParts[] = (string) __('tasks.step.ok_short', ['step' => $stepNumber]);
@@ -227,7 +318,7 @@ final readonly class SequenceStepExecutor
         }
 
         $result = implode('; ', $summaryParts);
-        $resultSummary = TaskResultSummary::formatSequence($result, $hasStepError, $hasStepSuccess);
+        $resultSummary = TaskResultSummary::formatSequence($result, $hasStepError, $hasStepSuccess, $hasStepSkipped);
 
         $this->stateWriter->markSequenceFinished($task, $accountId, $resultSummary, $hasStepError, $payload);
 

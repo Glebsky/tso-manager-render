@@ -4,20 +4,30 @@ declare(strict_types=1);
 
 namespace App\Services\Tasks\Handlers;
 
+use App\Exceptions\BuffUnavailableException;
+use App\Exceptions\BuildingNotBuffableException;
 use App\Exceptions\FriendBuildingNotFoundException;
 use App\Exceptions\FriendNotFoundException;
 use App\Exceptions\FriendZoneLoadException;
 use App\Models\Account;
 use App\Services\GameErrorResolver;
 use App\Services\Tasks\Contracts\TaskActionHandlerInterface;
+use App\Services\Tasks\Execution\BuffAvailabilityManager;
+use App\Services\Tasks\Execution\BuildingBuffEligibilityValidator;
 use App\Services\TsoAmfService;
 use App\Services\ZoneParserService;
+use Illuminate\Contracts\Cache\Repository as CacheRepository;
 
 final readonly class ApplyBuffHandler implements TaskActionHandlerInterface
 {
+    private const int FRIEND_ZONE_KEEPALIVE_THRESHOLD = 15;
+
     public function __construct(
         private TsoAmfService $amfService,
         private ZoneParserService $zoneParser,
+        private BuffAvailabilityManager $buffAvailabilityManager,
+        private BuildingBuffEligibilityValidator $buildingValidator,
+        private CacheRepository $cache,
     ) {}
 
     public function supports(string $actionType): bool
@@ -26,19 +36,29 @@ final readonly class ApplyBuffHandler implements TaskActionHandlerInterface
     }
 
     /**
+     * Invalidate all cached friend zones for the given account (e.g. on session error 550 retry).
+     */
+    public static function invalidateFriendZonesForAccount(CacheRepository $cache, int $accountId): void
+    {
+        $current = (int) $cache->get("friend-zone:version:{$accountId}", 1);
+        $cache->put("friend-zone:version:{$accountId}", $current + 1, 86400);
+    }
+
+    /**
+     * @throws BuildingNotBuffableException
+     * @throws BuffUnavailableException
      * @throws FriendBuildingNotFoundException
      * @throws FriendNotFoundException
      * @throws FriendZoneLoadException
      * @throws \Exception
-     * @throws \Exception
-     * @throws \Exception
-     * @throws \Exception
      */
     public function handle(Account $account, array $payload): string
     {
+        $acquiredBuff = $this->buffAvailabilityManager->checkAndAcquire($account, $payload);
+        $uniqueId1 = $acquiredBuff->uniqueId1;
+        $uniqueId2 = $acquiredBuff->uniqueId2;
+
         $grid = (int) ($payload['grid'] ?? 0);
-        $uniqueId1 = (int) ($payload['unique_id1'] ?? 0);
-        $uniqueId2 = (int) ($payload['unique_id2'] ?? 0);
         $amount = (int) ($payload['amount'] ?? 1);
         $targetScope = (string) ($payload['target_scope'] ?? 'self');
         $targetPlayerId = $payload['target_player_id'] ?? null;
@@ -61,37 +81,137 @@ final readonly class ApplyBuffHandler implements TaskActionHandlerInterface
             }
 
             if (! $friend) {
+                $this->buffAvailabilityManager->release($account, $payload, $acquiredBuff);
                 throw new FriendNotFoundException;
             }
 
-            $friendZoneAmf = $this->amfService->getZone($account, $targetPlayerIdInt);
-            $friendZoneData = $this->zoneParser->parse($friendZoneAmf);
-            $err = (int) ($friendZoneData['errorCode'] ?? 0);
+            $version = (int) $this->cache->get("friend-zone:version:{$account->id}", 1);
+            $friendZoneCacheKey = "friend-zone:exec:{$account->id}:{$targetPlayerIdInt}:v{$version}";
+            $friendBuffCounterKey = "friend-zone:counter:{$account->id}:{$targetPlayerIdInt}";
 
-            if ($err !== 0) {
-                $errMsg = GameErrorResolver::getMessage($err);
-                throw new FriendZoneLoadException($err, $errMsg);
+            // Proactive keepalive: refresh friend zone every N actions to prevent server visitor session timeout
+            $buffCounter = (int) $this->cache->get($friendBuffCounterKey, 0);
+            if ($buffCounter >= self::FRIEND_ZONE_KEEPALIVE_THRESHOLD) {
+                $this->cache->forget($friendZoneCacheKey);
+                $this->cache->forget($friendBuffCounterKey);
             }
 
-            $buildings = $friendZoneData['buildings'] ?? [];
-            $gridFound = false;
+            /** @var array<string, mixed>|null $friendZoneData */
+            $friendZoneData = $this->cache->get($friendZoneCacheKey);
 
-            foreach ($buildings as $building) {
-                if ((int) ($building['buildingGrid'] ?? 0) === $grid) {
-                    $gridFound = true;
-                    break;
+            if (! is_array($friendZoneData)) {
+                $friendZoneAmf = $this->amfService->getZone($account, $targetPlayerIdInt);
+                $friendZoneData = $this->zoneParser->parse($friendZoneAmf);
+                $err = (int) ($friendZoneData['errorCode'] ?? 0);
+
+                if ($err !== 0) {
+                    $this->buffAvailabilityManager->release($account, $payload, $acquiredBuff);
+                    $errMsg = GameErrorResolver::getMessage($err);
+                    throw new FriendZoneLoadException($err, $errMsg);
                 }
+
+                $this->cache->put($friendZoneCacheKey, $friendZoneData, 180);
+                $this->cache->put($friendBuffCounterKey, 0, 180);
             }
 
-            if (! $gridFound) {
-                $friendName = $friend['username'] ?? $friend['nickname'] ?? $payload['target_player_name'] ?? 'Unknown';
-                throw new FriendBuildingNotFoundException($grid, (string) $friendName);
+            $friendName = (string) ($friend['username'] ?? $friend['nickname'] ?? $payload['target_player_name'] ?? 'Unknown');
+
+            try {
+                $this->buildingValidator->validate($friendZoneData, $grid, $friendName);
+            } catch (BuildingNotBuffableException $e) {
+                $this->buffAvailabilityManager->release($account, $payload, $acquiredBuff);
+                throw $e;
             }
 
-            return $this->amfService->applyBuff($account, $grid, $uniqueId1, $uniqueId2, $amount, $targetPlayerIdInt);
+            $this->cache->increment($friendBuffCounterKey);
+
+            $rawResult = $this->amfService->applyBuff($account, $grid, $uniqueId1, $uniqueId2, $amount, $targetPlayerIdInt);
+            $this->markBuildingBuffedInCache($friendZoneCacheKey, $grid, $acquiredBuff->buffName);
+
+            return $rawResult;
         }
 
-        return $this->amfService->applyBuff($account, $grid, $uniqueId1, $uniqueId2, $amount);
+        // Target scope: self
+        $zoneData = is_array($account->zone_data) ? $account->zone_data : [];
+        $homeBuildings = $zoneData['buildings'] ?? [];
+
+        if (! empty($homeBuildings) && is_array($homeBuildings)) {
+            try {
+                $this->buildingValidator->validate($homeBuildings, $grid, 'self');
+            } catch (BuildingNotBuffableException $e) {
+                $this->buffAvailabilityManager->release($account, $payload, $acquiredBuff);
+                throw $e;
+            }
+        }
+
+        $rawResult = $this->amfService->applyBuff($account, $grid, $uniqueId1, $uniqueId2, $amount);
+        $this->markBuildingBuffedInHomeZone($account, $grid, $acquiredBuff->buffName);
+
+        return $rawResult;
+    }
+
+    /**
+     * Mark building as buffed in cached friend zone data to prevent duplicate buff calls in same sequence.
+     */
+    private function markBuildingBuffedInCache(string $cacheKey, int $grid, string $buffName): void
+    {
+        /** @var array<string, mixed>|null $cachedZone */
+        $cachedZone = $this->cache->get($cacheKey);
+        if (! is_array($cachedZone) || ! isset($cachedZone['buildings']) || ! is_array($cachedZone['buildings'])) {
+            return;
+        }
+
+        foreach ($cachedZone['buildings'] as $idx => $building) {
+            if (! is_array($building)) {
+                continue;
+            }
+            $bGrid = (int) ($building['buildingGrid'] ?? $building['grid'] ?? 0);
+            if ($bGrid === $grid) {
+                $buffs = is_array($building['buffs'] ?? null) ? $building['buffs'] : [];
+                $buffs[] = [
+                    'buffName_string' => $buffName,
+                    'remaining' => 1,
+                ];
+                $cachedZone['buildings'][$idx]['buffs'] = $buffs;
+                $this->cache->put($cacheKey, $cachedZone, 180);
+                break;
+            }
+        }
+    }
+
+    /**
+     * Mark building as buffed in home zone data to prevent duplicate buff calls in same sequence.
+     */
+    private function markBuildingBuffedInHomeZone(Account $account, int $grid, string $buffName): void
+    {
+        $zoneData = is_array($account->zone_data) ? $account->zone_data : [];
+        if (! isset($zoneData['buildings']) || ! is_array($zoneData['buildings'])) {
+            return;
+        }
+
+        $modified = false;
+        foreach ($zoneData['buildings'] as $idx => $building) {
+            if (! is_array($building)) {
+                continue;
+            }
+            $bGrid = (int) ($building['buildingGrid'] ?? $building['grid'] ?? 0);
+            if ($bGrid === $grid) {
+                $buffs = is_array($building['buffs'] ?? null) ? $building['buffs'] : [];
+                $buffs[] = [
+                    'buffName_string' => $buffName,
+                    'remaining' => 1,
+                ];
+                $zoneData['buildings'][$idx]['buffs'] = $buffs;
+                $modified = true;
+                break;
+            }
+        }
+
+        if ($modified) {
+            $account->update([
+                'zone_data' => $zoneData,
+            ]);
+        }
     }
 
     /**

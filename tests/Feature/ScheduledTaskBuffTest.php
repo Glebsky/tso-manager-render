@@ -661,4 +661,659 @@ class ScheduledTaskBuffTest extends TestCase
         $account->refresh();
         $this->assertSame($friendId, $account->zone_data['friends'][0]['id'] ?? null);
     }
+
+    public function test_skips_step_when_buff_missing_and_server_refresh_fails(): void
+    {
+        $account = $this->createAccount([], []);
+
+        $task = ScheduledTask::create([
+            'account_id' => $account->id,
+            'name' => 'Sequence with Missing Buff',
+            'task_type' => 'sequence',
+            'schedule_type' => 'once',
+            'run_at_datetime' => now()->subMinute(),
+            'is_active' => true,
+            'payload' => [
+                'actions' => [
+                    [
+                        'task_type' => 'apply_buff',
+                        'delay_seconds' => 0,
+                        'payload' => [
+                            'target_scope' => 'self',
+                            'grid' => 1500,
+                            'unique_id1' => 11,
+                            'unique_id2' => 22,
+                            'buff_raw_name' => 'AuntIrma',
+                            'buff_name' => 'Aunt Irma',
+                            'amount' => 1,
+                        ],
+                    ],
+                    [
+                        'task_type' => 'apply_buff',
+                        'delay_seconds' => 0,
+                        'payload' => [
+                            'target_scope' => 'self',
+                            'grid' => 1600,
+                            'unique_id1' => 11,
+                            'unique_id2' => 22,
+                            'buff_raw_name' => 'AuntIrma',
+                            'buff_name' => 'Aunt Irma',
+                            'amount' => 1,
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $this->authMock->shouldReceive('ensureAuthenticated')->with(Mockery::any())->andReturnNull();
+
+        // Exactly ONE live getZone refresh for home zone should occur across all steps
+        $this->amfMock->shouldReceive('getZone')
+            ->once()
+            ->with(Mockery::any())
+            ->andReturn('raw_empty_zone_amf');
+
+        $this->parserMock->shouldReceive('parse')
+            ->once()
+            ->with('raw_empty_zone_amf')
+            ->andReturn(['errorCode' => 0, 'availableBuffs' => []]);
+
+        // applyBuff should NEVER be called since buff is missing
+        $this->amfMock->shouldNotReceive('applyBuff');
+
+        Artisan::call('tso:execute-tasks');
+
+        $task->refresh();
+        $this->assertFalse($task->is_active);
+        $this->assertNotNull($task->last_run_at);
+        $this->assertStringContainsString('SKIPPED:', (string) $task->last_result);
+
+        $stepResults = $task->payload['step_results'] ?? [];
+        $this->assertCount(2, $stepResults);
+        $this->assertSame('skipped', $stepResults[0]['status']);
+        $this->assertSame('skipped', $stepResults[1]['status']);
+    }
+
+    public function test_switches_to_another_stack_of_same_buff_type(): void
+    {
+        $account = $this->createAccount([], [
+            ['uniqueId1' => 11, 'uniqueId2' => 22, 'amount' => 1, 'buffName_string' => 'AuntIrma'],
+            ['uniqueId1' => 33, 'uniqueId2' => 44, 'amount' => 5, 'buffName_string' => 'AuntIrma'],
+        ]);
+
+        $task = ScheduledTask::create([
+            'account_id' => $account->id,
+            'name' => 'Multi-stack sequence',
+            'task_type' => 'sequence',
+            'schedule_type' => 'once',
+            'run_at_datetime' => now()->subMinute(),
+            'is_active' => true,
+            'payload' => [
+                'actions' => [
+                    [
+                        'task_type' => 'apply_buff',
+                        'delay_seconds' => 0,
+                        'payload' => [
+                            'target_scope' => 'self',
+                            'grid' => 1500,
+                            'unique_id1' => 11,
+                            'unique_id2' => 22,
+                            'buff_raw_name' => 'AuntIrma',
+                            'amount' => 1,
+                        ],
+                    ],
+                    [
+                        'task_type' => 'apply_buff',
+                        'delay_seconds' => 0,
+                        'payload' => [
+                            'target_scope' => 'self',
+                            'grid' => 1600,
+                            'unique_id1' => 11,
+                            'unique_id2' => 22,
+                            'buff_raw_name' => 'AuntIrma',
+                            'amount' => 1,
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $this->authMock->shouldReceive('ensureAuthenticated')->with(Mockery::any())->andReturnNull();
+
+        // First action uses stack (11, 22)
+        $this->amfMock->shouldReceive('applyBuff')
+            ->once()
+            ->with(Mockery::any(), 1500, 11, 22, 1)
+            ->andReturn('buff_1_amf_response');
+
+        // Second action switches to stack (33, 44)
+        $this->amfMock->shouldReceive('applyBuff')
+            ->once()
+            ->with(Mockery::any(), 1600, 33, 44, 1)
+            ->andReturn('buff_2_amf_response');
+
+        $this->parserMock->shouldReceive('parse')
+            ->twice()
+            ->andReturn(['errorCode' => 0]);
+
+        Artisan::call('tso:execute-tasks');
+
+        $task->refresh();
+        $this->assertFalse($task->is_active);
+        $this->assertNotNull($task->last_run_at);
+        $this->assertStringContainsString('OK:', (string) $task->last_result);
+
+        $stepResults = $task->payload['step_results'] ?? [];
+        $this->assertSame('completed', $stepResults[0]['status']);
+        $this->assertSame('completed', $stepResults[1]['status']);
+    }
+
+    public function test_caches_friend_zone_across_multiple_steps(): void
+    {
+        $friendId = 20002;
+        $account = $this->createAccount(
+            [['id' => $friendId, 'username' => 'MyFriend', 'playerLevel' => 45]],
+            [['uniqueId1' => 11, 'uniqueId2' => 22, 'amount' => 5, 'buffName_string' => 'AuntIrma']]
+        );
+
+        $task = ScheduledTask::create([
+            'account_id' => $account->id,
+            'name' => 'Friend multi-buff',
+            'task_type' => 'sequence',
+            'schedule_type' => 'once',
+            'run_at_datetime' => now()->subMinute(),
+            'is_active' => true,
+            'payload' => [
+                'actions' => [
+                    [
+                        'task_type' => 'apply_buff',
+                        'delay_seconds' => 0,
+                        'payload' => [
+                            'target_scope' => 'friend',
+                            'target_player_id' => $friendId,
+                            'grid' => 888,
+                            'unique_id1' => 11,
+                            'unique_id2' => 22,
+                            'buff_raw_name' => 'AuntIrma',
+                            'amount' => 1,
+                        ],
+                    ],
+                    [
+                        'task_type' => 'apply_buff',
+                        'delay_seconds' => 0,
+                        'payload' => [
+                            'target_scope' => 'friend',
+                            'target_player_id' => $friendId,
+                            'grid' => 999,
+                            'unique_id1' => 11,
+                            'unique_id2' => 22,
+                            'buff_raw_name' => 'AuntIrma',
+                            'amount' => 1,
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $this->authMock->shouldReceive('ensureAuthenticated')->with(Mockery::any())->andReturnNull();
+
+        // Friend zone should be fetched ONCE, cached and reused for the second step
+        $this->amfMock->shouldReceive('getZone')
+            ->once()
+            ->with(Mockery::any(), $friendId)
+            ->andReturn('raw_friend_zone_amf');
+
+        $this->parserMock->shouldReceive('parse')
+            ->once()
+            ->with('raw_friend_zone_amf')
+            ->andReturn([
+                'errorCode' => 0,
+                'buildings' => [
+                    ['buildingGrid' => 888, 'buildingName' => 'Woodcutter'],
+                    ['buildingGrid' => 999, 'buildingName' => 'Farm'],
+                ],
+            ]);
+
+        $this->amfMock->shouldReceive('applyBuff')
+            ->once()
+            ->with(Mockery::any(), 888, 11, 22, 1, $friendId)
+            ->andReturn('buff_friend_1_amf_response');
+
+        $this->amfMock->shouldReceive('applyBuff')
+            ->once()
+            ->with(Mockery::any(), 999, 11, 22, 1, $friendId)
+            ->andReturn('buff_friend_2_amf_response');
+
+        $this->parserMock->shouldReceive('parse')
+            ->twice()
+            ->andReturn(['errorCode' => 0]);
+
+        Artisan::call('tso:execute-tasks');
+
+        $task->refresh();
+        $this->assertFalse($task->is_active);
+        $this->assertStringContainsString('OK:', (string) $task->last_result);
+    }
+
+    public function test_does_not_fetch_friend_zone_if_buff_is_missing(): void
+    {
+        $friendId = 20002;
+        $account = $this->createAccount(
+            [['id' => $friendId, 'username' => 'MyFriend', 'playerLevel' => 45]],
+            [] // No buffs in account
+        );
+
+        $task = ScheduledTask::create([
+            'account_id' => $account->id,
+            'name' => 'Friend buff without buffs',
+            'task_type' => 'sequence',
+            'schedule_type' => 'once',
+            'run_at_datetime' => now()->subMinute(),
+            'is_active' => true,
+            'payload' => [
+                'actions' => [
+                    [
+                        'task_type' => 'apply_buff',
+                        'delay_seconds' => 0,
+                        'payload' => [
+                            'target_scope' => 'friend',
+                            'target_player_id' => $friendId,
+                            'grid' => 888,
+                            'unique_id1' => 11,
+                            'unique_id2' => 22,
+                            'buff_raw_name' => 'AuntIrma',
+                            'amount' => 1,
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $this->authMock->shouldReceive('ensureAuthenticated')->with(Mockery::any())->andReturnNull();
+
+        // 1 server refresh of own home zone
+        $this->amfMock->shouldReceive('getZone')
+            ->once()
+            ->with(Mockery::any())
+            ->andReturn('raw_empty_home_zone');
+
+        $this->parserMock->shouldReceive('parse')
+            ->once()
+            ->with('raw_empty_home_zone')
+            ->andReturn(['errorCode' => 0, 'availableBuffs' => []]);
+
+        // Friend zone must NEVER be queried
+        $this->amfMock->shouldNotReceive('getZone')->with(Mockery::any(), $friendId);
+        $this->amfMock->shouldNotReceive('applyBuff');
+
+        Artisan::call('tso:execute-tasks');
+
+        $task->refresh();
+        $this->assertFalse($task->is_active);
+        $this->assertStringContainsString('SKIPPED:', (string) $task->last_result);
+        $payload = is_array($task->payload) ? $task->payload : [];
+        $this->assertSame('skipped', $payload['step_results'][0]['status'] ?? null);
+    }
+
+    public function test_single_buff_task_skips_when_buff_missing(): void
+    {
+        $account = $this->createAccount([], []);
+
+        $task = ScheduledTask::create([
+            'account_id' => $account->id,
+            'name' => 'Single Missing Buff',
+            'task_type' => 'apply_buff',
+            'schedule_type' => 'once',
+            'run_at_datetime' => now()->subMinute(),
+            'is_active' => true,
+            'payload' => [
+                'target_scope' => 'self',
+                'grid' => 1500,
+                'unique_id1' => 11,
+                'unique_id2' => 22,
+                'buff_raw_name' => 'AuntIrma',
+                'amount' => 1,
+            ],
+        ]);
+
+        $this->authMock->shouldReceive('ensureAuthenticated')->with(Mockery::any())->andReturnNull();
+
+        $this->amfMock->shouldReceive('getZone')
+            ->once()
+            ->with(Mockery::any())
+            ->andReturn('raw_empty_home_zone');
+
+        $this->parserMock->shouldReceive('parse')
+            ->once()
+            ->with('raw_empty_home_zone')
+            ->andReturn(['errorCode' => 0, 'availableBuffs' => []]);
+
+        $this->amfMock->shouldNotReceive('applyBuff');
+
+        Artisan::call('tso:execute-tasks');
+
+        $task->refresh();
+        $this->assertFalse($task->is_active);
+        $this->assertStringContainsString('SKIPPED:', (string) $task->last_result);
+        $singlePayload = is_array($task->payload) ? $task->payload : [];
+        $this->assertSame('skipped', $singlePayload['step_results'][0]['status'] ?? null);
+    }
+
+    public function test_skips_step_when_building_already_buffed_and_refunds_buff(): void
+    {
+        $friendId = 20002;
+        // Only 1 buff available in inventory!
+        $account = $this->createAccount(
+            [['id' => $friendId, 'username' => 'MyFriend', 'playerLevel' => 45]],
+            [['uniqueId1' => 11, 'uniqueId2' => 22, 'amount' => 1, 'buffName_string' => 'AuntIrma']]
+        );
+
+        $task = ScheduledTask::create([
+            'account_id' => $account->id,
+            'name' => 'Friend Buff Ineligible Skip',
+            'task_type' => 'sequence',
+            'schedule_type' => 'once',
+            'run_at_datetime' => now()->subMinute(),
+            'is_active' => true,
+            'payload' => [
+                'actions' => [
+                    [
+                        'task_type' => 'apply_buff',
+                        'delay_seconds' => 0,
+                        'payload' => [
+                            'target_scope' => 'friend',
+                            'target_player_id' => $friendId,
+                            'grid' => 888, // Already buffed building
+                            'unique_id1' => 11,
+                            'unique_id2' => 22,
+                            'buff_raw_name' => 'AuntIrma',
+                            'amount' => 1,
+                        ],
+                    ],
+                    [
+                        'task_type' => 'apply_buff',
+                        'delay_seconds' => 0,
+                        'payload' => [
+                            'target_scope' => 'friend',
+                            'target_player_id' => $friendId,
+                            'grid' => 999, // Unbuffed building
+                            'unique_id1' => 11,
+                            'unique_id2' => 22,
+                            'buff_raw_name' => 'AuntIrma',
+                            'amount' => 1,
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $this->authMock->shouldReceive('ensureAuthenticated')->with(Mockery::any())->andReturnNull();
+
+        $this->amfMock->shouldReceive('getZone')
+            ->once()
+            ->with(Mockery::any(), $friendId)
+            ->andReturn('friend_zone_amf');
+
+        $this->parserMock->shouldReceive('parse')
+            ->once()
+            ->with('friend_zone_amf')
+            ->andReturn([
+                'errorCode' => 0,
+                'buildings' => [
+                    [
+                        'buildingGrid' => 888,
+                        'buildingName_string' => 'Woodcutter',
+                        'buffs' => [['buffName_string' => 'ProductivityBuffLvl3']],
+                    ],
+                    [
+                        'buildingGrid' => 999,
+                        'buildingName_string' => 'Farm',
+                        'buffs' => [],
+                    ],
+                ],
+            ]);
+
+        // applyBuff should only be called ONCE (for grid 999, NOT for 888)
+        $this->amfMock->shouldReceive('applyBuff')
+            ->once()
+            ->with(Mockery::any(), 999, 11, 22, 1, $friendId)
+            ->andReturn('buff_success_amf_response');
+
+        $this->parserMock->shouldReceive('parse')
+            ->once()
+            ->with('buff_success_amf_response')
+            ->andReturn(['errorCode' => 0]);
+
+        Artisan::call('tso:execute-tasks');
+
+        $task->refresh();
+        $this->assertFalse($task->is_active);
+        $this->assertStringContainsString('PARTIAL:', (string) $task->last_result);
+
+        $stepResults = $task->payload['step_results'] ?? [];
+        $this->assertSame('skipped', $stepResults[0]['status']);
+        $this->assertStringContainsString('already buffed', (string) $stepResults[0]['reason']);
+        $this->assertSame('completed', $stepResults[1]['status']);
+    }
+
+    public function test_skips_step_when_building_production_stopped(): void
+    {
+        $friendId = 20002;
+        $account = $this->createAccount(
+            [['id' => $friendId, 'username' => 'MyFriend', 'playerLevel' => 45]],
+            [['uniqueId1' => 11, 'uniqueId2' => 22, 'amount' => 5, 'buffName_string' => 'AuntIrma']]
+        );
+
+        $task = ScheduledTask::create([
+            'account_id' => $account->id,
+            'name' => 'Stopped Building Buff Skip',
+            'task_type' => 'sequence',
+            'schedule_type' => 'once',
+            'run_at_datetime' => now()->subMinute(),
+            'is_active' => true,
+            'payload' => [
+                'actions' => [
+                    [
+                        'task_type' => 'apply_buff',
+                        'delay_seconds' => 0,
+                        'payload' => [
+                            'target_scope' => 'friend',
+                            'target_player_id' => $friendId,
+                            'grid' => 888,
+                            'unique_id1' => 11,
+                            'unique_id2' => 22,
+                            'buff_raw_name' => 'AuntIrma',
+                            'amount' => 1,
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $this->authMock->shouldReceive('ensureAuthenticated')->with(Mockery::any())->andReturnNull();
+
+        $this->amfMock->shouldReceive('getZone')
+            ->once()
+            ->with(Mockery::any(), $friendId)
+            ->andReturn('friend_zone_stopped');
+
+        $this->parserMock->shouldReceive('parse')
+            ->once()
+            ->with('friend_zone_stopped')
+            ->andReturn([
+                'errorCode' => 0,
+                'buildings' => [
+                    [
+                        'buildingGrid' => 888,
+                        'buildingName_string' => 'Brewery',
+                        'buildingMode' => 28, // Stopped
+                        'buffs' => [],
+                    ],
+                ],
+            ]);
+
+        $this->amfMock->shouldNotReceive('applyBuff');
+
+        Artisan::call('tso:execute-tasks');
+
+        $task->refresh();
+        $this->assertFalse($task->is_active);
+        $this->assertStringContainsString('SKIPPED:', (string) $task->last_result);
+
+        $stepResults = $task->payload['step_results'] ?? [];
+        $this->assertSame('skipped', $stepResults[0]['status']);
+        $this->assertStringContainsString('stopped', (string) $stepResults[0]['reason']);
+    }
+
+    public function test_recovers_from_server_error_550_on_friend_island(): void
+    {
+        $friendId = 20002;
+        $account = $this->createAccount(
+            [['id' => $friendId, 'username' => 'MyFriend', 'playerLevel' => 45]],
+            [['uniqueId1' => 11, 'uniqueId2' => 22, 'amount' => 5, 'buffName_string' => 'AuntIrma']]
+        );
+
+        $task = ScheduledTask::create([
+            'account_id' => $account->id,
+            'name' => 'Friend Buff 550 Recovery',
+            'task_type' => 'apply_buff',
+            'schedule_type' => 'once',
+            'run_at_datetime' => now()->subMinute(),
+            'is_active' => true,
+            'payload' => [
+                'target_scope' => 'friend',
+                'target_player_id' => $friendId,
+                'grid' => 888,
+                'unique_id1' => 11,
+                'unique_id2' => 22,
+                'buff_raw_name' => 'AuntIrma',
+                'amount' => 1,
+            ],
+        ]);
+
+        $this->authMock->shouldReceive('ensureAuthenticated')->with(Mockery::any())->andReturnNull();
+
+        // 1st getZone on attempt 1, 2nd getZone on attempt 2 after 550 cache invalidation
+        $this->amfMock->shouldReceive('getZone')
+            ->twice()
+            ->with(Mockery::any(), $friendId)
+            ->andReturn('friend_zone_amf');
+
+        $this->parserMock->shouldReceive('parse')
+            ->twice()
+            ->with('friend_zone_amf')
+            ->andReturn([
+                'errorCode' => 0,
+                'buildings' => [
+                    [
+                        'buildingGrid' => 888,
+                        'buildingName_string' => 'IronSmelter',
+                        'buffs' => [],
+                    ],
+                ],
+            ]);
+
+        // Attempt 1 fails with 550; Attempt 2 succeeds with 0
+        $this->amfMock->shouldReceive('applyBuff')
+            ->twice()
+            ->with(Mockery::any(), 888, 11, 22, 1, $friendId)
+            ->andReturnValues(['buff_fail_550_amf_response', 'buff_ok_amf_response']);
+
+        $this->parserMock->shouldReceive('parse')
+            ->once()
+            ->with('buff_fail_550_amf_response')
+            ->andReturn(['errorCode' => 550]);
+
+        $this->parserMock->shouldReceive('parse')
+            ->once()
+            ->with('buff_ok_amf_response')
+            ->andReturn(['errorCode' => 0]);
+
+        Artisan::call('tso:execute-tasks');
+
+        $task->refresh();
+        $this->assertFalse($task->is_active);
+        $this->assertStringContainsString('OK:', (string) $task->last_result);
+    }
+
+    public function test_proactively_refreshes_friend_zone_after_threshold_steps(): void
+    {
+        $friendId = 20002;
+        $buffStacks = [];
+        for ($i = 1; $i <= 16; $i++) {
+            $buffStacks[] = ['uniqueId1' => $i, 'uniqueId2' => $i * 10, 'amount' => 1, 'buffName_string' => 'AuntIrma'];
+        }
+
+        $account = $this->createAccount(
+            [['id' => $friendId, 'username' => 'MyFriend', 'playerLevel' => 45]],
+            $buffStacks
+        );
+
+        $actions = [];
+        $buildings = [];
+        for ($i = 1; $i <= 16; $i++) {
+            $grid = 1000 + $i;
+            $actions[] = [
+                'task_type' => 'apply_buff',
+                'delay_seconds' => 0,
+                'payload' => [
+                    'target_scope' => 'friend',
+                    'target_player_id' => $friendId,
+                    'grid' => $grid,
+                    'unique_id1' => $i,
+                    'unique_id2' => $i * 10,
+                    'buff_raw_name' => 'AuntIrma',
+                    'amount' => 1,
+                ],
+            ];
+            $buildings[] = [
+                'buildingGrid' => $grid,
+                'buildingName_string' => "Farm{$i}",
+                'buffs' => [],
+            ];
+        }
+
+        $task = ScheduledTask::create([
+            'account_id' => $account->id,
+            'name' => '16 Step Friend Buff Keepalive Test',
+            'task_type' => 'sequence',
+            'schedule_type' => 'once',
+            'run_at_datetime' => now()->subMinute(),
+            'is_active' => true,
+            'payload' => [
+                'actions' => $actions,
+            ],
+        ]);
+
+        $this->authMock->shouldReceive('ensureAuthenticated')->with(Mockery::any())->andReturnNull();
+
+        // Expect getZone to be called TWICE: once at step 1, once at step 16 (after 15 actions threshold)
+        $this->amfMock->shouldReceive('getZone')
+            ->twice()
+            ->with(Mockery::any(), $friendId)
+            ->andReturn('friend_zone_keepalive_amf');
+
+        $this->parserMock->shouldReceive('parse')
+            ->twice()
+            ->with('friend_zone_keepalive_amf')
+            ->andReturn([
+                'errorCode' => 0,
+                'buildings' => $buildings,
+            ]);
+
+        $this->amfMock->shouldReceive('applyBuff')
+            ->times(16)
+            ->andReturn('buff_step_amf_response');
+
+        $this->parserMock->shouldReceive('parse')
+            ->times(16)
+            ->with('buff_step_amf_response')
+            ->andReturn(['errorCode' => 0]);
+
+        Artisan::call('tso:execute-tasks');
+
+        $task->refresh();
+        $this->assertFalse($task->is_active);
+        $this->assertStringContainsString('OK:', (string) $task->last_result);
+    }
 }

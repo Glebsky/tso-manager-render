@@ -30,6 +30,12 @@ return [
         'failed' => 'Task ":type" failed: :error',
         'step_completed' => 'Task #:id: step :step (:type) completed successfully.',
         'step_failed' => 'Task #:id: step :step (:type) failed: :error',
+        'step_skipped_buff' => 'Task #:id: step :step (:type) skipped (buff :buff is not available in star menu).',
+        'step_skipped_reason' => 'Task #:id: step :step (:type) skipped (:reason).',
+        'stopped_by_user' => 'Task #:id was stopped by user at step :step of :total.',
+        'single_action_completed' => 'Task #:id: single action :step (:type) completed successfully.',
+        'single_action_skipped' => 'Task #:id: single action :step (:type) skipped (:reason).',
+        'single_action_failed' => 'Task #:id: single action :step (:type) failed: :error',
         'job_failed' => 'Task #:id ":type" failed after all retry attempts: :error',
     ],
     'market' => [

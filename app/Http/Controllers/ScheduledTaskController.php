@@ -183,4 +183,48 @@ class ScheduledTaskController extends Controller
                 ],
             ]);
     }
+
+    /**
+     * Stop a running or queued scheduled task immediately.
+     */
+    public function stop(ScheduledTask $task): JsonResponse
+    {
+        $stoppedTask = $this->tasks->stop($task);
+        $resource = new ScheduledTaskResource($stoppedTask);
+
+        return $resource
+            ->additional([
+                'success' => true,
+                'task' => $resource,
+                'message' => 'Task stopped.',
+                'meta' => [
+                    'server_time' => now()->toIso8601String(),
+                ],
+            ])
+            ->response()
+            ->setStatusCode(200);
+    }
+
+    /**
+     * Execute a single action within a sequence task.
+     */
+    public function executeAction(ScheduledTask $task, int $actionIndex): JsonResponse
+    {
+        $result = $this->tasks->executeAction($task, $actionIndex);
+        $refreshed = $this->tasks->withAccount($task->fresh() ?? $task);
+        $resource = new ScheduledTaskResource($refreshed);
+
+        return $resource
+            ->additional([
+                'success' => true,
+                'step_result' => $result,
+                'task' => $resource,
+                'message' => 'Action executed.',
+                'meta' => [
+                    'server_time' => now()->toIso8601String(),
+                ],
+            ])
+            ->response()
+            ->setStatusCode(200);
+    }
 }

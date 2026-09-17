@@ -14,11 +14,11 @@
                             <img :src="'/images/logo/logo-96.webp'"
                                  :srcset="'/images/logo/logo-96.webp 1x, /images/logo/logo-192.webp 2x, /images/logo/logo-288.webp 3x'"
                                  width="96" height="96"
-                                 alt="TSO Market Analytics"
+                                 alt="TSO Market — The Settlers Online Market & Combat Simulator"
                                  class="w-full h-full object-contain" />
                         </div>
                         <div class="min-w-0 pill-row gap-x-2 gap-y-1">
-                            <h1 class="text-lg xs:text-xl sm:text-3xl font-bold text-white tracking-tight wrap-anywhere">TSO Market Analytics</h1>
+                            <h1 class="text-lg xs:text-xl sm:text-3xl font-bold text-white tracking-tight wrap-anywhere">TSO Market — The Settlers Online Market &amp; Combat Simulator</h1>
                             <span class="badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] uppercase font-bold px-2.5 py-0.5 rounded-full">{{ t('market.public_portal') }}</span>
                         </div>
                     </div>
@@ -694,6 +694,63 @@
                 </transition>
             </div>
         </div>
+
+        <!-- SEO Informational Section -->
+        <section class="glass-card p-5 sm:p-7 border-white/10 relative transition-all duration-300 hover:border-white/20">
+            <div class="max-w-5xl space-y-5">
+                <div class="space-y-1.5 border-b border-white/5 pb-4">
+                    <p class="text-white/90 text-sm sm:text-base font-semibold leading-relaxed">
+                        TSO Market is a free tool for The Settlers Online players.
+                    </p>
+                    <p class="text-xs sm:text-sm text-white/50 leading-relaxed">
+                        Track market prices and price history, analyze item values and make better trading decisions.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 pt-1">
+                    <!-- Market Price Tracker -->
+                    <div class="p-4 sm:p-5 rounded-xl bg-white/[0.02] border border-white/5 space-y-2.5 transition-all hover:bg-white/[0.04]">
+                        <div class="flex items-center gap-2.5 text-emerald-400">
+                            <div class="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18 9 11.25l4.306 4.307a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-3.75-1.002m3.75 1.002-1.002 3.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                </svg>
+                            </div>
+                            <h2 class="text-base font-bold text-white tracking-tight">Market Price Tracker</h2>
+                        </div>
+                        <p class="text-xs sm:text-sm text-white/60 leading-relaxed">
+                            Monitor live trade prices, historical demand patterns, and automated arbitrage exchange loops across international Settlers Online servers to find the best trading opportunities.
+                        </p>
+                    </div>
+
+                    <!-- Smart Combat Simulator -->
+                    <div class="p-4 sm:p-5 rounded-xl bg-white/[0.02] border border-white/5 space-y-2.5 transition-all hover:bg-white/[0.04]">
+                        <div class="flex items-center gap-2.5 text-emerald-400">
+                            <div class="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                </svg>
+                            </div>
+                            <h2 class="text-base font-bold text-white tracking-tight">Smart Combat Simulator</h2>
+                        </div>
+                        <p class="text-xs sm:text-sm text-white/60 leading-relaxed">
+                            The smart combat simulator helps you build optimized attacks using your available generals. Instead of simply calculating a battle result, it distributes stronger generals to harder camps and weaker generals to easier encounters, helping you plan efficient attacks across an entire adventure.
+                        </p>
+                        <div v-if="combatSimulatorUrl" class="pt-1">
+                            <a :href="combatSimulatorUrl"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-400 hover:text-emerald-300 transition-colors">
+                                <span>{{ t('market.combat_simulator') }}</span>
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
         <!-- Subtle peace note -->
         <p class="text-center text-[10px] leading-relaxed text-white/5 hover:text-white/35 transition-colors duration-500 select-none px-6">

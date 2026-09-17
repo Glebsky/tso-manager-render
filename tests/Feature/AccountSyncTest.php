@@ -493,7 +493,7 @@ class AccountSyncTest extends TestCase
 
         $this->authMock->shouldReceive('ensureAuthenticated')
             ->once()
-            ->with(Mockery::on(fn ($arg) => $arg instanceof Account && $arg->id === $account->id))
+            ->with(Mockery::on(fn ($arg) => $arg instanceof Account && $arg->id === $account->id), true)
             ->andReturnNull();
 
         $this->amfMock->shouldReceive('getZone')->once()->andReturn('zone-amf-bytes');

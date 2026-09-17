@@ -17,11 +17,13 @@ final class TaskResultSummary
         return $prefix->format($truncated);
     }
 
-    public static function formatSequence(string $summaryText, bool $hasError, bool $hasSuccess): string
+    public static function formatSequence(string $summaryText, bool $hasError, bool $hasSuccess, bool $hasSkipped = false): string
     {
         $prefix = match (true) {
             $hasError && $hasSuccess => TaskResultPrefix::Partial,
             $hasError => TaskResultPrefix::Error,
+            $hasSuccess && $hasSkipped => TaskResultPrefix::Partial,
+            ! $hasSuccess && $hasSkipped => TaskResultPrefix::Skipped,
             default => TaskResultPrefix::Ok,
         };
 

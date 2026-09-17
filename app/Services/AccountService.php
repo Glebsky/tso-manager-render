@@ -10,6 +10,7 @@ use App\Models\Account;
 use App\Models\BotLog;
 use Exception;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Psr\SimpleCache\InvalidArgumentException;
 
@@ -142,6 +143,7 @@ readonly class AccountService
 
         $this->authService->resetSession($account);
         if (! empty($data['dso_auth_token'])) {
+            Cache::forget("tso:session_invalidated:{$account->id}");
             $this->authService->markSessionVerified($account);
         }
 

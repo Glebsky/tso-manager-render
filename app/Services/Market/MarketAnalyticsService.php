@@ -83,9 +83,16 @@ final readonly class MarketAnalyticsService
      *
      * @return array<string, mixed>
      */
-    public function pair(string $serverId, string $itemId, string $targetItemId, MarketPeriod $period): array
+    public function pair(string $serverId, string $itemId, string $targetItemId, MarketPeriod $period, bool $autoFallback = false): array
     {
-        return $this->cache->remember(
+        $requestedPeriodKey = $period->key;
+
+        if ($autoFallback) {
+            $latest = $this->history->latestCollectedAt($serverId, $itemId, $targetItemId);
+            $period = $this->periods->resolveFallback($period, $latest);
+        }
+
+        $result = $this->cache->remember(
             $serverId,
             'analytics_pair',
             ['item_id' => $itemId, 'target_item_id' => $targetItemId, 'period' => $period->key],
@@ -100,6 +107,7 @@ final readonly class MarketAnalyticsService
 
                 return [
                     'server_id' => $serverId,
+                    'period' => $period->key,
                     'popular' => $this->popularItems->popular($serverId, $period),
                     'stats' => $pairData['stats'],
                     'history' => $this->history->series($serverId, $itemId, $targetItemId, $resolved),
@@ -112,6 +120,11 @@ final readonly class MarketAnalyticsService
                 ];
             }
         );
+
+        $result['period'] = $period->key;
+        $result['requested_period'] = $requestedPeriodKey;
+
+        return $result;
     }
 
     /**

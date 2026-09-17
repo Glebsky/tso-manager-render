@@ -57,7 +57,7 @@ readonly class AccountSyncFetcher
                         Log::info("[AccountSync] Zone locked/superseded (error 1012) for account #{$account->id}; re-authenticating to take over session (relogin #".($reloginCount + 1).')');
                         try {
                             $this->resetSessionState($account);
-                            $this->authService->ensureAuthenticated($account);
+                            $this->authService->ensureAuthenticated($account, force: true);
                             $account->refresh();
                         } catch (Exception $reloginEx) {
                             Log::warning("[AccountSync] Background re-login for account #{$account->id} encountered: {$reloginEx->getMessage()}; proceeding to retry zone fetch");
@@ -81,7 +81,7 @@ readonly class AccountSyncFetcher
                         Log::info("[AccountSync] Session expired (error {$errorCode}) for account #{$account->id}; re-authenticating (relogin #".($reloginCount + 1).')');
                         try {
                             $this->resetSessionState($account);
-                            $this->authService->ensureAuthenticated($account);
+                            $this->authService->ensureAuthenticated($account, force: true);
                             $account->refresh();
                         } catch (Exception $reloginEx) {
                             Log::warning("[AccountSync] Background re-login for account #{$account->id} encountered: {$reloginEx->getMessage()}; proceeding to retry zone fetch");
@@ -115,7 +115,7 @@ readonly class AccountSyncFetcher
                         Log::info("[AccountSync] Caught session error during fetch for account #{$account->id}: {$e->getMessage()}; resetting session and re-authenticating (relogin #".($reloginCount + 1).')');
                         try {
                             $this->resetSessionState($account);
-                            $this->authService->ensureAuthenticated($account);
+                            $this->authService->ensureAuthenticated($account, force: true);
                             $account->refresh();
                         } catch (Exception $reloginEx) {
                             Log::warning("[AccountSync] Recovery re-login for account #{$account->id} encountered: {$reloginEx->getMessage()}");
@@ -177,7 +177,7 @@ readonly class AccountSyncFetcher
             Log::warning("[AccountSync] Initial authentication failed for account #{$account->id}: {$e->getMessage()}. Resetting session state and retrying...");
             $this->resetSessionState($account);
 
-            $this->ensureAuthenticated($account);
+            $this->authService->ensureAuthenticated($account, force: true);
         }
     }
 

@@ -8,6 +8,8 @@ use App\Enums\LogLevel;
 use App\Enums\TaskResultPrefix;
 use App\Enums\TaskStatus;
 use App\Enums\TaskType;
+use App\Exceptions\TaskCancelledException;
+use App\Exceptions\TokenMismatchException;
 use App\Models\BotLog;
 use App\Models\ScheduledTask;
 use App\Services\TaskExecutionService;
@@ -135,7 +137,27 @@ class ExecuteScheduledTaskJob implements ShouldQueue
         $budgetEndsAt = microtime(true) + self::TIME_BUDGET_SECONDS;
 
         while (true) {
-            $state = $executionService->executeSequenceStep($task, $this->executionToken, $this->force);
+            $task->refresh();
+
+            if ($task->status !== TaskStatus::Running && $task->status !== TaskStatus::Queued) {
+                Log::info("[TaskJob] Task #{$this->taskId} is no longer active (status='{$task->status->value}'); stopping execution loop.");
+
+                return;
+            }
+
+            if ($task->execution_token === null || $task->execution_token !== $this->executionToken) {
+                Log::info("[TaskJob] Task #{$this->taskId} execution token mismatch or cleared; stopping execution loop.");
+
+                return;
+            }
+
+            try {
+                $state = $executionService->executeSequenceStep($task, $this->executionToken, $this->force);
+            } catch (TaskCancelledException|TokenMismatchException $e) {
+                Log::info("[TaskJob] Task #{$this->taskId} sequence step aborted: {$e->getMessage()}");
+
+                return;
+            }
 
             if ($state['finished']) {
                 return;
@@ -145,7 +167,17 @@ class ExecuteScheduledTaskJob implements ShouldQueue
 
             if (microtime(true) + $delay + self::STEP_MARGIN_SECONDS < $budgetEndsAt) {
                 if ($delay > 0) {
-                    sleep($delay);
+                    $sleepRemaining = $delay;
+                    while ($sleepRemaining > 0) {
+                        sleep(min(1, $sleepRemaining));
+                        $sleepRemaining--;
+                        $task->refresh();
+                        if ($task->status !== TaskStatus::Running && $task->status !== TaskStatus::Queued) {
+                            Log::info("[TaskJob] Task #{$this->taskId} cancelled during delay wait; exiting execution loop.");
+
+                            return;
+                        }
+                    }
                 }
 
                 continue;

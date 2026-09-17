@@ -106,6 +106,7 @@ class TsoAuthService
         $this->clearCooldown($account);
         Cache::forget("tso:login_lock:{$account->id}");
         Cache::forget(self::AUTH_FLOW_KEY.$account->id);
+        Cache::put("tso:session_invalidated:{$account->id}", true, 300);
     }
 
     /**
@@ -226,6 +227,7 @@ class TsoAuthService
         }
 
         Cache::forget($cooldownKey);
+        Cache::forget("tso:session_invalidated:{$account->id}");
 
         $account->update([
             'dso_auth_user' => $params['dsoAuthUser'],
@@ -394,6 +396,12 @@ class TsoAuthService
      */
     public function verifySession(Account $account): bool
     {
+        if (Cache::pull("tso:session_invalidated:{$account->id}")) {
+            Log::info("[TsoAuth] Session was explicitly invalidated for account #{$account->id}, skipping probe");
+
+            return false;
+        }
+
         if (! $this->isAuthenticated($account)) {
             return false;
         }
@@ -449,13 +457,13 @@ class TsoAuthService
      *
      * @throws Exception
      */
-    public function ensureAuthenticated(Account $account): void
+    public function ensureAuthenticated(Account $account, bool $force = false): void
     {
-        if (Cache::get(self::SESSION_OK_KEY.$account->id) === true) {
+        if (! $force && Cache::get(self::SESSION_OK_KEY.$account->id) === true) {
             return;
         }
 
-        if ($this->verifySession($account)) {
+        if (! $force && $this->verifySession($account)) {
             $this->markSessionVerified($account);
 
             return;

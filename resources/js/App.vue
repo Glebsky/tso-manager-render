@@ -31,7 +31,7 @@
                              class="w-full h-full object-contain" />
                     </div>
                     <div>
-                        <h1 class="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors">TSO Manager</h1>
+                        <span class="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors block">TSO Manager</span>
                         <p class="text-xs text-white/30">Administration Panel</p>
                     </div>
                 </router-link>

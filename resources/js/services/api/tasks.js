@@ -41,4 +41,14 @@ export const tasksApi = {
         const res = await http.post(`/api/tasks/${id}/execute`);
         return res.data;
     },
+    async stopTask(id) {
+        if (!id || id === 'undefined') throw new Error('Task ID is required');
+        const res = await http.post(`/api/tasks/${id}/stop`);
+        return res.data;
+    },
+    async executeAction(id, actionIndex) {
+        if (!id || id === 'undefined') throw new Error('Task ID is required');
+        const res = await http.post(`/api/tasks/${id}/actions/${actionIndex}/execute`);
+        return res.data;
+    },
 };

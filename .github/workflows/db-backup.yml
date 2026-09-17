@@ -1,0 +1,110 @@
+name: "Daily Database Backup & Retention"
+
+on:
+  schedule:
+    # Запуск каждую ночь в 03:00 UTC (06:00 МСК)
+    - cron: '0 3 * * *'
+  # Возможность ручного запуска из интерфейса GitHub (Actions -> Run workflow)
+  workflow_dispatch:
+    inputs:
+      max_copies:
+        description: 'Количество сохраняемых копий'
+        required: false
+        default: '5'
+
+jobs:
+  backup:
+    name: "Backup Supabase to Backblaze B2"
+    runs-on: ubuntu-latest
+
+    env:
+      MAX_COPIES: ${{ github.event.inputs.max_copies || 5 }}
+
+    steps:
+      - name: "Install PostgreSQL Client"
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y postgresql-client
+
+      - name: "Normalize Endpoint URL"
+        run: |
+          # Автоматически добавляем https://, если пользователь указал хост без протокола
+          RAW_ENDPOINT="${{ secrets.B2_ENDPOINT_URL }}"
+          CLEAN_ENDPOINT=$(echo "$RAW_ENDPOINT" | xargs | sed 's:/*$::')
+          if [[ ! "$CLEAN_ENDPOINT" =~ ^https?:// ]]; then
+            CLEAN_ENDPOINT="https://$CLEAN_ENDPOINT"
+          fi
+          echo "B2_ENDPOINT=$CLEAN_ENDPOINT" >> "$GITHUB_ENV"
+
+      - name: "Create Compressed Dump"
+        env:
+          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          PGSSLMODE: "require"
+        run: |
+          # Формируем имя файла с ISO-таймстемпом для естественной хронологической сортировки
+          BACKUP_NAME="backup-$(date +'%Y-%m-%d_%H-%M-%S').sql.gz"
+          echo "BACKUP_NAME=$BACKUP_NAME" >> "$GITHUB_ENV"
+
+          echo "Starting pg_dump from Supabase..."
+          pg_dump \
+            -h "${{ secrets.SUPABASE_DB_HOST }}" \
+            -p "${{ secrets.SUPABASE_DB_PORT || '5432' }}" \
+            -U "${{ secrets.SUPABASE_DB_USER }}" \
+            -d "${{ secrets.SUPABASE_DB_NAME }}" \
+            --no-owner \
+            --clean \
+            | gzip > "$BACKUP_NAME"
+
+          if [ ! -s "$BACKUP_NAME" ]; then
+            echo "::error::Backup file was not created or is empty!"
+            exit 1
+          fi
+
+          FILE_SIZE=$(du -h "$BACKUP_NAME" | cut -f1)
+          echo "Backup file created successfully: $BACKUP_NAME ($FILE_SIZE)"
+
+      - name: "Upload to Backblaze B2"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.B2_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.B2_APPLICATION_KEY }}
+          AWS_DEFAULT_REGION: "auto"
+        run: |
+          echo "Uploading $BACKUP_NAME to Backblaze B2 ($B2_ENDPOINT)..."
+          aws s3 cp "$BACKUP_NAME" "s3://${{ secrets.B2_BUCKET_NAME }}/database-backups/$BACKUP_NAME" \
+            --endpoint-url "$B2_ENDPOINT"
+
+          echo "Backup uploaded successfully."
+
+      - name: "Rotate Backups (Keep last ${{ env.MAX_COPIES }} copies)"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.B2_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.B2_APPLICATION_KEY }}
+          AWS_DEFAULT_REGION: "auto"
+        run: |
+          echo "Listing existing backups in s3://${{ secrets.B2_BUCKET_NAME }}/database-backups/..."
+
+          # Извлекаем имена файлов и сортируем по алфавиту (благодаря ISO датам старые идут первыми)
+          BACKUPS=$(aws s3 ls "s3://${{ secrets.B2_BUCKET_NAME }}/database-backups/" \
+            --endpoint-url "$B2_ENDPOINT" \
+            | grep '\.sql\.gz$' \
+            | sort \
+            | awk '{print $4}')
+
+          TOTAL_COUNT=$(echo "$BACKUPS" | grep -v '^$' | wc -l)
+          echo "Total backups found: $TOTAL_COUNT (retention limit: $MAX_COPIES)"
+
+          if [ "$TOTAL_COUNT" -gt "$MAX_COPIES" ]; then
+            EXCESS_COUNT=$((TOTAL_COUNT - MAX_COPIES))
+            echo "Pruning $EXCESS_COUNT older backup(s)..."
+
+            echo "$BACKUPS" | head -n "$EXCESS_COUNT" | while IFS= read -r FILE_TO_DELETE; do
+              if [ -n "$FILE_TO_DELETE" ]; then
+                echo "Deleting old backup: $FILE_TO_DELETE"
+                aws s3 rm "s3://${{ secrets.B2_BUCKET_NAME }}/database-backups/$FILE_TO_DELETE" \
+                  --endpoint-url "$B2_ENDPOINT"
+              fi
+            done
+            echo "Pruning completed."
+          else
+            echo "Retention limit not exceeded. No cleanup needed."
+          fi
