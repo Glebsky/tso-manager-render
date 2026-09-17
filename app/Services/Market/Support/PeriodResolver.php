@@ -20,6 +20,9 @@ final class PeriodResolver
     /** @var list<string> */
     public const array SUPPORTED_PERIODS = ['all', '1d', '7d', '30d', '1y'];
 
+    /** @var list<string> */
+    public const array ORDERED_PERIODS = ['1d', '7d', '30d', '1y', 'all'];
+
     public function resolve(?string $period, ?CarbonInterface $now = null): MarketPeriod
     {
         $key = in_array($period, self::SUPPORTED_PERIODS, true) ? $period : self::DEFAULT_PERIOD;
@@ -34,6 +37,40 @@ final class PeriodResolver
         };
 
         return new MarketPeriod($key, $since, $this->defaultGranularity($key));
+    }
+
+    /**
+     * Resolves the smallest period (starting from the requested period or '7d')
+     * that covers the given latest collected timestamp.
+     * If no trade history exists ($latestCollectedAt is null), the requested period is kept.
+     */
+    public function resolveFallback(MarketPeriod $requested, ?CarbonInterface $latestCollectedAt, ?CarbonInterface $now = null): MarketPeriod
+    {
+        if ($latestCollectedAt === null) {
+            return $requested;
+        }
+
+        $reference = $now !== null ? $now->copy() : Carbon::now();
+
+        if ($requested->since === null || $latestCollectedAt->greaterThanOrEqualTo($requested->since)) {
+            return $requested;
+        }
+
+        $startIndex = array_search($requested->key, self::ORDERED_PERIODS, true);
+        if ($startIndex === false) {
+            $startIndex = array_search('7d', self::ORDERED_PERIODS, true) ?: 0;
+        }
+
+        $candidateKeys = array_slice(self::ORDERED_PERIODS, (int) $startIndex);
+
+        foreach ($candidateKeys as $key) {
+            $candidate = $this->resolve($key, $reference);
+            if ($candidate->since === null || $latestCollectedAt->greaterThanOrEqualTo($candidate->since)) {
+                return $candidate;
+            }
+        }
+
+        return $this->resolve(self::DEFAULT_PERIOD, $reference);
     }
 
     /**

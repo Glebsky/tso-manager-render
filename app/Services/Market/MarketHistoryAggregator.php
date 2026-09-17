@@ -136,6 +136,18 @@ final class MarketHistoryAggregator
         return $price !== null ? (float) $price : null;
     }
 
+    public function latestCollectedAt(string $serverId, string $itemId, string $targetItemId): ?CarbonInterface
+    {
+        $latest = MarketHistory::query()
+            ->where('server_id', $serverId)
+            ->where('item_id', $itemId)
+            ->where('target_item_id', $targetItemId)
+            ->whereNotNull('price')
+            ->max('collected_at');
+
+        return $latest !== null ? Carbon::parse((string) $latest) : null;
+    }
+
     /**
      * @return array{volume: int, offers_count: int, sellers_count: int}
      */
