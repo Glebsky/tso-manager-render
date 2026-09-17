@@ -43,7 +43,13 @@ final class AnalyticsController extends Controller
         }
 
         return new JsonResponse(
-            $this->analytics->pair($serverId, $itemId, $targetItemId, $period)
+            $this->analytics->pair(
+                $serverId,
+                $itemId,
+                $targetItemId,
+                $period,
+                $request->autoFallback()
+            )
         );
     }
 }

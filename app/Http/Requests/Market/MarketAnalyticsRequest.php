@@ -29,7 +29,13 @@ final class MarketAnalyticsRequest extends FormRequest
             'target_item_id' => ['nullable', 'string', 'max:100'],
             'page' => ['nullable', 'integer', 'min:1'],
             'limit' => ['nullable', 'integer', 'min:1', 'max:500'],
+            'auto_fallback' => ['sometimes', 'boolean'],
         ];
+    }
+
+    public function autoFallback(): bool
+    {
+        return $this->boolean('auto_fallback', false);
     }
 
     public function serverId(): ?string
