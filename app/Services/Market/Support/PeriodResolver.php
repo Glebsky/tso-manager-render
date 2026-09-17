@@ -58,7 +58,7 @@ final class PeriodResolver
 
         $startIndex = array_search($requested->key, self::ORDERED_PERIODS, true);
         if ($startIndex === false) {
-            $startIndex = array_search('7d', self::ORDERED_PERIODS, true) ?: 0;
+            $startIndex = 0;
         }
 
         $candidateKeys = array_slice(self::ORDERED_PERIODS, (int) $startIndex);
