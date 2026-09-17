@@ -46,6 +46,7 @@ fi
 # Clear runtime config caches first
 php artisan config:clear || true
 php artisan cache:clear || true
+php artisan queue:restart || true
 
 # APP_KEY validation & persistent secret check
 if [ -z "$APP_KEY" ]; then
