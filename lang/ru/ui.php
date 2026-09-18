@@ -292,8 +292,6 @@ return [
     'market.footer_tracker_desc' => 'Актуальные цены торгов, история спроса, динамика стоимости и поиск выгодных цепочек обмена на серверах The Settlers Online.',
     'market.footer_simulator_title' => 'Умный боевой симулятор',
     'market.footer_simulator_desc' => 'Оптимизация волн атак с распределением ваших генералов по лагерям для минимизации потерь и эффективного прохождения приключений.',
-    'market.footer_disclaimer_title' => 'Дисклеймер',
-    'market.footer_disclaimer_desc' => 'Неофициальный фанатский проект для сообщества. Не связан с Ubisoft или Blue Byte. The Settlers Online является зарегистрированным товарным знаком Ubisoft Entertainment.',
     'market.public_subtitle' => 'Торговые цены, история спроса, популярные товары и арбитражные возможности в реальном времени',
     'market.range_1y' => '1г',
     'market.range_24h' => '24ч',

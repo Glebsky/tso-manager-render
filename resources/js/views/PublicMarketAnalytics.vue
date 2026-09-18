@@ -697,7 +697,7 @@
 
         <!-- Informational Footer Section -->
         <footer class="glass-card p-4 sm:p-5 border-white/10 relative transition-all duration-300 hover:border-white/20">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 text-xs">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 text-xs">
                 <!-- Market Price Tracker -->
                 <div class="space-y-1.5">
                     <div class="flex items-center gap-2 font-semibold text-white">
@@ -737,21 +737,6 @@
                             </svg>
                         </a>
                     </div>
-                </div>
-
-                <!-- Disclaimer -->
-                <div class="space-y-1.5">
-                    <div class="flex items-center gap-2 font-semibold text-white/80">
-                        <div class="w-6 h-6 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
-                            <svg class="w-3.5 h-3.5 text-white/50" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
-                            </svg>
-                        </div>
-                        <h2 class="text-sm font-semibold text-white/80 tracking-tight">{{ t('market.footer_disclaimer_title') }}</h2>
-                    </div>
-                    <p class="text-white/40 leading-relaxed">
-                        {{ t('market.footer_disclaimer_desc') }}
-                    </p>
                 </div>
             </div>
         </footer>

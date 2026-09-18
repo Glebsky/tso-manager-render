@@ -292,8 +292,6 @@ return [
     'market.footer_tracker_desc' => 'Real-time trade prices, demand history, price analytics, and automated arbitrage exchange loops across The Settlers Online servers.',
     'market.footer_simulator_title' => 'Smart Combat Simulator',
     'market.footer_simulator_desc' => 'Optimizes adventure attack waves across your generals to minimize troop losses and maximize combat efficiency.',
-    'market.footer_disclaimer_title' => 'Disclaimer',
-    'market.footer_disclaimer_desc' => 'Independent fan-made community project. Not affiliated with, endorsed, or sponsored by Ubisoft or Blue Byte. The Settlers Online is a registered trademark of Ubisoft Entertainment.',
     'market.public_subtitle' => 'Real-time trade prices, demand history, popular items, and arbitrage opportunities',
     'market.range_1y' => '1y',
     'market.range_24h' => '24h',
