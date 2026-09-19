@@ -4,9 +4,11 @@ namespace Tests\Feature;
 
 use App\Models\Account;
 use App\Models\ScheduledTask;
+use App\Services\Tasks\Handlers\ApplyBuffHandler;
 use App\Services\TsoAmfService;
 use App\Services\TsoAuthService;
 use App\Services\ZoneParserService;
+use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
@@ -1315,5 +1317,206 @@ class ScheduledTaskBuffTest extends TestCase
         $task->refresh();
         $this->assertFalse($task->is_active);
         $this->assertStringContainsString('OK:', (string) $task->last_result);
+    }
+
+    public function test_self_buff_sequence_deduplicates_in_cache_without_polluting_db(): void
+    {
+        $account = Account::create([
+            'username' => 'selfuser',
+            'password' => 'secret',
+            'region' => 'ru',
+            'nickname' => 'selfuser',
+            'dso_auth_user' => '10001',
+            'last_sync_at' => now(),
+            'zone_data' => [
+                'friends' => [],
+                'availableBuffs' => [
+                    ['uniqueId1' => 11, 'uniqueId2' => 22, 'amount' => 10, 'buffName_string' => 'ProductivityBuffLvl3'],
+                ],
+                'buildings' => [
+                    [
+                        'buildingGrid' => 1500,
+                        'buildingName_string' => 'Farm',
+                        'buffs' => [],
+                    ],
+                    [
+                        'buildingGrid' => 1600,
+                        'buildingName_string' => 'Brewery',
+                        'buffs' => [],
+                    ],
+                ],
+            ],
+        ]);
+
+        $task = ScheduledTask::create([
+            'account_id' => $account->id,
+            'name' => 'Self Sequence with Duplicate Step',
+            'task_type' => 'sequence',
+            'schedule_type' => 'once',
+            'run_at_datetime' => now()->subMinute(),
+            'is_active' => true,
+            'payload' => [
+                'actions' => [
+                    [
+                        'task_type' => 'apply_buff',
+                        'delay_seconds' => 0,
+                        'payload' => [
+                            'target_scope' => 'self',
+                            'grid' => 1500,
+                            'unique_id1' => 11,
+                            'unique_id2' => 22,
+                            'buff_raw_name' => 'ProductivityBuffLvl3',
+                            'amount' => 1,
+                        ],
+                    ],
+                    [
+                        'task_type' => 'apply_buff',
+                        'delay_seconds' => 0,
+                        'payload' => [
+                            'target_scope' => 'self',
+                            'grid' => 1500, // duplicate!
+                            'unique_id1' => 11,
+                            'unique_id2' => 22,
+                            'buff_raw_name' => 'ProductivityBuffLvl3',
+                            'amount' => 1,
+                        ],
+                    ],
+                    [
+                        'task_type' => 'apply_buff',
+                        'delay_seconds' => 0,
+                        'payload' => [
+                            'target_scope' => 'self',
+                            'grid' => 1600,
+                            'unique_id1' => 11,
+                            'unique_id2' => 22,
+                            'buff_raw_name' => 'ProductivityBuffLvl3',
+                            'amount' => 1,
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $this->authMock->shouldReceive('ensureAuthenticated')->with(Mockery::any())->andReturnNull();
+
+        // applyBuff should only be called TWICE (for grid 1500 and grid 1600), NOT for duplicate step 2
+        $this->amfMock->shouldReceive('applyBuff')
+            ->once()
+            ->with(Mockery::any(), 1500, 11, 22, 1)
+            ->andReturn('buff_response_1_amf_response');
+
+        $this->amfMock->shouldReceive('applyBuff')
+            ->once()
+            ->with(Mockery::any(), 1600, 11, 22, 1)
+            ->andReturn('buff_response_2_amf_response');
+
+        $this->parserMock->shouldReceive('parse')
+            ->twice()
+            ->andReturn(['errorCode' => 0]);
+
+        Artisan::call('tso:execute-tasks');
+
+        $task->refresh();
+        $this->assertFalse($task->is_active);
+
+        $stepResults = $task->payload['step_results'] ?? [];
+        $this->assertCount(3, $stepResults);
+        $this->assertSame('completed', $stepResults[0]['status']);
+        $this->assertSame('skipped', $stepResults[1]['status']);
+        $this->assertStringContainsString('already buffed', (string) ($stepResults[1]['reason'] ?? ''));
+        $this->assertSame('completed', $stepResults[2]['status']);
+
+        // CRITICAL: Ensure account->zone_data in DB has NOT been polluted with fake buffs!
+        $account->refresh();
+        $buildingsInDb = $account->zone_data['buildings'] ?? [];
+        foreach ($buildingsInDb as $b) {
+            $this->assertEmpty($b['buffs'], "Building {$b['buildingGrid']} in DB should not have buffs saved to database.");
+        }
+    }
+
+    public function test_strips_legacy_fake_buffs_from_db_and_allows_buffing(): void
+    {
+        // Account has a building poisoned with legacy fake buff ['buffName_string' => 'ProductivityBuffLvl3', 'remaining' => 1]
+        $account = Account::create([
+            'username' => 'legacyuser',
+            'password' => 'secret',
+            'region' => 'ru',
+            'nickname' => 'legacyuser',
+            'dso_auth_user' => '10001',
+            'last_sync_at' => now(),
+            'zone_data' => [
+                'friends' => [],
+                'availableBuffs' => [
+                    ['uniqueId1' => 11, 'uniqueId2' => 22, 'amount' => 5, 'buffName_string' => 'ProductivityBuffLvl3'],
+                ],
+                'buildings' => [
+                    [
+                        'buildingGrid' => 1500,
+                        'buildingName_string' => 'Farm',
+                        'buffs' => [
+                            [
+                                'buffName_string' => 'ProductivityBuffLvl3',
+                                'remaining' => 1,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $task = ScheduledTask::create([
+            'account_id' => $account->id,
+            'name' => 'Buff Cleans Fake Buff in DB',
+            'task_type' => 'apply_buff',
+            'schedule_type' => 'once',
+            'run_at_datetime' => now()->subMinute(),
+            'is_active' => true,
+            'payload' => [
+                'target_scope' => 'self',
+                'grid' => 1500,
+                'unique_id1' => 11,
+                'unique_id2' => 22,
+                'buff_raw_name' => 'ProductivityBuffLvl3',
+                'amount' => 1,
+            ],
+        ]);
+
+        $this->authMock->shouldReceive('ensureAuthenticated')->with(Mockery::any())->andReturnNull();
+
+        $this->amfMock->shouldReceive('applyBuff')
+            ->once()
+            ->with(Mockery::any(), 1500, 11, 22, 1)
+            ->andReturn('buff_ok_amf_response');
+
+        $this->parserMock->shouldReceive('parse')
+            ->once()
+            ->with('buff_ok_amf_response')
+            ->andReturn(['errorCode' => 0]);
+
+        Artisan::call('tso:execute-tasks');
+
+        $task->refresh();
+        $this->assertFalse($task->is_active);
+        $this->assertStringContainsString('OK:', (string) $task->last_result);
+
+        // DB zone_data should have been sanitized and fake buffs removed
+        $account->refresh();
+        $zoneData = is_array($account->zone_data) ? $account->zone_data : [];
+        $this->assertEmpty($zoneData['buildings'][0]['buffs'] ?? null);
+    }
+
+    public function test_invalidate_home_zone_for_account(): void
+    {
+        $cache = app(Repository::class);
+        $accountId = 999;
+
+        $cache->put("home-zone:version:{$accountId}", 1, 86400);
+        $cache->put("home-zone:exec:{$accountId}:v1", ['some' => 'data'], 180);
+
+        ApplyBuffHandler::invalidateHomeZoneForAccount($cache, $accountId);
+
+        $newVersion = (int) $cache->get("home-zone:version:{$accountId}");
+        $this->assertSame(2, $newVersion);
+        $this->assertNull($cache->get("home-zone:exec:{$accountId}:v{$newVersion}"));
     }
 }
