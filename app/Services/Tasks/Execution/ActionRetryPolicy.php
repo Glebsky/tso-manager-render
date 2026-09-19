@@ -84,6 +84,8 @@ final readonly class ActionRetryPolicy
                     $this->amfService->resetClient($accountId);
                     $this->authService->ensureAuthenticated($account, force: true);
                     $account->refresh();
+                    ApplyBuffHandler::invalidateFriendZonesForAccount($this->cache, $accountId);
+                    ApplyBuffHandler::invalidateHomeZoneForAccount($this->cache, $accountId);
                     sleep(2);
 
                     continue;

@@ -17,6 +17,7 @@ use App\Services\Tasks\Execution\BuildingBuffEligibilityValidator;
 use App\Services\TsoAmfService;
 use App\Services\ZoneParserService;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
+use Illuminate\Support\Facades\Log;
 
 final readonly class ApplyBuffHandler implements TaskActionHandlerInterface
 {
@@ -42,6 +43,15 @@ final readonly class ApplyBuffHandler implements TaskActionHandlerInterface
     {
         $current = (int) $cache->get("friend-zone:version:{$accountId}", 1);
         $cache->put("friend-zone:version:{$accountId}", $current + 1, 86400);
+    }
+
+    /**
+     * Invalidate all cached home zones for the given account.
+     */
+    public static function invalidateHomeZoneForAccount(CacheRepository $cache, int $accountId): void
+    {
+        $current = (int) $cache->get("home-zone:version:{$accountId}", 1);
+        $cache->put("home-zone:version:{$accountId}", $current + 1, 86400);
     }
 
     /**
@@ -132,8 +142,18 @@ final readonly class ApplyBuffHandler implements TaskActionHandlerInterface
         }
 
         // Target scope: self
-        $zoneData = is_array($account->zone_data) ? $account->zone_data : [];
-        $homeBuildings = $zoneData['buildings'] ?? [];
+        $version = (int) $this->cache->get("home-zone:version:{$account->id}", 1);
+        $homeZoneCacheKey = "home-zone:exec:{$account->id}:v{$version}";
+
+        /** @var array<string, mixed>|null $homeZoneData */
+        $homeZoneData = $this->cache->get($homeZoneCacheKey);
+
+        if (! is_array($homeZoneData)) {
+            $homeZoneData = $this->resolveHomeZoneData($account);
+            $this->cache->put($homeZoneCacheKey, $homeZoneData, 180);
+        }
+
+        $homeBuildings = $homeZoneData['buildings'] ?? [];
 
         if (! empty($homeBuildings) && is_array($homeBuildings)) {
             try {
@@ -145,13 +165,98 @@ final readonly class ApplyBuffHandler implements TaskActionHandlerInterface
         }
 
         $rawResult = $this->amfService->applyBuff($account, $grid, $uniqueId1, $uniqueId2, $amount);
-        $this->markBuildingBuffedInHomeZone($account, $grid, $acquiredBuff->buffName);
+        $this->markBuildingBuffedInCache($homeZoneCacheKey, $grid, $acquiredBuff->buffName);
 
         return $rawResult;
     }
 
     /**
-     * Mark building as buffed in cached friend zone data to prevent duplicate buff calls in same sequence.
+     * Resolve and sanitize home zone data for execution.
+     * Refreshes from live game server if stale (> 60s) in production, and strips any residual synthetic buffs.
+     *
+     * @return array<string, mixed>
+     */
+    private function resolveHomeZoneData(Account $account): array
+    {
+        $isStale = $account->last_sync_at === null || $account->last_sync_at->diffInSeconds(now()) >= 60;
+
+        if ($isStale && ! app()->environment('testing')) {
+            try {
+                $rawAmf = $this->amfService->getZone($account);
+                $zoneData = $this->zoneParser->parse($rawAmf);
+                $errorCode = (int) ($zoneData['errorCode'] ?? 0);
+
+                if ($errorCode === 0 && ! empty($zoneData['buildings'])) {
+                    if ($account->exists) {
+                        $existingFriends = is_array($account->zone_data) && is_array($account->zone_data['friends'] ?? null)
+                            ? $account->zone_data['friends']
+                            : [];
+                        if (! empty($existingFriends)) {
+                            $zoneData['friends'] = $existingFriends;
+                        }
+
+                        $account->update([
+                            'zone_data' => $zoneData,
+                            'last_sync_at' => now(),
+                            'status' => 'online',
+                        ]);
+                    }
+
+                    return $zoneData;
+                }
+            } catch (\Throwable $e) {
+                Log::warning("[ApplyBuffHandler] Failed to refresh live home zone for account #{$account->id}: {$e->getMessage()}");
+            }
+        }
+
+        $rawZoneData = is_array($account->zone_data) ? $account->zone_data : [];
+        [$sanitizedZone, $hadFakeBuffs] = $this->stripFakeBuffs($rawZoneData);
+
+        if ($hadFakeBuffs && $account->exists) {
+            $account->update([
+                'zone_data' => $sanitizedZone,
+            ]);
+        }
+
+        return $sanitizedZone;
+    }
+
+    /**
+     * Strip any legacy fake buffs (remaining === 1) injected by previous versions of ApplyBuffHandler.
+     *
+     * @param  array<string, mixed>  $zoneData
+     * @return array{0: array<string, mixed>, 1: bool}
+     */
+    private function stripFakeBuffs(array $zoneData): array
+    {
+        if (! isset($zoneData['buildings']) || ! is_array($zoneData['buildings'])) {
+            return [$zoneData, false];
+        }
+
+        $hadFakeBuffs = false;
+        foreach ($zoneData['buildings'] as $idx => $building) {
+            if (! is_array($building) || empty($building['buffs']) || ! is_array($building['buffs'])) {
+                continue;
+            }
+
+            $cleanBuffs = [];
+            foreach ($building['buffs'] as $buff) {
+                if (is_array($buff) && isset($buff['remaining']) && (int) $buff['remaining'] === 1 && ! isset($buff['uniqueId'])) {
+                    $hadFakeBuffs = true;
+
+                    continue;
+                }
+                $cleanBuffs[] = $buff;
+            }
+
+            $zoneData['buildings'][$idx]['buffs'] = $cleanBuffs;
+        }
+
+        return [$zoneData, $hadFakeBuffs];
+    }
+
+    /**
+     * Mark building as buffed in cached zone data to prevent duplicate buff calls in same sequence.
      */
     private function markBuildingBuffedInCache(string $cacheKey, int $grid, string $buffName): void
     {
@@ -176,41 +281,6 @@ final readonly class ApplyBuffHandler implements TaskActionHandlerInterface
                 $this->cache->put($cacheKey, $cachedZone, 180);
                 break;
             }
-        }
-    }
-
-    /**
-     * Mark building as buffed in home zone data to prevent duplicate buff calls in same sequence.
-     */
-    private function markBuildingBuffedInHomeZone(Account $account, int $grid, string $buffName): void
-    {
-        $zoneData = is_array($account->zone_data) ? $account->zone_data : [];
-        if (! isset($zoneData['buildings']) || ! is_array($zoneData['buildings'])) {
-            return;
-        }
-
-        $modified = false;
-        foreach ($zoneData['buildings'] as $idx => $building) {
-            if (! is_array($building)) {
-                continue;
-            }
-            $bGrid = (int) ($building['buildingGrid'] ?? $building['grid'] ?? 0);
-            if ($bGrid === $grid) {
-                $buffs = is_array($building['buffs'] ?? null) ? $building['buffs'] : [];
-                $buffs[] = [
-                    'buffName_string' => $buffName,
-                    'remaining' => 1,
-                ];
-                $zoneData['buildings'][$idx]['buffs'] = $buffs;
-                $modified = true;
-                break;
-            }
-        }
-
-        if ($modified) {
-            $account->update([
-                'zone_data' => $zoneData,
-            ]);
         }
     }
 
