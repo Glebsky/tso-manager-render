@@ -198,7 +198,7 @@ readonly class TaskExecutionService
                 $account->id,
                 $task->id,
                 LogLevel::Success,
-                __('logs.task.single_action_completed', ['id' => $task->id, 'step' => $actionIndex + 1, 'type' => $actionType])
+                __('logs.task.single_action_completed', ['name' => $task->name, 'step' => $actionIndex + 1, 'type' => $actionType])
             );
         } catch (SkippableStepExceptionInterface $e) {
             $stepResults[$actionIndex] = [
@@ -211,7 +211,7 @@ readonly class TaskExecutionService
                 $account->id,
                 $task->id,
                 LogLevel::Warning,
-                __('logs.task.single_action_skipped', ['id' => $task->id, 'step' => $actionIndex + 1, 'type' => $actionType, 'reason' => $e->getMessage()])
+                __('logs.task.single_action_skipped', ['name' => $task->name, 'step' => $actionIndex + 1, 'type' => $actionType, 'reason' => $e->getMessage()])
             );
         } catch (Throwable $e) {
             $readableError = $e->getMessage();
@@ -228,7 +228,7 @@ readonly class TaskExecutionService
                 $account->id,
                 $task->id,
                 LogLevel::Error,
-                __('logs.task.single_action_failed', ['id' => $task->id, 'step' => $actionIndex + 1, 'type' => $actionType, 'error' => $readableError])
+                __('logs.task.single_action_failed', ['name' => $task->name, 'step' => $actionIndex + 1, 'type' => $actionType, 'error' => $readableError])
             );
         }
 

@@ -75,7 +75,7 @@ final readonly class SequenceStepExecutor
                     $account->id,
                     $task->id,
                     LogLevel::Success,
-                    __('logs.task.step_completed', ['id' => $task->id, 'step' => $index + 1, 'type' => $actionType])
+                    __('logs.task.step_completed', ['name' => $task->name, 'step' => $index + 1, 'type' => $actionType])
                 );
             } catch (SkippableStepExceptionInterface $e) {
                 $hasStepSkipped = true;
@@ -98,7 +98,7 @@ final readonly class SequenceStepExecutor
                         $task->id,
                         LogLevel::Warning,
                         __('logs.task.step_skipped_buff', [
-                            'id' => $task->id,
+                            'name' => $task->name,
                             'step' => $index + 1,
                             'type' => $actionType,
                             'buff' => $buffName,
@@ -117,7 +117,7 @@ final readonly class SequenceStepExecutor
                         $task->id,
                         LogLevel::Warning,
                         __('logs.task.step_skipped_reason', [
-                            'id' => $task->id,
+                            'name' => $task->name,
                             'step' => $index + 1,
                             'type' => $actionType,
                             'reason' => $reason,
@@ -142,7 +142,7 @@ final readonly class SequenceStepExecutor
                     $account->id,
                     $task->id,
                     LogLevel::Error,
-                    __('logs.task.step_failed', ['id' => $task->id, 'step' => $index + 1, 'type' => $actionType, 'error' => $readableError])
+                    __('logs.task.step_failed', ['name' => $task->name, 'step' => $index + 1, 'type' => $actionType, 'error' => $readableError])
                 );
             }
 
@@ -214,7 +214,7 @@ final readonly class SequenceStepExecutor
                 $account->id,
                 $task->id,
                 LogLevel::Success,
-                __('logs.task.step_completed', ['id' => $task->id, 'step' => $index + 1, 'type' => $actionType])
+                __('logs.task.step_completed', ['name' => $task->name, 'step' => $index + 1, 'type' => $actionType])
             );
         } catch (SkippableStepExceptionInterface $e) {
             $stepResults[$index] = [
@@ -230,7 +230,7 @@ final readonly class SequenceStepExecutor
                     $task->id,
                     LogLevel::Warning,
                     __('logs.task.step_skipped_buff', [
-                        'id' => $task->id,
+                        'name' => $task->name,
                         'step' => $index + 1,
                         'type' => $actionType,
                         'buff' => $buffName,
@@ -242,7 +242,7 @@ final readonly class SequenceStepExecutor
                     $task->id,
                     LogLevel::Warning,
                     __('logs.task.step_skipped_reason', [
-                        'id' => $task->id,
+                        'name' => $task->name,
                         'step' => $index + 1,
                         'type' => $actionType,
                         'reason' => $e->getMessage(),
@@ -264,7 +264,7 @@ final readonly class SequenceStepExecutor
                 $account->id,
                 $task->id,
                 LogLevel::Error,
-                __('logs.task.step_failed', ['id' => $task->id, 'step' => $index + 1, 'type' => $actionType, 'error' => $readableError])
+                __('logs.task.step_failed', ['name' => $task->name, 'step' => $index + 1, 'type' => $actionType, 'error' => $readableError])
             );
         }
 
