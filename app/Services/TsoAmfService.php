@@ -228,7 +228,7 @@ class TsoAmfService
     public function getFriendList(Account $account): string
     {
         $getFriends = new defaultGame_Communication_VO_dGetFriendsVO;
-        $getFriends->version = '3c2374c967d4223b5ccb643c0305c8d9eeb0a943';
+        $getFriends->version = config('game.friends_version');
 
         return $this->sendServerCall(
             $account,
