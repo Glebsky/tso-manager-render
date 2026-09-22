@@ -100,6 +100,7 @@ class ScheduledTaskTest extends TestCase
 
         $task = ScheduledTask::create([
             'account_id' => $account->id,
+            'name' => 'Test Sequence Task',
             'task_type' => 'sequence',
             'payload' => [
                 'actions' => [
@@ -151,16 +152,16 @@ class ScheduledTaskTest extends TestCase
         $this->assertStringContainsString('Step 1 [stop_production]: OK', (string) $task->last_result);
         $this->assertStringContainsString('Step 2 [start_production]: OK', (string) $task->last_result);
 
-        // Verify BotLogs were created
+        // Verify BotLogs were created with task name in the body (not repeated ID)
         $this->assertDatabaseHas('bot_logs', [
             'account_id' => $account->id,
             'level' => 'success',
-            'message' => "[Task][Task#{$task->id}] Task #{$task->id}: step 1 (stop_production) completed successfully.",
+            'message' => "[Task][Task#{$task->id}] Task \"Test Sequence Task\": step 1 (stop_production) completed successfully.",
         ]);
         $this->assertDatabaseHas('bot_logs', [
             'account_id' => $account->id,
             'level' => 'success',
-            'message' => "[Task][Task#{$task->id}] Task #{$task->id}: step 2 (start_production) completed successfully.",
+            'message' => "[Task][Task#{$task->id}] Task \"Test Sequence Task\": step 2 (start_production) completed successfully.",
         ]);
     }
 
