@@ -45,6 +45,13 @@
                         <input type="checkbox" :checked="onlyAvailable" @change="$emit('update:onlyAvailable', $event.target.checked)" class="rounded border-white/20 bg-white/5 text-emerald-500 focus:ring-emerald-400 cursor-pointer">
                         <span>{{ t('tasks.modal.only_available') }}</span>
                     </label>
+                    <button v-if="tab === 'friend' && selectedFriend" type="button" @click="$emit('refresh-friend-zone')" :disabled="loadingFriendZone"
+                            class="btn-secondary btn-sm text-[10px] sm:text-xs py-1 px-2.5 flex items-center gap-1.5 text-amber-400 hover:text-amber-300 border-amber-500/30 disabled:opacity-50">
+                        <svg class="w-3.5 h-3.5" :class="{ 'animate-spin': loadingFriendZone }" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                        </svg>
+                        <span>{{ t('tasks.refresh_friend_zone') }}</span>
+                    </button>
                 </div>
                 <div class="relative">
                     <input v-if="tab === 'self'" :value="buildingSearch" @input="$emit('update:buildingSearch', $event.target.value)" type="text" :placeholder="t('tasks.modal.search_building')" :aria-label="t('tasks.modal.search_building')" class="glass-input w-full text-xs py-1.5 sm:py-2 pl-3 sm:pl-4">
@@ -121,8 +128,16 @@
                         </div>
                     </div>
                 </div>
-                <div v-else class="text-center py-8 text-white/30 text-xs">
-                    {{ t('tasks.modal.no_buildings') }}
+                <div v-else class="text-center py-8 text-white/30 text-xs flex flex-col items-center gap-2">
+                    <span v-if="friendZoneError" class="text-red-400 font-medium">{{ t('tasks.friend_zone_error') }}</span>
+                    <span v-else>{{ t('tasks.modal.no_buildings') }}</span>
+                    <button v-if="selectedFriend" type="button" @click="$emit('refresh-friend-zone')" :disabled="loadingFriendZone"
+                            class="btn-secondary btn-sm text-xs mt-1 py-1.5 px-3 flex items-center gap-1.5 text-amber-400 hover:text-amber-300 border-amber-500/40 hover:bg-amber-500/10 disabled:opacity-50">
+                        <svg class="w-3.5 h-3.5" :class="{ 'animate-spin': loadingFriendZone }" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                        </svg>
+                        <span>{{ t('tasks.refresh_friend_zone') }}</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -142,6 +157,7 @@ const props = defineProps({
     searchedFriendBuildings: { type: Array, default: () => [] },
     selectedFriend: { type: Object, default: null },
     loadingFriendZone: { type: Boolean, default: false },
+    friendZoneError: { type: Boolean, default: false },
     zone: { type: Object, default: null },
     isSelectedBuilding: { type: Function, required: true },
     getBuildingIcon: { type: Function, required: true },
@@ -152,7 +168,7 @@ const props = defineProps({
     getClickableInfo: { type: Function, default: null }
 });
 
-defineEmits(['close', 'select-all', 'clear', 'toggle-building', 'update:tab', 'update:buildingSearch', 'update:friendBuildingSearch', 'update:onlyAvailable']);
+defineEmits(['close', 'select-all', 'clear', 'toggle-building', 'update:tab', 'update:buildingSearch', 'update:friendBuildingSearch', 'update:onlyAvailable', 'refresh-friend-zone']);
 
 const getClickableBadge = (b) => {
     if (!props.getClickableInfo) return null;

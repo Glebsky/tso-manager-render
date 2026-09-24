@@ -13,6 +13,7 @@ use App\Models\Account;
 use App\Services\AccountService;
 use App\Services\AccountSyncService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Psr\SimpleCache\InvalidArgumentException;
@@ -106,9 +107,10 @@ final class AccountController extends Controller
     /**
      * @throws InvalidArgumentException
      */
-    public function friendZone(Account $account, int|string $friendId): JsonResponse
+    public function friendZone(Request $request, Account $account, int|string $friendId): JsonResponse
     {
-        $res = $this->accountService->getFriendZone($account, (int) $friendId);
+        $force = $request->boolean('refresh') || $request->boolean('force');
+        $res = $this->accountService->getFriendZone($account, (int) $friendId, $force);
 
         return new JsonResponse($res['payload'], $res['status']);
     }

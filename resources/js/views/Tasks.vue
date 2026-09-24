@@ -98,12 +98,27 @@
                             </svg>
                             {{ t('tasks.sequence_builder') }}
                         </h3>
-                        <button v-if="sequenceActions.length > 0" type="button" @click="clearSequence" class="text-xs text-red-400/70 hover:text-red-400 transition-colors flex items-center gap-1 font-medium">
-                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                            </svg>
-                            {{ t('tasks.clear_series') }}
-                        </button>
+                        <div class="flex items-center gap-3">
+                            <button v-if="sequenceActions.length > 1"
+                                    type="button"
+                                    @click="removeDuplicateActions"
+                                    class="text-xs text-amber-400/80 hover:text-amber-300 transition-colors flex items-center gap-1 font-medium"
+                                    :title="t('tasks.remove_duplicates')">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" />
+                                </svg>
+                                {{ t('tasks.remove_duplicates') }}
+                            </button>
+                            <button v-if="sequenceActions.length > 0"
+                                    type="button"
+                                    @click="clearSequence"
+                                    class="text-xs text-red-400/70 hover:text-red-400 transition-colors flex items-center gap-1 font-medium">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                </svg>
+                                {{ t('tasks.clear_series') }}
+                            </button>
+                        </div>
                     </div>
 
                     <div v-if="sequenceActions.length > 0" class="space-y-2 mb-4 max-h-72 sm:max-h-60 overflow-y-auto pr-1 sm:pr-2">
@@ -317,7 +332,16 @@
 
                                         <!-- 2. ВЫБОР ДРУГА (если выбрана Зона друга) -->
                                         <div v-if="stepActionType === 'apply_buff' && stepTargetScope === 'friend'" class="mb-3">
-                                            <label class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">{{ t('tasks.friend') }}</label>
+                                            <div class="flex items-center justify-between mb-1.5">
+                                                <label class="block text-[10px] font-medium text-white/40 uppercase">{{ t('tasks.friend') }}</label>
+                                                <button v-if="selectedFriend" type="button" @click="fetchFriendZoneBuildings(true)" :disabled="loadingFriendZone"
+                                                        class="text-[10px] text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-1 disabled:opacity-50">
+                                                    <svg class="w-3 h-3" :class="{ 'animate-spin': loadingFriendZone }" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                                                    </svg>
+                                                    <span>{{ t('tasks.refresh_friend_zone') }}</span>
+                                                </button>
+                                            </div>
                                             <div class="relative">
                                                 <button type="button" @click.stop="activeDropdown = activeDropdown === 'friendList' ? null : 'friendList'"
                                                         class="glass-select w-full flex items-center justify-between text-left text-xs py-2 bg-dark-900/40 transition-all duration-300"
@@ -404,6 +428,9 @@
                                                     <span class="flex items-center gap-2 truncate">
                                                         <span>👤 {{ t('tasks.modal.select_friend_building') }}</span>
                                                         <span v-if="selectedBuildings.filter(b => b.scope === 'friend').length > 0" class="badge badge-emerald text-[10px]">{{ selectedBuildings.filter(b => b.scope === 'friend').length }}</span>
+                                                        <span v-else-if="selectedFriend && friendBuildings.length > 0" class="text-[10px] text-white/40 font-mono">({{ friendBuildings.length }} {{ t('tasks.buildings_short') }})</span>
+                                                        <span v-else-if="selectedFriend && loadingFriendZone" class="text-[10px] text-amber-400">({{ t('tasks.loading_zone') }}...)</span>
+                                                        <span v-else-if="selectedFriend && friendZoneError" class="text-[10px] text-red-400">({{ t('tasks.friend_zone_error') }})</span>
                                                     </span>
                                                     <svg class="w-3.5 h-3.5 text-white/30 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
@@ -813,6 +840,7 @@
                         :searchedFriendBuildings="searchedFriendBuildings"
                         :selectedFriend="selectedFriend"
                         :loadingFriendZone="loadingFriendZone"
+                        :friendZoneError="friendZoneError"
                         :zone="zone"
                         :isSelectedBuilding="isSelectedBuilding"
                         :getBuildingIcon="getBuildingIcon"
@@ -821,7 +849,8 @@
                         @close="closeBuildingModal"
                         @select-all="selectAllFilteredBuildings"
                         @clear="clearSelectedBuildings"
-                        @toggle-building="toggleBuildingSelection" />
+                        @toggle-building="toggleBuildingSelection"
+                        @refresh-friend-zone="() => fetchFriendZoneBuildings(true)" />
 
         <SpecialistPicker :showModal="showSpecialistModal"
                           v-model:specialistSearch="specialistSearch"
@@ -909,6 +938,7 @@ import { t, gameAny, gameAnyLookup, intlLocale } from '../lang';
 import { humanizeGameId, resourceName, buildingName, isBuffableBuilding, getBuildingCategory } from '../lang/gameNames';
 import { canBuffTarget, isBuildingBuff, isFriendZoneBuff, getBuffDurations, formatBuffDuration } from '../lang/buffTargets';
 import { getGameImageUrl, handleGameImageError } from '../services/gameImageService';
+import { deduplicateSequenceActions } from '../services/taskDeduplication';
 
 import Spinner from '../components/Spinner.vue';
 import SchedulePicker from '../components/tasks/SchedulePicker.vue';
@@ -1390,6 +1420,8 @@ import TaskList from '../components/tasks/TaskList.vue';
                 if (friendZonesCache.value[cacheKey]) {
                     friendBuildings.value = friendZonesCache.value[cacheKey];
                     friendZoneError.value = false;
+                } else {
+                    friendBuildings.value = [];
                 }
                 fetchFriendZoneBuildings();
             } else {
@@ -1397,27 +1429,37 @@ import TaskList from '../components/tasks/TaskList.vue';
             }
         };
 
-        const fetchFriendZoneBuildings = async () => {
+        const fetchFriendZoneBuildings = async (force = false) => {
             if (!selectedAccountId.value || !selectedFriend.value) return;
             const friendId = selectedFriend.value.id;
             const cacheKey = `${selectedAccountId.value}:${friendId}`;
 
-            if (!friendZonesCache.value[cacheKey] || friendZonesCache.value[cacheKey].length === 0) {
+            if (force) {
+                delete friendZonesCache.value[cacheKey];
+            }
+
+            if (force || !friendZonesCache.value[cacheKey] || friendZonesCache.value[cacheKey].length === 0) {
                 loadingFriendZone.value = true;
             }
             friendZoneError.value = false;
             try {
-                const res = await axios.get(`/api/accounts/${selectedAccountId.value}/friends/${friendId}/zone`);
+                const url = `/api/accounts/${selectedAccountId.value}/friends/${friendId}/zone` + (force ? '?refresh=1' : '');
+                const res = await axios.get(url);
                 if (res.data.success && Array.isArray(res.data.buildings)) {
                     friendBuildings.value = res.data.buildings;
                     friendZonesCache.value[cacheKey] = res.data.buildings;
+                    if (force) {
+                        showToast(t('tasks.toast.friend_zone_refreshed'), 'success');
+                    }
                 } else if (!friendZonesCache.value[cacheKey]) {
                     friendZoneError.value = true;
                 }
             } catch (e) {
-                if (!friendZonesCache.value[cacheKey]) {
+                if (!friendZonesCache.value[cacheKey] || force) {
                     friendZoneError.value = true;
                 }
+                const msg = e.response?.data?.message || t('tasks.toast.friend_zone_error');
+                showToast(msg, 'error');
             } finally {
                 loadingFriendZone.value = false;
             }
@@ -1857,6 +1899,17 @@ import TaskList from '../components/tasks/TaskList.vue';
             }
         };
 
+        const removeDuplicateActions = () => {
+            if (sequenceActions.value.length <= 1) return;
+            const { uniqueActions, removedCount } = deduplicateSequenceActions(sequenceActions.value);
+            if (removedCount === 0) {
+                showToast(t('tasks.toast.no_duplicates_found'), 'info');
+                return;
+            }
+            sequenceActions.value = uniqueActions;
+            showToast(t('tasks.toast.duplicates_removed', { count: removedCount }), 'success');
+        };
+
         const removeAction = (idx) => {
             sequenceActions.value.splice(idx, 1);
             showToast(t('tasks.toast.action_removed'));
@@ -2021,6 +2074,8 @@ import TaskList from '../components/tasks/TaskList.vue';
         // Central game-catalog lookup with legacy prettifier fallback.
         const resourceDisplayName = resourceName;
 
+        const starBuffNameCache = new Map();
+
         const getStarBuffName = (b) => {
             if (!b) return t('tasks.unknown_buff');
             const name = typeof b === 'string'
@@ -2028,28 +2083,33 @@ import TaskList from '../components/tasks/TaskList.vue';
                 : (b.buffName_string || b.buff_raw_name || b.name || b.buff_name);
             if (!name) return t('tasks.unknown_buff');
 
+            const resName = typeof b === 'object' ? (b.resourceName_string || b.buff_resource_name || '') : '';
+            const cacheKey = `${name}:${resName}`;
+            if (starBuffNameCache.has(cacheKey)) {
+                return starBuffNameCache.get(cacheKey);
+            }
+
+            let result;
             const template = gameAnyLookup(name);
             if (template) {
                 let tpl = template;
                 if (tpl.includes('{0}')) {
-                    const resName = typeof b === 'object' ? (b.resourceName_string || b.buff_resource_name || '') : '';
                     tpl = tpl.replace('{0}', resourceDisplayName(resName));
                 }
                 tpl = tpl.replace(/\{1,\w+\}/g, '').replace(/[:\s]+$/, '').replace(/\s+/g, ' ').trim();
-                return tpl;
+                result = tpl;
+            } else if (name === 'AddResource') {
+                result = `${t('tasks.buff_add_resource')}: ${resourceDisplayName(resName)}`;
+            } else if (name === 'BuildBuilding') {
+                result = `${t('tasks.buff_build_license')}: ${resourceDisplayName(resName)}`;
+            } else if (name === 'Adventure') {
+                result = `${t('tasks.buff_adventure')}: ${resourceDisplayName(resName)}`;
+            } else {
+                result = humanizeGameId(name);
             }
 
-            if (name === 'AddResource') {
-                return `${t('tasks.buff_add_resource')}: ${resourceDisplayName(typeof b === 'object' ? (b.resourceName_string || b.buff_resource_name) : '')}`;
-            }
-            if (name === 'BuildBuilding') {
-                return `${t('tasks.buff_build_license')}: ${resourceDisplayName(typeof b === 'object' ? (b.resourceName_string || b.buff_resource_name) : '')}`;
-            }
-            if (name === 'Adventure') {
-                return `${t('tasks.buff_adventure')}: ${resourceDisplayName(typeof b === 'object' ? (b.resourceName_string || b.buff_resource_name) : '')}`;
-            }
-
-            return humanizeGameId(name);
+            starBuffNameCache.set(cacheKey, result);
+            return result;
         };
 
         const getBuffImageName = (buff) => {
@@ -2100,6 +2160,10 @@ import TaskList from '../components/tasks/TaskList.vue';
             onlyAvailableBuildingFilter.value = false;
             buildingModalTab.value = tab;
             showBuildingModal.value = true;
+
+            if (tab === 'friend' && selectedFriend.value && friendBuildings.value.length === 0 && !loadingFriendZone.value) {
+                fetchFriendZoneBuildings();
+            }
 
             if (stepActionType.value === 'collect_building' && selectedAccountId.value) {
                 fetchClickableBuildings(selectedAccountId.value);
@@ -2472,28 +2536,123 @@ import TaskList from '../components/tasks/TaskList.vue';
             if (task.task_type === 'sequence' && task.payload && task.payload.actions) {
                 const zoneData = await fetchAccountZone(task.account_id);
 
-                sequenceActions.value = task.payload.actions.map(act => {
-                    const meta = act.meta && typeof act.meta === 'object' ? { ...act.meta } : { building: null, buff: null, specialist: null };
-
-                    const isFriendBuff = act.task_type === 'apply_buff' && (act.payload?.target_scope === 'friend' || Boolean(act.payload?.target_player_id));
-                    if (['stop_production', 'start_production', 'collect_building', 'apply_buff'].includes(act.task_type) && !meta.building && !isFriendBuff) {
-                        if (zoneData.buildings) {
-                            meta.building = zoneData.buildings.find(b => b.buildingGrid == act.payload?.grid) || null;
+                const buildingsByGrid = new Map();
+                if (zoneData && Array.isArray(zoneData.buildings)) {
+                    for (const b of zoneData.buildings) {
+                        if (b.buildingGrid !== undefined && b.buildingGrid !== null) {
+                            buildingsByGrid.set(Number(b.buildingGrid), b);
                         }
                     }
-                    if (act.task_type === 'apply_buff' && !meta.buff) {
-                        const buffs = zoneData.availableBuffs || zoneData.buffs || [];
-                        meta.buff = buffs.find(b => (b.uniqueId1 || b.uniqueID1) == act.payload?.unique_id1 && (b.uniqueId2 || b.uniqueID2) == act.payload?.unique_id2) || null;
+                }
+
+                const specialistsById = new Map();
+                if (zoneData && Array.isArray(zoneData.specialists)) {
+                    for (const s of zoneData.specialists) {
+                        const sid = s.uniqueId1 ?? s.uniqueID1 ?? s.uniqueId;
+                        if (sid !== undefined && sid !== null) {
+                            specialistsById.set(Number(sid), s);
+                        }
                     }
+                }
+
+                const buffs = (zoneData && (zoneData.availableBuffs || zoneData.buffs)) || [];
+                const buffsByUniqueId = new Map();
+                const buffsByRawName = new Map();
+                const buffsByStarName = new Map();
+
+                for (const b of buffs) {
+                    const u1 = b.uniqueId1 ?? b.uniqueID1 ?? b.uniqueId;
+                    const u2 = b.uniqueId2 ?? b.uniqueID2 ?? 0;
+                    if (u1 !== undefined && u1 !== null) {
+                        buffsByUniqueId.set(`${u1}:${u2}`, b);
+                        if (!buffsByUniqueId.has(`${u1}`)) {
+                            buffsByUniqueId.set(`${u1}`, b);
+                        }
+                    }
+                    if (b.buffName_string && !buffsByRawName.has(b.buffName_string)) {
+                        buffsByRawName.set(b.buffName_string, b);
+                    }
+                    if (b.name_string && !buffsByRawName.has(b.name_string)) {
+                        buffsByRawName.set(b.name_string, b);
+                    }
+                    const starName = getStarBuffName(b);
+                    if (starName && !buffsByStarName.has(starName)) {
+                        buffsByStarName.set(starName, b);
+                    }
+                }
+
+                const friendZonesMap = new Map();
+                for (const act of task.payload.actions) {
+                    const friendId = act.payload?.target_player_id;
+                    if (friendId && !friendZonesMap.has(friendId)) {
+                        const cacheKey = `${task.account_id}:${friendId}`;
+                        const fz = friendZonesCache.value[cacheKey];
+                        if (Array.isArray(fz)) {
+                            const gridMap = new Map();
+                            for (const fb of fz) {
+                                if (fb.buildingGrid !== undefined && fb.buildingGrid !== null) {
+                                    gridMap.set(Number(fb.buildingGrid), fb);
+                                }
+                            }
+                            friendZonesMap.set(friendId, gridMap);
+                        }
+                    }
+                }
+
+                sequenceActions.value = task.payload.actions.map(act => {
+                    const meta = act.meta && typeof act.meta === 'object' ? { ...act.meta } : { building: null, buff: null, specialist: null };
+                    const currentPayload = { ...act.payload };
+
+                    const isFriendBuff = act.task_type === 'apply_buff' && (act.payload?.target_scope === 'friend' || Boolean(act.payload?.target_player_id));
+                    const grid = Number(act.payload?.grid);
+
+                    if (['stop_production', 'start_production', 'collect_building', 'apply_buff'].includes(act.task_type) && !meta.building && !isNaN(grid)) {
+                        if (!isFriendBuff) {
+                            meta.building = buildingsByGrid.get(grid) || null;
+                        } else {
+                            const friendId = act.payload?.target_player_id;
+                            if (friendId && friendZonesMap.has(friendId)) {
+                                meta.building = friendZonesMap.get(friendId)?.get(grid) || null;
+                            }
+                        }
+                    }
+
+                    if (act.task_type === 'apply_buff') {
+                        let foundBuff = null;
+                        const u1 = currentPayload.unique_id1;
+                        const u2 = currentPayload.unique_id2 ?? 0;
+                        if (u1 !== undefined && u1 !== null) {
+                            foundBuff = buffsByUniqueId.get(`${u1}:${u2}`) || buffsByUniqueId.get(`${u1}`);
+                        }
+
+                        if (!foundBuff && (currentPayload.buff_raw_name || currentPayload.buff_name)) {
+                            if (currentPayload.buff_raw_name) {
+                                foundBuff = buffsByRawName.get(currentPayload.buff_raw_name);
+                            }
+                            if (!foundBuff && currentPayload.buff_name) {
+                                foundBuff = buffsByRawName.get(currentPayload.buff_name) || buffsByStarName.get(currentPayload.buff_name);
+                            }
+                            if (foundBuff) {
+                                currentPayload.unique_id1 = foundBuff.uniqueId1 || foundBuff.uniqueID1 || 0;
+                                currentPayload.unique_id2 = foundBuff.uniqueId2 || foundBuff.uniqueID2 || 0;
+                            }
+                        }
+
+                        if (!meta.buff && foundBuff) {
+                            meta.buff = foundBuff;
+                        }
+                    }
+
                     if (['send_geologist', 'send_explorer'].includes(act.task_type) && !meta.specialist) {
-                        if (zoneData.specialists) {
-                            meta.specialist = zoneData.specialists.find(s => (s.uniqueId1 || s.uniqueId) == act.payload?.unique_id1) || null;
+                        const sid = Number(act.payload?.unique_id1);
+                        if (!isNaN(sid)) {
+                            meta.specialist = specialistsById.get(sid) || null;
                         }
                     }
 
                     return {
                         task_type: act.task_type,
-                        payload: { ...act.payload },
+                        payload: currentPayload,
                         delay_seconds: act.delay_seconds || 0,
                         meta
                     };
@@ -3178,14 +3337,31 @@ import TaskList from '../components/tasks/TaskList.vue';
         };
 
         const getBuildingInfo = (taskObj, action) => {
+            if (action && typeof action === 'object' && action._bInfo) {
+                return action._bInfo;
+            }
+
             const grid = action?.payload?.grid || action?.meta?.building?.buildingGrid;
             let buildingObj = action?.meta?.building;
 
             if (!buildingObj && grid) {
                 const accId = Number(taskObj?.account_id || selectedAccountId.value);
-                const zd = accountZonesCache.value[accId];
-                if (zd && zd.buildings) {
-                    buildingObj = zd.buildings.find(b => Number(b.buildingGrid) === Number(grid));
+                const isFriend = action?.payload?.target_scope === 'friend' || Boolean(action?.payload?.target_player_id);
+                const friendId = action?.payload?.target_player_id;
+                if (isFriend && friendId) {
+                    const friendKey = `${accId}:${friendId}`;
+                    const fz = friendZonesCache.value[friendKey];
+                    if (Array.isArray(fz)) {
+                        buildingObj = fz.find(b => Number(b.buildingGrid) === Number(grid));
+                    }
+                } else {
+                    const zd = accountZonesCache.value[accId];
+                    if (zd && zd.buildings) {
+                        buildingObj = zd.buildings.find(b => Number(b.buildingGrid) === Number(grid));
+                    }
+                }
+                if (action?.meta && buildingObj) {
+                    action.meta.building = buildingObj;
                 }
             }
 
@@ -3211,26 +3387,38 @@ import TaskList from '../components/tasks/TaskList.vue';
                 icon = getBuildingIcon(action.payload.building_name);
             }
 
-            return {
+            const result = {
                 name: name || '',
                 grid: grid || null,
                 icon: icon,
                 level: buildingObj?.upgradeLevel || null,
                 raw: buildingObj || action?.meta?.building || null
             };
+            if (action && typeof action === 'object') {
+                action._bInfo = result;
+            }
+            return result;
         };
 
         const getBuffInfo = (taskObj, action) => {
+            if (action && typeof action === 'object' && action._buffInfo) {
+                return action._buffInfo;
+            }
+
             if (action?.task_type === 'produce_buff') {
                 const rName = action?.payload?.recipe_name || action?.meta?.recipe?.name;
                 const recipeTranslated = rName ? (resourceName(rName) || humanizeGameId(rName)) : t('tasks.action.produce_buff');
-                return {
+                const result = {
                     name: recipeTranslated,
                     icon: rName ? getBuffIcon({ buffName_string: rName }) : null,
                     amount: action?.payload?.amount || 1,
                     stacks: action?.payload?.stacks || 1,
                     raw: action?.meta?.recipe || null,
                 };
+                if (action && typeof action === 'object') {
+                    action._buffInfo = result;
+                }
+                return result;
             }
 
             let buffObj = action?.meta?.buff;
@@ -3241,6 +3429,9 @@ import TaskList from '../components/tasks/TaskList.vue';
                 if (zd) {
                     const buffs = zd.availableBuffs || zd.buffs || [];
                     buffObj = buffs.find(b => (b.uniqueId1 || b.uniqueID1 || b.uniqueId) == action.payload.unique_id1);
+                    if (action?.meta && buffObj) {
+                        action.meta.buff = buffObj;
+                    }
                 }
             }
 
@@ -3264,15 +3455,23 @@ import TaskList from '../components/tasks/TaskList.vue';
                 icon = getBuffIcon({ buffName_string: action.payload.buff_raw_name });
             }
 
-            return {
+            const result = {
                 name: name || t('tasks.buff'),
                 icon: icon,
                 amount: action?.payload?.amount || 1,
                 raw: buffObj || action?.meta?.buff || null
             };
+            if (action && typeof action === 'object') {
+                action._buffInfo = result;
+            }
+            return result;
         };
 
         const getSpecialistInfo = (taskObj, action) => {
+            if (action && typeof action === 'object' && action._specInfo) {
+                return action._specInfo;
+            }
+
             const u1 = action?.payload?.unique_id1;
             let specObj = action?.meta?.specialist;
 
@@ -3281,6 +3480,9 @@ import TaskList from '../components/tasks/TaskList.vue';
                 const zd = accountZonesCache.value[accId];
                 if (zd && zd.specialists) {
                     specObj = zd.specialists.find(s => (s.uniqueId1 || s.uniqueID1 || s.uniqueId) == u1);
+                    if (action?.meta && specObj) {
+                        action.meta.specialist = specObj;
+                    }
                 }
             }
 
@@ -3290,13 +3492,17 @@ import TaskList from '../components/tasks/TaskList.vue';
             const icon = type !== undefined ? getSpecialistIcon(type) : null;
             const subTaskLabel = action?.meta?.subTaskLabel || action?.payload?.sub_task_label || getSubTaskLabel(action?.task_type, action?.payload?.task_type, action?.payload?.sub_task_id);
 
-            return {
+            const result = {
                 name: name || typeName,
                 typeName: typeName,
                 icon: icon,
                 subTaskLabel: subTaskLabel,
                 raw: specObj || action?.meta?.specialist || null
             };
+            if (action && typeof action === 'object') {
+                action._specInfo = result;
+            }
+            return result;
         };
 
         const getBuildingDisplayName = (taskObj, action) => {

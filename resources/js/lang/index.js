@@ -50,6 +50,7 @@ export async function initLang(targetLocale = locale) {
     }
 
     await Promise.all(promises);
+    clearLookupCaches();
 }
 
 export function setLocale(newLocale) {
@@ -81,6 +82,33 @@ export const intlLocale = INTL_LOCALES[locale] || locale;
 const GAME_SECTION_LOOKUP_ORDER = ['RES', 'BUI', 'LAB', 'SPE', 'ADN'];
 
 const MAX_PLACEHOLDER_DEPTH = 3;
+
+/** Performance caches for raw game catalog lookups */
+const lookupCache = new Map();
+const anyLookupCache = new Map();
+const normalizedSectionMaps = new WeakMap();
+
+export function clearLookupCaches() {
+    lookupCache.clear();
+    anyLookupCache.clear();
+}
+
+function getNormalizedSectionMap(sec) {
+    let normMap = normalizedSectionMaps.get(sec);
+    if (!normMap) {
+        normMap = new Map();
+        for (const k in sec) {
+            if (typeof sec[k] === 'string') {
+                const norm = k.replace(/[\s_]+/g, '').toLowerCase();
+                if (!normMap.has(norm)) {
+                    normMap.set(norm, sec[k]);
+                }
+            }
+        }
+        normalizedSectionMaps.set(sec, normMap);
+    }
+    return normMap;
+}
 
 function getDotPath(obj, key) {
     if (!obj || typeof obj !== 'object') return null;
@@ -143,8 +171,15 @@ export function t(key, params = null) {
 
 /** Raw game catalog lookup by (section, id); null when missing everywhere. */
 export function gameLookup(section, id) {
-    if (!id) return null;
+    if (!id || !section) return null;
     const strId = String(id).trim();
+    if (!strId) return null;
+
+    const cacheKey = `${section}:${strId}`;
+    if (lookupCache.has(cacheKey)) {
+        return lookupCache.get(cacheKey);
+    }
+
     const lcFirst = strId.charAt(0).toLowerCase() + strId.slice(1);
     const ucFirst = strId.charAt(0).toUpperCase() + strId.slice(1);
 
@@ -163,40 +198,62 @@ export function gameLookup(section, id) {
         cleanUcFirstLcRest,
     ]));
 
+    let result = null;
+
     for (const chainLocale of localeChain) {
         const sec = catalogs[chainLocale]?.game?.[section];
         if (sec) {
             for (const cand of candidates) {
-                if (typeof sec[cand] === 'string') return sec[cand];
+                if (typeof sec[cand] === 'string') {
+                    result = sec[cand];
+                    break;
+                }
+            }
+            if (result !== null) {
+                break;
             }
 
-            const idLowerClean = strId.replace(/[\s_]+/g, '').toLowerCase();
-            for (const k in sec) {
-                if (k.replace(/[\s_]+/g, '').toLowerCase() === idLowerClean && typeof sec[k] === 'string') {
-                    return sec[k];
-                }
+            const idLowerClean = cleanId.toLowerCase();
+            const normMap = getNormalizedSectionMap(sec);
+            const matched = normMap.get(idLowerClean);
+            if (typeof matched === 'string') {
+                result = matched;
+                break;
             }
         }
     }
 
-    return null;
+    lookupCache.set(cacheKey, result);
+    return result;
 }
 
 /** Raw lookup without a known section (or with a custom prioritized section list); null when missing. */
 export function gameAnyLookup(id, customSections = null) {
-    const sections = Array.isArray(customSections) && customSections.length > 0
-        ? customSections
-        : GAME_SECTION_LOOKUP_ORDER;
+    if (!id) return null;
+    const strId = String(id).trim();
+    if (!strId) return null;
 
+    const isDefault = !customSections || (Array.isArray(customSections) && customSections.length === 0);
+    const cacheKey = isDefault ? strId : `${strId}:${customSections.join(',')}`;
+
+    if (anyLookupCache.has(cacheKey)) {
+        return anyLookupCache.get(cacheKey);
+    }
+
+    const sections = isDefault ? GAME_SECTION_LOOKUP_ORDER : customSections;
+
+    let result = null;
     for (const section of sections) {
-        const text = gameLookup(section, id);
+        const text = gameLookup(section, strId);
 
         if (text !== null) {
-            return text;
+            result = text;
+            break;
         }
     }
 
-    return null;
+    anyLookupCache.set(cacheKey, result);
+    return result;
 }
 
 /**

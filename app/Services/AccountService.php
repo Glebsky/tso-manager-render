@@ -171,7 +171,7 @@ readonly class AccountService
      *
      * @throws InvalidArgumentException
      */
-    public function getFriendZone(Account $account, int $friendId): array
+    public function getFriendZone(Account $account, int $friendId, bool $force = false): array
     {
         if ($friendId <= 0) {
             return [
@@ -206,54 +206,93 @@ readonly class AccountService
 
         $cacheKey = "friend-zone:{$account->id}:{$friendId}";
         $staleCacheKey = "friend-zone-stale:{$account->id}:{$friendId}";
-        $cachedZone = $this->cache->get($cacheKey);
+
+        if ($force) {
+            $this->cache->forget($cacheKey);
+            $this->cache->forget($staleCacheKey);
+        }
+
+        $cachedZone = $force ? null : $this->cache->get($cacheKey);
 
         if ($cachedZone) {
             $friendZoneData = json_decode((string) $cachedZone, true, 512, JSON_THROW_ON_ERROR);
         } else {
-            try {
-                $this->authService->ensureAuthenticated($account);
+            $maxAttempts = 3;
+            $friendZoneData = null;
+            $lastErrorCode = 0;
+            $lastException = null;
 
-                Log::info("[FriendZone] Loading zone of friend #{$friendId} for account #{$account->id}");
-                $rawAmf = $this->amfService->getZone($account, $friendId);
-                $friendZoneData = $this->zoneParser->parse($rawAmf);
+            for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
+                try {
+                    $this->authService->ensureAuthenticated($account);
 
-                $errorCode = $friendZoneData['errorCode'] ?? 0;
-                if ($errorCode !== 0) {
-                    $staleCache = $this->cache->get($staleCacheKey);
-                    if ($staleCache) {
-                        Log::warning("[FriendZone] Game server returned error {$errorCode} while loading zone of friend #{$friendId} for account #{$account->id}; falling back to stale cache");
-                        $friendZoneData = json_decode((string) $staleCache, true, 512, JSON_THROW_ON_ERROR);
-                    } else {
+                    Log::info("[FriendZone] Loading zone of friend #{$friendId} for account #{$account->id} (attempt {$attempt}/{$maxAttempts})");
+                    $rawAmf = $this->amfService->getZone($account, $friendId);
+                    $parsed = $this->zoneParser->parse($rawAmf);
+
+                    $errorCode = (int) ($parsed['errorCode'] ?? 0);
+                    if ($errorCode === 0) {
+                        $friendZoneData = $parsed;
+                        $jsonEncoded = json_encode($friendZoneData, JSON_THROW_ON_ERROR);
+                        $this->cache->put($cacheKey, $jsonEncoded, 3600);
+                        $this->cache->put($staleCacheKey, $jsonEncoded, 86400);
+                        break;
+                    }
+
+                    $lastErrorCode = $errorCode;
+                    Log::warning("[FriendZone] Game server returned error {$errorCode} while loading zone of friend #{$friendId} for account #{$account->id} (attempt {$attempt}/{$maxAttempts})");
+
+                    if ($errorCode === 1012 && $attempt < $maxAttempts) {
+                        if ($attempt === 2) {
+                            Log::info("[FriendZone] Re-authenticating for account #{$account->id} to recover from error 1012");
+                            $this->amfService->invalidateSession($account->id);
+                            $this->authService->ensureAuthenticated($account, force: true);
+                            $account->refresh();
+                        }
+                        sleep(2);
+
+                        continue;
+                    }
+
+                    break;
+                } catch (Exception $e) {
+                    $lastException = $e;
+                    Log::error("[FriendZone] Exception while loading zone of friend #{$friendId} for account #{$account->id} (attempt {$attempt}/{$maxAttempts}): ".$e->getMessage());
+
+                    if ($attempt < $maxAttempts) {
+                        sleep(2);
+
+                        continue;
+                    }
+                }
+            }
+
+            if ($friendZoneData === null) {
+                $staleCache = $this->cache->get($staleCacheKey);
+                if ($staleCache && ! $force) {
+                    Log::warning("[FriendZone] Falling back to stale cache for friend #{$friendId} for account #{$account->id}");
+                    $friendZoneData = json_decode((string) $staleCache, true, 512, JSON_THROW_ON_ERROR);
+                } else {
+                    if ($lastErrorCode !== 0) {
                         return [
                             'status' => 500,
                             'payload' => [
                                 'success' => false,
                                 'message' => __('ui.account.friend_zone.server_error', [
-                                    'code' => $errorCode,
-                                    'error' => GameErrorResolver::getMessage((int) $errorCode),
+                                    'code' => $lastErrorCode,
+                                    'error' => GameErrorResolver::getMessage($lastErrorCode),
                                 ]),
                             ],
                         ];
                     }
-                } else {
-                    $jsonEncoded = json_encode($friendZoneData, JSON_THROW_ON_ERROR);
-                    $this->cache->put($cacheKey, $jsonEncoded, 3600);
-                    $this->cache->put($staleCacheKey, $jsonEncoded, 86400);
-                }
-            } catch (Exception $e) {
-                Log::error("[FriendZone] Failed to load zone of friend #{$friendId} for account #{$account->id}: ".$e->getMessage());
 
-                $staleCache = $this->cache->get($staleCacheKey);
-                if ($staleCache) {
-                    Log::warning("[FriendZone] Exception while loading zone of friend #{$friendId} for account #{$account->id}; falling back to stale cache");
-                    $friendZoneData = json_decode((string) $staleCache, true, 512, JSON_THROW_ON_ERROR);
-                } else {
                     return [
                         'status' => 500,
                         'payload' => [
                             'success' => false,
-                            'message' => __('ui.account.friend_zone.load_failed', ['message' => $e->getMessage()]),
+                            'message' => __('ui.account.friend_zone.load_failed', [
+                                'message' => $lastException ? $lastException->getMessage() : 'Unknown error',
+                            ]),
                         ],
                     ];
                 }
