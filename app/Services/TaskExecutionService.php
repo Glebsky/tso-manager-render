@@ -20,8 +20,10 @@ use App\Services\Tasks\Execution\SingleActionExecutor;
 use App\Services\Tasks\Execution\TaskExecutionGuard;
 use App\Services\Tasks\Execution\TaskResultSummary;
 use App\Services\Tasks\Execution\TaskStateWriter;
+use App\Services\Tasks\Handlers\ApplyBuffHandler;
 use App\Services\Tasks\TaskActivityLogger;
 use Exception;
+use Illuminate\Contracts\Cache\Repository as CacheRepository;
 use Throwable;
 
 readonly class TaskExecutionService
@@ -33,6 +35,7 @@ readonly class TaskExecutionService
         private SingleActionExecutor $singleActionExecutor,
         private SequenceStepExecutor $sequenceStepExecutor,
         private TaskActivityLogger $activityLogger,
+        private CacheRepository $cache,
     ) {}
 
     /**
@@ -184,6 +187,17 @@ readonly class TaskExecutionService
         $actionType = (string) $action['task_type'];
         $actionPayload = (array) ($action['payload'] ?? []);
         $actionPayload['task_id'] = $task->id;
+
+        // When manually executing a single buff action, invalidate cached zone
+        // so it always queries the live state from the game server.
+        if ($actionType === 'apply_buff') {
+            $scope = (string) ($actionPayload['target_scope'] ?? 'self');
+            if ($scope === 'friend') {
+                ApplyBuffHandler::invalidateFriendZonesForAccount($this->cache, $account->id);
+            } else {
+                ApplyBuffHandler::invalidateHomeZoneForAccount($this->cache, $account->id);
+            }
+        }
 
         $stepResults = $payload['step_results'] ?? [];
 

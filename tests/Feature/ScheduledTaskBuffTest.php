@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Account;
 use App\Models\ScheduledTask;
+use App\Services\TaskExecutionService;
 use App\Services\Tasks\Handlers\ApplyBuffHandler;
 use App\Services\TsoAmfService;
 use App\Services\TsoAuthService;
@@ -1518,5 +1519,76 @@ class ScheduledTaskBuffTest extends TestCase
         $newVersion = (int) $cache->get("home-zone:version:{$accountId}");
         $this->assertSame(2, $newVersion);
         $this->assertNull($cache->get("home-zone:exec:{$accountId}:v{$newVersion}"));
+    }
+
+    public function test_execute_single_sequence_action_invalidates_friend_zone_cache(): void
+    {
+        $friendId = 40004;
+        $account = $this->createAccount(
+            [['id' => $friendId, 'username' => 'CacheFriend', 'playerLevel' => 50]],
+            [['uniqueId1' => 11, 'uniqueId2' => 22, 'amount' => 5, 'buffName_string' => 'AuntIrma']]
+        );
+
+        $task = ScheduledTask::create([
+            'account_id' => $account->id,
+            'name' => 'Sequence for Manual Single Action',
+            'task_type' => 'sequence',
+            'schedule_type' => 'daily',
+            'run_at_time' => '12:00',
+            'payload' => [
+                'actions' => [
+                    [
+                        'task_type' => 'apply_buff',
+                        'delay_seconds' => 0,
+                        'payload' => [
+                            'target_scope' => 'friend',
+                            'target_player_id' => $friendId,
+                            'target_player_name' => 'CacheFriend',
+                            'grid' => 888,
+                            'unique_id1' => 11,
+                            'unique_id2' => 22,
+                            'amount' => 1,
+                        ],
+                    ],
+                ],
+            ],
+            'is_active' => true,
+        ]);
+
+        $cache = app(Repository::class);
+        $cache->put("friend-zone:version:{$account->id}", 1, 86400);
+
+        $this->authMock->shouldReceive('ensureAuthenticated')->with(Mockery::any())->andReturnNull();
+
+        $this->amfMock->shouldReceive('getZone')
+            ->once()
+            ->with(Mockery::any(), $friendId)
+            ->andReturn('raw_friend_zone_amf');
+
+        $this->parserMock->shouldReceive('parse')
+            ->once()
+            ->with('raw_friend_zone_amf')
+            ->andReturn([
+                'errorCode' => 0,
+                'buildings' => [
+                    ['buildingGrid' => 888, 'buildingName' => 'Farm'],
+                ],
+            ]);
+
+        $this->amfMock->shouldReceive('applyBuff')
+            ->once()
+            ->with(Mockery::any(), 888, 11, 22, 1, $friendId)
+            ->andReturn('buff_ok_amf_response');
+
+        $this->parserMock->shouldReceive('parse')
+            ->once()
+            ->with('buff_ok_amf_response')
+            ->andReturn(['errorCode' => 0]);
+
+        $service = app(TaskExecutionService::class);
+        $result = $service->executeSingleSequenceAction($task, 0);
+
+        $this->assertSame('completed', $result['status']);
+        $this->assertSame(2, (int) $cache->get("friend-zone:version:{$account->id}"));
     }
 }

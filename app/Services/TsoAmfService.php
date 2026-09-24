@@ -293,7 +293,9 @@ class TsoAmfService
         $buffUid->uniqueID1 = $uniqueId1;
         $buffUid->uniqueID2 = $uniqueId2;
 
-        $action = $this->buildServerAction(0, $grid, $amount, $buffUid);
+        // Flash client sends endGrid=0 for standard building buffs (line 522243):
+        // SendServerAction(COMMAND.APPLY_BUFF, 0, cursorGrid, 0, buff.GetUniqueId())
+        $action = $this->buildServerAction(0, $grid, 0, $buffUid);
 
         return $this->sendServerCall(
             $account,
