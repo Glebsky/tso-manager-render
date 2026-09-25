@@ -18,6 +18,11 @@ return [
 
     'default' => env('DB_CONNECTION', 'mysql'),
 
+    'slow_query_log' => [
+        'enabled' => (bool) env('DB_SLOW_QUERY_LOG_ENABLED', env('LOG_SLOW_QUERIES', false)),
+        'threshold' => (int) env('DB_SLOW_QUERY_THRESHOLD_MS', 500),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Database Connections

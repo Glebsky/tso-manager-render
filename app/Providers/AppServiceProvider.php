@@ -35,12 +35,15 @@ class AppServiceProvider extends ServiceProvider
     {
         Model::preventLazyLoading(! $this->app->isProduction());
 
-        DB::whenQueryingForLongerThan(200, function ($connection, QueryExecuted $event): void {
-            Log::warning('[Slow query]', [
-                'sql' => $event->sql,
-                'time' => $event->time,
-            ]);
-        });
+        if (config('database.slow_query_log.enabled', false)) {
+            $threshold = (int) config('database.slow_query_log.threshold', 500);
+            DB::whenQueryingForLongerThan($threshold, function ($connection, QueryExecuted $event): void {
+                Log::warning('[Slow query]', [
+                    'sql' => $event->sql,
+                    'time' => $event->time,
+                ]);
+            });
+        }
 
         if ($this->app->isProduction()) {
             $appKey = (string) config('app.key');
