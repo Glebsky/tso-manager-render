@@ -5,16 +5,20 @@ declare(strict_types=1);
 namespace App\Services\Tasks\Execution;
 
 use App\Enums\LogLevel;
+use App\Enums\TaskStatus;
 use App\Enums\TaskType;
 use App\Exceptions\BuffUnavailableException;
 use App\Exceptions\Contracts\SkippableStepExceptionInterface;
 use App\Exceptions\InvalidTaskTypeException;
+use App\Exceptions\TaskCancelledException;
 use App\Exceptions\TaskExecutionException;
 use App\Models\Account;
 use App\Models\ScheduledTask;
 use App\Services\Tasks\TaskActivityLogger;
 use App\Services\TsoAuthService;
 use Exception;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Throwable;
 
 final readonly class SequenceStepExecutor
@@ -22,7 +26,7 @@ final readonly class SequenceStepExecutor
     public function __construct(
         private TsoAuthService $authService,
         private SingleActionExecutor $actionExecutor,
-        private TaskStateWriter $stateWriter,
+        private TaskStateMachine $stateMachine,
         private TaskActivityLogger $activityLogger,
     ) {}
 
@@ -33,6 +37,7 @@ final readonly class SequenceStepExecutor
      */
     public function executeInlineSequence(ScheduledTask $task, Account $account, array $payload): string
     {
+        $token = (string) $task->execution_token;
         $actions = $payload['actions'] ?? [];
         $resultsSummary = [];
         $completedSteps = $task->completed_steps ?? 0;
@@ -148,7 +153,12 @@ final readonly class SequenceStepExecutor
 
             $completedSteps = $index + 1;
             $payload['step_results'] = $stepResults;
-            $this->stateWriter->updateStepProgress($task, $completedSteps, $payload);
+            $progressUpdated = $this->stateMachine->progress($task, $token, $completedSteps, $payload);
+            if (! $progressUpdated) {
+                Log::info("[SequenceStepExecutor] Task #{$task->id} progress CAS failed inline; aborting sequence.");
+
+                return implode('; ', $resultsSummary);
+            }
 
             if ($delay > 0 && $index < count($actions) - 1) {
                 sleep($delay);
@@ -158,7 +168,8 @@ final readonly class SequenceStepExecutor
         $result = implode('; ', $resultsSummary);
         $resultSummary = TaskResultSummary::formatSequence($result, $hasStepError, $hasStepSuccess, $hasStepSkipped);
 
-        $this->stateWriter->markSequenceFinished($task, $account->id, $resultSummary, $hasStepError, $payload);
+        $finalStatus = $hasStepError ? TaskStatus::Failed : TaskStatus::Completed;
+        $this->stateMachine->finish($task, $token, $finalStatus, $resultSummary, $payload, $account->id);
 
         return $result;
     }
@@ -177,6 +188,14 @@ final readonly class SequenceStepExecutor
             throw new InvalidTaskTypeException("Task #{$task->id} is not a sequence task.", 422, ['id' => $task->id, 'type' => $task->task_type->value]);
         }
 
+        $token = $task->execution_token;
+        if ($token === null) {
+            $token = (string) Str::uuid();
+            $task->update([
+                'execution_token' => $token,
+                'status' => TaskStatus::Queued,
+            ]);
+        }
         $payload = $task->payload ?? [];
         $actions = $payload['actions'] ?? [];
         $stepResults = $payload['step_results'] ?? [];
@@ -191,7 +210,10 @@ final readonly class SequenceStepExecutor
             return $this->finalizeSequenceStep($task, $account->id, $payload, $stepResults);
         }
 
-        $this->stateWriter->markRunning($task, $payload);
+        $started = $this->stateMachine->start($task, $token, $payload);
+        if (! $started) {
+            throw new TaskCancelledException($task->id);
+        }
 
         $this->authService->ensureAuthenticated($account);
 
@@ -269,7 +291,10 @@ final readonly class SequenceStepExecutor
         }
 
         $payload['step_results'] = $stepResults;
-        $this->stateWriter->updateStepProgress($task, $index + 1, $payload);
+        $progressUpdated = $this->stateMachine->progress($task, $token, $index + 1, $payload);
+        if (! $progressUpdated) {
+            throw new TaskCancelledException($task->id);
+        }
 
         if ($index + 1 >= count($actions)) {
             return $this->finalizeSequenceStep($task, $account->id, $payload, $stepResults);
@@ -320,7 +345,9 @@ final readonly class SequenceStepExecutor
         $result = implode('; ', $summaryParts);
         $resultSummary = TaskResultSummary::formatSequence($result, $hasStepError, $hasStepSuccess, $hasStepSkipped);
 
-        $this->stateWriter->markSequenceFinished($task, $accountId, $resultSummary, $hasStepError, $payload);
+        $token = (string) $task->execution_token;
+        $finalStatus = $hasStepError ? TaskStatus::Failed : TaskStatus::Completed;
+        $this->stateMachine->finish($task, $token, $finalStatus, $resultSummary, $payload, $accountId);
 
         return [
             'finished' => true,

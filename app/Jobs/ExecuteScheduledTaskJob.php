@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
-use App\Enums\LogLevel;
 use App\Enums\TaskResultPrefix;
 use App\Enums\TaskStatus;
 use App\Enums\TaskType;
 use App\Exceptions\TaskCancelledException;
 use App\Exceptions\TokenMismatchException;
-use App\Models\BotLog;
 use App\Models\ScheduledTask;
 use App\Services\TaskExecutionService;
+use App\Services\Tasks\Execution\TaskStateMachine;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -25,14 +24,21 @@ class ExecuteScheduledTaskJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public int $tries = 3;
-
-    public int $timeout = 120;
+    /**
+     * A task run is never retried by the queue: a failed run is final
+     * (TaskExecutionService writes the failed state itself) and a redelivered
+     * run would repeat game actions. The next run comes from the schedule.
+     */
+    public int $tries = 1;
 
     /**
-     * @var list<int>
+     * Must stay below the connection's retry_after minus a safety margin
+     * (see QueueTimeoutInvariantTest), otherwise a long run is redelivered
+     * to a second worker while the first one is still executing it.
      */
-    public array $backoff = [30, 120, 300];
+    public int $timeout = 150;
+
+    public bool $failOnTimeout = true;
 
     /**
      * Seconds of work budget per job invocation. Kept short so the inline
@@ -65,7 +71,7 @@ class ExecuteScheduledTaskJob implements ShouldQueue
         $this->taskId = $taskId;
         $this->executionToken = $executionToken;
         $this->force = $force;
-        $this->onQueue('tso-tasks');
+        $this->onQueue(config('game.queues.tasks'));
     }
 
     /**
@@ -216,26 +222,15 @@ class ExecuteScheduledTaskJob implements ShouldQueue
     }
 
     /**
-     * Handle job failure after all retries exhausted.
+     * Handle job failure (exception or timeout).
      */
     public function failed(Throwable $exception): void
     {
-        Log::error("[TaskJob] Task #{$this->taskId} failed permanently after all retries: {$exception->getMessage()}");
+        Log::error("[TaskJob] Task #{$this->taskId} failed permanently: {$exception->getMessage()}");
 
         $task = ScheduledTask::find($this->taskId);
         if ($task) {
-            $task->update([
-                'status' => TaskStatus::Failed,
-                'last_run_at' => now(),
-                'last_result' => TaskResultPrefix::Failed->format($exception->getMessage()),
-                'execution_token' => null,
-            ]);
-
-            BotLog::create([
-                'account_id' => $task->account_id,
-                'level' => LogLevel::Error,
-                'message' => "[Task][Task#{$task->id}] ".__('logs.task.job_failed', ['id' => $task->id, 'type' => $task->task_type->value, 'error' => $exception->getMessage()]),
-            ]);
+            app(TaskStateMachine::class)->failJob($task, $this->executionToken, $exception->getMessage());
         }
     }
 }

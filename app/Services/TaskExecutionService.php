@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Enums\LogLevel;
 use App\Enums\TaskResultPrefix;
+use App\Enums\TaskStatus;
 use App\Enums\TaskType;
 use App\Exceptions\Contracts\SkippableStepExceptionInterface;
 use App\Exceptions\InvalidTaskTypeException;
@@ -19,11 +20,13 @@ use App\Services\Tasks\Execution\SequenceStepExecutor;
 use App\Services\Tasks\Execution\SingleActionExecutor;
 use App\Services\Tasks\Execution\TaskExecutionGuard;
 use App\Services\Tasks\Execution\TaskResultSummary;
-use App\Services\Tasks\Execution\TaskStateWriter;
+use App\Services\Tasks\Execution\TaskStateMachine;
 use App\Services\Tasks\Handlers\ApplyBuffHandler;
 use App\Services\Tasks\TaskActivityLogger;
 use Exception;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Throwable;
 
 readonly class TaskExecutionService
@@ -31,7 +34,7 @@ readonly class TaskExecutionService
     public function __construct(
         private TsoAuthService $authService,
         private TaskExecutionGuard $guard,
-        private TaskStateWriter $stateWriter,
+        private TaskStateMachine $stateMachine,
         private SingleActionExecutor $singleActionExecutor,
         private SequenceStepExecutor $sequenceStepExecutor,
         private TaskActivityLogger $activityLogger,
@@ -50,7 +53,25 @@ readonly class TaskExecutionService
     public function execute(ScheduledTask $task, ?string $expectedToken = null, bool $force = false): string
     {
         $account = $this->guard->ensureCanExecute($task, $expectedToken, $force);
-        $this->stateWriter->markRunning($task);
+        $token = $expectedToken ?? $task->execution_token;
+        if ($token === null) {
+            $token = (string) Str::uuid();
+            $task->update([
+                'execution_token' => $token,
+                'status' => TaskStatus::Queued,
+            ]);
+        }
+
+        if (! $this->stateMachine->start($task, $token)) {
+            Log::warning(sprintf(
+                '[TaskExecutionService] Task #%d start CAS failed (token=%s, status=%s). Aborting.',
+                $task->id,
+                substr($token, 0, 8),
+                $task->status->value
+            ));
+
+            return '';
+        }
 
         try {
             $this->authService->ensureAuthenticated($account);
@@ -69,7 +90,7 @@ readonly class TaskExecutionService
 
             $payload = $task->payload ?? [];
             $payload['step_results'] = [['status' => 'failed', 'error' => $errorMsg]];
-            $this->stateWriter->markFailed($task, $account->id, $errorMsg, $payload);
+            $this->stateMachine->finish($task, $token, TaskStatus::Failed, TaskResultSummary::formatSingle($errorMsg, false), $payload, $account->id);
 
             throw $e;
         }
@@ -84,6 +105,7 @@ readonly class TaskExecutionService
      */
     private function executeSingleTask(ScheduledTask $task, Account $account, array $payload): string
     {
+        $token = (string) $task->execution_token;
         $taskTypeStr = $task->task_type->value;
         $payload['task_id'] = $task->id;
         $payload['execution_token'] = $task->execution_token;
@@ -94,14 +116,14 @@ readonly class TaskExecutionService
             $payload['step_results'] = [['status' => 'completed', 'error' => null]];
             $resultSummary = TaskResultSummary::formatSingle($result);
 
-            $this->stateWriter->markCompleted($task, $account->id, $resultSummary, $payload);
+            $this->stateMachine->finish($task, $token, TaskStatus::Completed, $resultSummary, $payload, $account->id);
 
             return $result;
         } catch (SkippableStepExceptionInterface $e) {
             $payload['step_results'] = [['status' => 'skipped', 'error' => null, 'reason' => $e->getMessage()]];
             $resultSummary = TaskResultPrefix::Skipped->format($e->getMessage());
 
-            $this->stateWriter->markCompleted($task, $account->id, $resultSummary, $payload);
+            $this->stateMachine->finish($task, $token, TaskStatus::Completed, $resultSummary, $payload, $account->id);
 
             return $resultSummary;
         }
