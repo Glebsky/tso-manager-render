@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\MarketVerificationStatus;
 use App\Models\Account;
 use App\Models\MarketServerConnection;
 use Illuminate\Support\Str;
@@ -79,7 +80,7 @@ class MarketServerVerificationService
 
         if (! $detectedServerId) {
             return [
-                'status' => 'unverified',
+                'status' => MarketVerificationStatus::Unverified->value,
                 'detected_server' => null,
                 'detected_locale' => null,
                 'message' => (string) __('ui.market.verification_unverified'),
@@ -95,7 +96,7 @@ class MarketServerVerificationService
 
         if ($isMatch) {
             return [
-                'status' => 'verified',
+                'status' => MarketVerificationStatus::Verified->value,
                 'detected_server' => $detectedServerId,
                 'detected_locale' => $detection['detected_locale'],
                 'message' => (string) __('ui.market.verification_verified'),
@@ -103,7 +104,7 @@ class MarketServerVerificationService
         }
 
         return [
-            'status' => 'mismatch',
+            'status' => MarketVerificationStatus::Mismatch->value,
             'detected_server' => $detectedServerId,
             'detected_locale' => $detection['detected_locale'],
             'message' => (string) __('ui.market.verification_mismatch', ['detected' => $detectedServerId, 'server' => $connection->server_id]),

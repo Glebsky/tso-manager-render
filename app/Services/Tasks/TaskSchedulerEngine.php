@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Tasks;
 
+use App\Enums\AccountStatus;
 use App\Enums\TaskStatus;
 use App\Jobs\AccountSyncJob;
 use App\Jobs\ExecuteScheduledTaskJob;
@@ -247,7 +248,7 @@ readonly class TaskSchedulerEngine
         $count = 0;
 
         foreach ($accounts as $account) {
-            if ($account->status === 'session_expired' || $this->cache->has("account_login_cooldown:{$account->id}")) {
+            if ($account->status === AccountStatus::SessionExpired->value || $this->cache->has("account_login_cooldown:{$account->id}")) {
                 continue;
             }
 

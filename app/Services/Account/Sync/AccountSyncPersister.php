@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services\Account\Sync;
 
+use App\Enums\AccountStatus;
 use App\Exceptions\UnrecoverableAuthError;
 use App\Models\Account;
 use App\Support\Zone\ZoneSnapshot;
+use Throwable;
 
 /**
  * Handles updating Account database state during sync lifecycle (syncing, online, error, zone_data).
@@ -18,7 +20,7 @@ class AccountSyncPersister
      */
     public function markSyncing(Account $account): void
     {
-        $account->update(['status' => 'syncing']);
+        $account->update(['status' => AccountStatus::Syncing->value]);
     }
 
     /**
@@ -36,7 +38,7 @@ class AccountSyncPersister
             'building_count' => $snapshot->buildingCount(),
             'game_world_name' => $snapshot->serverName(),
             'last_sync_at' => now(),
-            'status' => 'online',
+            'status' => AccountStatus::Online->value,
         ]);
     }
 
@@ -45,11 +47,11 @@ class AccountSyncPersister
      * needs a human (CAPTCHA / 2FA / rejected session — decided by exception
      * type, see UnrecoverableAuthError).
      */
-    public function markError(Account $account, ?\Throwable $exception = null): void
+    public function markError(Account $account, ?Throwable $exception = null): void
     {
         $targetStatus = $exception !== null && UnrecoverableAuthError::isUnrecoverable($exception)
-            ? 'session_expired'
-            : 'error';
+            ? AccountStatus::SessionExpired->value
+            : AccountStatus::Error->value;
 
         if ($account->status !== $targetStatus) {
             $account->update(['status' => $targetStatus]);

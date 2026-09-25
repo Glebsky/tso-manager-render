@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
+use App\Enums\AccountStatus;
 use App\Enums\LogLevel;
+use App\Enums\MarketSyncStatus;
 use App\Exceptions\UnrecoverableAuthError;
 use App\Models\Account;
 use App\Models\BotLog;
@@ -79,9 +81,9 @@ class MarketSyncJob implements ShouldBeUnique, ShouldQueue
             Log::error("[MarketSyncJob] Failed for account #{$this->account->id} on server [{$this->serverId}]: {$e->getMessage()}");
 
             if (UnrecoverableAuthError::isUnrecoverable($e)) {
-                $this->account->update(['status' => 'session_expired']);
+                $this->account->update(['status' => AccountStatus::SessionExpired->value]);
                 MarketServerConnection::where('server_id', $this->serverId)->update([
-                    'sync_status' => 'error',
+                    'sync_status' => MarketSyncStatus::Error->value,
                     'last_error' => $e->getMessage(),
                 ]);
                 BotLog::create([
@@ -118,7 +120,7 @@ class MarketSyncJob implements ShouldBeUnique, ShouldQueue
 
         try {
             MarketServerConnection::where('server_id', $this->serverId)->update([
-                'sync_status' => 'error',
+                'sync_status' => MarketSyncStatus::Error->value,
                 'last_error' => $exception->getMessage(),
             ]);
 

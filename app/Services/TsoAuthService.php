@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\AccountStatus;
 use App\Exceptions\AuthChallengeException;
 use App\Exceptions\SessionBusyException;
 use App\Models\Account;
@@ -197,7 +198,7 @@ class TsoAuthService
 
                 if ($this->isCaptchaOr2faError($errMsg)) {
                     Cache::put($cooldownKey, $errMsg, 900);
-                    $account->update(['status' => 'session_expired']);
+                    $account->update(['status' => AccountStatus::SessionExpired->value]);
 
                     throw $e;
                 }
@@ -230,7 +231,7 @@ class TsoAuthService
             'dso_auth_token' => $params['dsoAuthToken'],
             'bb_url' => $params['bburl'],
             'nickname' => $params['nickName'],
-            'status' => 'online',
+            'status' => AccountStatus::Online->value,
         ]);
 
         $this->markSessionVerified($account);

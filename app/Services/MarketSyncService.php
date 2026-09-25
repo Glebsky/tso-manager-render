@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\MarketSyncStatus;
 use App\Models\Account;
 use App\Models\MarketServerConnection;
 use App\Services\Market\Sync\MarketOfferFetcher;
@@ -47,7 +48,7 @@ readonly class MarketSyncService
             $serverId = $connection->server_id;
         }
 
-        $connection?->update(['sync_status' => 'syncing']);
+        $connection?->update(['sync_status' => MarketSyncStatus::Syncing->value]);
 
         try {
             $this->syncLogger->log($account, $action, 'INFO', __('logs.market.sync_started', ['server' => $serverId]), $serverId);
@@ -71,7 +72,7 @@ readonly class MarketSyncService
             $this->syncLogger->log($account, $action, 'SUCCESS', $message, $serverId);
 
             $connection?->update([
-                'sync_status' => 'connected',
+                'sync_status' => MarketSyncStatus::Connected->value,
                 'last_synced_at' => now(),
                 'last_error' => null,
                 'data_version' => ($connection->data_version ?? 0) + 1,
@@ -89,7 +90,7 @@ readonly class MarketSyncService
             $this->syncLogger->log($account, $action, 'ERROR', __('logs.market.sync_failed', ['error' => $e->getMessage()]), $serverId);
 
             $connection?->update([
-                'sync_status' => 'error',
+                'sync_status' => MarketSyncStatus::Error->value,
                 'last_error' => $e->getMessage(),
             ]);
 

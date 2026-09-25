@@ -98,4 +98,30 @@ class EnumsTest extends TestCase
         $this->assertEquals('ERROR: invalid payload', TaskResultPrefix::Error->format('invalid payload'));
         $this->assertEquals('SKIPPED:', TaskResultPrefix::Skipped->format());
     }
+
+    public function test_account_status_enum_values(): void
+    {
+        $this->assertEquals('online', \App\Enums\AccountStatus::Online->value);
+        $this->assertEquals('active', \App\Enums\AccountStatus::Active->value);
+        $this->assertEquals('syncing', \App\Enums\AccountStatus::Syncing->value);
+        $this->assertEquals('error', \App\Enums\AccountStatus::Error->value);
+        $this->assertEquals('session_expired', \App\Enums\AccountStatus::SessionExpired->value);
+    }
+
+    public function test_market_sync_status_enum_values(): void
+    {
+        $this->assertEquals('not_configured', \App\Enums\MarketSyncStatus::NotConfigured->value);
+        $this->assertEquals('syncing', \App\Enums\MarketSyncStatus::Syncing->value);
+        $this->assertEquals('connected', \App\Enums\MarketSyncStatus::Connected->value);
+        $this->assertEquals('error', \App\Enums\MarketSyncStatus::Error->value);
+        $this->assertEquals('disabled', \App\Enums\MarketSyncStatus::Disabled->value);
+    }
+
+    public function test_market_verification_status_enum_values(): void
+    {
+        $this->assertEquals('unverified', \App\Enums\MarketVerificationStatus::Unverified->value);
+        $this->assertEquals('verified', \App\Enums\MarketVerificationStatus::Verified->value);
+        $this->assertEquals('mismatch', \App\Enums\MarketVerificationStatus::Mismatch->value);
+        $this->assertEquals('error', \App\Enums\MarketVerificationStatus::Error->value);
+    }
 }
