@@ -374,7 +374,9 @@ final class ScheduledTaskService
             ScheduledTask::where('sort_order', '>', $task->sort_order)
                 ->increment('sort_order');
 
-            $duplicateName = ! empty($task->name) ? "{$task->name} (копия)" : 'Серия (копия)';
+            $duplicateName = ! empty($task->name)
+                ? __('tasks.duplicate_copy', ['name' => $task->name])
+                : __('tasks.default_sequence_copy');
 
             $replica = $task->replicate([
                 'last_run_at',

@@ -101,4 +101,6 @@ return [
             'insufficient_resources' => 'Production: skipped, insufficient resources for :recipe',
         ],
     ],
+    'duplicate_copy' => ':name (copy)',
+    'default_sequence_copy' => 'Sequence (copy)',
 ];

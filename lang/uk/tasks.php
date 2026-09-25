@@ -101,4 +101,6 @@ return [
             'insufficient_resources' => 'Виробництво: пропуск, недостатньо ресурсів для створення :recipe',
         ],
     ],
+    'duplicate_copy' => ':name (копія)',
+    'default_sequence_copy' => 'Серія (копія)',
 ];

@@ -452,8 +452,9 @@ class ScheduledTaskTest extends TestCase
         $response = $this->actingAs($user)
             ->postJson("/api/tasks/{$task1->id}/duplicate");
 
+        $expectedName = __('tasks.duplicate_copy', ['name' => 'Original Task']);
         $response->assertStatus(201);
-        $response->assertJsonPath('data.name', 'Original Task (копия)');
+        $response->assertJsonPath('data.name', $expectedName);
         $response->assertJsonPath('data.is_active', false);
         $response->assertJsonPath('data.status', 'pending');
         $response->assertJsonPath('data.sort_order', 2);
@@ -462,7 +463,7 @@ class ScheduledTaskTest extends TestCase
         $this->assertSame(3, $task2->sort_order);
 
         $this->assertDatabaseHas('scheduled_tasks', [
-            'name' => 'Original Task (копия)',
+            'name' => $expectedName,
             'account_id' => $account->id,
             'is_active' => false,
             'sort_order' => 2,
