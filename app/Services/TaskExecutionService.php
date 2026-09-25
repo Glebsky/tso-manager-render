@@ -16,6 +16,7 @@ use App\Exceptions\TaskInactiveException;
 use App\Exceptions\TokenMismatchException;
 use App\Models\Account;
 use App\Models\ScheduledTask;
+use App\Services\Game\Zone\ZoneCacheInvalidator;
 use App\Services\Tasks\Execution\SequenceRunner;
 use App\Services\Tasks\Execution\SequenceRunResult;
 use App\Services\Tasks\Execution\SingleActionExecutor;
@@ -23,8 +24,6 @@ use App\Services\Tasks\Execution\StepRunner;
 use App\Services\Tasks\Execution\TaskExecutionGuard;
 use App\Services\Tasks\Execution\TaskResultSummary;
 use App\Services\Tasks\Execution\TaskStateMachine;
-use App\Services\Tasks\Handlers\ApplyBuffHandler;
-use Illuminate\Contracts\Cache\Repository as CacheRepository;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Throwable;
@@ -38,7 +37,7 @@ readonly class TaskExecutionService
         private SingleActionExecutor $singleActionExecutor,
         private SequenceRunner $sequenceRunner,
         private StepRunner $stepRunner,
-        private CacheRepository $cache,
+        private ZoneCacheInvalidator $zoneCache,
     ) {}
 
     /**
@@ -195,9 +194,9 @@ readonly class TaskExecutionService
         if ($actionType === 'apply_buff') {
             $scope = (string) (($action['payload'] ?? [])['target_scope'] ?? 'self');
             if ($scope === 'friend') {
-                ApplyBuffHandler::invalidateFriendZonesForAccount($this->cache, $account->id);
+                $this->zoneCache->invalidateFriendZones($account->id);
             } else {
-                ApplyBuffHandler::invalidateHomeZoneForAccount($this->cache, $account->id);
+                $this->zoneCache->invalidateHomeZone($account->id);
             }
         }
 

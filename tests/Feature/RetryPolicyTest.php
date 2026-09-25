@@ -8,6 +8,7 @@ use App\Exceptions\GameServerErrorException;
 use App\Exceptions\SessionExpiredException;
 use App\Models\Account;
 use App\Services\Amf\Transport\TsoClientInterface;
+use App\Services\Game\Zone\VersionedZoneCacheInvalidator;
 use App\Services\Tasks\Execution\ActionRetryPolicy;
 use App\Services\Tasks\Execution\GameResponseValidator;
 use App\Services\TsoAmfService;
@@ -61,7 +62,7 @@ class RetryPolicyTest extends TestCase
 
     private function policy(): ActionRetryPolicy
     {
-        return new ActionRetryPolicy($this->auth, $this->amf, Cache::store('array'));
+        return new ActionRetryPolicy($this->auth, $this->amf, new VersionedZoneCacheInvalidator(Cache::store('array')));
     }
 
     private function allowSessionReset(): void

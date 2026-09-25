@@ -10,6 +10,7 @@ use App\Exceptions\FriendBuildingNotFoundException;
 use App\Exceptions\FriendNotFoundException;
 use App\Exceptions\FriendZoneLoadException;
 use App\Models\Account;
+use App\Services\Game\Zone\VersionedZoneCacheInvalidator;
 use App\Services\GameErrorResolver;
 use App\Services\Tasks\Contracts\TaskActionHandlerInterface;
 use App\Services\Tasks\Execution\BuffAvailabilityManager;
@@ -29,29 +30,12 @@ final readonly class ApplyBuffHandler implements TaskActionHandlerInterface
         private BuffAvailabilityManager $buffAvailabilityManager,
         private BuildingBuffEligibilityValidator $buildingValidator,
         private CacheRepository $cache,
+        private VersionedZoneCacheInvalidator $zoneCache,
     ) {}
 
     public function supports(string $actionType): bool
     {
         return $actionType === 'apply_buff';
-    }
-
-    /**
-     * Invalidate all cached friend zones for the given account (e.g. on session error 550 retry).
-     */
-    public static function invalidateFriendZonesForAccount(CacheRepository $cache, int $accountId): void
-    {
-        $current = (int) $cache->get("friend-zone:version:{$accountId}", 1);
-        $cache->put("friend-zone:version:{$accountId}", $current + 1, 86400);
-    }
-
-    /**
-     * Invalidate all cached home zones for the given account.
-     */
-    public static function invalidateHomeZoneForAccount(CacheRepository $cache, int $accountId): void
-    {
-        $current = (int) $cache->get("home-zone:version:{$accountId}", 1);
-        $cache->put("home-zone:version:{$accountId}", $current + 1, 86400);
     }
 
     /**
@@ -95,7 +79,7 @@ final readonly class ApplyBuffHandler implements TaskActionHandlerInterface
                 throw new FriendNotFoundException;
             }
 
-            $version = (int) $this->cache->get("friend-zone:version:{$account->id}", 1);
+            $version = $this->zoneCache->friendZoneVersion($account->id);
             $friendZoneCacheKey = "friend-zone:exec:{$account->id}:{$targetPlayerIdInt}:v{$version}";
             $friendBuffCounterKey = "friend-zone:counter:{$account->id}:{$targetPlayerIdInt}";
 
@@ -142,7 +126,7 @@ final readonly class ApplyBuffHandler implements TaskActionHandlerInterface
         }
 
         // Target scope: self
-        $version = (int) $this->cache->get("home-zone:version:{$account->id}", 1);
+        $version = $this->zoneCache->homeZoneVersion($account->id);
         $homeZoneCacheKey = "home-zone:exec:{$account->id}:v{$version}";
 
         /** @var array<string, mixed>|null $homeZoneData */

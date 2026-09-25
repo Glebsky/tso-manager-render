@@ -4,8 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\Account;
 use App\Models\ScheduledTask;
+use App\Services\Game\Zone\VersionedZoneCacheInvalidator;
 use App\Services\TaskExecutionService;
-use App\Services\Tasks\Handlers\ApplyBuffHandler;
 use App\Services\TsoAmfService;
 use App\Services\TsoAuthService;
 use App\Services\ZoneParserService;
@@ -1514,7 +1514,7 @@ class ScheduledTaskBuffTest extends TestCase
         $cache->put("home-zone:version:{$accountId}", 1, 86400);
         $cache->put("home-zone:exec:{$accountId}:v1", ['some' => 'data'], 180);
 
-        ApplyBuffHandler::invalidateHomeZoneForAccount($cache, $accountId);
+        (new VersionedZoneCacheInvalidator($cache))->invalidateHomeZone($accountId);
 
         $newVersion = (int) $cache->get("home-zone:version:{$accountId}");
         $this->assertSame(2, $newVersion);

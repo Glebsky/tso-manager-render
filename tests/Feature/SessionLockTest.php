@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Exceptions\SessionBusyException;
 use App\Models\Account;
 use App\Services\Amf\Transport\HttpTsoClient;
+use App\Services\Game\Zone\VersionedZoneCacheInvalidator;
 use App\Services\Tasks\Execution\ActionRetryPolicy;
 use App\Services\TsoAmfService;
 use App\Services\TsoAuthService;
@@ -125,7 +126,7 @@ class SessionLockTest extends TestCase
         $amf->shouldNotReceive('invalidateSession');
         $amf->shouldNotReceive('resetClient');
 
-        $policy = new ActionRetryPolicy($auth, $amf, Cache::store('array'));
+        $policy = new ActionRetryPolicy($auth, $amf, new VersionedZoneCacheInvalidator(Cache::store('array')));
 
         $calls = 0;
         $result = $policy->execute($this->account, 'stop_production', function () use (&$calls): string {
@@ -152,7 +153,7 @@ class SessionLockTest extends TestCase
         $auth->shouldNotReceive('ensureAuthenticated');
         $amf = Mockery::mock(TsoAmfService::class);
 
-        $policy = new ActionRetryPolicy($auth, $amf, Cache::store('array'));
+        $policy = new ActionRetryPolicy($auth, $amf, new VersionedZoneCacheInvalidator(Cache::store('array')));
 
         $this->expectException(SessionBusyException::class);
 
