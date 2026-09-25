@@ -42,6 +42,11 @@ class TaskSchedulerEngineTest extends TestCase
         $this->assertTrue($engine->isTaskDue($intervalTaskDue, $now));
     }
 
+    /**
+     * Recurring task with a stale run goes back to pending (FR-007).
+     * Rows created before heartbeats existed fall back to queued_at.
+     * The once-task variant (-> failed) is covered by TaskHeartbeatTest.
+     */
     public function test_recover_stale_tasks_resets_stuck_tasks(): void
     {
         $account = Account::create([
@@ -55,9 +60,11 @@ class TaskSchedulerEngineTest extends TestCase
             'account_id' => $account->id,
             'task_type' => 'stop_production',
             'payload' => ['grid' => 100],
-            'schedule_type' => 'once',
+            'schedule_type' => 'interval',
+            'interval_minutes' => 30,
             'status' => 'running',
             'queued_at' => now()->subMinutes(20),
+            'heartbeat_at' => null,
             'execution_token' => 'old_token',
         ]);
 

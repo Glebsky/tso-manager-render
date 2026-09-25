@@ -132,7 +132,7 @@ class SchedulerArchitectureTest extends TestCase
         $this->amfMock->shouldNotReceive('stopProduction');
 
         $job = new ExecuteScheduledTaskJob($task->id, 'invalid-token');
-        $job->handle($this->app->make(TaskExecutionService::class));
+        $this->app->call([$job, 'handle']);
     }
 
     public function test_sequence_task_step_idempotency_resumes_from_failed_step(): void

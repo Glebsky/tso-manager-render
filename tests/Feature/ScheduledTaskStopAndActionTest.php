@@ -9,7 +9,6 @@ use App\Jobs\ExecuteScheduledTaskJob;
 use App\Models\Account;
 use App\Models\ScheduledTask;
 use App\Models\User;
-use App\Services\TaskExecutionService;
 use App\Services\TsoAmfService;
 use App\Services\TsoAuthService;
 use App\Services\ZoneParserService;
@@ -106,10 +105,8 @@ class ScheduledTaskStopAndActionTest extends TestCase
             ],
         ]);
 
-        $executionService = app(TaskExecutionService::class);
-
         $job = new ExecuteScheduledTaskJob($task->id, 'test-token', false);
-        $job->handle($executionService);
+        $this->app->call([$job, 'handle']);
 
         $task->refresh();
         $this->assertSame(TaskStatus::Cancelled, $task->status);

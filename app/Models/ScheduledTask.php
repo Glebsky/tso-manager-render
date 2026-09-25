@@ -28,6 +28,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $sort_order
  * @property TaskStatus $status
  * @property ?Carbon $queued_at
+ * @property ?Carbon $heartbeat_at
  * @property ?string $execution_token
  * @property int $completed_steps
  * @property ?Carbon $last_run_at
@@ -60,6 +61,7 @@ class ScheduledTask extends Model
         'interval_minutes',
         'status',
         'queued_at',
+        'heartbeat_at',
         'execution_token',
         'completed_steps',
     ];
@@ -71,6 +73,7 @@ class ScheduledTask extends Model
         'last_run_at' => 'datetime',
         'run_at_datetime' => 'datetime',
         'queued_at' => 'datetime',
+        'heartbeat_at' => 'datetime',
         'interval_hours' => 'integer',
         'interval_minutes' => 'integer',
         'completed_steps' => 'integer',

@@ -28,6 +28,7 @@ final readonly class SequenceStepExecutor
         private SingleActionExecutor $actionExecutor,
         private TaskStateMachine $stateMachine,
         private TaskActivityLogger $activityLogger,
+        private DelayWaiter $delayWaiter,
     ) {}
 
     /**
@@ -161,7 +162,12 @@ final readonly class SequenceStepExecutor
             }
 
             if ($delay > 0 && $index < count($actions) - 1) {
-                sleep($delay);
+                // Heartbeats during the wait and notices a concurrent Stop (FR-007).
+                if (! $this->delayWaiter->wait($task, $token, $delay)) {
+                    Log::info("[SequenceStepExecutor] Task #{$task->id} lost ownership during inline delay; aborting sequence.");
+
+                    return implode('; ', $resultsSummary);
+                }
             }
         }
 

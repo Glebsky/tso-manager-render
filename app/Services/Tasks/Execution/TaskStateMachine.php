@@ -12,6 +12,7 @@ use App\Enums\TaskType;
 use App\Models\ScheduledTask;
 use App\Services\Tasks\TaskActivityLogger;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;
 
 final readonly class TaskStateMachine
@@ -49,6 +50,7 @@ final readonly class TaskStateMachine
         $updated = $query->update([
             'status' => TaskStatus::Queued,
             'queued_at' => now(),
+            'heartbeat_at' => now(),
             'execution_token' => $token,
             'completed_steps' => 0,
             'last_result' => null,
@@ -92,7 +94,7 @@ final readonly class TaskStateMachine
 
         $data = [
             'status' => TaskStatus::Running,
-            'queued_at' => now(),
+            'heartbeat_at' => now(),
         ];
 
         if ($payload !== null) {
@@ -134,6 +136,7 @@ final readonly class TaskStateMachine
             ->update([
                 'completed_steps' => $completedSteps,
                 'payload' => $payload,
+                'heartbeat_at' => now(),
             ]) === 1;
 
         if (! $updated) {
@@ -142,6 +145,32 @@ final readonly class TaskStateMachine
                 $task->id,
                 substr($token, 0, 8),
                 $completedSteps
+            ));
+        }
+
+        return $updated;
+    }
+
+    /**
+     * Refresh the liveness timestamp of a run (FR-007).
+     *
+     * `$until` lets a process that intentionally pauses (delay between steps,
+     * hand-off to a delayed job) push the heartbeat into the future so stale
+     * recovery does not reset a healthy run. Returns false when this token no
+     * longer owns the task — the caller must stop working.
+     */
+    public function heartbeat(ScheduledTask $task, string $token, ?Carbon $until = null): bool
+    {
+        $updated = ScheduledTask::whereKey($task->id)
+            ->where('execution_token', $token)
+            ->whereIn('status', [TaskStatus::Queued, TaskStatus::Running])
+            ->update(['heartbeat_at' => $until ?? now()]) === 1;
+
+        if (! $updated) {
+            Log::warning(sprintf(
+                '[TaskStateMachine] Task #%d heartbeat CAS failed: token=%s',
+                $task->id,
+                substr($token, 0, 8)
             ));
         }
 
@@ -313,26 +342,75 @@ final readonly class TaskStateMachine
     }
 
     /**
-     * Recover a stale task stuck in queued or running state.
+     * Recover a stale task stuck in queued or running state (FR-007).
+     *
+     * A run is stale when its last heartbeat (falling back to `queued_at` for
+     * rows created before heartbeats existed) is older than the threshold.
+     * Recurring tasks go back to `pending` and are picked up by the schedule;
+     * a once task goes to `failed` — its side effects may already have
+     * happened and it must never run twice.
      */
     public function recoverStale(ScheduledTask $task, Carbon $threshold): bool
     {
-        $updated = ScheduledTask::whereKey($task->id)
-            ->whereIn('status', [TaskStatus::Queued, TaskStatus::Running])
-            ->where(function ($query) use ($threshold) {
-                $query->where('queued_at', '<=', $threshold)
-                    ->orWhereNull('queued_at');
-            })
+        $isOnce = $task->schedule_type === ScheduleType::Once;
+        $toStatus = $isOnce ? TaskStatus::Failed : TaskStatus::Pending;
+        $message = "Execution timed out / stuck in {$task->status->value} state.";
+
+        $updated = self::staleQuery($threshold)
+            ->whereKey($task->id)
             ->update([
-                'status' => TaskStatus::Pending,
+                'status' => $toStatus,
                 'execution_token' => null,
-                'last_result' => TaskResultPrefix::Warning->format("Execution timed out / stuck in {$task->status->value} state."),
+                'heartbeat_at' => null,
+                'last_run_at' => now(),
+                'last_result' => $isOnce
+                    ? TaskResultPrefix::Error->format($message)
+                    : TaskResultPrefix::Warning->format($message),
+                'is_active' => $isOnce ? false : $task->is_active,
             ]) === 1;
 
         if ($updated) {
-            Log::warning("[TaskStateMachine] Reset stale task #{$task->id} back to pending");
+            Log::warning(sprintf(
+                '[TaskStateMachine] Stale task #%d recovered: %s -> %s (last heartbeat=%s, threshold=%s)',
+                $task->id,
+                $task->status->value,
+                $toStatus->value,
+                ($task->heartbeat_at ?? $task->queued_at)?->toDateTimeString() ?? 'null',
+                $threshold->toDateTimeString()
+            ));
+
+            $this->activityLogger->logTaskEvent(
+                $task->account_id,
+                $task->id,
+                $isOnce ? LogLevel::Error : LogLevel::Warning,
+                __('logs.task.stale_recovered', [
+                    'name' => $task->name,
+                    'status' => $toStatus->value,
+                ])
+            );
         }
 
         return $updated;
+    }
+
+    /**
+     * Busy tasks whose liveness timestamp is older than the threshold.
+     *
+     * @return Builder<ScheduledTask>
+     */
+    public static function staleQuery(Carbon $threshold): Builder
+    {
+        return ScheduledTask::query()
+            ->whereIn('status', [TaskStatus::Queued, TaskStatus::Running])
+            ->where(function (Builder $query) use ($threshold) {
+                $query->where('heartbeat_at', '<=', $threshold)
+                    ->orWhere(function (Builder $query) use ($threshold) {
+                        $query->whereNull('heartbeat_at')
+                            ->where(function (Builder $query) use ($threshold) {
+                                $query->where('queued_at', '<=', $threshold)
+                                    ->orWhereNull('queued_at');
+                            });
+                    });
+            });
     }
 }

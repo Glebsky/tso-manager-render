@@ -11,6 +11,7 @@ use App\Exceptions\TaskCancelledException;
 use App\Exceptions\TokenMismatchException;
 use App\Models\ScheduledTask;
 use App\Services\TaskExecutionService;
+use App\Services\Tasks\Execution\DelayWaiter;
 use App\Services\Tasks\Execution\TaskStateMachine;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -79,7 +80,7 @@ class ExecuteScheduledTaskJob implements ShouldQueue
      *
      * @throws Throwable
      */
-    public function handle(TaskExecutionService $executionService): void
+    public function handle(TaskExecutionService $executionService, DelayWaiter $delayWaiter, TaskStateMachine $stateMachine): void
     {
         $task = ScheduledTask::find($this->taskId);
 
@@ -172,26 +173,24 @@ class ExecuteScheduledTaskJob implements ShouldQueue
             $delay = max(0, (int) $state['nextDelay']);
 
             if (microtime(true) + $delay + self::STEP_MARGIN_SECONDS < $budgetEndsAt) {
-                if ($delay > 0) {
-                    $sleepRemaining = $delay;
-                    while ($sleepRemaining > 0) {
-                        sleep(min(1, $sleepRemaining));
-                        $sleepRemaining--;
-                        $task->refresh();
-                        if ($task->status !== TaskStatus::Running && $task->status !== TaskStatus::Queued) {
-                            Log::info("[TaskJob] Task #{$this->taskId} cancelled during delay wait; exiting execution loop.");
+                // Waits with heartbeats and notices a concurrent Stop (FR-007).
+                if (! $delayWaiter->wait($task, $this->executionToken, $delay)) {
+                    Log::info("[TaskJob] Task #{$this->taskId} lost ownership during delay wait; exiting execution loop.");
 
-                            return;
-                        }
-                    }
+                    return;
                 }
 
                 continue;
             }
 
-            // Push the stale-recovery heartbeat past the intentional wait so
-            // recoverStaleTasks() does not reset a healthy paused run.
-            $task->update(['queued_at' => now()->addSeconds($delay)]);
+            // Push the heartbeat past the intentional wait so stale recovery
+            // does not reset a healthy paused run. A lost CAS means the run
+            // was stopped concurrently — do not re-dispatch it.
+            if (! $stateMachine->heartbeat($task, $this->executionToken, now()->addSeconds($delay))) {
+                Log::info("[TaskJob] Task #{$this->taskId} lost ownership before hand-off; not re-dispatching.");
+
+                return;
+            }
 
             self::dispatch($this->taskId, $this->executionToken, $this->force)
                 ->delay(now()->addSeconds(max($delay, 1)));

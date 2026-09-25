@@ -46,18 +46,16 @@ readonly class TaskSchedulerEngine
     ) {}
 
     /**
-     * Recover tasks stuck in queued or running state longer than stale timeout.
+     * Recover tasks whose run stopped sending heartbeats (FR-007).
+     *
+     * Defaults to `config('game.stale_task_timeout_minutes')`.
      */
-    public function recoverStaleTasks(int $timeoutMinutes = 10): int
+    public function recoverStaleTasks(?int $timeoutMinutes = null): int
     {
+        $timeoutMinutes ??= max(1, (int) config('game.stale_task_timeout_minutes', 10));
         $staleThreshold = Carbon::now()->subMinutes($timeoutMinutes);
 
-        $staleTasks = ScheduledTask::whereIn('status', [TaskStatus::Queued, TaskStatus::Running])
-            ->where(function ($query) use ($staleThreshold) {
-                $query->where('queued_at', '<=', $staleThreshold)
-                    ->orWhereNull('queued_at');
-            })
-            ->get();
+        $staleTasks = TaskStateMachine::staleQuery($staleThreshold)->get();
 
         $recovered = 0;
         foreach ($staleTasks as $task) {

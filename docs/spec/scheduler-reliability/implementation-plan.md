@@ -15,7 +15,7 @@
 | WP-02 | ✅ | 2026-09-25 | `retry_after=200` (redis+database), `ExecuteScheduledTaskJob`: `tries=1`, `timeout=150`, `failOnTimeout`; `failed()` проверяет токен. Тесты: `QueueTimeoutInvariantTest`, `ExecuteScheduledTaskJobFailedTest` |
 | WP-03 | ✅ | 2026-09-25 | `Cancelled` в `RESERVABLE_STATUSES` (`TaskSchedulerEngine`); `stop()`: `last_run_at=now()` только если задача была busy, once → `is_active=false`. Тест: `CancelledTaskReschedulingTest` (6) |
 | WP-04 | ✅ | 2026-09-25 | `TaskStateMachine` с CAS переходов (`reserve`/`start`/`progress`/`finish`/`cancel`/`failJob`/`recoverStale`); «Run now» на busy возвращает 409; `TaskStateWriter` удален. Тесты: `TaskStateMachineTest` (12), 553 теста зеленые |
-| WP-05 | ☐ | | |
+| WP-05 | ✅ | 2026-09-25 | Миграция `heartbeat_at`; `TaskStateMachine::heartbeat()` (CAS, `until` для hand-off); `reserve/start/progress` обновляют heartbeat; `DelayWaiter` (общее ожидание с heartbeat ≤ `game.scheduler.heartbeat_interval_seconds`, замечает Stop) в job и inline; `recoverStaleTasks()` читает `game.stale_task_timeout_minutes`, once → `failed`+`is_active=false`. Тесты: `TaskHeartbeatTest` (9), `ExecuteScheduledTaskJobHandOffTest` (2) |
 | WP-06 | ⏸ | | Blocked: подтверждение A-1…A-3 (`decisions.md`) |
 | WP-07 | ☐ | | |
 | WP-08 | ☐ | | Требует ручной проверки V-11 до merge |
@@ -61,9 +61,14 @@
 3. «Run now» использует `reserve()` (единый путь с планировщиком, параметр `force`).
 4. Удалить `TaskStateWriter`.
 
-### WP-05 — Heartbeat и stale recovery (A-11) — FR-007
+### WP-05 — Heartbeat и stale recovery (A-11) — FR-007 ✅
 - Миграция `heartbeat_at`; `SequenceRunner`/delay-ожидание вызывают `heartbeat()`.
 - `recoverStaleTasks()` читает конфиг; once → `failed`.
+- Примечание по реализации: ожидание вынесено в `Tasks\Execution\DelayWaiter` (используется job'ом и
+  `executeInlineSequence`; в WP-09 его переиспользует `SequenceRunner`). Stale-условие —
+  `heartbeat_at <= threshold`, для строк без heartbeat (до миграции) fallback на `queued_at`.
+  Hand-off на отложенную джобу делает `heartbeat(until = now + delay)` CAS-ом: если run остановлен —
+  повторный dispatch не делается. `start()` больше не трогает `queued_at` (это момент резервации).
 
 ## Фаза 3 — Расписание
 

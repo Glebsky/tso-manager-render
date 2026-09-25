@@ -23,11 +23,11 @@
 | V-04 | FR-004 | Feature: «Run now» на busy → 409, состояние не изменено | ✅ `TaskStateMachineTest::test_manual_execute_on_busy_task_throws_409_conflict` (2026-09-25) |
 | V-05 | FR-005 | Unit: CAS-проигрыш не пишет в задачу (4 сценария гонок) | ✅ `TaskStateMachineTest` (12 passed, 2026-09-25): reserve, start, progress, finish, cancel, failJob, stale recovery |
 | V-06 | FR-006 | Unit: `ScheduleCalculator` таблица кейсов; Feature: индексный due-запрос | ☐ |
-| V-07 | FR-007 | Feature: heartbeat во время delay; once stale → failed | ☐ |
+| V-07 | FR-007 | Feature: heartbeat во время delay; once stale → failed | ✅ `TaskHeartbeatTest` 9 passed (2026-09-25): heartbeat каждые ≤ interval в `DelayWaiter` (Sleep::fake, 35 с → ≥3 heartbeat), Stop во время ожидания прерывает, CAS по токену, конфиг `stale_task_timeout_minutes` читается, once stale → `failed`+inactive, recurring → `pending`; `ExecuteScheduledTaskJobHandOffTest` 2 passed: hand-off сдвигает heartbeat на now+delay, Stop до hand-off → без dispatch |
 | V-08 | FR-008 | Unit: занятый лок → `SessionBusyException`, транспорт не вызван | ☐ |
 | V-09 | FR-009 | Unit: ≤ 1 forced relogin на действие | ☐ |
 | V-10 | NFR-001 | Бенчмарк тика на 1 000 задач (`load-tests/`) | ☐ |
 | V-11 | FR-009 | **Ручная**: 24 ч на живом аккаунте, число 1012 в логах до/после | ☐ |
-| V-12 | NFR-003 | Все gates после каждого WP | ✅ WP-01+02: test 535 passed / pint / phpstan No errors / build ok (2026-09-25) · ✅ WP-03: test 541 passed / pint / phpstan No errors / build ok (2026-09-25) · ✅ WP-04: test 553 passed / pint / phpstan No errors / build ok (2026-09-25) |
+| V-12 | NFR-003 | Все gates после каждого WP | ✅ WP-01+02: test 535 passed / pint / phpstan No errors / build ok (2026-09-25) · ✅ WP-03: test 541 passed / pint / phpstan No errors / build ok (2026-09-25) · ✅ WP-04: test 553 passed / pint / phpstan No errors / build ok (2026-09-25) · ✅ WP-05: test 564 passed / pint / phpstan No errors / build ok (2026-09-25) |
 | V-13 | FR-010, ADR-002 | Unit: пропуск слота вне окна grace → 0 запусков, `next_run_at` в будущем; внутри окна → запуск | ☐ |
 | V-14 | ADR-003 | Unit: interval 5 мин, окончание 12:03:17 → `next_run_at` 12:08:17 | ☐ |

@@ -43,6 +43,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Scheduler
+    |--------------------------------------------------------------------------
+    |
+    | heartbeat_interval_seconds: how often a running task run refreshes its
+    | `heartbeat_at` while waiting (e.g. between sequence steps). Must stay
+    | well below stale_task_timeout_minutes so a healthy wait is never
+    | mistaken for a stuck run (FR-007).
+    |
+    */
+    'scheduler' => [
+        'heartbeat_interval_seconds' => (int) env('TSO_HEARTBEAT_INTERVAL', 15),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Task Execution Limits & Budget
     |--------------------------------------------------------------------------
     */
