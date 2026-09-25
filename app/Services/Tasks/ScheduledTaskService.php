@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services\Tasks;
 
-use App\Enums\LogLevel;
-use App\Enums\TaskResultPrefix;
 use App\Enums\TaskStatus;
+use App\Exceptions\TaskExecutionException;
 use App\Jobs\ExecuteScheduledTaskJob;
 use App\Models\Account;
 use App\Models\ScheduledTask;
 use App\Services\TaskExecutionService;
+use App\Services\Tasks\Execution\TaskStateMachine;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -31,6 +31,7 @@ final class ScheduledTaskService
     public function __construct(
         private readonly TaskActivityLogger $logger,
         private readonly TaskExecutionService $executionService,
+        private readonly TaskStateMachine $stateMachine,
     ) {}
 
     /**
@@ -255,14 +256,12 @@ final class ScheduledTaskService
         $payload = $task->payload ?? [];
         unset($payload['step_results']);
 
-        $task->update([
-            'status' => TaskStatus::Queued,
-            'queued_at' => now(),
-            'execution_token' => $token,
-            'completed_steps' => 0,
-            'last_result' => null,
-            'payload' => $payload,
-        ]);
+        $reserved = $this->stateMachine->reserve($task, $token, $payload, force: true);
+        if (! $reserved) {
+            throw new TaskExecutionException('error.task_busy', ['id' => $task->id], 409);
+        }
+
+        $task->refresh();
 
         Log::info(sprintf(
             '[Task] Manual "Run now" for task #%d [%s] (is_active=%s, schedule=%s, token=%s) — dispatched with force=true',
@@ -287,6 +286,11 @@ final class ScheduledTaskService
 
     /**
      * Stop/cancel a running or queued task immediately.
+     *
+     * Stop interrupts only the current run (ADR-001): a recurring task keeps
+     * its schedule and is reserved again in its next slot, counted from the
+     * moment it was stopped (ADR-003: the interval starts at the end of a run).
+     * A once task has no next slot, so it is deactivated instead.
      */
     public function stop(ScheduledTask $task): ScheduledTask
     {
@@ -298,22 +302,7 @@ final class ScheduledTaskService
             'total' => $totalSteps > 0 ? $totalSteps : 1,
         ]);
 
-        $task->update([
-            'status' => TaskStatus::Cancelled,
-            'execution_token' => null,
-            'last_result' => TaskResultPrefix::Skipped->format($stopMessage),
-        ]);
-
-        $this->logger->logTaskEvent(
-            $task->account_id,
-            $task->id,
-            LogLevel::Warning,
-            __('logs.task.stopped_by_user', [
-                'id' => $task->id,
-                'step' => $completedSteps,
-                'total' => $totalSteps > 0 ? $totalSteps : 1,
-            ])
-        );
+        $this->stateMachine->cancel($task, $stopMessage);
 
         Log::info(sprintf(
             '[Task] Task #%d cancelled by user (completed_steps: %d, total: %d)',
@@ -322,7 +311,7 @@ final class ScheduledTaskService
             $totalSteps
         ));
 
-        return $this->withAccount($task);
+        return $this->withAccount($task->fresh() ?? $task);
     }
 
     /**

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Services\Tasks;
 
 use App\Enums\ScheduleType;
-use App\Enums\TaskResultPrefix;
 use App\Enums\TaskStatus;
 use App\Jobs\AccountSyncJob;
 use App\Jobs\ExecuteScheduledTaskJob;
@@ -15,6 +14,7 @@ use App\Models\Setting;
 use App\Services\AccountSyncService;
 use App\Services\SystemLogCleanupService;
 use App\Services\TaskExecutionService;
+use App\Services\Tasks\Execution\TaskStateMachine;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
@@ -29,11 +29,20 @@ use Throwable;
  */
 readonly class TaskSchedulerEngine
 {
+    /**
+     * Statuses a due task may be reserved from. `cancelled` is not terminal:
+     * "Stop" only interrupts the current run, the schedule stays (ADR-001).
+     *
+     * @var list<TaskStatus>
+     */
+    public const array RESERVABLE_STATUSES = TaskStateMachine::RESERVABLE_STATUSES;
+
     public function __construct(
         private TaskExecutionService $taskExecutionService,
         private AccountSyncService $accountSyncService,
         private SystemLogCleanupService $systemLogCleanupService,
         private CacheRepository $cache,
+        private TaskStateMachine $stateMachine,
     ) {}
 
     /**
@@ -50,16 +59,14 @@ readonly class TaskSchedulerEngine
             })
             ->get();
 
+        $recovered = 0;
         foreach ($staleTasks as $task) {
-            Log::warning("[Scheduler] Resetting stale task #{$task->id} [{$task->task_type->value}] from status '{$task->status->value}' back to 'pending'");
-            $task->update([
-                'status' => TaskStatus::Pending,
-                'execution_token' => null,
-                'last_result' => TaskResultPrefix::Warning->format("Execution timed out / stuck in {$task->status->value} state."),
-            ]);
+            if ($this->stateMachine->recoverStale($task, $staleThreshold)) {
+                $recovered++;
+            }
         }
 
-        return $staleTasks->count();
+        return $recovered;
     }
 
     /**
@@ -122,16 +129,7 @@ readonly class TaskSchedulerEngine
         $payload = $task->payload ?? [];
         unset($payload['step_results']);
 
-        $reserved = ScheduledTask::where('id', $task->id)
-            ->where('is_active', true)
-            ->whereIn('status', [TaskStatus::Pending, TaskStatus::Completed, TaskStatus::Failed])
-            ->update([
-                'status' => TaskStatus::Queued,
-                'queued_at' => now(),
-                'execution_token' => $token,
-                'completed_steps' => 0,
-                'payload' => $payload,
-            ]);
+        $reserved = $this->stateMachine->reserve($task, $token, $payload, force: false);
 
         if (! $reserved) {
             return false;
@@ -170,7 +168,7 @@ readonly class TaskSchedulerEngine
     public function processDueTasks(Carbon $now, string $mode = 'queue'): int
     {
         $activeTasks = ScheduledTask::where('is_active', true)
-            ->whereIn('status', [TaskStatus::Pending, TaskStatus::Completed, TaskStatus::Failed])
+            ->whereIn('status', self::RESERVABLE_STATUSES)
             ->with('account:id,username,nickname,region,status')
             ->get();
 
