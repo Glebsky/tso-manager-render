@@ -83,7 +83,7 @@ class HttpTsoClient implements TsoClientInterface
             now()->addDay(),
         );
 
-        Log::info("[TsoAmf] Invalidated shared game session cache for account #{$accountId} (gen {$this->sessionGeneration($accountId)})");
+        Log::debug("[TsoAmf] Invalidated shared game session cache for account #{$accountId} (gen {$this->sessionGeneration($accountId)})");
     }
 
     private function sessionGeneration(int $accountId): int
@@ -203,7 +203,7 @@ class HttpTsoClient implements TsoClientInterface
             throw new \RuntimeException("Cookie file for account #{$account->id} cannot be empty.");
         }
 
-        Log::info("[TsoAmf] Resolving real AMF server: bbUrl={$lsUrl}, user={$dsoAuthUser}, targetZoneId={$targetZoneId}");
+        Log::debug("[TsoAmf] Resolving real AMF server: bbUrl={$lsUrl}, user={$dsoAuthUser}, targetZoneId={$targetZoneId}");
 
         $authUrl = rtrim($lsUrl, '/').'/authenticate';
         $chAuth = curl_init();
@@ -227,7 +227,7 @@ class HttpTsoClient implements TsoClientInterface
         $authStatus = (int) curl_getinfo($chAuth, CURLINFO_HTTP_CODE);
         curl_close($chAuth);
 
-        Log::info("[TsoAmf] Load server authentication: HTTP {$authStatus}, response: ".trim($authRes));
+        Log::debug("[TsoAmf] Load server authentication: HTTP {$authStatus}, response: ".trim($authRes));
 
         if ($this->isSessionRejected($authStatus, $authRes)) {
             throw new SessionExpiredException(
@@ -275,7 +275,7 @@ class HttpTsoClient implements TsoClientInterface
             $lsStatus = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
 
-            Log::info("[TsoAmf] Load server attempt {$i}: HTTP {$lsStatus}, URL {$requestUrl}, response: ".substr($lsRes, 0, 300));
+            Log::debug("[TsoAmf] Load server attempt {$i}: HTTP {$lsStatus}, URL {$requestUrl}, response: ".substr($lsRes, 0, 300));
 
             if ($this->isMaintenanceResponse($lsStatus, $lsRes)) {
                 throw GameServerMaintenanceException::fromResponse($lsStatus, $lsRes);
@@ -313,7 +313,7 @@ class HttpTsoClient implements TsoClientInterface
             }
         }
 
-        Log::info("[TsoAmf] Real AMF server resolved: {$amfServerUrl}");
+        Log::debug("[TsoAmf] Real AMF server resolved: {$amfServerUrl}");
 
         return $amfServerUrl;
     }
@@ -373,7 +373,7 @@ class HttpTsoClient implements TsoClientInterface
             $session = $this->readSharedSession($accountId, $zoneId, $authToken);
 
             if ($session !== null) {
-                Log::info("[TsoAmf] Reusing shared game session for account #{$accountId} (zone {$zoneId}) with DSId {$session['ds_id']}");
+                Log::debug("[TsoAmf] Reusing shared game session for account #{$accountId} (zone {$zoneId}) with DSId {$session['ds_id']}");
             }
         }
 
@@ -406,7 +406,7 @@ class HttpTsoClient implements TsoClientInterface
         $client = $session;
         $clientDsId = $client['ds_id'] !== '' ? $client['ds_id'] : 'nil';
 
-        Log::info("[TsoAmf] Sending command [{$operation}] for account #{$accountId} (zone {$zoneId}) with DSId {$clientDsId}");
+        Log::debug("[TsoAmf] Sending command [{$operation}] for account #{$accountId} (zone {$zoneId}) with DSId {$clientDsId}");
 
         $message = new flex_messaging_messages_RemotingMessage;
         $message->destination = $destination;
@@ -471,12 +471,12 @@ class HttpTsoClient implements TsoClientInterface
             throw new \RuntimeException("AMF Server returned HTTP {$httpCode}. Response: ".$response);
         }
 
-        Log::info("[TsoAmf] Command [{$operation}] for account #{$accountId} completed in {$durationMs}ms (HTTP {$httpCode}, ".strlen($response).' bytes)');
+        Log::debug("[TsoAmf] Command [{$operation}] for account #{$accountId} completed in {$durationMs}ms (HTTP {$httpCode}, ".strlen($response).' bytes)');
 
         $serverDsId = $this->extractDsIdFromResponse($response);
 
         if ($serverDsId !== null && $serverDsId !== $client['ds_id']) {
-            Log::info("[TsoAmf] Game server assigned DSId {$serverDsId} for account #{$accountId} (was {$clientDsId})");
+            Log::debug("[TsoAmf] Game server assigned DSId {$serverDsId} for account #{$accountId} (was {$clientDsId})");
 
             $session['ds_id'] = $serverDsId;
             $this->dsIds[$accountId] = $serverDsId;

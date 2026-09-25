@@ -127,13 +127,13 @@ class TsoAmfService
         $lastResponse = '';
 
         for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
-            Log::info("[TsoAmf] Ensuring zone is loaded for account #{$account->id} (attempt {$attempt}/{$maxAttempts})");
+            Log::debug("[TsoAmf] Ensuring zone is loaded for account #{$account->id} (attempt {$attempt}/{$maxAttempts})");
             $lastResponse = $this->getZone($account);
 
             // FR-009: decide on the decoded error code, not on the digits "1012"
             // appearing somewhere in the binary payload (grid ids, amounts…).
             if ($this->responseValidator->errorCode($lastResponse) === self::ERROR_NEWER_SESSION) {
-                Log::info("[TsoAmf] Zone still initializing for account #{$account->id} (code 1012); waiting {$delaySeconds}s...");
+                Log::debug("[TsoAmf] Zone still initializing for account #{$account->id} (code 1012); waiting {$delaySeconds}s...");
                 if ($attempt < $maxAttempts) {
                     Sleep::for($delaySeconds)->seconds();
                 }
@@ -141,7 +141,7 @@ class TsoAmfService
                 continue;
             }
 
-            Log::info("[TsoAmf] Zone ready for account #{$account->id} on attempt {$attempt}/{$maxAttempts}");
+            Log::debug("[TsoAmf] Zone ready for account #{$account->id} on attempt {$attempt}/{$maxAttempts}");
             break;
         }
 
