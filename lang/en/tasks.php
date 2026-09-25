@@ -38,12 +38,8 @@ return [
         'skipped' => 'Step :step [:type]: SKIPPED (already executed)',
         'skipped_buff' => 'Step :step [:type]: SKIPPED (buff :buff missing)',
         'skipped_reason' => 'Step :step [:type]: SKIPPED (:reason)',
-        'ok' => 'Step :step [:type]: OK (:bytes bytes)',
+        'done' => 'Step :step [:type]: OK',
         'error' => 'Step :step [:type]: ERROR - :error',
-        'ok_short' => 'Step :step: OK',
-        'skipped_buff_short' => 'Step :step: SKIPPED',
-        'skipped_short' => 'Step :step: SKIPPED',
-        'error_short' => 'Step :step: ERROR - :error',
     ],
     'pickups' => [
         'summary' => 'Collectibles: :collected/:total collected',

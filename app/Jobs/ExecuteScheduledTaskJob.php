@@ -11,7 +11,6 @@ use App\Exceptions\TaskCancelledException;
 use App\Exceptions\TokenMismatchException;
 use App\Models\ScheduledTask;
 use App\Services\TaskExecutionService;
-use App\Services\Tasks\Execution\DelayWaiter;
 use App\Services\Tasks\Execution\TaskStateMachine;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -47,12 +46,6 @@ class ExecuteScheduledTaskJob implements ShouldQueue
      */
     private const int TIME_BUDGET_SECONDS = 45;
 
-    /**
-     * Safety margin for a single step's own duration when deciding whether
-     * to continue in-process or hand off to a delayed job.
-     */
-    private const int STEP_MARGIN_SECONDS = 10;
-
     public int $taskId;
 
     public string $executionToken;
@@ -80,7 +73,7 @@ class ExecuteScheduledTaskJob implements ShouldQueue
      *
      * @throws Throwable
      */
-    public function handle(TaskExecutionService $executionService, DelayWaiter $delayWaiter, TaskStateMachine $stateMachine): void
+    public function handle(TaskExecutionService $executionService, TaskStateMachine $stateMachine): void
     {
         $task = ScheduledTask::find($this->taskId);
 
@@ -137,68 +130,38 @@ class ExecuteScheduledTaskJob implements ShouldQueue
             return;
         }
 
-        // Sequence tasks are executed step-by-step. Short delays are waited
-        // out inline within the time budget; long delays (or an exhausted
-        // budget) hand the remaining steps to a fresh delayed job so no
-        // single run blocks the worker or hits execution time limits.
-        $budgetEndsAt = microtime(true) + self::TIME_BUDGET_SECONDS;
-
-        while (true) {
-            $task->refresh();
-
-            if ($task->status !== TaskStatus::Running && $task->status !== TaskStatus::Queued) {
-                Log::info("[TaskJob] Task #{$this->taskId} is no longer active (status='{$task->status->value}'); stopping execution loop.");
-
-                return;
-            }
-
-            if ($task->execution_token === null || $task->execution_token !== $this->executionToken) {
-                Log::info("[TaskJob] Task #{$this->taskId} execution token mismatch or cleared; stopping execution loop.");
-
-                return;
-            }
-
-            try {
-                $state = $executionService->executeSequenceStep($task, $this->executionToken, $this->force);
-            } catch (TaskCancelledException|TokenMismatchException $e) {
-                Log::info("[TaskJob] Task #{$this->taskId} sequence step aborted: {$e->getMessage()}");
-
-                return;
-            }
-
-            if ($state['finished']) {
-                return;
-            }
-
-            $delay = max(0, (int) $state['nextDelay']);
-
-            if (microtime(true) + $delay + self::STEP_MARGIN_SECONDS < $budgetEndsAt) {
-                // Waits with heartbeats and notices a concurrent Stop (FR-007).
-                if (! $delayWaiter->wait($task, $this->executionToken, $delay)) {
-                    Log::info("[TaskJob] Task #{$this->taskId} lost ownership during delay wait; exiting execution loop.");
-
-                    return;
-                }
-
-                continue;
-            }
-
-            // Push the heartbeat past the intentional wait so stale recovery
-            // does not reset a healthy paused run. A lost CAS means the run
-            // was stopped concurrently — do not re-dispatch it.
-            if (! $stateMachine->heartbeat($task, $this->executionToken, now()->addSeconds($delay))) {
-                Log::info("[TaskJob] Task #{$this->taskId} lost ownership before hand-off; not re-dispatching.");
-
-                return;
-            }
-
-            self::dispatch($this->taskId, $this->executionToken, $this->force)
-                ->delay(now()->addSeconds(max($delay, 1)));
-
-            Log::info("[TaskJob] Task #{$this->taskId} handed off to a delayed job (next step in {$delay}s, completed steps: {$task->completed_steps})");
+        // Sequence tasks run in the shared SequenceRunner within this job's
+        // time budget. When the next delay does not fit, the remaining steps
+        // are handed to a fresh delayed job so no single run blocks the
+        // worker or hits execution time limits.
+        try {
+            $result = $executionService->runSequence($task, $this->executionToken, $this->force, self::TIME_BUDGET_SECONDS);
+        } catch (TaskCancelledException|TokenMismatchException $e) {
+            Log::info("[TaskJob] Task #{$this->taskId} sequence run aborted: {$e->getMessage()}");
 
             return;
         }
+
+        if (! $result->isHandOff()) {
+            return;
+        }
+
+        $delay = $result->nextDelay;
+
+        // Push the heartbeat past the intentional wait so stale recovery
+        // does not reset a healthy paused run. A lost CAS means the run
+        // was stopped concurrently — do not re-dispatch it.
+        if (! $stateMachine->heartbeat($task, $this->executionToken, now()->addSeconds($delay))) {
+            Log::info("[TaskJob] Task #{$this->taskId} lost ownership before hand-off; not re-dispatching.");
+
+            return;
+        }
+
+        self::dispatch($this->taskId, $this->executionToken, $this->force)
+            ->delay(now()->addSeconds(max($delay, 1)));
+
+        $task->refresh();
+        Log::info("[TaskJob] Task #{$this->taskId} handed off to a delayed job (next step in {$delay}s, completed steps: {$task->completed_steps})");
     }
 
     /**

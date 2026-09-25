@@ -38,12 +38,8 @@ return [
         'skipped' => 'Крок :step [:type]: пропущено (вже виконано)',
         'skipped_buff' => 'Крок :step [:type]: пропущено (баф :buff відсутній)',
         'skipped_reason' => 'Крок :step [:type]: пропущено (:reason)',
-        'ok' => 'Крок :step [:type]: OK (:bytes байт)',
+        'done' => 'Крок :step [:type]: OK',
         'error' => 'Крок :step [:type]: ПОМИЛКА - :error',
-        'ok_short' => 'Крок :step: OK',
-        'skipped_buff_short' => 'Крок :step: ПРОПУЩЕНО',
-        'skipped_short' => 'Крок :step: ПРОПУЩЕНО',
-        'error_short' => 'Крок :step: ПОМИЛКА - :error',
     ],
     'pickups' => [
         'summary' => 'Колекції: зібрано :collected/:total',

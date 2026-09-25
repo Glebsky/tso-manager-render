@@ -38,12 +38,8 @@ return [
         'skipped' => 'Шаг :step [:type]: пропущен (уже выполнен)',
         'skipped_buff' => 'Шаг :step [:type]: пропущен (бафф :buff отсутствует)',
         'skipped_reason' => 'Шаг :step [:type]: пропущен (:reason)',
-        'ok' => 'Шаг :step [:type]: OK (:bytes байт)',
+        'done' => 'Шаг :step [:type]: OK',
         'error' => 'Шаг :step [:type]: ОШИБКА - :error',
-        'ok_short' => 'Шаг :step: OK',
-        'skipped_buff_short' => 'Шаг :step: ПРОПУЩЕН',
-        'skipped_short' => 'Шаг :step: ПРОПУЩЕН',
-        'error_short' => 'Шаг :step: ОШИБКА - :error',
     ],
     'pickups' => [
         'summary' => 'Коллекции: собрано :collected/:total',

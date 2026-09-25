@@ -19,7 +19,7 @@
 | WP-06 | ✅ | 2026-09-25 | Реализовано по дефолтам A-1…A-3 из ADR-002 (см. примечание в `decisions.md`). Миграция `next_run_at` + индекс `(is_active, next_run_at)` + backfill; `Tasks\Scheduling\ScheduleCalculator` (чистый); `processDueTasks()` — индексный запрос без `payload`, self-heal `next_run_at IS NULL`, пропуск слотов CAS-ом (`skipMissedSlot`); `finish/cancel/failJob/recoverStale` пишут `next_run_at`; `create/update/toggle` пересчитывают. Тесты: `ScheduleCalculatorTest` (25), `NextRunAtSchedulingTest` (13), `NextRunAtBackfillMigrationTest` (1) |
 | WP-07 | ✅ | 2026-09-25 | `SessionBusyException`; `HttpTsoClient::sendCommand()` и `TsoAuthService::login()` больше не работают без лока (`LockTimeoutException` → `SessionBusyException`); TTL лока — `game.session_lock_ttl_seconds` (по умолчанию `http_timeout*4+10`); `ActionRetryPolicy` ждёт `session_busy_retry_delay` и повторяет без relogin. Тесты: `SessionLockTest` (6) |
 | WP-08 | ✅ | 2026-09-25 | Код готов, gates зелёные. `TsoAmfService::sendServerCall()` без relogin (`SessionExpiredException` пробрасывается); `invalidateSession()` не трогает client id; `ensureZoneLoaded()` — по `GameResponseValidator::errorCode()`; `ActionRetryPolicy` — единственный слой relogin, ≤ 1 на действие (`SessionExpiredException`, 1005, 1012). Тесты: `RetryPolicyTest` (9). **⚠ V-11 (ручная, 24 ч на живом аккаунте) не выполнена — обязательна до merge в master** |
-| WP-09 | ☐ | | |
+| WP-09 | ✅ | 2026-09-25 | `StepRunner` (единая обработка результата шага → `StepOutcome`), `SequenceRunner` (один цикл для inline и queue, бюджет → `SequenceRunResult::handOff`), `StepResultCollection` (сводка из `step_results`); `SequenceStepExecutor`, `executeInlineSequence`, `executeSequenceStep`, pass-through методы удалены; job — тонкий адаптер. 618 характеризационных тестов прошли без изменений. Тесты: `SequenceRunnerTest` (9) |
 | WP-10 | ☐ | | |
 | WP-11 | ☐ | | |
 
@@ -125,10 +125,27 @@
 
 ## Фаза 5 — DRY/SRP (без изменения поведения)
 
-### WP-09 — Единый движок sequence (A-12, B-11)
+### WP-09 — Единый движок sequence (A-12, B-11) ✅
 - `StepRunner` (на базе `StepOutcome`), `SequenceRunner`; job становится тонким адаптером.
 - Удалить `executeInlineSequence`, pass-through методы `TaskExecutionService`.
 - Характеризационные тесты `SequenceStepExecutor` должны пройти без изменений.
+- Примечание по реализации:
+  - `Tasks\Execution\StepRunner::run(task, account, index, action, manual)` — единственное место, где исключения шага
+    превращаются в результат (`completed|skipped|failed`) и строку activity-лога; используется движком и кнопкой
+    «выполнить один шаг» (`executeSingleSequenceAction`, `manual: true` → ключи `single_action_*`).
+  - `StepOutcome` переписан (старый был мёртвым кодом с другой семантикой): персистентная форма
+    `{status, error, reason?, buff?, already_done?}`; frontend читает только `status/error/reason` — новые ключи
+    служат для сводки. `StepResultCollection::fromPayload(actions, step_results)` восстанавливает сводку
+    после hand-off, поэтому inline и queue путь дают **одинаковый** `last_result`
+    (`Step N [type]: OK | ERROR - … | SKIPPED (…)`). Раньше queue-путь писал укороченную форму `Step N: OK`;
+    ключи `tasks.step.*_short` и `tasks.step.ok` (с байтами) удалены, добавлен `tasks.step.done`.
+  - `SequenceRunner::run(task, account, token, ?budgetSeconds)`: цикл `refresh → start CAS → шаг → progress CAS →
+    delay`; `budget=null` (inline) — ждёт всегда, иначе при `now + delay + STEP_MARGIN ≥ budgetEnd` возвращает
+    `SequenceRunResult::handOff(delay)`; шаги с `delay=0` никогда не приводят к hand-off. Потеря CAS → `aborted`
+    без записи финала. Ошибки шага — результат, наверх уходят только инфраструктурные исключения (auth/DB).
+  - `TaskExecutionService`: `execute()` для sequence → `sequenceRunner->run()` без бюджета; новый `runSequence()`
+    (guard + бюджет) для `ExecuteScheduledTaskJob`; `executeSequenceStep`, `executeSingleActionWithRetry`,
+    `executeSingleAction` удалены (не имели вызовов вне класса).
 
 ### WP-10 — Sync-джобы (A-13)
 - `MarketSyncJob`: снимать lock только в `failed()` / после успешного `handle()`; `ShouldBeUnique` вместо ручного lock.
