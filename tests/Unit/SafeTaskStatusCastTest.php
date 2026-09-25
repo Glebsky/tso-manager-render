@@ -29,7 +29,6 @@ class SafeTaskStatusCastTest extends TestCase
         $this->assertSame(TaskStatus::Running, $this->cast->get($this->model, 'status', 'running', []));
         $this->assertSame(TaskStatus::Completed, $this->cast->get($this->model, 'status', 'completed', []));
         $this->assertSame(TaskStatus::Failed, $this->cast->get($this->model, 'status', 'failed', []));
-        $this->assertSame(TaskStatus::Paused, $this->cast->get($this->model, 'status', 'paused', []));
         $this->assertSame(TaskStatus::Cancelled, $this->cast->get($this->model, 'status', 'cancelled', []));
     }
 
@@ -42,6 +41,7 @@ class SafeTaskStatusCastTest extends TestCase
     {
         $this->assertSame(TaskStatus::Pending, $this->cast->get($this->model, 'status', null, []));
         $this->assertSame(TaskStatus::Pending, $this->cast->get($this->model, 'status', '', []));
+        $this->assertSame(TaskStatus::Pending, $this->cast->get($this->model, 'status', 'paused', []));
         $this->assertSame(TaskStatus::Pending, $this->cast->get($this->model, 'status', 'unknown_status_xyz', []));
     }
 

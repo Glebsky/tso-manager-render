@@ -20,7 +20,6 @@ class EnumsTest extends TestCase
         $this->assertEquals('running', TaskStatus::Running->value);
         $this->assertEquals('completed', TaskStatus::Completed->value);
         $this->assertEquals('failed', TaskStatus::Failed->value);
-        $this->assertEquals('paused', TaskStatus::Paused->value);
         $this->assertEquals('cancelled', TaskStatus::Cancelled->value);
     }
 
@@ -32,7 +31,6 @@ class EnumsTest extends TestCase
         $this->assertFalse(TaskStatus::Pending->isBusy());
         $this->assertFalse(TaskStatus::Completed->isBusy());
         $this->assertFalse(TaskStatus::Failed->isBusy());
-        $this->assertFalse(TaskStatus::Paused->isBusy());
         $this->assertFalse(TaskStatus::Cancelled->isBusy());
     }
 

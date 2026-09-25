@@ -11,7 +11,6 @@ enum TaskStatus: string
     case Running = 'running';
     case Completed = 'completed';
     case Failed = 'failed';
-    case Paused = 'paused';
     case Cancelled = 'cancelled';
 
     public function isBusy(): bool
