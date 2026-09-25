@@ -16,7 +16,7 @@
 | WP-03 | ✅ | 2026-09-25 | `Cancelled` в `RESERVABLE_STATUSES` (`TaskSchedulerEngine`); `stop()`: `last_run_at=now()` только если задача была busy, once → `is_active=false`. Тест: `CancelledTaskReschedulingTest` (6) |
 | WP-04 | ✅ | 2026-09-25 | `TaskStateMachine` с CAS переходов (`reserve`/`start`/`progress`/`finish`/`cancel`/`failJob`/`recoverStale`); «Run now» на busy возвращает 409; `TaskStateWriter` удален. Тесты: `TaskStateMachineTest` (12), 553 теста зеленые |
 | WP-05 | ✅ | 2026-09-25 | Миграция `heartbeat_at`; `TaskStateMachine::heartbeat()` (CAS, `until` для hand-off); `reserve/start/progress` обновляют heartbeat; `DelayWaiter` (общее ожидание с heartbeat ≤ `game.scheduler.heartbeat_interval_seconds`, замечает Stop) в job и inline; `recoverStaleTasks()` читает `game.stale_task_timeout_minutes`, once → `failed`+`is_active=false`. Тесты: `TaskHeartbeatTest` (9), `ExecuteScheduledTaskJobHandOffTest` (2) |
-| WP-06 | ⏸ | | Blocked: подтверждение A-1…A-3 (`decisions.md`) |
+| WP-06 | ✅ | 2026-09-25 | Реализовано по дефолтам A-1…A-3 из ADR-002 (см. примечание в `decisions.md`). Миграция `next_run_at` + индекс `(is_active, next_run_at)` + backfill; `Tasks\Scheduling\ScheduleCalculator` (чистый); `processDueTasks()` — индексный запрос без `payload`, self-heal `next_run_at IS NULL`, пропуск слотов CAS-ом (`skipMissedSlot`); `finish/cancel/failJob/recoverStale` пишут `next_run_at`; `create/update/toggle` пересчитывают. Тесты: `ScheduleCalculatorTest` (25), `NextRunAtSchedulingTest` (13), `NextRunAtBackfillMigrationTest` (1) |
 | WP-07 | ☐ | | |
 | WP-08 | ☐ | | Требует ручной проверки V-11 до merge |
 | WP-09 | ☐ | | |
@@ -79,7 +79,20 @@
   daily после окончания; пропуск после простоя 3 дня = 0 запусков; граница окна grace ±1 с).
 - `processDueTasks()` → индексный запрос без `payload`; пропущенные слоты сдвигаются CAS-ом.
 - `ScheduledTaskService::create/update/toggle` пересчитывают `next_run_at`.
-- Blocked by: подтверждение предположений A-1…A-3 (`decisions.md`).
+- ~~Blocked by: подтверждение предположений A-1…A-3~~ — реализовано по дефолтам ADR-002; изменение любого
+  из них локализовано (см. `decisions.md`, «Статус предположений»).
+- Примечание по реализации:
+  - `ScheduleCalculator::nextRunAt(task, from)` — слот строго после `from` (используется при окончании
+    запуска: `finish`, `cancel` busy, `failJob`, `recoverStale`); `initialRunAt(task, now)` — слот,
+    выведенный из legacy-полей (backfill, self-heal); `scheduleRunAt(task, now, grace)` — для действий
+    оператора (`create/update/toggle on`): просроченный слот сразу заменяется на будущий, чтобы действие
+    пользователя не порождало предупреждение «missed slot».
+  - `isTaskDue()` оставлен как публичный предикат «слот достигнут» (`next_run_at <= now`); решение
+    «выполнить или пропустить» принимает `processDueTasks()` по окну grace.
+  - Строки без `next_run_at` (созданы вне сервиса) лечатся в тике: слот вычисляется и пишется
+    CAS-ом `WHERE next_run_at IS NULL`.
+  - `duplicate()` не копирует `next_run_at` — копия неактивна, слот назначит `toggle()`.
+  - API: `ScheduledTaskResource` отдаёт `next_run_at` (ISO-8601); frontend не менялся.
 
 ## Фаза 4 — Игровая сессия (главный кандидат на «1012 / нестабильно»)
 

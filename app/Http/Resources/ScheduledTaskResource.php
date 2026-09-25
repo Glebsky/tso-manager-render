@@ -30,6 +30,7 @@ class ScheduledTaskResource extends JsonResource
             'run_at_datetime' => $this->run_at_datetime?->toIso8601String(),
             'interval_hours' => $this->interval_hours,
             'interval_minutes' => $this->interval_minutes,
+            'next_run_at' => $this->next_run_at?->toIso8601String(),
             'payload' => $this->payload,
             'is_active' => $this->is_active,
             'sort_order' => $this->sort_order,

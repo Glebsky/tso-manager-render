@@ -10,8 +10,11 @@ use App\Enums\TaskResultPrefix;
 use App\Enums\TaskStatus;
 use App\Enums\TaskType;
 use App\Models\ScheduledTask;
+use App\Services\Tasks\Scheduling\ScheduleCalculator;
 use App\Services\Tasks\TaskActivityLogger;
 use Carbon\Carbon;
+use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;
 
@@ -24,7 +27,18 @@ final readonly class TaskStateMachine
         TaskStatus::Cancelled,
     ];
 
-    public function __construct(private TaskActivityLogger $activityLogger) {}
+    public function __construct(
+        private TaskActivityLogger $activityLogger,
+        private ScheduleCalculator $calculator,
+    ) {}
+
+    /**
+     * Slot after a run that ended now (ADR-003). `null` for once tasks.
+     */
+    private function nextRunAtAfterNow(ScheduledTask $task): ?CarbonImmutable
+    {
+        return $this->calculator->nextRunAt($task, CarbonImmutable::now());
+    }
 
     /**
      * Atomically reserve a task for execution (pending|completed|failed|cancelled -> queued).
@@ -47,7 +61,7 @@ final readonly class TaskStateMachine
         $cleanPayload = $payload ?? ($task->payload ?? []);
         unset($cleanPayload['step_results']);
 
-        $updated = $query->update([
+        $data = [
             'status' => TaskStatus::Queued,
             'queued_at' => now(),
             'heartbeat_at' => now(),
@@ -55,7 +69,14 @@ final readonly class TaskStateMachine
             'completed_steps' => 0,
             'last_result' => null,
             'payload' => $cleanPayload,
-        ]) === 1;
+        ];
+
+        // A once task has no slot after it was taken (FR-006).
+        if ($task->schedule_type === ScheduleType::Once) {
+            $data['next_run_at'] = null;
+        }
+
+        $updated = $query->update($data) === 1;
 
         $tokenPrefix = substr($token, 0, 8);
 
@@ -199,6 +220,7 @@ final readonly class TaskStateMachine
             ->update([
                 'status' => $to,
                 'last_run_at' => now(),
+                'next_run_at' => $this->nextRunAtAfterNow($task), // ADR-003: from the end of the run
                 'last_result' => $summary,
                 'payload' => $payload,
                 'completed_steps' => 0,
@@ -265,6 +287,7 @@ final readonly class TaskStateMachine
                 'status' => TaskStatus::Cancelled,
                 'execution_token' => null,
                 'last_run_at' => now(),
+                'next_run_at' => $this->nextRunAtAfterNow($task), // stop = end of the run (ADR-003)
                 'last_result' => $formattedMessage,
                 'is_active' => $isActive,
             ]) === 1;
@@ -317,6 +340,7 @@ final readonly class TaskStateMachine
                 'status' => TaskStatus::Failed,
                 'execution_token' => null,
                 'last_run_at' => now(),
+                'next_run_at' => $this->nextRunAtAfterNow($task),
                 'last_result' => $summary,
                 'completed_steps' => 0,
                 'is_active' => $isActive,
@@ -363,6 +387,7 @@ final readonly class TaskStateMachine
                 'execution_token' => null,
                 'heartbeat_at' => null,
                 'last_run_at' => now(),
+                'next_run_at' => $this->nextRunAtAfterNow($task),
                 'last_result' => $isOnce
                     ? TaskResultPrefix::Error->format($message)
                     : TaskResultPrefix::Warning->format($message),
@@ -388,6 +413,64 @@ final readonly class TaskStateMachine
                     'status' => $toStatus->value,
                 ])
             );
+        }
+
+        return $updated;
+    }
+
+    /**
+     * Skip a slot the scheduler arrived too late for (FR-010, ADR-002).
+     *
+     * CAS on `next_run_at = $missedSlot` so two concurrent ticks cannot move
+     * the slot twice. A recurring task moves to `$newSlot`; a once task has
+     * no future slot and is failed and deactivated instead (A-2).
+     */
+    public function skipMissedSlot(ScheduledTask $task, CarbonInterface $missedSlot, ?CarbonInterface $newSlot): bool
+    {
+        $isOnce = $task->schedule_type === ScheduleType::Once;
+        $summary = TaskResultPrefix::Skipped->format(sprintf(
+            'missed slot %s (scheduler was not running, next: %s)',
+            $missedSlot->toDateTimeString(),
+            $newSlot?->toDateTimeString() ?? 'none'
+        ));
+
+        $updated = ScheduledTask::whereKey($task->id)
+            ->where('is_active', true)
+            ->whereIn('status', self::RESERVABLE_STATUSES)
+            ->where('next_run_at', $missedSlot)
+            ->update([
+                'next_run_at' => $newSlot,
+                'last_result' => $summary,
+                'status' => $isOnce ? TaskStatus::Failed : $task->status,
+                'is_active' => ! $isOnce,
+            ]) === 1;
+
+        if ($updated) {
+            Log::warning(sprintf(
+                '[TaskStateMachine] Task #%d missed slot %s (schedule=%s) -> next %s%s',
+                $task->id,
+                $missedSlot->toDateTimeString(),
+                $task->schedule_type->value,
+                $newSlot?->toDateTimeString() ?? 'none',
+                $isOnce ? ', once task failed and deactivated' : ''
+            ));
+
+            $this->activityLogger->logTaskEvent(
+                $task->account_id,
+                $task->id,
+                $isOnce ? LogLevel::Error : LogLevel::Warning,
+                __('logs.task.missed_slot', [
+                    'name' => $task->name,
+                    'slot' => $missedSlot->toDateTimeString(),
+                    'next' => $newSlot?->toDateTimeString() ?? '—',
+                ])
+            );
+        } else {
+            Log::info(sprintf(
+                '[TaskStateMachine] Task #%d missed-slot CAS failed (slot %s already moved by another tick)',
+                $task->id,
+                $missedSlot->toDateTimeString()
+            ));
         }
 
         return $updated;

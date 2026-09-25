@@ -33,6 +33,7 @@ return [
         'step_skipped_reason' => 'Задача ":name": шаг :step (:type) пропущен (:reason).',
         'stopped_by_user' => 'Задача #:id остановлена пользователем на шаге :step из :total.',
         'stale_recovered' => 'Задача ":name": запуск перестал отвечать (нет heartbeat) и восстановлен в статус ":status".',
+        'missed_slot' => 'Задача ":name": слот :slot пропущен (планировщик не работал). Следующий запуск: :next.',
         'single_action_completed' => 'Задача ":name": отдельное действие :step (:type) выполнено успешно.',
         'single_action_skipped' => 'Задача ":name": отдельное действие :step (:type) пропущено (:reason).',
         'single_action_failed' => 'Задача ":name": отдельное действие :step (:type) не выполнено: :error',

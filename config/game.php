@@ -51,9 +51,14 @@ return [
     | well below stale_task_timeout_minutes so a healthy wait is never
     | mistaken for a stuck run (FR-007).
     |
+    | missed_grace_minutes: a due slot is still executed if the tick arrives
+    | within this many minutes after `next_run_at`. Later than that the slot
+    | is skipped and the task moves to its next future slot (ADR-002).
+    |
     */
     'scheduler' => [
         'heartbeat_interval_seconds' => (int) env('TSO_HEARTBEAT_INTERVAL', 15),
+        'missed_grace_minutes' => (int) env('TSO_MISSED_GRACE_MINUTES', 5),
     ],
 
     /*

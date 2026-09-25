@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services\Tasks;
 
-use App\Enums\ScheduleType;
 use App\Enums\TaskStatus;
 use App\Jobs\AccountSyncJob;
 use App\Jobs\ExecuteScheduledTaskJob;
@@ -15,7 +14,9 @@ use App\Services\AccountSyncService;
 use App\Services\SystemLogCleanupService;
 use App\Services\TaskExecutionService;
 use App\Services\Tasks\Execution\TaskStateMachine;
+use App\Services\Tasks\Scheduling\ScheduleCalculator;
 use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Exception;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
 use Illuminate\Support\Facades\DB;
@@ -43,6 +44,7 @@ readonly class TaskSchedulerEngine
         private SystemLogCleanupService $systemLogCleanupService,
         private CacheRepository $cache,
         private TaskStateMachine $stateMachine,
+        private ScheduleCalculator $calculator,
     ) {}
 
     /**
@@ -68,52 +70,29 @@ readonly class TaskSchedulerEngine
     }
 
     /**
-     * Check if a task is due for execution.
+     * Whether the task's slot has been reached (`next_run_at <= now`, FR-006).
+     *
+     * "Due" only means the slot is reached; {@see processDueTasks} then decides
+     * whether it is still on time or already missed (ADR-002).
      */
     public function isTaskDue(ScheduledTask $task, Carbon $now): bool
     {
-        return match ($task->schedule_type) {
-            ScheduleType::Daily => $this->isDailyTaskDue($task, $now),
-            ScheduleType::Once => $task->run_at_datetime !== null
-                && $task->last_run_at === null
-                && $now->greaterThanOrEqualTo($task->run_at_datetime),
-            ScheduleType::Interval => $this->isIntervalTaskDue($task, $now),
-        };
+        $slot = $this->slotOf($task, $now);
+
+        return $slot !== null && $slot->lessThanOrEqualTo($now);
     }
 
-    private function isDailyTaskDue(ScheduledTask $task, Carbon $now): bool
+    /**
+     * Persisted `next_run_at`, or the slot derived from the legacy fields for
+     * rows that do not have one yet (self-healing, see processDueTasks).
+     */
+    private function slotOf(ScheduledTask $task, Carbon $now): ?CarbonImmutable
     {
-        if (! $task->run_at_time) {
-            return false;
+        if ($task->next_run_at !== null) {
+            return CarbonImmutable::instance($task->next_run_at);
         }
 
-        $timeParts = explode(':', $task->run_at_time);
-        $hours = (int) $timeParts[0];
-        $minutes = (int) ($timeParts[1] ?? 0);
-
-        $targetToday = $now->copy()->setTime($hours, $minutes);
-
-        if ($now->greaterThanOrEqualTo($targetToday)) {
-            return is_null($task->last_run_at) || $task->last_run_at->lt($targetToday);
-        }
-
-        return false;
-    }
-
-    private function isIntervalTaskDue(ScheduledTask $task, Carbon $now): bool
-    {
-        $hours = (int) $task->interval_hours;
-        $minutes = (int) $task->interval_minutes;
-        $intervalTotalMinutes = ($hours * 60) + $minutes;
-
-        if ($intervalTotalMinutes > 0) {
-            $baseline = $task->last_run_at ?? $task->created_at;
-            if ($baseline) {
-                return abs((int) $now->diffInMinutes($baseline)) >= $intervalTotalMinutes;
-            }
-        }
-
-        return false;
+        return $this->calculator->initialRunAt($task, $now);
     }
 
     /**
@@ -159,26 +138,95 @@ readonly class TaskSchedulerEngine
     }
 
     /**
-     * Evaluate due tasks and perform atomic reservation before dispatching.
+     * Reserve every task whose slot is reached and still on time; skip the
+     * slots the scheduler arrived too late for (FR-006, FR-010, ADR-002).
+     *
+     * The selection is an indexed query on `(is_active, next_run_at)` that
+     * does not load `payload` (NFR-001). Rows without `next_run_at` (created
+     * before the column existed or outside the service) are healed in place.
+     *
+     * @return int number of tasks reserved (skipped slots are not counted)
      *
      * @throws Throwable
      */
     public function processDueTasks(Carbon $now, string $mode = 'queue'): int
     {
-        $activeTasks = ScheduledTask::where('is_active', true)
+        $graceMinutes = max(0, (int) (config('game.scheduler.missed_grace_minutes') ?? 5));
+
+        $dueTasks = ScheduledTask::query()
+            ->select(self::DUE_COLUMNS)
+            ->where('is_active', true)
             ->whereIn('status', self::RESERVABLE_STATUSES)
-            ->with('account:id,username,nickname,region,status')
+            ->where(function ($query) use ($now) {
+                $query->where('next_run_at', '<=', $now)
+                    ->orWhereNull('next_run_at');
+            })
+            ->orderBy('next_run_at')
             ->get();
 
         $count = 0;
 
-        foreach ($activeTasks as $task) {
-            if ($this->isTaskDue($task, $now) && $this->reserveAndDispatchTask($task, $mode)) {
+        foreach ($dueTasks as $task) {
+            $slot = $this->healMissingSlot($task, $now);
+
+            if ($slot === null || $slot->greaterThan($now)) {
+                continue;
+            }
+
+            if ($this->calculator->isMissed($slot, $now, $graceMinutes)) {
+                $this->stateMachine->skipMissedSlot($task, $slot, $this->calculator->nextFutureSlot($task, $now));
+
+                continue;
+            }
+
+            $fullTask = ScheduledTask::query()
+                ->with('account:id,username,nickname,region,status')
+                ->find($task->id);
+
+            if ($fullTask !== null && $this->reserveAndDispatchTask($fullTask, $mode)) {
                 $count++;
             }
         }
 
         return $count;
+    }
+
+    /**
+     * Columns needed to decide whether a task is due — everything but `payload`.
+     *
+     * @var list<string>
+     */
+    private const array DUE_COLUMNS = [
+        'id', 'name', 'account_id', 'task_type', 'schedule_type', 'run_at_time', 'run_at_datetime',
+        'interval_hours', 'interval_minutes', 'next_run_at', 'is_active', 'status',
+        'last_run_at', 'created_at',
+    ];
+
+    /**
+     * Returns the task's slot; when `next_run_at` is missing, derives it from
+     * the legacy fields and persists it (CAS on `next_run_at IS NULL`).
+     */
+    private function healMissingSlot(ScheduledTask $task, Carbon $now): ?CarbonImmutable
+    {
+        if ($task->next_run_at !== null) {
+            return CarbonImmutable::instance($task->next_run_at);
+        }
+
+        $slot = $this->calculator->initialRunAt($task, $now);
+
+        if ($slot === null) {
+            return null;
+        }
+
+        ScheduledTask::whereKey($task->id)
+            ->whereNull('next_run_at')
+            ->update(['next_run_at' => $slot]);
+
+        $task->next_run_at = Carbon::instance($slot);
+
+        Log::info(sprintf('[Scheduler] Task #%d had no next_run_at; derived %s', $task->id, $slot->toDateTimeString()));
+
+        return $slot;
     }
 
     /**
