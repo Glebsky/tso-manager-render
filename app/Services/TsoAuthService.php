@@ -9,6 +9,7 @@ use App\Exceptions\SessionBusyException;
 use App\Models\Account;
 use App\Services\Auth\TsoPlayPageParser;
 use App\Services\Auth\UbisoftConnectAuthClient;
+use App\Support\Http\TsoCurlHelper;
 use App\Support\Security\CredentialRedactor;
 use Exception;
 use Illuminate\Contracts\Cache\LockTimeoutException;
@@ -54,14 +55,6 @@ class TsoAuthService
         'ts' => ['domain' => 'https://www.tsotesting.com',            'uplay' => '/en/api/user/uplay', 'main' => '/en/homepage',                                               'play' => '/en/play'],
     ];
 
-    /**
-     * Browser fingerprint expected by the game backend. Must stay byte-identical
-     * to what the reference Flash client sends.
-     */
-    private const array BROWSER_HEADERS = [
-        'User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.12 (KHTML, like Gecko) Chrome/9.0.570.0 Safari/534.12',
-        'Referer: http://game-cdn.thesettlersonline.net/prestaging/PS5724/SWMMO/debug/SWMMO.swf',
-    ];
 
     /**
      * Browser headers simulating a modern browser for web login and warmup to avoid bot CAPTCHA triggers.
@@ -353,7 +346,6 @@ class TsoAuthService
             $error = curl_error($ch);
             $httpCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
             $headerSize = (int) curl_getinfo($ch, CURLINFO_HEADER_SIZE);
-            curl_close($ch);
 
             if ($error) {
                 throw new RuntimeException('cURL Error: '.$error);
@@ -422,27 +414,23 @@ class TsoAuthService
             @file_put_contents($cookieFile, '');
         }
 
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, rtrim((string) $account->bb_url, '/').'/authenticate');
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
-            'DSOAUTHUSER' => (string) $account->dso_auth_user,
-            'DSOAUTHTOKEN' => (string) $account->dso_auth_token,
-        ]));
-        curl_setopt($ch, CURLOPT_COOKIEFILE, $cookieFile);
-        curl_setopt($ch, CURLOPT_COOKIEJAR, $cookieFile);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, (bool) config('game.ssl_verify', true));
-        curl_setopt($ch, CURLOPT_TIMEOUT, (int) config('game.http_timeout', 30));
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array_merge(
-            ['Content-Type: application/x-www-form-urlencoded'],
-            self::BROWSER_HEADERS,
-        ));
+        $ch = TsoCurlHelper::init(rtrim((string) $account->bb_url, '/').'/authenticate', [
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => http_build_query([
+                'DSOAUTHUSER' => (string) $account->dso_auth_user,
+                'DSOAUTHTOKEN' => (string) $account->dso_auth_token,
+            ]),
+            CURLOPT_COOKIEFILE => $cookieFile,
+            CURLOPT_COOKIEJAR => $cookieFile,
+            CURLOPT_HTTPHEADER => array_merge(
+                ['Content-Type: application/x-www-form-urlencoded'],
+                TsoCurlHelper::defaultFlashHeaders(),
+            ),
+        ]);
 
         $response = (string) curl_exec($ch);
         $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $error = curl_error($ch);
-        curl_close($ch);
 
         if ($error !== '') {
             Log::warning("[TsoAuth] Session probe for account #{$account->id} failed on transport level: {$error}");

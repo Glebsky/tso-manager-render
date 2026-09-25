@@ -215,7 +215,6 @@ class UbisoftConnectAuthClient
         $response = (string) curl_exec($ch);
         $error = curl_error($ch);
         $info = curl_getinfo($ch);
-        curl_close($ch);
 
         if ($error) {
             throw new RuntimeException('cURL Error: '.$error);

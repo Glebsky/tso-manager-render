@@ -11,6 +11,7 @@ use App\Models\Account;
 use App\Services\Amf\Amf3Encoder;
 use App\Services\Amf\Vo\flex_messaging_messages_RemotingMessage;
 use App\Services\TsoAuthService;
+use App\Support\Http\TsoCurlHelper;
 use Exception;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Facades\Cache;
@@ -206,26 +207,21 @@ class HttpTsoClient implements TsoClientInterface
         Log::debug("[TsoAmf] Resolving real AMF server: bbUrl={$lsUrl}, user={$dsoAuthUser}, targetZoneId={$targetZoneId}");
 
         $authUrl = rtrim($lsUrl, '/').'/authenticate';
-        $chAuth = curl_init();
-        curl_setopt($chAuth, CURLOPT_URL, $authUrl);
-        curl_setopt($chAuth, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($chAuth, CURLOPT_SSL_VERIFYPEER, (bool) config('game.ssl_verify', true));
-        curl_setopt($chAuth, CURLOPT_TIMEOUT, (int) config('game.http_timeout', 30));
-        curl_setopt($chAuth, CURLOPT_POST, true);
-        curl_setopt($chAuth, CURLOPT_POSTFIELDS, http_build_query([
-            'DSOAUTHUSER' => $dsoAuthUser,
-            'DSOAUTHTOKEN' => $dsoAuthToken,
-        ]));
-        curl_setopt($chAuth, CURLOPT_COOKIEFILE, $cookieFile);
-        curl_setopt($chAuth, CURLOPT_COOKIEJAR, $cookieFile);
-        curl_setopt($chAuth, CURLOPT_HTTPHEADER, [
-            'Content-Type: application/x-www-form-urlencoded',
-            'User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.12 (KHTML, like Gecko) Chrome/9.0.570.0 Safari/534.12',
-            'Referer: http://game-cdn.thesettlersonline.net/prestaging/PS5724/SWMMO/debug/SWMMO.swf',
+        $chAuth = TsoCurlHelper::init($authUrl, [
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => http_build_query([
+                'DSOAUTHUSER' => $dsoAuthUser,
+                'DSOAUTHTOKEN' => $dsoAuthToken,
+            ]),
+            CURLOPT_COOKIEFILE => $cookieFile,
+            CURLOPT_COOKIEJAR => $cookieFile,
+            CURLOPT_HTTPHEADER => array_merge(
+                ['Content-Type: application/x-www-form-urlencoded'],
+                TsoCurlHelper::defaultFlashHeaders(),
+            ),
         ]);
         $authRes = (string) curl_exec($chAuth);
         $authStatus = (int) curl_getinfo($chAuth, CURLINFO_HTTP_CODE);
-        curl_close($chAuth);
 
         Log::debug("[TsoAmf] Load server authentication: HTTP {$authStatus}, response: ".trim($authRes));
 
@@ -249,31 +245,26 @@ class HttpTsoClient implements TsoClientInterface
         $amfServerUrl = '';
 
         for ($i = 0; $i < $maxRetries; $i++) {
-            $ch = curl_init();
             $requestUrl = rtrim($lsUrl, '/').'/Z'.(int) round(microtime(true) * 1000);
-            curl_setopt($ch, CURLOPT_URL, $requestUrl);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, (bool) config('game.ssl_verify', true));
-            curl_setopt($ch, CURLOPT_TIMEOUT, (int) config('game.http_timeout', 30));
-            curl_setopt($ch, CURLOPT_POST, true);
-
             $data = http_build_query([
                 'zoneID' => $targetZoneId,
                 'DSOAUTHTOKEN' => $dsoAuthToken,
                 'DSOAUTHUSER' => $dsoAuthUser,
             ]);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-            curl_setopt($ch, CURLOPT_COOKIEFILE, $cookieFile);
-            curl_setopt($ch, CURLOPT_COOKIEJAR, $cookieFile);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                'Content-Type: application/x-www-form-urlencoded',
-                'User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.12 (KHTML, like Gecko) Chrome/9.0.570.0 Safari/534.12',
-                'Referer: http://game-cdn.thesettlersonline.net/prestaging/PS5724/SWMMO/debug/SWMMO.swf',
+
+            $ch = TsoCurlHelper::init($requestUrl, [
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => $data,
+                CURLOPT_COOKIEFILE => $cookieFile,
+                CURLOPT_COOKIEJAR => $cookieFile,
+                CURLOPT_HTTPHEADER => array_merge(
+                    ['Content-Type: application/x-www-form-urlencoded'],
+                    TsoCurlHelper::defaultFlashHeaders(),
+                ),
             ]);
 
             $lsRes = (string) curl_exec($ch);
             $lsStatus = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
 
             Log::debug("[TsoAmf] Load server attempt {$i}: HTTP {$lsStatus}, URL {$requestUrl}, response: ".substr($lsRes, 0, 300));
 
@@ -437,30 +428,29 @@ class HttpTsoClient implements TsoClientInterface
             throw new \RuntimeException('Invalid client URL or cookie file.');
         }
 
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $client['url']);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, (bool) config('game.ssl_verify', true));
-        curl_setopt($ch, CURLOPT_TIMEOUT, (int) config('game.http_timeout', 30));
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_POSTREDIR, 3);
-        curl_setopt($ch, CURLOPT_COOKIEFILE, $client['cookie_file']);
-        curl_setopt($ch, CURLOPT_COOKIEJAR, $client['cookie_file']);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Content-Type: application/x-amf',
-            'Accept: */*',
-            'User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.12 (KHTML, like Gecko) Chrome/9.0.570.0 Safari/534.12',
-            'Referer: http://game-cdn.thesettlersonline.net/prestaging/PS5724/SWMMO/debug/SWMMO.swf',
-            'x-flash-version: 11,4,402,287',
+        $ch = TsoCurlHelper::init($client['url'], [
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_POSTREDIR => 3,
+            CURLOPT_COOKIEFILE => $client['cookie_file'],
+            CURLOPT_COOKIEJAR => $client['cookie_file'],
+            CURLOPT_HTTPHEADER => array_merge(
+                [
+                    'Content-Type: application/x-amf',
+                    'Accept: */*',
+                ],
+                TsoCurlHelper::defaultFlashHeaders(),
+                [
+                    'x-flash-version: 11,4,402,287',
+                ],
+            ),
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $amf0Envelope,
         ]);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $amf0Envelope);
 
         $response = (string) curl_exec($ch);
         $durationMs = (int) round((microtime(true) - $startTime) * 1000);
         $error = curl_error($ch);
         $httpCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
 
         if ($error) {
             Log::error("[TsoAmf] Command [{$operation}] for account #{$accountId} failed after {$durationMs}ms with cURL error: {$error}");
