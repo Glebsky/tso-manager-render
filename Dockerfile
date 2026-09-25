@@ -15,7 +15,8 @@ RUN apk add --no-cache \
     pkgconfig \
     $PHPIZE_DEPS
 
-RUN docker-php-ext-install pdo pdo_pgsql pdo_sqlite zip \
+# pcntl lets queue:work enforce job $timeout (kill a hung job).
+RUN docker-php-ext-install pdo pdo_pgsql pdo_sqlite zip pcntl \
     && pecl install redis \
     && docker-php-ext-enable redis
 

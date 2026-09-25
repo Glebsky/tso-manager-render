@@ -43,7 +43,7 @@ class MarketSyncJob implements ShouldQueue
     {
         $this->account = $account;
         $this->serverId = $serverId;
-        $this->onQueue('tso-market');
+        $this->onQueue(config('game.queues.market'));
     }
 
     /**

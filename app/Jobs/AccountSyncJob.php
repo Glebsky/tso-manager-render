@@ -37,7 +37,7 @@ class AccountSyncJob implements ShouldBeUnique, ShouldQueue
     public function __construct(Account $account)
     {
         $this->account = $account;
-        $this->onQueue('tso-accounts');
+        $this->onQueue(config('game.queues.accounts'));
     }
 
     public function uniqueId(): string

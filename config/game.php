@@ -7,10 +7,11 @@ return [
     |--------------------------------------------------------------------------
     |
     | Supported modes:
-    | - 'queue': Enqueues jobs to dedicated queues ('tso-tasks', 'tso-market').
-    |            Requires a persistent queue worker process (e.g. supervisor).
-    | - 'cron':  Enqueues jobs to dedicated queues, and if --work is passed,
-    |            runs an isolated worker to process 'tso-tasks,tso-market'.
+    | - 'queue': Enqueues jobs to the queues below. Requires a persistent
+    |            queue worker process (Docker `worker` service, supervisor).
+    | - 'cron':  Enqueues jobs to the queues below and then runs an inline
+    |            worker (`--stop-when-empty`) over the same queues on every
+    |            scheduler tick. Intended for OSPanel / Windows Task Scheduler.
     | - 'sync':  Executes jobs inline/synchronously without external queues.
     |
     */
@@ -20,10 +21,17 @@ return [
     |--------------------------------------------------------------------------
     | TSO Dedicated Queues
     |--------------------------------------------------------------------------
+    |
+    | Single source of queue names for jobs and for every worker. The order
+    | is the worker priority order. Keep the TSO_WORKER_QUEUES default in
+    | docker-compose.yml in sync (enforced by QueueTopologyTest).
+    |
     */
     'queues' => [
         'tasks' => 'tso-tasks',
+        'accounts' => 'tso-accounts',
         'market' => 'tso-market',
+        'default' => 'default',
     ],
 
     /*

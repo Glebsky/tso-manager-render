@@ -117,7 +117,8 @@ services:
       context: .
       dockerfile: Dockerfile
       target: development
-    command: php artisan queue:work redis --sleep=3 --tries=3 --max-time=3600
+    # Queue list must match config('game.queues') (enforced by QueueTopologyTest).
+    command: php artisan queue:work redis --queue=${TSO_WORKER_QUEUES:-tso-tasks,tso-accounts,tso-market,default} --sleep=3 --tries=1 --timeout=150 --max-time=3600
     volumes:
       - ./app:/var/www/html/app
       - ./bootstrap:/var/www/html/bootstrap
