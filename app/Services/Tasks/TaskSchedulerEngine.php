@@ -17,7 +17,6 @@ use App\Services\Tasks\Execution\TaskStateMachine;
 use App\Services\Tasks\Scheduling\ScheduleCalculator;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
-use Exception;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -116,7 +115,9 @@ readonly class TaskSchedulerEngine
             try {
                 $task->refresh();
                 $this->taskExecutionService->execute($task, $token);
-            } catch (Exception $e) {
+            } catch (Throwable $e) {
+                // Throwable, not Exception: a TypeError in one task must not
+                // abort the whole scheduler tick (A-13).
                 Log::error("Sync execution failed for task #{$task->id}: {$e->getMessage()}");
             }
         } else {
@@ -257,28 +258,24 @@ readonly class TaskSchedulerEngine
                 }
             }
 
-            $lockKey = "account_sync_lock:{$account->id}";
-            if (! $this->cache->add($lockKey, true, 300)) {
-                continue;
-            }
-
             $count++;
 
             if ($mode === 'sync') {
+                // The scheduler command runs withoutOverlapping(), so inline
+                // syncs never race each other.
                 try {
                     $this->accountSyncService->sync($account);
-                } catch (Exception $e) {
+                } catch (Throwable $e) {
                     Log::error("Sync account #{$account->id} failed: {$e->getMessage()}");
-                } finally {
-                    $this->cache->forget($lockKey);
                 }
             } else {
+                // Deduplicated by AccountSyncJob's ShouldBeUnique (A-13): a
+                // second dispatch while one is queued/running/retrying is a no-op.
                 AccountSyncJob::dispatch($account);
             }
         }
 
         return $count;
-
     }
 
     /**

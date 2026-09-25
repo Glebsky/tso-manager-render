@@ -10,7 +10,6 @@ use App\Models\MarketSyncLog;
 use App\Models\Setting;
 use App\Services\MarketSyncService;
 use Carbon\Carbon;
-use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
 use Throwable;
@@ -106,32 +105,23 @@ class SyncMarketCommand extends Command
                 }
             }
 
-            $lockKey = "market_sync_lock:server:{$serverId}";
-            if (! Cache::add($lockKey, true, 180)) {
-                $this->info("Market sync lock for server [{$serverId}] already held. Skipping.");
-
-                continue;
-            }
-
             try {
                 if ($this->option('sync')) {
+                    // Inline mode runs under the scheduler's withoutOverlapping().
                     $this->info("Running MarketSync synchronously for server [{$serverId}] account [{$account->username}]...");
                     $this->syncService->sync($account, $serverId);
                     $this->info("Market sync for server [{$serverId}] completed successfully.");
                 } else {
+                    // Deduplicated per server by MarketSyncJob's ShouldBeUnique (A-13).
                     $this->info("Dispatching MarketSyncJob for server [{$serverId}] account [{$account->username}]...");
                     MarketSyncJob::dispatch($account, $serverId);
                 }
-            } catch (Exception $e) {
+            } catch (Throwable $e) {
                 $this->error("Market sync for server [{$serverId}] failed: {$e->getMessage()}");
                 $connection->update([
                     'sync_status' => 'error',
                     'last_error' => $e->getMessage(),
                 ]);
-            } finally {
-                if ($this->option('sync')) {
-                    Cache::forget($lockKey);
-                }
             }
         }
 

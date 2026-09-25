@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Exceptions\AuthChallengeException;
 use App\Exceptions\SessionBusyException;
 use App\Models\Account;
 use App\Services\Auth\TsoPlayPageParser;
@@ -164,9 +165,8 @@ class TsoAuthService
         $cooldownKey = "account_login_cooldown:{$account->id}";
         if (Cache::has($cooldownKey)) {
             $reason = Cache::get($cooldownKey);
-            $msg = is_string($reason) && ! empty($reason) ? $reason : __('ui.auth.captcha_required');
 
-            throw new RuntimeException($msg);
+            throw AuthChallengeException::cooldown(is_string($reason) ? $reason : '');
         }
 
         $region = $account->region;
@@ -251,6 +251,10 @@ class TsoAuthService
         Cache::forget("account_login_cooldown:{$id}");
     }
 
+    /**
+     * Message-based fallback for callers that only have text. Prefer the typed
+     * check `UnrecoverableAuthError::isUnrecoverable()` when an exception is at hand.
+     */
     public function isCaptchaOr2faError(string $message): bool
     {
         return str_contains($message, 'CAPTCHA') ||

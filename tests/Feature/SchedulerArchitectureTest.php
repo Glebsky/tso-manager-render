@@ -13,7 +13,6 @@ use App\Services\TsoAmfService;
 use App\Services\TsoAuthService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Queue;
 use Mockery;
 use Mockery\MockInterface;
@@ -210,12 +209,13 @@ class SchedulerArchitectureTest extends TestCase
 
         Setting::set('market_sync_interval', '15');
 
-        // Pre-acquire lock to simulate another process executing market sync
-        Cache::add('market_sync_lock:server:ru_test', true, 180);
+        // A sync for this server is already queued (ShouldBeUnique lock held, WP-10).
+        MarketSyncJob::dispatch($account, 'ru_test');
+        Queue::assertPushed(MarketSyncJob::class, 1);
 
         Artisan::call('tso:run-scheduler', ['--mode' => 'queue']);
 
-        // MarketSyncJob should NOT be dispatched because lock is held
-        Queue::assertNotPushed(MarketSyncJob::class);
+        // The scheduler tick must not queue a second one.
+        Queue::assertPushed(MarketSyncJob::class, 1);
     }
 }

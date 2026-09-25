@@ -20,7 +20,7 @@
 | WP-07 | ✅ | 2026-09-25 | `SessionBusyException`; `HttpTsoClient::sendCommand()` и `TsoAuthService::login()` больше не работают без лока (`LockTimeoutException` → `SessionBusyException`); TTL лока — `game.session_lock_ttl_seconds` (по умолчанию `http_timeout*4+10`); `ActionRetryPolicy` ждёт `session_busy_retry_delay` и повторяет без relogin. Тесты: `SessionLockTest` (6) |
 | WP-08 | ✅ | 2026-09-25 | Код готов, gates зелёные. `TsoAmfService::sendServerCall()` без relogin (`SessionExpiredException` пробрасывается); `invalidateSession()` не трогает client id; `ensureZoneLoaded()` — по `GameResponseValidator::errorCode()`; `ActionRetryPolicy` — единственный слой relogin, ≤ 1 на действие (`SessionExpiredException`, 1005, 1012). Тесты: `RetryPolicyTest` (9). **⚠ V-11 (ручная, 24 ч на живом аккаунте) не выполнена — обязательна до merge в master** |
 | WP-09 | ✅ | 2026-09-25 | `StepRunner` (единая обработка результата шага → `StepOutcome`), `SequenceRunner` (один цикл для inline и queue, бюджет → `SequenceRunResult::handOff`), `StepResultCollection` (сводка из `step_results`); `SequenceStepExecutor`, `executeInlineSequence`, `executeSequenceStep`, pass-through методы удалены; job — тонкий адаптер. 618 характеризационных тестов прошли без изменений. Тесты: `SequenceRunnerTest` (9) |
-| WP-10 | ☐ | | |
+| WP-10 | ✅ | 2026-09-25 | `MarketSyncJob`/`AccountSyncJob` — только `ShouldBeUnique` (`uniqueFor=1200` ≥ окна ретраев 810 с), ручные cache-локи удалены из джоб, `TaskSchedulerEngine::processAccountSync` и `SyncMarketCommand`; `AuthChallengeException` (captcha/2FA/cooldown) + `UnrecoverableAuthError::isUnrecoverable()` по типу вдоль `previous`; `catch (Throwable)` в sync-режиме; `AccountSyncFetcher` ≤ 1 relogin (`relogin()`). Тесты: `SyncJobUniquenessTest` (8) |
 | WP-11 | ☐ | | |
 
 ## Фаза 1 — Quick wins (конфигурация, без изменения домена)
@@ -147,11 +147,22 @@
     (guard + бюджет) для `ExecuteScheduledTaskJob`; `executeSequenceStep`, `executeSingleActionWithRetry`,
     `executeSingleAction` удалены (не имели вызовов вне класса).
 
-### WP-10 — Sync-джобы (A-13)
+### WP-10 — Sync-джобы (A-13) ✅
 - `MarketSyncJob`: снимать lock только в `failed()` / после успешного `handle()`; `ShouldBeUnique` вместо ручного lock.
 - `AccountSyncJob`: оставить только `ShouldBeUnique` (`uniqueFor` ≥ окна ретраев).
 - Общий `UnrecoverableAuthError` — по типу исключения (`SessionExpiredException`, captcha-исключение), не по строке.
 - `reserveAndDispatchTask()` sync-режим: `catch (Throwable)`.
+- Примечание по реализации:
+  - Ручные локи `market_sync_lock:*` / `account_sync_lock:*` удалены **полностью** (не только из `finally`): в queue-режиме
+    дедупликацию даёт unique-лок Laravel (берётся при dispatch, снимается очередью после успеха или `failed()`, т.е.
+    переживает ретраи), в sync-режиме защита — `withoutOverlapping()` команды планировщика. `MarketSyncJob::uniqueId()` =
+    `serverId`. Тесты, которые пред-захватывали ручной ключ, переписаны на «dispatch дважды → в очереди один».
+  - `Exceptions\AuthChallengeException` (`captcha()`, `twoFactor()`, `cooldown()`) бросается из
+    `UbisoftConnectAuthClient` и `TsoAuthService::performLogin` (cooldown). `Exceptions\UnrecoverableAuthError::isUnrecoverable()`
+    идёт по цепочке `previous`: `AuthChallengeException`, `SessionExpiredException`, `AccountSyncException(401)`.
+    Используется обеими джобами и `AccountSyncPersister::markError()` (статус `session_expired`). Строковое
+    `TsoAuthService::isCaptchaOr2faError(string)` оставлено для мест, где есть только текст.
+  - `AccountSyncFetcher`: три копии relogin-блока → `relogin()`, `MAX_RELOGINS = 1` (FR-009).
 
 ### WP-11 — Архитектурная гигиена (B-01…B-10)
 - `ZoneCacheInvalidator` интерфейс (B-03); общий curl/HTTP helper + удаление `curl_close()` (B-01, B-02);

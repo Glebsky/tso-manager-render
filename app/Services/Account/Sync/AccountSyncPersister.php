@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Account\Sync;
 
+use App\Exceptions\UnrecoverableAuthError;
 use App\Models\Account;
 use App\Support\Zone\ZoneSnapshot;
 
@@ -40,14 +41,15 @@ class AccountSyncPersister
     }
 
     /**
-     * Mark account status as error or session_expired based on exception.
+     * Mark account status as error, or session_expired when the failure
+     * needs a human (CAPTCHA / 2FA / rejected session — decided by exception
+     * type, see UnrecoverableAuthError).
      */
     public function markError(Account $account, ?\Throwable $exception = null): void
     {
-        $targetStatus = 'error';
-        if ($exception && preg_match('/captcha|2fa|twofactor|session_expired|session expired|unauthorized/i', $exception->getMessage())) {
-            $targetStatus = 'session_expired';
-        }
+        $targetStatus = $exception !== null && UnrecoverableAuthError::isUnrecoverable($exception)
+            ? 'session_expired'
+            : 'error';
 
         if ($account->status !== $targetStatus) {
             $account->update(['status' => $targetStatus]);
