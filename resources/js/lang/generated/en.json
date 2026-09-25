@@ -6250,6 +6250,8 @@
             "not_found": "Building: nothing to collect on grid :grid",
             "nothing_to_collect": "Building: reward not available yet :name"
         },
+        "default_sequence_copy": "Sequence (copy)",
+        "duplicate_copy": ":name (copy)",
         "error": {
             "account_not_found": "Account for task #:id not found.",
             "action_index_invalid": "Action index :index not found.",
@@ -6306,15 +6308,11 @@
             "unknown_outcome": "Production: queue outcome unknown on grid :grid (:recipe), check manually"
         },
         "step": {
+            "done": "Step :step [:type]: OK",
             "error": "Step :step [:type]: ERROR - :error",
-            "error_short": "Step :step: ERROR - :error",
-            "ok": "Step :step [:type]: OK (:bytes bytes)",
-            "ok_short": "Step :step: OK",
             "skipped": "Step :step [:type]: SKIPPED (already executed)",
             "skipped_buff": "Step :step [:type]: SKIPPED (buff :buff missing)",
-            "skipped_buff_short": "Step :step: SKIPPED",
-            "skipped_reason": "Step :step [:type]: SKIPPED (:reason)",
-            "skipped_short": "Step :step: SKIPPED"
+            "skipped_reason": "Step :step [:type]: SKIPPED (:reason)"
         },
         "stopped_by_user": "Stopped by user at step :step of :total.",
         "upgrade_mine": {
@@ -6965,6 +6963,8 @@
         "tasks.friends_empty": "Friend list is empty. Sync the account first.",
         "tasks.game_account": "Game account",
         "tasks.grid_number": "Grid #{id}",
+        "tasks.group_name": "Task group",
+        "tasks.group_name_placeholder": "E.g. Daily buffs",
         "tasks.hide_actions": "Hide actions",
         "tasks.hours": "hours",
         "tasks.hours_short": "h",
@@ -7191,6 +7191,7 @@
         "tasks.type_label.stop_production": "Stop production",
         "tasks.type_label.upgrade_mine": "Upgrade mine",
         "tasks.type_number": "Type #{id}",
+        "tasks.ungrouped": "Ungrouped",
         "tasks.unit.d": "d",
         "tasks.unit.h": "h",
         "tasks.unit.m": "m",

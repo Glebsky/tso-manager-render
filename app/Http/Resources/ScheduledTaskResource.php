@@ -23,6 +23,7 @@ class ScheduledTaskResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'group_name' => $this->group_name,
             'account_id' => $this->account_id,
             'task_type' => $this->task_type->value,
             'schedule_type' => $this->schedule_type->value,

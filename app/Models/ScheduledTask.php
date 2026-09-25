@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * @property int $id
  * @property string $name
+ * @property ?string $group_name
  * @property int $account_id
  * @property TaskType $task_type
  * @property ScheduleType $schedule_type
@@ -48,6 +49,7 @@ class ScheduledTask extends Model
 
     protected $fillable = [
         'name',
+        'group_name',
         'account_id',
         'task_type',
         'payload',

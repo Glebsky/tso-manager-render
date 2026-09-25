@@ -33,11 +33,20 @@
             </div>
 
             <form @submit.prevent="scheduleTask">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4 mb-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4 mb-4">
                     <!-- Название серии -->
                     <div>
                         <label for="task-series-name" class="block text-xs font-medium text-white/40 mb-1.5 sm:mb-2 uppercase tracking-wider">{{ t('tasks.series_name') }}</label>
                         <input id="task-series-name" type="text" v-model="taskName" :placeholder="t('tasks.series_name_placeholder')" :aria-label="t('tasks.series_name')" class="glass-input w-full text-left py-2 sm:py-2.5 text-xs sm:text-sm">
+                    </div>
+
+                    <!-- Группа задач -->
+                    <div>
+                        <label for="task-group-name" class="block text-xs font-medium text-white/40 mb-1.5 sm:mb-2 uppercase tracking-wider">{{ t('tasks.group_name') }}</label>
+                        <input id="task-group-name" type="text" v-model="taskGroupName" list="task-group-options" :placeholder="t('tasks.group_name_placeholder')" :aria-label="t('tasks.group_name')" maxlength="120" class="glass-input w-full text-left py-2 sm:py-2.5 text-xs sm:text-sm">
+                        <datalist id="task-group-options">
+                            <option v-for="group in taskGroupOptions" :key="group" :value="group" />
+                        </datalist>
                     </div>
 
                     <!-- Выбор аккаунта -->
@@ -770,21 +779,37 @@
                       v-model:searchQuery="taskSearchQuery"
                       v-model:accountFilter="taskAccountFilter"
                       v-model:statusFilter="taskStatusFilter">
-                <div v-for="(groupTasks, accountName) in groupedTasks" :key="accountName" class="glass-card overflow-hidden">
+                <div v-for="(accountGroup, accountName) in groupedTasks" :key="accountName" class="glass-card overflow-hidden">
                     <div class="px-3.5 sm:px-5 py-2.5 sm:py-3 border-b border-white/5 bg-white/[0.02]">
                         <h3 class="font-medium text-white/60 flex items-center gap-2 text-xs sm:text-sm">
                             <svg class="w-4 h-4 text-emerald-400/60 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                             </svg>
                             <span class="truncate">{{ accountName }}</span>
-                            <span class="badge badge-neutral text-[10px] flex-shrink-0">{{ groupTasks.length }} {{ t('tasks.tasks_word') }}</span>
+                            <span class="badge badge-neutral text-[10px] flex-shrink-0">{{ accountGroup.taskCount }} {{ t('tasks.tasks_word') }}</span>
                         </h3>
                     </div>
 
-                    <div class="p-2.5 sm:p-5 space-y-3 sm:space-y-4"
-                         @dragover.prevent
-                         @drop="onDropGroup($event, accountName, groupTasks)">
-                        <TaskCard v-for="task in groupTasks" :key="task.id"
+                    <template v-for="taskGroup in accountGroup.groups" :key="taskGroup.key">
+                        <div class="border-b border-white/5 last:border-b-0">
+                            <button type="button"
+                                    class="w-full px-3.5 sm:px-5 py-2.5 flex items-center gap-2 text-left hover:bg-white/[0.03] transition-colors"
+                                    @click="toggleTaskGroup(accountName, taskGroup.key)"
+                                    :aria-expanded="!isTaskGroupCollapsed(accountName, taskGroup.key)">
+                                <svg class="w-4 h-4 text-white/40 transition-transform flex-shrink-0"
+                                     :class="{ 'rotate-180': !isTaskGroupCollapsed(accountName, taskGroup.key) }"
+                                     fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                </svg>
+                                <span class="text-sm">{{ taskGroup.name || t('tasks.ungrouped') }}</span>
+                                <span class="badge badge-neutral text-[10px]">{{ taskGroup.tasks.length }} {{ t('tasks.tasks_word') }}</span>
+                            </button>
+
+                            <div v-show="!isTaskGroupCollapsed(accountName, taskGroup.key)"
+                                 class="p-2.5 sm:p-5 space-y-3 sm:space-y-4"
+                                 @dragover.prevent
+                                 @drop="onDropGroup($event, accountName, taskGroup.tasks, taskGroup.key)">
+                                <TaskCard v-for="task in taskGroup.tasks" :key="task.id"
                                   :task="task"
                                   :isDragging="draggedTaskId === task.id"
                                   :isDragOver="dropTargetTaskId === task.id"
@@ -818,11 +843,13 @@
                                   @edit="editTask"
                                   @duplicate="handleDuplicateTask"
                                   @delete="deleteTask"
-                                  @dragstart="onTaskDragStart($event, task, accountName)"
-                                  @dragover="onTaskDragOver($event, task, accountName)"
+                                  @dragstart="onTaskDragStart($event, task, accountName, taskGroup.key)"
+                                  @dragover="onTaskDragOver($event, task, accountName, taskGroup.key)"
                                   @dragleave="onTaskDragLeave($event, task)"
                                   @dragend="onTaskDragEnd" />
-                    </div>
+                            </div>
+                        </div>
+                    </template>
                 </div>
             </TaskList>
         </div>
@@ -964,6 +991,7 @@ import TaskList from '../components/tasks/TaskList.vue';
 
         const selectedAccountId = ref('');
         const taskName = ref('');
+        const taskGroupName = ref('');
         const activeDropdown = ref(null);
         const taskType = ref('sequence');
         const runAtTime = ref('');
@@ -987,6 +1015,17 @@ import TaskList from '../components/tasks/TaskList.vue';
             const acc = selectedAccount.value;
             if (!acc) return t('tasks.select_account');
             return `${acc.nickname || acc.username} (${(acc.region || '').toUpperCase()})`;
+        });
+
+        const taskGroupOptions = computed(() => {
+            const accountId = Number(selectedAccountId.value);
+            if (!accountId) return [];
+
+            return [...new Set(tasks.value
+                .filter(task => Number(task.account_id) === accountId && task.group_name)
+                .map(task => String(task.group_name).trim())
+                .filter(Boolean))]
+                .sort((a, b) => a.localeCompare(b));
         });
 
         const stepActionTypeLabel = computed(() => {
@@ -2311,6 +2350,9 @@ import TaskList from '../components/tasks/TaskList.vue';
                     // Match task name
                     if (task.name && task.name.toLowerCase().includes(q)) return true;
 
+                    // Match task group
+                    if (task.group_name && task.group_name.toLowerCase().includes(q)) return true;
+
                     // Match account nickname / username
                     const nickname = task.account?.nickname || '';
                     const username = task.account?.username || '';
@@ -2353,6 +2395,19 @@ import TaskList from '../components/tasks/TaskList.vue';
             });
         });
 
+        const collapsedTaskGroups = ref({});
+
+        const getTaskGroupKey = (accountName, groupKey) => `${accountName}::${groupKey}`;
+
+        const toggleTaskGroup = (accountName, groupKey) => {
+            const key = getTaskGroupKey(accountName, groupKey);
+            collapsedTaskGroups.value[key] = !collapsedTaskGroups.value[key];
+        };
+
+        const isTaskGroupCollapsed = (accountName, groupKey) => {
+            return Boolean(collapsedTaskGroups.value[getTaskGroupKey(accountName, groupKey)]);
+        };
+
         const groupedTasks = computed(() => {
             const groups = {};
             const sortedTasks = [...filteredTasks.value].sort((a, b) => {
@@ -2361,11 +2416,26 @@ import TaskList from '../components/tasks/TaskList.vue';
                 if (orderA !== orderB) return orderA - orderB;
                 return (Number(a.id) || 0) - (Number(b.id) || 0);
             });
+
             sortedTasks.forEach(taskItem => {
-                const name = taskItem.account ? (taskItem.account.nickname || taskItem.account.username) : t('tasks.unknown_account');
-                if (!groups[name]) groups[name] = [];
-                groups[name].push(taskItem);
+                const accountName = taskItem.account ? (taskItem.account.nickname || taskItem.account.username) : t('tasks.unknown_account');
+                const groupName = taskItem.group_name ? String(taskItem.group_name).trim() : '';
+                const groupKey = groupName || '__ungrouped__';
+
+                if (!groups[accountName]) {
+                    groups[accountName] = { groups: [], taskCount: 0 };
+                }
+
+                let taskGroup = groups[accountName].groups.find(group => group.key === groupKey);
+                if (!taskGroup) {
+                    taskGroup = { key: groupKey, name: groupName, tasks: [] };
+                    groups[accountName].groups.push(taskGroup);
+                }
+
+                taskGroup.tasks.push(taskItem);
+                groups[accountName].taskCount += 1;
             });
+
             return groups;
         });
 
@@ -2492,6 +2562,7 @@ import TaskList from '../components/tasks/TaskList.vue';
         const cancelEdit = async () => {
             editingTaskId.value = null;
             taskName.value = '';
+            taskGroupName.value = '';
             sequenceActions.value = [];
             selectedBuildings.value = [];
             selectedSpecialists.value = [];
@@ -2524,6 +2595,7 @@ import TaskList from '../components/tasks/TaskList.vue';
         const editTask = async (task) => {
             editingTaskId.value = task.id;
             taskName.value = task.name || '';
+            taskGroupName.value = task.group_name || '';
             selectedAccountId.value = task.account_id;
             await onAccountChange();
 
@@ -2680,6 +2752,7 @@ import TaskList from '../components/tasks/TaskList.vue';
             try {
                 const postData = {
                     name: taskName.value || null,
+                    group_name: taskGroupName.value.trim() || null,
                     account_id: selectedAccountId.value,
                     task_type: 'sequence',
                     payload: {
@@ -2778,13 +2851,15 @@ import TaskList from '../components/tasks/TaskList.vue';
         const reorderingTasks = ref(false);
         const draggedTaskId = ref(null);
         const draggedAccountName = ref(null);
+        const draggedGroupKey = ref(null);
         const dropTargetTaskId = ref(null);
         const dropPosition = ref(null); // 'top' | 'bottom'
 
-        const onTaskDragStart = (e, task, accountName) => {
+        const onTaskDragStart = (e, task, accountName, groupKey) => {
             if (reorderingTasks.value) return;
             draggedTaskId.value = task.id;
             draggedAccountName.value = accountName;
+            draggedGroupKey.value = groupKey;
             dropTargetTaskId.value = null;
             dropPosition.value = null;
 
@@ -2794,9 +2869,9 @@ import TaskList from '../components/tasks/TaskList.vue';
             }
         };
 
-        const onTaskDragOver = (e, targetTask, accountName) => {
+        const onTaskDragOver = (e, targetTask, accountName, groupKey) => {
             if (!draggedTaskId.value || draggedTaskId.value === targetTask.id) return;
-            if (draggedAccountName.value !== accountName) return;
+            if (draggedAccountName.value !== accountName || draggedGroupKey.value !== groupKey) return;
 
             e.preventDefault();
             if (e.dataTransfer) {
@@ -2829,12 +2904,14 @@ import TaskList from '../components/tasks/TaskList.vue';
         const onTaskDragEnd = () => {
             draggedTaskId.value = null;
             draggedAccountName.value = null;
+            draggedGroupKey.value = null;
             dropTargetTaskId.value = null;
             dropPosition.value = null;
         };
 
-        const onDropGroup = async (e, accountName, groupTasks) => {
+        const onDropGroup = async (e, accountName, groupTasks, taskGroupKey) => {
             e.preventDefault();
+            if (draggedAccountName.value !== accountName || draggedGroupKey.value !== taskGroupKey) return;
 
             const fromId = draggedTaskId.value;
             const toId = dropTargetTaskId.value;

@@ -6250,6 +6250,8 @@
             "not_found": "Здание: на сетке :grid нечего собирать",
             "nothing_to_collect": "Здание: награда пока недоступна :name"
         },
+        "default_sequence_copy": "Серия (копия)",
+        "duplicate_copy": ":name (копия)",
         "error": {
             "account_not_found": "Аккаунт для задачи #:id не найден.",
             "action_index_invalid": "Действие с номером :index не найдено.",
@@ -6306,15 +6308,11 @@
             "unknown_outcome": "Производство: исход очереди на гриде :grid (:recipe) неизвестен, проверьте вручную"
         },
         "step": {
+            "done": "Шаг :step [:type]: OK",
             "error": "Шаг :step [:type]: ОШИБКА - :error",
-            "error_short": "Шаг :step: ОШИБКА - :error",
-            "ok": "Шаг :step [:type]: OK (:bytes байт)",
-            "ok_short": "Шаг :step: OK",
             "skipped": "Шаг :step [:type]: пропущен (уже выполнен)",
             "skipped_buff": "Шаг :step [:type]: пропущен (бафф :buff отсутствует)",
-            "skipped_buff_short": "Шаг :step: ПРОПУЩЕН",
-            "skipped_reason": "Шаг :step [:type]: пропущен (:reason)",
-            "skipped_short": "Шаг :step: ПРОПУЩЕН"
+            "skipped_reason": "Шаг :step [:type]: пропущен (:reason)"
         },
         "stopped_by_user": "Остановлено пользователем на шаге :step из :total.",
         "upgrade_mine": {
@@ -6965,6 +6963,8 @@
         "tasks.friends_empty": "Список друзей пуст. Выполните синхронизацию аккаунта.",
         "tasks.game_account": "Игровой аккаунт",
         "tasks.grid_number": "Сетка #{id}",
+        "tasks.group_name": "Группа задач",
+        "tasks.group_name_placeholder": "Напр. Ежедневные бафы",
         "tasks.hide_actions": "Скрыть действия",
         "tasks.hours": "часов",
         "tasks.hours_short": "ч.",
@@ -7191,6 +7191,7 @@
         "tasks.type_label.stop_production": "Остановка производства",
         "tasks.type_label.upgrade_mine": "Улучшение шахты",
         "tasks.type_number": "Тип #{id}",
+        "tasks.ungrouped": "Без группы",
         "tasks.unit.d": "д",
         "tasks.unit.h": "ч",
         "tasks.unit.m": "м",

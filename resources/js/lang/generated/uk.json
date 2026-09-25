@@ -6250,6 +6250,8 @@
             "not_found": "Будівля: на сітці :grid нічого збирати",
             "nothing_to_collect": "Будівля: нагорода поки недоступна :name"
         },
+        "default_sequence_copy": "Серія (копія)",
+        "duplicate_copy": ":name (копія)",
         "error": {
             "account_not_found": "Акаунт для завдання #:id не знайдено.",
             "action_index_invalid": "Дію з номером :index не знайдено.",
@@ -6306,15 +6308,11 @@
             "unknown_outcome": "Виробництво: результат черги на гріді :grid (:recipe) невідомий, перевірте вручну"
         },
         "step": {
+            "done": "Крок :step [:type]: OK",
             "error": "Крок :step [:type]: ПОМИЛКА - :error",
-            "error_short": "Крок :step: ПОМИЛКА - :error",
-            "ok": "Крок :step [:type]: OK (:bytes байт)",
-            "ok_short": "Крок :step: OK",
             "skipped": "Крок :step [:type]: пропущено (вже виконано)",
             "skipped_buff": "Крок :step [:type]: пропущено (баф :buff відсутній)",
-            "skipped_buff_short": "Крок :step: ПРОПУЩЕНО",
-            "skipped_reason": "Крок :step [:type]: пропущено (:reason)",
-            "skipped_short": "Крок :step: ПРОПУЩЕНО"
+            "skipped_reason": "Крок :step [:type]: пропущено (:reason)"
         },
         "stopped_by_user": "Зупинено користувачем на кроці :step з :total.",
         "upgrade_mine": {
@@ -6965,6 +6963,8 @@
         "tasks.friends_empty": "Список друзів порожній. Виконайте синхронізацію акаунта.",
         "tasks.game_account": "Ігровий акаунт",
         "tasks.grid_number": "Сітка #{id}",
+        "tasks.group_name": "Група завдань",
+        "tasks.group_name_placeholder": "Напр. Щоденні бафи",
         "tasks.hide_actions": "Сховати дії",
         "tasks.hours": "годин",
         "tasks.hours_short": "год.",
@@ -7191,6 +7191,7 @@
         "tasks.type_label.stop_production": "Зупинка виробництва",
         "tasks.type_label.upgrade_mine": "Покращення шахти",
         "tasks.type_number": "Тип #{id}",
+        "tasks.ungrouped": "Без групи",
         "tasks.unit.d": "д",
         "tasks.unit.h": "год",
         "tasks.unit.m": "хв",
