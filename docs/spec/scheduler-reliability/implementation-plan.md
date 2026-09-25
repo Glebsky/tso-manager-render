@@ -164,11 +164,12 @@
     `TsoAuthService::isCaptchaOr2faError(string)` оставлено для мест, где есть только текст.
   - `AccountSyncFetcher`: три копии relogin-блока → `relogin()`, `MAX_RELOGINS = 1` (FR-009).
 
-### WP-11 — Архитектурная гигиена (B-01…B-10)
-- `ZoneCacheInvalidator` интерфейс (B-03); общий curl/HTTP helper + удаление `curl_close()` (B-01, B-02);
-  enum'ы статусов аккаунта/маркета (B-05); i18n для `(копия)` (B-08); `stopAllTasks` также отменяет busy (B-09);
-  понизить уровень детальных `[TsoAmf]` логов до `debug` (B-10); удалить `TaskStatus::Paused` если не нужен (B-07).
-- Каждый пункт — отдельный коммит.
+### WP-11 — Архитектурная гигиена (B-01…B-10) ✅
+- `ZoneCacheInvalidator` интерфейс (B-03); общий curl/HTTP helper `TsoCurlHelper` + удаление `curl_close()` (B-01, B-02);
+  enum'ы статусов аккаунта/маркета `AccountStatus`, `MarketSyncStatus`, `MarketVerificationStatus` (B-05);
+  i18n для `(копия)` в `ScheduledTaskService::duplicate()` (B-08); `stopAllTasks` также отменяет busy (B-09);
+  понижен уровень детальных `[TsoAmf]` логов до `debug` (B-10); удалён мёртвый `TaskStatus::Paused` (B-07).
+- Каждый пункт выполнен отдельным коммитом.
 
 ## Порядок и зависимости
 

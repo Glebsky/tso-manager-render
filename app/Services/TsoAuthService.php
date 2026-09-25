@@ -56,7 +56,6 @@ class TsoAuthService
         'ts' => ['domain' => 'https://www.tsotesting.com',            'uplay' => '/en/api/user/uplay', 'main' => '/en/homepage',                                               'play' => '/en/play'],
     ];
 
-
     /**
      * Browser headers simulating a modern browser for web login and warmup to avoid bot CAPTCHA triggers.
      */
