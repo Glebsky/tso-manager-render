@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Market\Sync;
 
+use App\Exceptions\SessionExpiredException;
 use App\Models\Account;
 use App\Services\TsoAmfService;
 use App\Services\TsoAuthService;
@@ -109,13 +110,8 @@ readonly class MarketOfferFetcher
                     }
 
                     $logCallback('WARNING', __('logs.market.session_expired_retry', ['code' => $errorCode]));
-                    $this->authService->resetSession($account);
-                    $this->authService->login($account);
-                    $this->amfService->invalidateSession($account->id);
-                    $this->amfService->resetClient($account->id);
-                    $account->refresh();
+                    $this->reloginOnce($account);
                     $hasResetSession = true;
-                    sleep(2);
 
                     continue;
                 }
@@ -125,13 +121,8 @@ readonly class MarketOfferFetcher
                         throw new RuntimeException(__('ui.sync.session_intercepted_market', ['code' => $errorCode]));
                     }
                     $logCallback('WARNING', __('logs.market.session_expired_retry', ['code' => $errorCode]));
-                    $this->authService->resetSession($account);
-                    $this->authService->login($account);
-                    $this->amfService->invalidateSession($account->id);
-                    $this->amfService->resetClient($account->id);
-                    $account->refresh();
+                    $this->reloginOnce($account);
                     $hasResetSession = true;
-                    sleep(2);
 
                     continue;
                 }
@@ -142,6 +133,17 @@ readonly class MarketOfferFetcher
                 if ($attempt === $maxRetries || $this->authService->isCaptchaOr2faError($attemptEx->getMessage())) {
                     throw $attemptEx;
                 }
+
+                // FR-009: the AMF layer no longer re-logs in by itself; this is
+                // the single place where market sync does it, at most once.
+                if ($attemptEx instanceof SessionExpiredException && ! $hasResetSession) {
+                    $logCallback('WARNING', __('logs.market.session_expired_retry', ['code' => 'session']));
+                    $this->reloginOnce($account);
+                    $hasResetSession = true;
+
+                    continue;
+                }
+
                 sleep($retryDelay);
             }
         }
@@ -151,6 +153,21 @@ readonly class MarketOfferFetcher
         }
 
         return is_array($parsed) ? $parsed : [];
+    }
+
+    /**
+     * Drop web + shared game session and log in again (client id is kept, FR-009).
+     *
+     * @throws Exception
+     */
+    private function reloginOnce(Account $account): void
+    {
+        $this->authService->resetSession($account);
+        $this->authService->login($account);
+        $this->amfService->invalidateSession($account->id);
+        $this->amfService->resetClient($account->id);
+        $account->refresh();
+        sleep(2);
     }
 
     /**

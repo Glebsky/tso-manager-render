@@ -18,7 +18,7 @@
 | WP-05 | ✅ | 2026-09-25 | Миграция `heartbeat_at`; `TaskStateMachine::heartbeat()` (CAS, `until` для hand-off); `reserve/start/progress` обновляют heartbeat; `DelayWaiter` (общее ожидание с heartbeat ≤ `game.scheduler.heartbeat_interval_seconds`, замечает Stop) в job и inline; `recoverStaleTasks()` читает `game.stale_task_timeout_minutes`, once → `failed`+`is_active=false`. Тесты: `TaskHeartbeatTest` (9), `ExecuteScheduledTaskJobHandOffTest` (2) |
 | WP-06 | ✅ | 2026-09-25 | Реализовано по дефолтам A-1…A-3 из ADR-002 (см. примечание в `decisions.md`). Миграция `next_run_at` + индекс `(is_active, next_run_at)` + backfill; `Tasks\Scheduling\ScheduleCalculator` (чистый); `processDueTasks()` — индексный запрос без `payload`, self-heal `next_run_at IS NULL`, пропуск слотов CAS-ом (`skipMissedSlot`); `finish/cancel/failJob/recoverStale` пишут `next_run_at`; `create/update/toggle` пересчитывают. Тесты: `ScheduleCalculatorTest` (25), `NextRunAtSchedulingTest` (13), `NextRunAtBackfillMigrationTest` (1) |
 | WP-07 | ✅ | 2026-09-25 | `SessionBusyException`; `HttpTsoClient::sendCommand()` и `TsoAuthService::login()` больше не работают без лока (`LockTimeoutException` → `SessionBusyException`); TTL лока — `game.session_lock_ttl_seconds` (по умолчанию `http_timeout*4+10`); `ActionRetryPolicy` ждёт `session_busy_retry_delay` и повторяет без relogin. Тесты: `SessionLockTest` (6) |
-| WP-08 | ☐ | | Требует ручной проверки V-11 до merge |
+| WP-08 | ✅ | 2026-09-25 | Код готов, gates зелёные. `TsoAmfService::sendServerCall()` без relogin (`SessionExpiredException` пробрасывается); `invalidateSession()` не трогает client id; `ensureZoneLoaded()` — по `GameResponseValidator::errorCode()`; `ActionRetryPolicy` — единственный слой relogin, ≤ 1 на действие (`SessionExpiredException`, 1005, 1012). Тесты: `RetryPolicyTest` (9). **⚠ V-11 (ручная, 24 ч на живом аккаунте) не выполнена — обязательна до merge в master** |
 | WP-09 | ☐ | | |
 | WP-10 | ☐ | | |
 | WP-11 | ☐ | | |
@@ -96,14 +96,32 @@
 
 ## Фаза 4 — Игровая сессия (главный кандидат на «1012 / нестабильно»)
 
-### WP-07 — AMF-лок без «proceed anyway» (A-06) — FR-008, INV-004
+### WP-07 — AMF-лок без «proceed anyway» (A-06) — FR-008, INV-004 ✅
 - `SessionBusyException`; TTL лока; то же для login-лока.
 - Test: второй процесс при занятом локе не вызывает транспорт (фейк `TsoClientInterface` / `Cache::lock` на array-store).
+- Примечание по реализации: ожидание лока — `game.session_lock_wait_seconds` (как и раньше, 20 с) для обоих
+  локов; TTL вынесен в `game.session_lock_ttl_seconds` (env `TSO_SESSION_LOCK_TTL`, дефолт `http_timeout*4+10`
+  = 130 с: authenticate + Z + команда + запас, и меньше `ExecuteScheduledTaskJob::$timeout`=150).
+  Прочие ошибки cache-store при взятии лока **не** глушатся — команда без лока не уходит ни при каких условиях.
+  Тест «транспорт не вызван» использует аккаунт с `bb_url` недопустимой схемы: если бы транспорт был достигнут,
+  всплыл бы `RuntimeException('Invalid or unsupported URL scheme')`, а не `SessionBusyException`.
 
-### WP-08 — Единая политика retry (A-07) — FR-009
+### WP-08 — Единая политика retry (A-07) — FR-009 ✅ (код) / ⚠ V-11 pending
 - Убрать relogin из `TsoAmfService::sendServerCall()`; не сбрасывать client id в `invalidateSession()`; `ensureZoneLoaded()` через `GameResponseValidator`.
 - Test: на одно действие ≤ 1 вызова `ensureAuthenticated(force: true)`.
 - **Обязательная ручная проверка на живом аккаунте** (V-11) до merge.
+- Примечание по реализации:
+  - `TsoAmfService` больше не зависит от `TsoAuthService` (конструктор: `TsoClientInterface`, `GameResponseValidator`);
+    `SessionExpiredException` из транспорта пробрасывается наверх.
+  - `ActionRetryPolicy::execute()` ведёт флаг `$reloggedIn`: relogin (`relogin()`: `resetSession` → `invalidateSession`
+    → `resetClient` → `ensureAuthenticated(force)` → `refresh`) выполняется не более одного раза на действие независимо от
+    `max_action_attempts`; повторная сессионная ошибка (`SessionExpiredException`, 1005, 1012) после relogin — финальная.
+    Первое 1012 по-прежнему лечится warm-up'ом зоны без relogin. Все `sleep()` заменены на `Sleep::for()` (фейкуются в тестах).
+  - Колл-сайты, которые неявно полагались на relogin внутри `sendServerCall()`, получили свой единственный relogin:
+    `MarketOfferFetcher` (`reloginOnce()`, флаг `$hasResetSession` общий для 1005/1012/`SessionExpiredException`),
+    `AccountService::getFriendZone` (флаг `$reloggedIn`). `AccountSyncFetcher` уже обрабатывал `SessionExpiredException`
+    (до 2 relogin — приводится к ≤ 1 в WP-10 вместе с `UnrecoverableAuthError`).
+  - `TsoAmfService::ERROR_NEWER_SESSION = 1012` — именованная константа вместо магического числа.
 
 ## Фаза 5 — DRY/SRP (без изменения поведения)
 

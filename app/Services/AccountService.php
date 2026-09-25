@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Enums\LogLevel;
 use App\Exceptions\GameServerErrorException;
+use App\Exceptions\SessionExpiredException;
 use App\Models\Account;
 use App\Models\BotLog;
 use Exception;
@@ -221,6 +222,7 @@ readonly class AccountService
             $friendZoneData = null;
             $lastErrorCode = 0;
             $lastException = null;
+            $reloggedIn = false;
 
             for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
                 try {
@@ -243,11 +245,12 @@ readonly class AccountService
                     Log::warning("[FriendZone] Game server returned error {$errorCode} while loading zone of friend #{$friendId} for account #{$account->id} (attempt {$attempt}/{$maxAttempts})");
 
                     if ($errorCode === 1012 && $attempt < $maxAttempts) {
-                        if ($attempt === 2) {
+                        if ($attempt === 2 && ! $reloggedIn) {
                             Log::info("[FriendZone] Re-authenticating for account #{$account->id} to recover from error 1012");
                             $this->amfService->invalidateSession($account->id);
                             $this->authService->ensureAuthenticated($account, force: true);
                             $account->refresh();
+                            $reloggedIn = true;
                         }
                         sleep(2);
 
@@ -260,6 +263,18 @@ readonly class AccountService
                     Log::error("[FriendZone] Exception while loading zone of friend #{$friendId} for account #{$account->id} (attempt {$attempt}/{$maxAttempts}): ".$e->getMessage());
 
                     if ($attempt < $maxAttempts) {
+                        // FR-009: the AMF layer no longer re-logs in by itself —
+                        // one forced re-login here, never more per request.
+                        if ($e instanceof SessionExpiredException && ! $reloggedIn) {
+                            Log::info("[FriendZone] Session rejected for account #{$account->id}; performing the single forced re-login");
+                            $this->authService->resetSession($account);
+                            $this->amfService->invalidateSession($account->id);
+                            $this->amfService->resetClient($account->id);
+                            $this->authService->ensureAuthenticated($account, force: true);
+                            $account->refresh();
+                            $reloggedIn = true;
+                        }
+
                         sleep(2);
 
                         continue;
