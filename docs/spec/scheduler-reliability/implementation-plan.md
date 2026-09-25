@@ -17,7 +17,7 @@
 | WP-04 | ✅ | 2026-09-25 | `TaskStateMachine` с CAS переходов (`reserve`/`start`/`progress`/`finish`/`cancel`/`failJob`/`recoverStale`); «Run now» на busy возвращает 409; `TaskStateWriter` удален. Тесты: `TaskStateMachineTest` (12), 553 теста зеленые |
 | WP-05 | ✅ | 2026-09-25 | Миграция `heartbeat_at`; `TaskStateMachine::heartbeat()` (CAS, `until` для hand-off); `reserve/start/progress` обновляют heartbeat; `DelayWaiter` (общее ожидание с heartbeat ≤ `game.scheduler.heartbeat_interval_seconds`, замечает Stop) в job и inline; `recoverStaleTasks()` читает `game.stale_task_timeout_minutes`, once → `failed`+`is_active=false`. Тесты: `TaskHeartbeatTest` (9), `ExecuteScheduledTaskJobHandOffTest` (2) |
 | WP-06 | ✅ | 2026-09-25 | Реализовано по дефолтам A-1…A-3 из ADR-002 (см. примечание в `decisions.md`). Миграция `next_run_at` + индекс `(is_active, next_run_at)` + backfill; `Tasks\Scheduling\ScheduleCalculator` (чистый); `processDueTasks()` — индексный запрос без `payload`, self-heal `next_run_at IS NULL`, пропуск слотов CAS-ом (`skipMissedSlot`); `finish/cancel/failJob/recoverStale` пишут `next_run_at`; `create/update/toggle` пересчитывают. Тесты: `ScheduleCalculatorTest` (25), `NextRunAtSchedulingTest` (13), `NextRunAtBackfillMigrationTest` (1) |
-| WP-07 | ☐ | | |
+| WP-07 | ✅ | 2026-09-25 | `SessionBusyException`; `HttpTsoClient::sendCommand()` и `TsoAuthService::login()` больше не работают без лока (`LockTimeoutException` → `SessionBusyException`); TTL лока — `game.session_lock_ttl_seconds` (по умолчанию `http_timeout*4+10`); `ActionRetryPolicy` ждёт `session_busy_retry_delay` и повторяет без relogin. Тесты: `SessionLockTest` (6) |
 | WP-08 | ☐ | | Требует ручной проверки V-11 до merge |
 | WP-09 | ☐ | | |
 | WP-10 | ☐ | | |

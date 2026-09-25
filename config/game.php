@@ -87,6 +87,12 @@ return [
          */
         'transport_retry_errors' => [1012],
         'transport_retry_delay' => 3,
+
+        /*
+         | Seconds to wait before retrying an action whose per-account session
+         | lock was busy (SessionBusyException). No re-login is performed.
+         */
+        'session_busy_retry_delay' => (int) env('TSO_SESSION_BUSY_RETRY_DELAY', 5),
     ],
 
     /*
@@ -123,6 +129,17 @@ return [
     | time would each create a session and invalidate the other's.
     */
     'session_lock_wait_seconds' => (int) env('TSO_SESSION_LOCK_WAIT', 20),
+
+    /*
+    | How long the per-account lock (AMF command / login) may be held before
+    | the cache store expires it. Must cover the worst operation done under
+    | the lock — session resolve (authenticate + Z) plus the command itself,
+    | each bounded by http_timeout — otherwise the lock evaporates mid-flight
+    | and a second process starts a competing session (FR-008, INV-004).
+    | If the lock is not acquired in time the command is NOT sent; a
+    | SessionBusyException is thrown and the action is retried later.
+    */
+    'session_lock_ttl_seconds' => (int) env('TSO_SESSION_LOCK_TTL', ((int) env('TSO_HTTP_TIMEOUT', 30)) * 4 + 10),
 
     /*
     |--------------------------------------------------------------------------

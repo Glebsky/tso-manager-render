@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Tasks\Execution;
 
 use App\Exceptions\GameServerErrorException;
+use App\Exceptions\SessionBusyException;
 use App\Models\Account;
 use App\Services\Tasks\Handlers\ApplyBuffHandler;
 use App\Services\TsoAmfService;
@@ -12,6 +13,7 @@ use App\Services\TsoAuthService;
 use Exception;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Sleep;
 use Throwable;
 
 final readonly class ActionRetryPolicy
@@ -35,6 +37,7 @@ final readonly class ActionRetryPolicy
         $sessionCodes = (array) config('game.tasks.relogin_errors', [1005]);
         $transportCodes = (array) config('game.tasks.transport_retry_errors', [1012]);
         $transportDelay = (int) config('game.tasks.transport_retry_delay', 3);
+        $busyDelay = max(1, (int) config('game.tasks.session_busy_retry_delay', 5));
         $accountId = $account->id;
         $username = $account->username ?? $account->nickname ?? "account#{$accountId}";
 
@@ -49,6 +52,19 @@ final readonly class ActionRetryPolicy
                 Log::info("[TaskExecution] Action [{$taskTypeStr}] for account #{$accountId} ({$username}): SUCCEEDED on attempt {$attempt}/{$maxAttempts} ({$durationMs}ms)");
 
                 return $result;
+            } catch (SessionBusyException $e) {
+                // Another process holds the account's game session (FR-008).
+                // This is not a session problem: wait and retry, never re-login.
+                if ($attempt >= $maxAttempts) {
+                    Log::error("[TaskExecution] Action [{$taskTypeStr}] for account #{$accountId} ({$username}): FAILED after {$attempt}/{$maxAttempts} attempts, session still busy ({$e->getMessage()})");
+
+                    throw $e;
+                }
+
+                Log::info("[TaskExecution] Action [{$taskTypeStr}] for account #{$accountId} ({$username}): session busy, retrying in {$busyDelay}s without re-login (attempt {$attempt}/{$maxAttempts})");
+                Sleep::for($busyDelay)->seconds();
+
+                continue;
             } catch (GameServerErrorException $e) {
                 $code = (int) $e->getCode();
                 $durationMs = (int) round((microtime(true) - $startTime) * 1000);

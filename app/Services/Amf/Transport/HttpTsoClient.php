@@ -5,16 +5,17 @@ declare(strict_types=1);
 namespace App\Services\Amf\Transport;
 
 use App\Exceptions\GameServerMaintenanceException;
+use App\Exceptions\SessionBusyException;
 use App\Exceptions\SessionExpiredException;
 use App\Models\Account;
 use App\Services\Amf\Amf3Encoder;
 use App\Services\Amf\Vo\flex_messaging_messages_RemotingMessage;
 use App\Services\TsoAuthService;
 use Exception;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Random\RandomException;
-use Throwable;
 
 class HttpTsoClient implements TsoClientInterface
 {
@@ -318,26 +319,32 @@ class HttpTsoClient implements TsoClientInterface
     }
 
     /**
+     * @throws SessionBusyException when the per-account lock is held by another process (FR-008)
      * @throws RandomException
+     * @throws Exception transport / session errors from dispatchCommand()
      */
     public function sendCommand(Account $account, mixed $dServerCall, string $destination = 'SMC', string $operation = 'ExecuteServerCall', ?string $source = 'com.bluebyte.game.servlet.EventHandler', ?int $targetZoneId = null): string
     {
         $accountId = $account->id;
-        $lock = Cache::lock("tso:amf_lock:{$accountId}", 60);
-        $locked = false;
+        $waitSeconds = (int) config('game.session_lock_wait_seconds', 20);
+        $lock = Cache::lock("tso:amf_lock:{$accountId}", (int) config('game.session_lock_ttl_seconds', 130));
 
+        // INV-004: at most one AMF command in flight per account. If the lock
+        // is not acquired the command is NOT sent — running it in parallel with
+        // the lock holder is precisely what creates a competing game session
+        // (error 1012). The caller retries later (FR-008).
         try {
-            $locked = (bool) $lock->block((int) config('game.session_lock_wait_seconds', 20));
-        } catch (Throwable $e) {
-            Log::warning("[TsoAmf] Proceeding without session lock for account #{$accountId}: ".$e->getMessage());
+            $lock->block($waitSeconds);
+        } catch (LockTimeoutException) {
+            Log::warning("[TsoAmf] Session lock for account #{$accountId} not acquired within {$waitSeconds}s; command [{$operation}] not sent");
+
+            throw SessionBusyException::forAccount($accountId, 'amf', $waitSeconds);
         }
 
         try {
             return $this->dispatchCommand($account, $targetZoneId ?? 0, $dServerCall, $destination, $operation, $source);
         } finally {
-            if ($locked) {
-                $lock->release();
-            }
+            $lock->release();
         }
     }
 

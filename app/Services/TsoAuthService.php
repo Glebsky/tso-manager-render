@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Exceptions\SessionBusyException;
 use App\Models\Account;
 use App\Services\Auth\TsoPlayPageParser;
 use App\Services\Auth\UbisoftConnectAuthClient;
 use App\Support\Security\CredentialRedactor;
 use Exception;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
@@ -118,34 +120,35 @@ class TsoAuthService
      */
     public function login(Account $account): array
     {
-        $lock = Cache::lock("tso:login_lock:{$account->id}", 60);
-        $locked = false;
+        $waitSeconds = (int) config('game.session_lock_wait_seconds', 20);
+        $lock = Cache::lock("tso:login_lock:{$account->id}", (int) config('game.session_lock_ttl_seconds', 130));
 
+        // FR-008: two concurrent logins for one account each create a game
+        // session and invalidate the other's (error 1012), so a login never
+        // proceeds without the lock. The caller retries later.
         try {
-            $locked = (bool) $lock->block(25);
-        } catch (Throwable $e) {
-            Log::warning("[TsoAuth] Proceeding without login lock for account #{$account->id}: ".$e->getMessage());
+            $lock->block($waitSeconds);
+        } catch (LockTimeoutException) {
+            Log::warning("[TsoAuth] Login lock for account #{$account->id} not acquired within {$waitSeconds}s; login not started");
+
+            throw SessionBusyException::forAccount($account->id, 'login', $waitSeconds);
         }
 
         try {
-            if ($locked) {
-                // Another process may have completed a full login while we were
-                // waiting for the lock. Logging in again would create a second
-                // game session and invalidate the fresh one (error 1012).
-                $account->refresh();
+            // Another process may have completed a full login while we were
+            // waiting for the lock. Logging in again would create a second
+            // game session and invalidate the fresh one (error 1012).
+            $account->refresh();
 
-                if (Cache::get(self::SESSION_OK_KEY.$account->id) === true) {
-                    Log::info("[TsoAuth] Reusing session established by another process for account #{$account->id}");
+            if (Cache::get(self::SESSION_OK_KEY.$account->id) === true) {
+                Log::info("[TsoAuth] Reusing session established by another process for account #{$account->id}");
 
-                    return $this->sessionParams($account);
-                }
+                return $this->sessionParams($account);
             }
 
             return $this->performLogin($account);
         } finally {
-            if ($locked) {
-                $lock->release();
-            }
+            $lock->release();
         }
     }
 
