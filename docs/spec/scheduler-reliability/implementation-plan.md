@@ -21,7 +21,7 @@
 | WP-08 | ✅ | 2026-09-25 | Код готов, gates зелёные. `TsoAmfService::sendServerCall()` без relogin (`SessionExpiredException` пробрасывается); `invalidateSession()` не трогает client id; `ensureZoneLoaded()` — по `GameResponseValidator::errorCode()`; `ActionRetryPolicy` — единственный слой relogin, ≤ 1 на действие (`SessionExpiredException`, 1005, 1012). Тесты: `RetryPolicyTest` (9). **⚠ V-11 (ручная, 24 ч на живом аккаунте) не выполнена — обязательна до merge в master** |
 | WP-09 | ✅ | 2026-09-25 | `StepRunner` (единая обработка результата шага → `StepOutcome`), `SequenceRunner` (один цикл для inline и queue, бюджет → `SequenceRunResult::handOff`), `StepResultCollection` (сводка из `step_results`); `SequenceStepExecutor`, `executeInlineSequence`, `executeSequenceStep`, pass-through методы удалены; job — тонкий адаптер. 618 характеризационных тестов прошли без изменений. Тесты: `SequenceRunnerTest` (9) |
 | WP-10 | ✅ | 2026-09-25 | `MarketSyncJob`/`AccountSyncJob` — только `ShouldBeUnique` (`uniqueFor=1200` ≥ окна ретраев 810 с), ручные cache-локи удалены из джоб, `TaskSchedulerEngine::processAccountSync` и `SyncMarketCommand`; `AuthChallengeException` (captcha/2FA/cooldown) + `UnrecoverableAuthError::isUnrecoverable()` по типу вдоль `previous`; `catch (Throwable)` в sync-режиме; `AccountSyncFetcher` ≤ 1 relogin (`relogin()`). Тесты: `SyncJobUniquenessTest` (8) |
-| WP-11 | ☐ | | |
+| WP-11 | ✅ | 2026-09-25 | Re-audit и финальные gates завершены: 641 tests passed, Pint, PHPStan и frontend build зелёные; ручные V-10/V-11 остаются отдельно отмеченными в `verification.md`. |
 
 ## Фаза 1 — Quick wins (конфигурация, без изменения домена)
 

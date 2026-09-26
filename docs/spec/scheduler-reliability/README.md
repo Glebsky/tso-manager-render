@@ -2,8 +2,9 @@
 
 ## Status
 
-In progress — решения по OQ приняты (`decisions.md`), идёт исполнение по `implementation-plan.md`.
-Текущий прогресс по WP — таблица **Progress tracker** в `implementation-plan.md`.
+Implemented — WP-01…WP-11 завершены, автоматические gates зафиксированы в `verification.md`.
+Остаются ручные проверки V-10 (нагрузочный benchmark) и V-11 (24 часа на живом аккаунте); до их выполнения спецификация считается **Implemented with manual verification pending**.
+Точный прогресс и доказательства — в таблице **Progress tracker** в `implementation-plan.md` и матрице `verification.md`.
 
 ## Goal
 
