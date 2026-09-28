@@ -51,4 +51,27 @@ export const tasksApi = {
         const res = await http.post(`/api/tasks/${id}/actions/${actionIndex}/execute`);
         return res.data;
     },
+    async fetchTaskGroups(params = {}) {
+        const res = await http.get('/api/task-groups', { params });
+        return res.data;
+    },
+    async createTaskGroup(payload) {
+        const res = await http.post('/api/task-groups', payload);
+        return res.data;
+    },
+    async updateTaskGroup(id, payload) {
+        if (!id || id === 'undefined') throw new Error('Task Group ID is required');
+        const res = await http.put(`/api/task-groups/${id}`, payload);
+        return res.data;
+    },
+    async deleteTaskGroup(id) {
+        if (!id || id === 'undefined') throw new Error('Task Group ID is required');
+        const res = await http.delete(`/api/task-groups/${id}`);
+        return res.data;
+    },
+    async reorderTaskGroups(groupIds) {
+        if (!Array.isArray(groupIds)) throw new Error('groupIds must be an array');
+        const res = await http.post('/api/task-groups/reorder', { group_ids: groupIds });
+        return res.data;
+    },
 };

@@ -216,6 +216,14 @@ class Account extends Model
     }
 
     /**
+     * @return HasMany<TaskGroup, $this>
+     */
+    public function taskGroups(): HasMany
+    {
+        return $this->hasMany(TaskGroup::class)->orderBy('sort_order');
+    }
+
+    /**
      * @return HasMany<BotLog, $this>
      */
     public function botLogs(): HasMany

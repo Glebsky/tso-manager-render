@@ -22,6 +22,7 @@ use App\Http\Controllers\Market\SyncLogController;
 use App\Http\Controllers\Market\VersionController;
 use App\Http\Controllers\ScheduledTaskController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\TaskGroupController;
 use App\Http\Middleware\HttpCacheHeaders;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -65,6 +66,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/tasks/{task}', [ScheduledTaskController::class, 'update'])->whereNumber('task');
     Route::post('/tasks/{task}/duplicate', [ScheduledTaskController::class, 'duplicate'])->whereNumber('task');
     Route::delete('/tasks/{task}', [ScheduledTaskController::class, 'destroy'])->whereNumber('task');
+
+    // Task groups
+    Route::get('/task-groups', [TaskGroupController::class, 'index']);
+    Route::post('/task-groups', [TaskGroupController::class, 'store']);
+    Route::put('/task-groups/{taskGroup}', [TaskGroupController::class, 'update'])->whereNumber('taskGroup');
+    Route::delete('/task-groups/{taskGroup}', [TaskGroupController::class, 'destroy'])->whereNumber('taskGroup');
+    Route::post('/task-groups/reorder', [TaskGroupController::class, 'reorder']);
 
     // Game lookups
     Route::get('/game/clickable-buildings', [ClickableBuildingController::class, 'index']);
