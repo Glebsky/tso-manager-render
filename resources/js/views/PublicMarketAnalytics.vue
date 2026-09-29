@@ -165,9 +165,9 @@
                     <div>
                         <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('market.selling_item') }}</label>
                         <div class="relative">
-                            <select v-model="selectedItem" @change="onItemChange" :aria-label="t('market.selling_item')" class="glass-select w-full transition-all duration-300">
+                            <select v-model="selectedItem" @change="onDropdownItemChange" :aria-label="t('market.selling_item')" class="glass-select w-full transition-all duration-300">
                                 <option value="" class="bg-dark-900">{{ t('market.select_selling') }}</option>
-                                <option v-for="good in filteredGoods" :key="good.item_id" :value="good.item_id" class="bg-dark-900">
+                                <option v-for="good in dropdownGoodsList" :key="good.item_id" :value="good.item_id" class="bg-dark-900">
                                     {{ getItemName(good.item_name, good.item_id) }} ({{ good.item_id }})
                                 </option>
                             </select>
@@ -183,9 +183,9 @@
                     <div>
                         <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('market.target_item') }}</label>
                         <div class="relative">
-                            <select v-model="selectedTarget" :disabled="!selectedItem" @change="fetchAnalytics" :aria-label="t('market.target_item')" class="glass-select w-full disabled:opacity-40 transition-all duration-300">
+                            <select v-model="selectedTarget" @change="onDropdownTargetChange" :aria-label="t('market.target_item')" class="glass-select w-full transition-all duration-300">
                                 <option value="" class="bg-dark-900">{{ t('market.select_target') }}</option>
-                                <option v-for="target in filteredTargets" :key="target.target_item_id" :value="target.target_item_id" class="bg-dark-900">
+                                <option v-for="target in dropdownTargetsList" :key="target.target_item_id" :value="target.target_item_id" class="bg-dark-900">
                                     {{ getItemName(target.target_item_name, target.target_item_id) }} ({{ target.target_item_id }})
                                 </option>
                             </select>
@@ -203,53 +203,59 @@
                     <!-- Tab Navigation for Visual steps -->
                     <div class="grid grid-cols-2 gap-2 border-b border-white/10 pb-0 sm:flex sm:items-center sm:gap-6">
                         <button @click="switchVisualTab(1)"
-                                class="flex flex-col sm:flex-row items-center justify-center sm:justify-start pb-2 sm:pb-3 text-[11px] sm:text-xs font-bold uppercase tracking-tight sm:tracking-wider transition-all duration-300 border-b-2 min-w-0 w-full sm:w-auto"
+                                class="flex flex-col sm:flex-row items-center justify-center sm:justify-start pb-2 sm:pb-3 text-[11px] sm:text-xs font-bold uppercase tracking-tight sm:tracking-wider transition-all duration-300 border-b-2 min-w-0 w-full sm:w-auto cursor-pointer"
                                 :class="visualTab === 1 ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-white/40 hover:text-white'">
-                            <span class="truncate max-w-full sm:max-w-none whitespace-nowrap">{{ t('market.sell_resource') }}</span>
-                            <span v-if="selectedItem" class="text-[10px] sm:text-xs text-emerald-500 font-mono font-medium truncate max-w-full sm:max-w-none sm:ml-1.5">
-                                ({{ selectedItemName }})
+                            <span class="truncate max-w-full sm:max-w-none whitespace-nowrap">
+                                {{ searchDirection === 'sell_first' ? t('market.sell_resource') : (t('market.buy_resource_pos1') || '1. Покупаемый ресурс') }}
+                            </span>
+                            <span v-if="searchDirection === 'sell_first' ? selectedItem : selectedTarget" class="text-[10px] sm:text-xs text-emerald-500 font-mono font-medium truncate max-w-full sm:max-w-none sm:ml-1.5">
+                                ({{ searchDirection === 'sell_first' ? selectedItemName : selectedTargetName }})
                             </span>
                         </button>
-                        <button @click="switchVisualTab(2)"
-                                :disabled="!selectedItem"
-                                class="flex flex-col sm:flex-row items-center justify-center sm:justify-start pb-2 sm:pb-3 text-[11px] sm:text-xs font-bold uppercase tracking-tight sm:tracking-wider transition-all duration-300 border-b-2 disabled:opacity-30 disabled:cursor-not-allowed min-w-0 w-full sm:w-auto"
+                        <button @click="onVisualTab2Click"
+                                class="flex flex-col sm:flex-row items-center justify-center sm:justify-start pb-2 sm:pb-3 text-[11px] sm:text-xs font-bold uppercase tracking-tight sm:tracking-wider transition-all duration-300 border-b-2 min-w-0 w-full sm:w-auto cursor-pointer"
                                 :class="visualTab === 2 ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-white/40 hover:text-white'">
-                            <span class="truncate max-w-full sm:max-w-none whitespace-nowrap">{{ t('market.buy_resource') }}</span>
-                            <span v-if="selectedTarget" class="text-[10px] sm:text-xs text-emerald-500 font-mono font-medium truncate max-w-full sm:max-w-none sm:ml-1.5">
-                                ({{ selectedTargetName }})
+                            <span class="truncate max-w-full sm:max-w-none whitespace-nowrap">
+                                {{ searchDirection === 'sell_first' ? t('market.buy_resource') : (t('market.sell_resource_pos2') || '2. Продаваемый ресурс') }}
+                            </span>
+                            <span v-if="searchDirection === 'sell_first' ? selectedTarget : selectedItem" class="text-[10px] sm:text-xs text-emerald-500 font-mono font-medium truncate max-w-full sm:max-w-none sm:ml-1.5">
+                                ({{ searchDirection === 'sell_first' ? selectedTargetName : selectedItemName }})
                             </span>
                         </button>
                     </div>
 
-                    <!-- Step 1: Selling resource grid -->
+                    <!-- Step 1: First resource grid (selling if sell_first, buying if buy_first) -->
                     <transition name="smooth-fade" mode="out-in">
                         <div v-if="visualTab === 1" key="step1" class="grid grid-cols-3 xs:grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-1.5 sm:gap-2 max-h-60 overflow-y-auto p-1 scrollbar-thin">
-                            <div v-for="good in filteredGoods" :key="good.item_id"
-                                 @click="selectVisualItem(good.item_id)"
+                            <div v-for="good in (searchDirection === 'sell_first' ? filteredGoods : filteredTargetGoods)" :key="good.item_id"
+                                 @click="selectVisualFirst(good.item_id)"
                                  class="flex flex-col items-center justify-center p-1 sm:p-1.5 rounded-lg border cursor-pointer hover:border-emerald-500/40 hover:bg-white/[0.05] hover:shadow-md hover:shadow-emerald-500/5 text-center select-none transition-all duration-300 ease-out transform hover:-translate-y-0.5"
-                                 :class="selectedItem === good.item_id ? 'bg-emerald-500/10 border-emerald-500 shadow-lg shadow-emerald-500/10 scale-[1.02]' : 'bg-white/[0.02] border-white/5 hover:border-emerald-500/30 hover:bg-white/[0.05] hover:shadow-md'"
+                                 :class="(searchDirection === 'sell_first' ? selectedItem === good.item_id : selectedTarget === good.item_id) ? 'bg-emerald-500/10 border-emerald-500 shadow-lg shadow-emerald-500/10 scale-[1.02]' : 'bg-white/[0.02] border-white/5 hover:border-emerald-500/30 hover:bg-white/[0.05] hover:shadow-md'"
                                  :style="good.no_offers ? 'opacity:0.4' : ''"
                                  :title="good.no_offers ? t('market.no_offers') : getItemName(good.item_name, good.item_id)">
                                 <img :alt="getItemName(good.item_name, good.item_id)" :src="getResourceIcon(good.item_id, good.kind)" @error="handleIconError($event, good.item_id, good.kind)" class="w-5 h-5 sm:w-6 sm:h-6 object-contain mb-1 pointer-events-none transition-transform duration-300 group-hover:scale-110" />
                                 <span class="text-[8px] sm:text-[9px] font-medium text-white/90 truncate w-full text-center" :title="getItemName(good.item_name, good.item_id)">{{ getItemName(good.item_name, good.item_id) }}</span>
                             </div>
-                            <div v-if="filteredGoods.length === 0 && !loading" class="col-span-full py-8 text-center text-xs text-white/30">
+                            <div v-if="(searchDirection === 'sell_first' ? filteredGoods.length === 0 : filteredTargetGoods.length === 0) && !loading" class="col-span-full py-8 text-center text-xs text-white/30">
                                 {{ searchQuery ? (t('common.no_results') || 'Ничего не найдено') : t('market.no_resources_db') }}
                             </div>
                         </div>
 
-                        <!-- Step 2: Buying target resource grid -->
+                        <!-- Step 2: Second resource grid (buying targets if sell_first, selling sources if buy_first) -->
                         <div v-else-if="visualTab === 2" key="step2" class="grid grid-cols-3 xs:grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-1.5 sm:gap-2 max-h-60 overflow-y-auto p-1 scrollbar-thin">
-                            <div v-for="target in filteredTargets" :key="target.target_item_id"
-                                 @click="selectVisualTarget(target.target_item_id)"
+                            <div v-for="target in (searchDirection === 'sell_first' ? filteredTargets : filteredSources)" :key="target.target_item_id"
+                                 @click="selectVisualSecond(target.target_item_id)"
                                  class="flex flex-col items-center justify-center p-1 sm:p-1.5 rounded-lg border cursor-pointer hover:border-emerald-500/40 hover:bg-white/[0.05] hover:shadow-md hover:shadow-emerald-500/5 text-center select-none transition-all duration-300 ease-out transform hover:-translate-y-0.5"
-                                 :class="selectedTarget === target.target_item_id ? 'bg-emerald-500/10 border-emerald-500 shadow-lg shadow-emerald-500/10 scale-[1.02]' : 'bg-white/[0.02] border-white/5 hover:border-emerald-500/30 hover:bg-white/[0.05] hover:shadow-md'"
+                                 :class="(searchDirection === 'sell_first' ? selectedTarget === target.target_item_id : selectedItem === target.target_item_id) ? 'bg-emerald-500/10 border-emerald-500 shadow-lg shadow-emerald-500/10 scale-[1.02]' : 'bg-white/[0.02] border-white/5 hover:border-emerald-500/30 hover:bg-white/[0.05] hover:shadow-md'"
                                  :title="getItemName(target.target_item_name, target.target_item_id)">
                                 <img :alt="getItemName(target.target_item_name, target.target_item_id)" :src="getResourceIcon(target.target_item_id, target.kind)" @error="handleIconError($event, target.target_item_id, target.kind)" class="w-5 h-5 sm:w-6 sm:h-6 object-contain mb-1 pointer-events-none transition-transform duration-300 group-hover:scale-110" />
                                 <span class="text-[8px] sm:text-[9px] font-medium text-white/90 truncate w-full text-center" :title="getItemName(target.target_item_name, target.target_item_id)">{{ getItemName(target.target_item_name, target.target_item_id) }}</span>
                             </div>
-                            <div v-if="filteredTargets.length === 0 && !loadingPairs" class="col-span-full py-8 text-center text-xs text-white/30">
-                                {{ selectedItem ? (targets.length === 0 ? t('market.opposite_trade_not_found') : (t('common.no_results') || 'Ничего не найдено')) : t('market.select_selling_first') }}
+                            <div v-if="(searchDirection === 'sell_first' ? filteredTargets.length === 0 : filteredSources.length === 0) && !loadingPairs" class="col-span-full py-8 text-center text-xs text-white/30">
+                                {{ searchDirection === 'sell_first'
+                                    ? (selectedItem ? (targets.length === 0 ? t('market.opposite_trade_not_found') : (t('common.no_results') || 'Ничего не найдено')) : t('market.select_selling_first'))
+                                    : (selectedTarget ? (sources.length === 0 ? t('market.opposite_trade_not_found') : (t('common.no_results') || 'Ничего не найдено')) : (t('market.select_target_first') || 'Сначала выберите покупаемый товар.'))
+                                }}
                             </div>
                         </div>
                     </transition>
@@ -615,7 +621,8 @@
             </div>
 
             <!-- Current Active Market Listings Card (Exact replica of MarketAnalytics.vue) -->
-            <div class="glass-card p-4 sm:p-6 animate-fade-in-up transition-all duration-500 hover:border-white/20">
+            <div class="glass-card p-4 sm:p-6 relative animate-fade-in-up transition-all duration-500 hover:border-white/20">
+                <loading-overlay :show="isRevalidatingListings && activeOffers.length === 0" :label="t('common.loading_data')" />
                 <div class="flex items-center justify-between gap-3 mb-5 sm:mb-6 border-b border-white/5 pb-3">
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 flex-shrink-0">
@@ -624,7 +631,13 @@
                             </svg>
                         </div>
                         <div class="flex flex-col">
-                            <h2 class="text-base sm:text-lg font-semibold text-white">{{ t('market.listings') }}</h2>
+                            <div class="flex items-center gap-2">
+                                <h2 class="text-base sm:text-lg font-semibold text-white">{{ t('market.listings') }}</h2>
+                                <span v-if="isRevalidatingListings" class="text-[10px] text-emerald-400 font-mono animate-pulse flex items-center gap-1">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                                    {{ t('market.updating') || 'Обновление...' }}
+                                </span>
+                            </div>
                             <span class="text-xs text-white/40">{{ t('market.active_trades_count', { count: totalActiveCount }) }}</span>
                         </div>
                     </div>
@@ -842,11 +855,64 @@ const router = useRouter();
         const toggleArbitrageSchemes = () => showArbitrageSchemes.value = !showArbitrageSchemes.value;
         const toggleActiveListings = () => showActiveListings.value = !showActiveListings.value;
 
+        // Selection & direction variables
+        const searchDirection = ref('sell_first'); // 'sell_first' or 'buy_first'
+        const isRevalidatingListings = ref(false);
+
         // API lists & Translations
         const goods = ref([]);
+        const targetGoods = ref([]);
         const targets = ref([]);
+        const sources = ref([]);
+        const targetsMap = ref({});
+        const sourcesMap = ref({});
         const selectedKind = ref('all');
         const searchQuery = ref('');
+
+        const ensureInvertedMaps = (goodsList, targetsMapping) => {
+            if (!targetsMapping) return;
+
+            if (!targetGoods.value || targetGoods.value.length === 0) {
+                const unique = {};
+                for (const list of Object.values(targetsMapping)) {
+                    if (Array.isArray(list)) {
+                        for (const t of list) {
+                            if (t.target_item_id && !unique[t.target_item_id]) {
+                                unique[t.target_item_id] = {
+                                    item_id: t.target_item_id,
+                                    item_name: t.target_item_name,
+                                    kind: t.kind || 'resource'
+                                };
+                            }
+                        }
+                    }
+                }
+                targetGoods.value = Object.values(unique).sort((a, b) => (a.item_name || '').localeCompare(b.item_name || ''));
+            }
+
+            if (!sourcesMap.value || Object.keys(sourcesMap.value).length === 0) {
+                const goodsDict = {};
+                for (const g of (goodsList || [])) {
+                    goodsDict[g.item_id] = g;
+                }
+                const sMap = {};
+                for (const [itemId, list] of Object.entries(targetsMapping)) {
+                    const srcGood = goodsDict[itemId] || { item_id: itemId, item_name: itemId, kind: 'resource' };
+                    if (Array.isArray(list)) {
+                        for (const t of list) {
+                            const tid = t.target_item_id;
+                            if (!sMap[tid]) sMap[tid] = [];
+                            sMap[tid].push({
+                                target_item_id: itemId,
+                                target_item_name: srcGood.item_name,
+                                kind: srcGood.kind || 'resource'
+                            });
+                        }
+                    }
+                }
+                sourcesMap.value = sMap;
+            }
+        };
 
         const resolveItemKind = (item, idKey = 'item_id') => {
             if (item.kind && item.kind !== 'resource') return item.kind;
@@ -885,8 +951,32 @@ const router = useRouter();
             return [...goods.value, ...extras];
         });
 
+        const allTargetGoods = computed(() => {
+            const known = new Set(targetGoods.value.map(g => g.item_id));
+            const extras = TRADABLE_RESOURCES
+                .filter(name => !known.has(name))
+                .map(name => ({ item_id: name, item_name: resourceName(name), kind: 'resource', no_offers: true }));
+            return [...targetGoods.value, ...extras];
+        });
+
         const filteredGoods = computed(() => {
             let list = allGoods.value;
+            if (selectedKind.value !== 'all') {
+                list = list.filter(g => resolveItemKind(g, 'item_id') === selectedKind.value);
+            }
+            const q = searchQuery.value.trim().toLowerCase();
+            if (q) {
+                list = list.filter(g => {
+                    const name = getItemName(g.item_name, g.item_id).toLowerCase();
+                    const id = String(g.item_id || '').toLowerCase();
+                    return name.includes(q) || id.includes(q);
+                });
+            }
+            return list;
+        });
+
+        const filteredTargetGoods = computed(() => {
+            let list = allTargetGoods.value;
             if (selectedKind.value !== 'all') {
                 list = list.filter(g => resolveItemKind(g, 'item_id') === selectedKind.value);
             }
@@ -915,6 +1005,44 @@ const router = useRouter();
                 });
             }
             return list;
+        });
+
+        const filteredSources = computed(() => {
+            let list = sources.value;
+            if (selectedKind.value !== 'all') {
+                list = list.filter(s => resolveItemKind(s, 'target_item_id') === selectedKind.value);
+            }
+            const q = searchQuery.value.trim().toLowerCase();
+            if (q) {
+                list = list.filter(s => {
+                    const name = getItemName(s.target_item_name, s.target_item_id).toLowerCase();
+                    const id = String(s.target_item_id || '').toLowerCase();
+                    return name.includes(q) || id.includes(q);
+                });
+            }
+            return list;
+        });
+
+        const dropdownGoodsList = computed(() => {
+            if (selectedTarget.value && sources.value.length > 0) {
+                return sources.value.map(s => ({
+                    item_id: s.target_item_id,
+                    item_name: s.target_item_name,
+                    kind: s.kind
+                }));
+            }
+            return filteredGoods.value;
+        });
+
+        const dropdownTargetsList = computed(() => {
+            if (selectedItem.value && targets.value.length > 0) {
+                return filteredTargets.value;
+            }
+            return filteredTargetGoods.value.map(g => ({
+                target_item_id: g.item_id,
+                target_item_name: g.item_name,
+                kind: g.kind
+            }));
         });
         const popular = ref([]);
         const history = ref([]);
@@ -1047,6 +1175,9 @@ const router = useRouter();
             localStorage.setItem('tso_market_selected_server', selectedServerId.value);
             resetSelection();
             goods.value = [];
+            targetGoods.value = [];
+            targetsMap.value = {};
+            sourcesMap.value = {};
             updateQueryParams();
             loadInitialData({ bypass: true });
         };
@@ -1071,15 +1202,25 @@ const router = useRouter();
 
         // Dynamic translated names
         const selectedItemName = computed(() => {
+            if (!selectedItem.value) return '';
             const item = allGoods.value.find(g => g.item_id === selectedItem.value);
-            const name = item ? item.item_name : selectedItem.value;
-            return getItemName(name, selectedItem.value);
+            if (item) return getItemName(item.item_name, item.item_id);
+            const inSources = sources.value.find(s => s.target_item_id === selectedItem.value);
+            if (inSources) return getItemName(inSources.target_item_name, inSources.target_item_id);
+            const inTargets = targets.value.find(t => t.target_item_id === selectedItem.value);
+            if (inTargets) return getItemName(inTargets.target_item_name, inTargets.target_item_id);
+            return getItemName(selectedItem.value, selectedItem.value);
         });
 
         const selectedTargetName = computed(() => {
-            const item = targets.value.find(t => t.target_item_id === selectedTarget.value);
-            const name = item ? item.target_item_name : selectedTarget.value;
-            return getItemName(name, selectedTarget.value);
+            if (!selectedTarget.value) return '';
+            const inTargets = targets.value.find(t => t.target_item_id === selectedTarget.value);
+            if (inTargets) return getItemName(inTargets.target_item_name, inTargets.target_item_id);
+            const inTargetGoods = allTargetGoods.value.find(g => g.item_id === selectedTarget.value);
+            if (inTargetGoods) return getItemName(inTargetGoods.item_name, inTargetGoods.item_id);
+            const inGoods = allGoods.value.find(g => g.item_id === selectedTarget.value);
+            if (inGoods) return getItemName(inGoods.item_name, inGoods.item_id);
+            return getItemName(selectedTarget.value, selectedTarget.value);
         });
 
         // Calculator costs
@@ -1206,6 +1347,7 @@ const router = useRouter();
         const loadInitialData = async (options = {}) => {
             if (!selectedServerId.value) return;
             loading.value = true;
+            isRevalidatingListings.value = true;
             try {
                 const mapOffers = (rawOffers) => {
                     const now = Math.floor(Date.now() / 1000);
@@ -1219,12 +1361,21 @@ const router = useRouter();
                                 _expiresTimestamp: expSec,
                                 time_left: Math.max(0, expSec - now)
                             };
-                        });
+                        })
+                        .filter(offer => offer._expiresTimestamp > now && offer.time_left > 0);
                 };
 
                 const applyBulkData = (data) => {
-                    if (!data) return;
+                    if (!data) {
+                        isRevalidatingListings.value = false;
+                        return;
+                    }
                     goods.value = data.goods || [];
+                    targetsMap.value = data.targets_map || {};
+                    targetGoods.value = data.target_goods || [];
+                    sourcesMap.value = data.sources_map || {};
+                    ensureInvertedMaps(goods.value, targetsMap.value);
+
                     const rawPopular = (data.popular && data.popular['1d']) || [];
                     const unwrappedPopular = Array.isArray(rawPopular) ? rawPopular : (rawPopular?.data || []);
                     popular.value = unwrappedPopular.filter(item => item && typeof item === 'object' && item.item_id);
@@ -1236,10 +1387,14 @@ const router = useRouter();
                     if (data.cache_ttl_seconds) {
                         bulkCacheTtlMs.value = data.cache_ttl_seconds * 1000;
                     }
+                    isRevalidatingListings.value = false;
                 };
 
                 if (cacheStrategy.value === 'bulk') {
                     const bulkData = await cachedGetBulk('/api/public/market/bulk', selectedServerId.value, {
+                        onRevalidateStart: () => {
+                            isRevalidatingListings.value = true;
+                        },
                         onRevalidate: applyBulkData,
                         ...options
                     });
@@ -1250,16 +1405,19 @@ const router = useRouter();
                             activeOffers.value = mapOffers(freshAnalytics.active_offers);
                             totalActiveCount.value = freshAnalytics.total_active_count !== undefined ? freshAnalytics.total_active_count : activeOffers.value.length;
                         }
+                        isRevalidatingListings.value = false;
                     };
 
                     // Individual mode: fetch public granular endpoints separately
-                    const [goodsRes, popularRes, arbitrageRes, analyticsRes] = await Promise.all([
+                    const [goodsRes, targetGoodsRes, popularRes, arbitrageRes, analyticsRes] = await Promise.all([
                         cachedGet('/api/public/market/goods', { params: { server_id: selectedServerId.value }, ...options }),
+                        cachedGet('/api/public/market/target-goods', { params: { server_id: selectedServerId.value }, ...options }),
                         cachedGet('/api/public/market/popular', { params: { server_id: selectedServerId.value, period: '1d' }, ...options }),
                         cachedGet('/api/public/market/arbitrage', { params: { server_id: selectedServerId.value }, ...options }),
                         cachedGet('/api/public/market/analytics', { params: { server_id: selectedServerId.value }, onRevalidate: onRevalidateOverview, ...options }),
                     ]);
                     goods.value = goodsRes || [];
+                    targetGoods.value = targetGoodsRes || [];
                     const unwrappedPopular = Array.isArray(popularRes) ? popularRes : (popularRes?.data || []);
                     popular.value = unwrappedPopular.filter(item => item && typeof item === 'object' && item.item_id);
                     arbitrageLoops.value = arbitrageRes || [];
@@ -1267,6 +1425,7 @@ const router = useRouter();
                         activeOffers.value = mapOffers(analyticsRes.active_offers);
                         totalActiveCount.value = analyticsRes.total_active_count !== undefined ? analyticsRes.total_active_count : activeOffers.value.length;
                     }
+                    isRevalidatingListings.value = false;
                 }
 
                 startCountdown();
@@ -1282,6 +1441,8 @@ const router = useRouter();
             targets.value = [];
             stats.value = null;
             history.value = [];
+            activeInfo.value = null;
+            periodInfo.value = null;
             mirroredStats.value = null;
             mirroredHistory.value = null;
             updateQueryParams();
@@ -1294,6 +1455,8 @@ const router = useRouter();
                 const bulk = readBulkCache(selectedServerId.value);
                 if (bulk && bulk.targets_map && bulk.targets_map[selectedItem.value]) {
                     targets.value = bulk.targets_map[selectedItem.value];
+                } else if (targetsMap.value && targetsMap.value[selectedItem.value]) {
+                    targets.value = targetsMap.value[selectedItem.value];
                 } else {
                     // Fallback to individual request with sync-based TTL
                     const data = await cachedGet('/api/public/market/targets', {
@@ -1306,6 +1469,80 @@ const router = useRouter();
                 showToast(t('market.targets_failed'), 'error');
             } finally {
                 loadingPairs.value = false;
+            }
+        };
+
+        const onTargetChange = async () => {
+            selectedItem.value = '';
+            sources.value = [];
+            stats.value = null;
+            history.value = [];
+            activeInfo.value = null;
+            periodInfo.value = null;
+            mirroredStats.value = null;
+            mirroredHistory.value = null;
+            updateQueryParams();
+
+            if (!selectedTarget.value || !selectedServerId.value) return;
+
+            loadingPairs.value = true;
+            try {
+                const bulk = readBulkCache(selectedServerId.value);
+                if (bulk && bulk.sources_map && bulk.sources_map[selectedTarget.value]) {
+                    sources.value = bulk.sources_map[selectedTarget.value];
+                } else if (sourcesMap.value && sourcesMap.value[selectedTarget.value]) {
+                    sources.value = sourcesMap.value[selectedTarget.value];
+                } else {
+                    const data = await cachedGet('/api/public/market/sources', {
+                        params: { server_id: selectedServerId.value, target_item_id: selectedTarget.value },
+                        ttlMs: bulkCacheTtlMs.value
+                    });
+                    sources.value = data || [];
+                }
+            } catch (e) {
+                showToast(t('market.sources_failed') || 'Failed to load source items', 'error');
+            } finally {
+                loadingPairs.value = false;
+            }
+        };
+
+        const onDropdownItemChange = async () => {
+            if (!selectedItem.value) {
+                if (selectedTarget.value) {
+                    searchDirection.value = 'buy_first';
+                    await onTargetChange();
+                } else {
+                    resetSelection();
+                }
+                return;
+            }
+
+            if (searchDirection.value === 'buy_first' && selectedTarget.value) {
+                updateQueryParams();
+                await fetchAnalytics();
+            } else {
+                searchDirection.value = 'sell_first';
+                await onItemChange();
+            }
+        };
+
+        const onDropdownTargetChange = async () => {
+            if (!selectedTarget.value) {
+                if (selectedItem.value) {
+                    searchDirection.value = 'sell_first';
+                    await onItemChange();
+                } else {
+                    resetSelection();
+                }
+                return;
+            }
+
+            if (searchDirection.value === 'sell_first' && selectedItem.value) {
+                updateQueryParams();
+                await fetchAnalytics();
+            } else {
+                searchDirection.value = 'buy_first';
+                await onTargetChange();
             }
         };
 
@@ -1394,21 +1631,56 @@ const router = useRouter();
         };
 
         // Visual Browser Handlers
+        const onVisualTab2Click = () => {
+            if (searchDirection.value === 'sell_first') {
+                if (!selectedItem.value) {
+                    searchDirection.value = 'buy_first';
+                    visualTab.value = 1;
+                    searchQuery.value = '';
+                } else {
+                    visualTab.value = 2;
+                    searchQuery.value = '';
+                }
+            } else {
+                if (!selectedTarget.value) {
+                    searchDirection.value = 'sell_first';
+                    visualTab.value = 1;
+                    searchQuery.value = '';
+                } else {
+                    visualTab.value = 2;
+                    searchQuery.value = '';
+                }
+            }
+        };
+
         const switchVisualTab = (tab) => {
-            if (tab === 2 && !selectedItem.value) return;
-            visualTab.value = tab;
+            if (tab === 2) {
+                onVisualTab2Click();
+                return;
+            }
+            visualTab.value = 1;
             searchQuery.value = '';
         };
 
-        const selectVisualItem = async (itemId) => {
-            selectedItem.value = itemId;
+        const selectVisualFirst = async (id) => {
             searchQuery.value = '';
-            await onItemChange();
+            if (searchDirection.value === 'sell_first') {
+                selectedItem.value = id;
+                await onItemChange();
+            } else {
+                selectedTarget.value = id;
+                await onTargetChange();
+            }
             visualTab.value = 2;
         };
 
-        const selectVisualTarget = async (targetId) => {
-            selectedTarget.value = targetId;
+        const selectVisualSecond = async (id) => {
+            searchQuery.value = '';
+            if (searchDirection.value === 'sell_first') {
+                selectedTarget.value = id;
+            } else {
+                selectedItem.value = id;
+            }
             await fetchAnalytics();
         };
 
@@ -1416,6 +1688,7 @@ const router = useRouter();
             selectedItem.value = '';
             selectedTarget.value = '';
             targets.value = [];
+            sources.value = [];
             stats.value = null;
             history.value = [];
             activeInfo.value = null;
@@ -1445,6 +1718,8 @@ const router = useRouter();
                 const bulk = readBulkCache(selectedServerId.value);
                 if (bulk && bulk.targets_map && bulk.targets_map[tempTarget]) {
                     targetList = bulk.targets_map[tempTarget];
+                } else if (targetsMap.value && targetsMap.value[tempTarget]) {
+                    targetList = targetsMap.value[tempTarget];
                 } else {
                     const data = await cachedGet('/api/public/market/targets', {
                         params: { server_id: selectedServerId.value, item_id: tempTarget },
@@ -1458,6 +1733,7 @@ const router = useRouter();
                     selectedItem.value = tempTarget;
                     targets.value = targetList;
                     selectedTarget.value = tempItem;
+                    searchDirection.value = 'sell_first';
                     updateQueryParams();
                     await fetchAnalytics();
                 } else {

@@ -122,7 +122,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // logs) intentionally stay uncached.
     Route::middleware(HttpCacheHeaders::class)->group(function () {
         Route::get('/market/goods', [CatalogController::class, 'goods']);
+        Route::get('/market/target-goods', [CatalogController::class, 'targetGoods']);
         Route::get('/market/targets', [CatalogController::class, 'targets']);
+        Route::get('/market/sources', [CatalogController::class, 'sources']);
         Route::get('/market/popular', PopularController::class);
         Route::get('/market/analytics', AnalyticsController::class);
         Route::get('/market/arbitrage', ArbitrageController::class);
@@ -146,7 +148,9 @@ Route::prefix('public/market')
         Route::middleware(HttpCacheHeaders::class)->group(function () {
             Route::get('/servers', PublicServerController::class);
             Route::get('/goods', [CatalogController::class, 'goods']);
+            Route::get('/target-goods', [CatalogController::class, 'targetGoods']);
             Route::get('/targets', [CatalogController::class, 'targets']);
+            Route::get('/sources', [CatalogController::class, 'sources']);
             Route::get('/popular', PopularController::class);
             Route::get('/analytics', AnalyticsController::class);
             Route::get('/arbitrage', ArbitrageController::class);

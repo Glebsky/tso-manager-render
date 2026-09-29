@@ -45,10 +45,22 @@ export const marketApi = {
         const res = await http.get('/api/market/goods', { params });
         return res.data;
     },
+    async fetchTargetGoods(serverId, kind = null) {
+        const params = { server_id: serverId };
+        if (kind && kind !== 'all') params.kind = kind;
+        const res = await http.get('/api/market/target-goods', { params });
+        return res.data;
+    },
     async fetchTargets(serverId, itemId, kind = null) {
         const params = { server_id: serverId, item_id: itemId };
         if (kind && kind !== 'all') params.kind = kind;
         const res = await http.get('/api/market/targets', { params });
+        return res.data;
+    },
+    async fetchSources(serverId, targetItemId, kind = null) {
+        const params = { server_id: serverId, target_item_id: targetItemId };
+        if (kind && kind !== 'all') params.kind = kind;
+        const res = await http.get('/api/market/sources', { params });
         return res.data;
     },
     async fetchPopular(serverId, period = '1d', kind = null) {
