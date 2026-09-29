@@ -806,7 +806,7 @@
                         <div class="border-b border-white/5 last:border-b-0 transition-colors"
                              :class="{
                                  'bg-emerald-500/10 border-emerald-500/30': isGroupDropTarget(taskGroup.key, accountName),
-                                 'opacity-50': draggedGroupId === taskGroup.id
+                                 'opacity-50': Boolean(draggedGroupId && taskGroup.id && draggedGroupId === taskGroup.id)
                              }">
                             <div class="w-full px-3.5 sm:px-5 py-2.5 flex items-center justify-between gap-2 hover:bg-white/[0.03] transition-colors select-none"
                                  :draggable="taskGroup.key !== '__ungrouped__'"
