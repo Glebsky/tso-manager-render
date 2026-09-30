@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace App\Services\Tasks;
 
-use App\Enums\LogLevel;
-use App\Enums\TaskResultPrefix;
 use App\Enums\TaskStatus;
+use App\Exceptions\TaskExecutionException;
 use App\Jobs\ExecuteScheduledTaskJob;
 use App\Models\Account;
 use App\Models\ScheduledTask;
 use App\Services\TaskExecutionService;
+use App\Services\Tasks\Execution\TaskStateMachine;
+use App\Services\Tasks\Scheduling\ScheduleCalculator;
+use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -31,6 +34,8 @@ final class ScheduledTaskService
     public function __construct(
         private readonly TaskActivityLogger $logger,
         private readonly TaskExecutionService $executionService,
+        private readonly TaskStateMachine $stateMachine,
+        private readonly ScheduleCalculator $calculator,
     ) {}
 
     /**
@@ -103,6 +108,9 @@ final class ScheduledTaskService
             $data['sort_order'] = ((int) ScheduledTask::max('sort_order')) + 1;
         }
 
+        // FR-006: the slot is derived from the schedule fields at creation time.
+        $data['next_run_at'] = $this->scheduleRunAt(new ScheduledTask($data));
+
         try {
             $task = ScheduledTask::create($data);
         } catch (UniqueConstraintViolationException $e) {
@@ -130,10 +138,37 @@ final class ScheduledTaskService
 
         $data['payload'] = $this->enrichPayloadBuildingNames($accountId, $payload);
 
-        $task->update($data);
+        $task->fill($data);
+
+        // FR-006: a changed schedule (or a row that never had a slot) gets a fresh one.
+        if ($task->isDirty(self::SCHEDULE_FIELDS) || $task->next_run_at === null) {
+            $task->next_run_at = $this->scheduleRunAt($task);
+        }
+
+        $task->save();
         $this->logger->updated($task);
 
         return $task->fresh() ?? $task;
+    }
+
+    /**
+     * Fields that define when a task runs; changing any of them recomputes `next_run_at`.
+     *
+     * @var list<string>
+     */
+    private const array SCHEDULE_FIELDS = ['schedule_type', 'run_at_time', 'run_at_datetime', 'interval_hours', 'interval_minutes'];
+
+    /**
+     * Slot to persist after an operator (re)defined the schedule: the task's
+     * current slot, or the next future one if that slot is already missed
+     * (never a "missed slot" warning caused by a user action, ADR-002).
+     */
+    private function scheduleRunAt(ScheduledTask $task): ?Carbon
+    {
+        $grace = max(0, (int) (config('game.scheduler.missed_grace_minutes') ?? 5));
+        $slot = $this->calculator->scheduleRunAt($task, CarbonImmutable::now(), $grace);
+
+        return $slot !== null ? Carbon::instance($slot) : null;
     }
 
     /**
@@ -223,7 +258,17 @@ final class ScheduledTaskService
             $task->execution_token ?? 'null'
         ));
 
-        $task->update(['is_active' => ! $task->is_active]);
+        $data = ['is_active' => ! $task->is_active];
+
+        // Turning a task on re-anchors its slot (FR-006): a slot that expired
+        // while it was paused moves to the next future one instead of being
+        // reported as missed (ADR-002).
+        if (! $task->is_active) {
+            $task->is_active = true;
+            $data['next_run_at'] = $this->scheduleRunAt($task);
+        }
+
+        $task->update($data);
 
         $this->logger->toggled($task);
 
@@ -255,14 +300,12 @@ final class ScheduledTaskService
         $payload = $task->payload ?? [];
         unset($payload['step_results']);
 
-        $task->update([
-            'status' => TaskStatus::Queued,
-            'queued_at' => now(),
-            'execution_token' => $token,
-            'completed_steps' => 0,
-            'last_result' => null,
-            'payload' => $payload,
-        ]);
+        $reserved = $this->stateMachine->reserve($task, $token, $payload, force: true);
+        if (! $reserved) {
+            throw new TaskExecutionException('error.task_busy', ['id' => $task->id], 409);
+        }
+
+        $task->refresh();
 
         Log::info(sprintf(
             '[Task] Manual "Run now" for task #%d [%s] (is_active=%s, schedule=%s, token=%s) — dispatched with force=true',
@@ -287,6 +330,11 @@ final class ScheduledTaskService
 
     /**
      * Stop/cancel a running or queued task immediately.
+     *
+     * Stop interrupts only the current run (ADR-001): a recurring task keeps
+     * its schedule and is reserved again in its next slot, counted from the
+     * moment it was stopped (ADR-003: the interval starts at the end of a run).
+     * A once task has no next slot, so it is deactivated instead.
      */
     public function stop(ScheduledTask $task): ScheduledTask
     {
@@ -298,22 +346,7 @@ final class ScheduledTaskService
             'total' => $totalSteps > 0 ? $totalSteps : 1,
         ]);
 
-        $task->update([
-            'status' => TaskStatus::Cancelled,
-            'execution_token' => null,
-            'last_result' => TaskResultPrefix::Skipped->format($stopMessage),
-        ]);
-
-        $this->logger->logTaskEvent(
-            $task->account_id,
-            $task->id,
-            LogLevel::Warning,
-            __('logs.task.stopped_by_user', [
-                'id' => $task->id,
-                'step' => $completedSteps,
-                'total' => $totalSteps > 0 ? $totalSteps : 1,
-            ])
-        );
+        $this->stateMachine->cancel($task, $stopMessage);
 
         Log::info(sprintf(
             '[Task] Task #%d cancelled by user (completed_steps: %d, total: %d)',
@@ -322,7 +355,7 @@ final class ScheduledTaskService
             $totalSteps
         ));
 
-        return $this->withAccount($task);
+        return $this->withAccount($task->fresh() ?? $task);
     }
 
     /**
@@ -341,14 +374,18 @@ final class ScheduledTaskService
             ScheduledTask::where('sort_order', '>', $task->sort_order)
                 ->increment('sort_order');
 
-            $duplicateName = ! empty($task->name) ? "{$task->name} (копия)" : 'Серия (копия)';
+            $duplicateName = ! empty($task->name)
+                ? __('tasks.duplicate_copy', ['name' => $task->name])
+                : __('tasks.default_sequence_copy');
 
             $replica = $task->replicate([
                 'last_run_at',
                 'last_result',
                 'queued_at',
+                'heartbeat_at',
                 'execution_token',
                 'completed_steps',
+                'next_run_at', // inactive copy; toggle() assigns a slot when it is switched on
             ]);
 
             $replica->name = $duplicateName;

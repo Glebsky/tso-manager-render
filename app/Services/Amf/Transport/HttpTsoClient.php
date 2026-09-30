@@ -5,16 +5,18 @@ declare(strict_types=1);
 namespace App\Services\Amf\Transport;
 
 use App\Exceptions\GameServerMaintenanceException;
+use App\Exceptions\SessionBusyException;
 use App\Exceptions\SessionExpiredException;
 use App\Models\Account;
 use App\Services\Amf\Amf3Encoder;
 use App\Services\Amf\Vo\flex_messaging_messages_RemotingMessage;
 use App\Services\TsoAuthService;
+use App\Support\Http\TsoCurlHelper;
 use Exception;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Random\RandomException;
-use Throwable;
 
 class HttpTsoClient implements TsoClientInterface
 {
@@ -82,7 +84,7 @@ class HttpTsoClient implements TsoClientInterface
             now()->addDay(),
         );
 
-        Log::info("[TsoAmf] Invalidated shared game session cache for account #{$accountId} (gen {$this->sessionGeneration($accountId)})");
+        Log::debug("[TsoAmf] Invalidated shared game session cache for account #{$accountId} (gen {$this->sessionGeneration($accountId)})");
     }
 
     private function sessionGeneration(int $accountId): int
@@ -202,31 +204,26 @@ class HttpTsoClient implements TsoClientInterface
             throw new \RuntimeException("Cookie file for account #{$account->id} cannot be empty.");
         }
 
-        Log::info("[TsoAmf] Resolving real AMF server: bbUrl={$lsUrl}, user={$dsoAuthUser}, targetZoneId={$targetZoneId}");
+        Log::debug("[TsoAmf] Resolving real AMF server: bbUrl={$lsUrl}, user={$dsoAuthUser}, targetZoneId={$targetZoneId}");
 
         $authUrl = rtrim($lsUrl, '/').'/authenticate';
-        $chAuth = curl_init();
-        curl_setopt($chAuth, CURLOPT_URL, $authUrl);
-        curl_setopt($chAuth, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($chAuth, CURLOPT_SSL_VERIFYPEER, (bool) config('game.ssl_verify', true));
-        curl_setopt($chAuth, CURLOPT_TIMEOUT, (int) config('game.http_timeout', 30));
-        curl_setopt($chAuth, CURLOPT_POST, true);
-        curl_setopt($chAuth, CURLOPT_POSTFIELDS, http_build_query([
-            'DSOAUTHUSER' => $dsoAuthUser,
-            'DSOAUTHTOKEN' => $dsoAuthToken,
-        ]));
-        curl_setopt($chAuth, CURLOPT_COOKIEFILE, $cookieFile);
-        curl_setopt($chAuth, CURLOPT_COOKIEJAR, $cookieFile);
-        curl_setopt($chAuth, CURLOPT_HTTPHEADER, [
-            'Content-Type: application/x-www-form-urlencoded',
-            'User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.12 (KHTML, like Gecko) Chrome/9.0.570.0 Safari/534.12',
-            'Referer: http://game-cdn.thesettlersonline.net/prestaging/PS5724/SWMMO/debug/SWMMO.swf',
+        $chAuth = TsoCurlHelper::init($authUrl, [
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => http_build_query([
+                'DSOAUTHUSER' => $dsoAuthUser,
+                'DSOAUTHTOKEN' => $dsoAuthToken,
+            ]),
+            CURLOPT_COOKIEFILE => $cookieFile,
+            CURLOPT_COOKIEJAR => $cookieFile,
+            CURLOPT_HTTPHEADER => array_merge(
+                ['Content-Type: application/x-www-form-urlencoded'],
+                TsoCurlHelper::defaultFlashHeaders(),
+            ),
         ]);
         $authRes = (string) curl_exec($chAuth);
         $authStatus = (int) curl_getinfo($chAuth, CURLINFO_HTTP_CODE);
-        curl_close($chAuth);
 
-        Log::info("[TsoAmf] Load server authentication: HTTP {$authStatus}, response: ".trim($authRes));
+        Log::debug("[TsoAmf] Load server authentication: HTTP {$authStatus}, response: ".trim($authRes));
 
         if ($this->isSessionRejected($authStatus, $authRes)) {
             throw new SessionExpiredException(
@@ -248,33 +245,28 @@ class HttpTsoClient implements TsoClientInterface
         $amfServerUrl = '';
 
         for ($i = 0; $i < $maxRetries; $i++) {
-            $ch = curl_init();
             $requestUrl = rtrim($lsUrl, '/').'/Z'.(int) round(microtime(true) * 1000);
-            curl_setopt($ch, CURLOPT_URL, $requestUrl);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, (bool) config('game.ssl_verify', true));
-            curl_setopt($ch, CURLOPT_TIMEOUT, (int) config('game.http_timeout', 30));
-            curl_setopt($ch, CURLOPT_POST, true);
-
             $data = http_build_query([
                 'zoneID' => $targetZoneId,
                 'DSOAUTHTOKEN' => $dsoAuthToken,
                 'DSOAUTHUSER' => $dsoAuthUser,
             ]);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-            curl_setopt($ch, CURLOPT_COOKIEFILE, $cookieFile);
-            curl_setopt($ch, CURLOPT_COOKIEJAR, $cookieFile);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                'Content-Type: application/x-www-form-urlencoded',
-                'User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.12 (KHTML, like Gecko) Chrome/9.0.570.0 Safari/534.12',
-                'Referer: http://game-cdn.thesettlersonline.net/prestaging/PS5724/SWMMO/debug/SWMMO.swf',
+
+            $ch = TsoCurlHelper::init($requestUrl, [
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => $data,
+                CURLOPT_COOKIEFILE => $cookieFile,
+                CURLOPT_COOKIEJAR => $cookieFile,
+                CURLOPT_HTTPHEADER => array_merge(
+                    ['Content-Type: application/x-www-form-urlencoded'],
+                    TsoCurlHelper::defaultFlashHeaders(),
+                ),
             ]);
 
             $lsRes = (string) curl_exec($ch);
             $lsStatus = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
 
-            Log::info("[TsoAmf] Load server attempt {$i}: HTTP {$lsStatus}, URL {$requestUrl}, response: ".substr($lsRes, 0, 300));
+            Log::debug("[TsoAmf] Load server attempt {$i}: HTTP {$lsStatus}, URL {$requestUrl}, response: ".substr($lsRes, 0, 300));
 
             if ($this->isMaintenanceResponse($lsStatus, $lsRes)) {
                 throw GameServerMaintenanceException::fromResponse($lsStatus, $lsRes);
@@ -312,32 +304,38 @@ class HttpTsoClient implements TsoClientInterface
             }
         }
 
-        Log::info("[TsoAmf] Real AMF server resolved: {$amfServerUrl}");
+        Log::debug("[TsoAmf] Real AMF server resolved: {$amfServerUrl}");
 
         return $amfServerUrl;
     }
 
     /**
+     * @throws SessionBusyException when the per-account lock is held by another process (FR-008)
      * @throws RandomException
+     * @throws Exception transport / session errors from dispatchCommand()
      */
     public function sendCommand(Account $account, mixed $dServerCall, string $destination = 'SMC', string $operation = 'ExecuteServerCall', ?string $source = 'com.bluebyte.game.servlet.EventHandler', ?int $targetZoneId = null): string
     {
         $accountId = $account->id;
-        $lock = Cache::lock("tso:amf_lock:{$accountId}", 60);
-        $locked = false;
+        $waitSeconds = (int) config('game.session_lock_wait_seconds', 20);
+        $lock = Cache::lock("tso:amf_lock:{$accountId}", (int) config('game.session_lock_ttl_seconds', 130));
 
+        // INV-004: at most one AMF command in flight per account. If the lock
+        // is not acquired the command is NOT sent — running it in parallel with
+        // the lock holder is precisely what creates a competing game session
+        // (error 1012). The caller retries later (FR-008).
         try {
-            $locked = (bool) $lock->block((int) config('game.session_lock_wait_seconds', 20));
-        } catch (Throwable $e) {
-            Log::warning("[TsoAmf] Proceeding without session lock for account #{$accountId}: ".$e->getMessage());
+            $lock->block($waitSeconds);
+        } catch (LockTimeoutException) {
+            Log::warning("[TsoAmf] Session lock for account #{$accountId} not acquired within {$waitSeconds}s; command [{$operation}] not sent");
+
+            throw SessionBusyException::forAccount($accountId, 'amf', $waitSeconds);
         }
 
         try {
             return $this->dispatchCommand($account, $targetZoneId ?? 0, $dServerCall, $destination, $operation, $source);
         } finally {
-            if ($locked) {
-                $lock->release();
-            }
+            $lock->release();
         }
     }
 
@@ -366,7 +364,7 @@ class HttpTsoClient implements TsoClientInterface
             $session = $this->readSharedSession($accountId, $zoneId, $authToken);
 
             if ($session !== null) {
-                Log::info("[TsoAmf] Reusing shared game session for account #{$accountId} (zone {$zoneId}) with DSId {$session['ds_id']}");
+                Log::debug("[TsoAmf] Reusing shared game session for account #{$accountId} (zone {$zoneId}) with DSId {$session['ds_id']}");
             }
         }
 
@@ -399,7 +397,7 @@ class HttpTsoClient implements TsoClientInterface
         $client = $session;
         $clientDsId = $client['ds_id'] !== '' ? $client['ds_id'] : 'nil';
 
-        Log::info("[TsoAmf] Sending command [{$operation}] for account #{$accountId} (zone {$zoneId}) with DSId {$clientDsId}");
+        Log::debug("[TsoAmf] Sending command [{$operation}] for account #{$accountId} (zone {$zoneId}) with DSId {$clientDsId}");
 
         $message = new flex_messaging_messages_RemotingMessage;
         $message->destination = $destination;
@@ -430,30 +428,29 @@ class HttpTsoClient implements TsoClientInterface
             throw new \RuntimeException('Invalid client URL or cookie file.');
         }
 
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $client['url']);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, (bool) config('game.ssl_verify', true));
-        curl_setopt($ch, CURLOPT_TIMEOUT, (int) config('game.http_timeout', 30));
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_POSTREDIR, 3);
-        curl_setopt($ch, CURLOPT_COOKIEFILE, $client['cookie_file']);
-        curl_setopt($ch, CURLOPT_COOKIEJAR, $client['cookie_file']);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Content-Type: application/x-amf',
-            'Accept: */*',
-            'User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.12 (KHTML, like Gecko) Chrome/9.0.570.0 Safari/534.12',
-            'Referer: http://game-cdn.thesettlersonline.net/prestaging/PS5724/SWMMO/debug/SWMMO.swf',
-            'x-flash-version: 11,4,402,287',
+        $ch = TsoCurlHelper::init($client['url'], [
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_POSTREDIR => 3,
+            CURLOPT_COOKIEFILE => $client['cookie_file'],
+            CURLOPT_COOKIEJAR => $client['cookie_file'],
+            CURLOPT_HTTPHEADER => array_merge(
+                [
+                    'Content-Type: application/x-amf',
+                    'Accept: */*',
+                ],
+                TsoCurlHelper::defaultFlashHeaders(),
+                [
+                    'x-flash-version: 11,4,402,287',
+                ],
+            ),
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $amf0Envelope,
         ]);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $amf0Envelope);
 
         $response = (string) curl_exec($ch);
         $durationMs = (int) round((microtime(true) - $startTime) * 1000);
         $error = curl_error($ch);
         $httpCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
 
         if ($error) {
             Log::error("[TsoAmf] Command [{$operation}] for account #{$accountId} failed after {$durationMs}ms with cURL error: {$error}");
@@ -464,12 +461,12 @@ class HttpTsoClient implements TsoClientInterface
             throw new \RuntimeException("AMF Server returned HTTP {$httpCode}. Response: ".$response);
         }
 
-        Log::info("[TsoAmf] Command [{$operation}] for account #{$accountId} completed in {$durationMs}ms (HTTP {$httpCode}, ".strlen($response).' bytes)');
+        Log::debug("[TsoAmf] Command [{$operation}] for account #{$accountId} completed in {$durationMs}ms (HTTP {$httpCode}, ".strlen($response).' bytes)');
 
         $serverDsId = $this->extractDsIdFromResponse($response);
 
         if ($serverDsId !== null && $serverDsId !== $client['ds_id']) {
-            Log::info("[TsoAmf] Game server assigned DSId {$serverDsId} for account #{$accountId} (was {$clientDsId})");
+            Log::debug("[TsoAmf] Game server assigned DSId {$serverDsId} for account #{$accountId} (was {$clientDsId})");
 
             $session['ds_id'] = $serverDsId;
             $this->dsIds[$accountId] = $serverDsId;

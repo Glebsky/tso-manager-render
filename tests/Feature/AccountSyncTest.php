@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Exceptions\AuthChallengeException;
 use App\Jobs\AccountSyncJob;
 use App\Models\Account;
 use App\Models\Setting;
@@ -120,15 +121,16 @@ class AccountSyncTest extends TestCase
             'last_sync_at' => now()->subMinutes(20),
         ]);
 
-        // Pre-acquire lock
-        Cache::add("account_sync_lock:{$account->id}", true, 300);
+        // A sync already queued for this account (ShouldBeUnique lock held, WP-10).
+        AccountSyncJob::dispatch($account);
+        Queue::assertPushed(AccountSyncJob::class, 1);
 
         Artisan::call('tso:run-scheduler', ['--mode' => 'queue']);
 
-        Queue::assertNotPushed(AccountSyncJob::class);
+        Queue::assertPushed(AccountSyncJob::class, 1);
     }
 
-    public function test_account_sync_job_executes_successfully_and_releases_lock(): void
+    public function test_account_sync_job_executes_successfully(): void
     {
         // No storage fake needed
 
@@ -138,9 +140,6 @@ class AccountSyncTest extends TestCase
             'region' => 'ru',
             'nickname' => 'sync_user',
         ]);
-
-        // Simulate lock acquired by scheduler
-        $this->assertTrue(Cache::add("account_sync_lock:{$account->id}", true, 300));
 
         // Mock dependencies
         $this->authMock->shouldReceive('ensureAuthenticated')->andReturnNull();
@@ -176,9 +175,6 @@ class AccountSyncTest extends TestCase
         $this->assertEquals('online', $account->status);
         $this->assertNotNull($account->last_sync_at);
         $this->assertIsArray($account->zone_data);
-
-        // Lock must be released, so we can acquire it again
-        $this->assertTrue(Cache::add("account_sync_lock:{$account->id}", true, 300));
     }
 
     public function test_zone_data_is_hidden_by_default_in_json_and_visible_when_explicit(): void
@@ -453,7 +449,8 @@ class AccountSyncTest extends TestCase
         $this->authMock->shouldReceive('resetSession')->once()->with(Mockery::on(fn ($arg) => $arg instanceof Account && $arg->id === $account->id));
         $this->amfMock->shouldReceive('invalidateSession')->once()->with((int) $account->id);
         $this->amfMock->shouldReceive('resetClient')->once()->with((int) $account->id);
-        $this->authMock->shouldReceive('ensureAuthenticated')->once()->andThrow(new \RuntimeException('Ubisoft requires CAPTCHA verification. Please update the session manually in account settings.'));
+        // The real auth client throws the typed challenge (WP-10, UnrecoverableAuthError).
+        $this->authMock->shouldReceive('ensureAuthenticated')->once()->andThrow(AuthChallengeException::captcha());
         $this->authMock->shouldReceive('isCaptchaOr2faError')->andReturn(true);
 
         $job = new AccountSyncJob($account);

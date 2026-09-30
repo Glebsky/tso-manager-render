@@ -32,6 +32,8 @@ return [
         'step_skipped_buff' => 'Завдання ":name": крок :step (:type) пропущено (баф :buff відсутній у зоряному меню).',
         'step_skipped_reason' => 'Завдання ":name": крок :step (:type) пропущено (:reason).',
         'stopped_by_user' => 'Завдання #:id зупинено користувачем на кроці :step з :total.',
+        'stale_recovered' => 'Завдання ":name": запуск перестав відповідати (немає heartbeat) і відновлений у статус ":status".',
+        'missed_slot' => 'Завдання ":name": слот :slot пропущено (планувальник не працював). Наступний запуск: :next.',
         'single_action_completed' => 'Завдання ":name": окрема дія :step (:type) виконана успішно.',
         'single_action_skipped' => 'Завдання ":name": окрема дія :step (:type) пропущена (:reason).',
         'single_action_failed' => 'Завдання ":name": окрема дія :step (:type) не виконана: :error',

@@ -33,11 +33,25 @@
             </div>
 
             <form @submit.prevent="scheduleTask">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4 mb-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4 mb-4">
                     <!-- Название серии -->
                     <div>
                         <label for="task-series-name" class="block text-xs font-medium text-white/40 mb-1.5 sm:mb-2 uppercase tracking-wider">{{ t('tasks.series_name') }}</label>
                         <input id="task-series-name" type="text" v-model="taskName" :placeholder="t('tasks.series_name_placeholder')" :aria-label="t('tasks.series_name')" class="glass-input w-full text-left py-2 sm:py-2.5 text-xs sm:text-sm">
+                    </div>
+
+                    <!-- Группа задач -->
+                    <div>
+                        <div class="flex items-center justify-between mb-1.5 sm:mb-2">
+                            <label for="task-group-name" class="block text-xs font-medium text-white/40 uppercase tracking-wider">{{ t('tasks.group_name') }}</label>
+                            <button v-if="selectedAccountId" type="button" @click="openCreateGroupModal(selectedAccountId)" class="text-[10px] text-emerald-400 hover:text-emerald-300 transition-colors font-medium">
+                                + {{ t('tasks.create_group') }}
+                            </button>
+                        </div>
+                        <select id="task-group-name" v-model="taskGroupName" class="glass-select w-full text-left py-2 sm:py-2.5 text-xs sm:text-sm">
+                            <option value="">{{ t('tasks.no_group') }}</option>
+                            <option v-for="group in taskGroupOptions" :key="group.name" :value="group.name">{{ group.name }}</option>
+                        </select>
                     </div>
 
                     <!-- Выбор аккаунта -->
@@ -98,12 +112,27 @@
                             </svg>
                             {{ t('tasks.sequence_builder') }}
                         </h3>
-                        <button v-if="sequenceActions.length > 0" type="button" @click="clearSequence" class="text-xs text-red-400/70 hover:text-red-400 transition-colors flex items-center gap-1 font-medium">
-                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                            </svg>
-                            {{ t('tasks.clear_series') }}
-                        </button>
+                        <div class="flex items-center gap-3">
+                            <button v-if="sequenceActions.length > 1"
+                                    type="button"
+                                    @click="removeDuplicateActions"
+                                    class="text-xs text-amber-400/80 hover:text-amber-300 transition-colors flex items-center gap-1 font-medium"
+                                    :title="t('tasks.remove_duplicates')">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" />
+                                </svg>
+                                {{ t('tasks.remove_duplicates') }}
+                            </button>
+                            <button v-if="sequenceActions.length > 0"
+                                    type="button"
+                                    @click="clearSequence"
+                                    class="text-xs text-red-400/70 hover:text-red-400 transition-colors flex items-center gap-1 font-medium">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                </svg>
+                                {{ t('tasks.clear_series') }}
+                            </button>
+                        </div>
                     </div>
 
                     <div v-if="sequenceActions.length > 0" class="space-y-2 mb-4 max-h-72 sm:max-h-60 overflow-y-auto pr-1 sm:pr-2">
@@ -317,7 +346,16 @@
 
                                         <!-- 2. ВЫБОР ДРУГА (если выбрана Зона друга) -->
                                         <div v-if="stepActionType === 'apply_buff' && stepTargetScope === 'friend'" class="mb-3">
-                                            <label class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">{{ t('tasks.friend') }}</label>
+                                            <div class="flex items-center justify-between mb-1.5">
+                                                <label class="block text-[10px] font-medium text-white/40 uppercase">{{ t('tasks.friend') }}</label>
+                                                <button v-if="selectedFriend" type="button" @click="fetchFriendZoneBuildings(true)" :disabled="loadingFriendZone"
+                                                        class="text-[10px] text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-1 disabled:opacity-50">
+                                                    <svg class="w-3 h-3" :class="{ 'animate-spin': loadingFriendZone }" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                                                    </svg>
+                                                    <span>{{ t('tasks.refresh_friend_zone') }}</span>
+                                                </button>
+                                            </div>
                                             <div class="relative">
                                                 <button type="button" @click.stop="activeDropdown = activeDropdown === 'friendList' ? null : 'friendList'"
                                                         class="glass-select w-full flex items-center justify-between text-left text-xs py-2 bg-dark-900/40 transition-all duration-300"
@@ -404,6 +442,9 @@
                                                     <span class="flex items-center gap-2 truncate">
                                                         <span>👤 {{ t('tasks.modal.select_friend_building') }}</span>
                                                         <span v-if="selectedBuildings.filter(b => b.scope === 'friend').length > 0" class="badge badge-emerald text-[10px]">{{ selectedBuildings.filter(b => b.scope === 'friend').length }}</span>
+                                                        <span v-else-if="selectedFriend && friendBuildings.length > 0" class="text-[10px] text-white/40 font-mono">({{ friendBuildings.length }} {{ t('tasks.buildings_short') }})</span>
+                                                        <span v-else-if="selectedFriend && loadingFriendZone" class="text-[10px] text-amber-400">({{ t('tasks.loading_zone') }}...)</span>
+                                                        <span v-else-if="selectedFriend && friendZoneError" class="text-[10px] text-red-400">({{ t('tasks.friend_zone_error') }})</span>
                                                     </span>
                                                     <svg class="w-3.5 h-3.5 text-white/30 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
@@ -743,21 +784,76 @@
                       v-model:searchQuery="taskSearchQuery"
                       v-model:accountFilter="taskAccountFilter"
                       v-model:statusFilter="taskStatusFilter">
-                <div v-for="(groupTasks, accountName) in groupedTasks" :key="accountName" class="glass-card overflow-hidden">
-                    <div class="px-3.5 sm:px-5 py-2.5 sm:py-3 border-b border-white/5 bg-white/[0.02]">
-                        <h3 class="font-medium text-white/60 flex items-center gap-2 text-xs sm:text-sm">
+                <div v-for="(accountGroup, accountName) in groupedTasks" :key="accountName" class="glass-card overflow-hidden">
+                    <div class="px-3.5 sm:px-5 py-2.5 sm:py-3 border-b border-white/5 bg-white/[0.02] flex items-center justify-between gap-2">
+                        <h3 class="font-medium text-white/60 flex items-center gap-2 text-xs sm:text-sm truncate">
                             <svg class="w-4 h-4 text-emerald-400/60 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                             </svg>
                             <span class="truncate">{{ accountName }}</span>
-                            <span class="badge badge-neutral text-[10px] flex-shrink-0">{{ groupTasks.length }} {{ t('tasks.tasks_word') }}</span>
+                            <span class="badge badge-neutral text-[10px] flex-shrink-0">{{ accountGroup.taskCount }} {{ t('tasks.tasks_word') }}</span>
                         </h3>
+                        <button v-if="accountGroup.accountId"
+                                type="button"
+                                @click="openCreateGroupModal(accountGroup.accountId)"
+                                class="btn-secondary btn-sm text-[11px] py-1 px-2.5 flex items-center gap-1.5 flex-shrink-0">
+                            <span>+</span>
+                            <span>{{ t('tasks.create_group') }}</span>
+                        </button>
                     </div>
 
-                    <div class="p-2.5 sm:p-5 space-y-3 sm:space-y-4"
-                         @dragover.prevent
-                         @drop="onDropGroup($event, accountName, groupTasks)">
-                        <TaskCard v-for="task in groupTasks" :key="task.id"
+                    <template v-for="taskGroup in accountGroup.groups" :key="taskGroup.key">
+                        <div class="border-b border-white/5 last:border-b-0 transition-colors"
+                             :class="{
+                                 'bg-emerald-500/10 border-emerald-500/30': isGroupDropTarget(taskGroup.key, accountName),
+                                 'opacity-50': Boolean(draggedGroupId && taskGroup.id && draggedGroupId === taskGroup.id)
+                             }">
+                            <div class="w-full px-3.5 sm:px-5 py-2.5 flex items-center justify-between gap-2 hover:bg-white/[0.03] transition-colors select-none"
+                                 :draggable="taskGroup.key !== '__ungrouped__'"
+                                 @dragstart="onGroupDragStart($event, taskGroup, accountName)"
+                                 @dragover="onGroupHeaderDragOver($event, taskGroup, accountName)"
+                                 @dragleave="onGroupHeaderDragLeave($event, taskGroup)"
+                                 @drop="onGroupHeaderDrop($event, taskGroup, accountName)"
+                                 @dragend="onGroupDragEnd">
+
+                                <div class="flex items-center gap-2 min-w-0 flex-1 cursor-pointer"
+                                     @click="toggleTaskGroup(accountName, taskGroup.key)">
+                                    <span v-if="taskGroup.key !== '__ungrouped__'"
+                                          class="cursor-grab active:cursor-grabbing text-white/30 hover:text-white/70 p-0.5 flex-shrink-0"
+                                          :title="t('tasks.move_up')">
+                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                                        </svg>
+                                    </span>
+                                    <svg class="w-4 h-4 text-white/40 transition-transform flex-shrink-0"
+                                         :class="{ 'rotate-180': !isTaskGroupCollapsed(accountName, taskGroup.key) }"
+                                         fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                    </svg>
+                                    <span class="text-sm font-medium text-white/90 truncate">{{ taskGroup.name || t('tasks.ungrouped') }}</span>
+                                    <span class="badge badge-neutral text-[10px]">{{ taskGroup.tasks.length }} {{ t('tasks.tasks_word') }}</span>
+                                </div>
+
+                                <div v-if="taskGroup.key !== '__ungrouped__'" class="flex items-center gap-1 flex-shrink-0" @click.stop>
+                                    <button type="button" @click="openRenameGroupModal(taskGroup)" class="p-1 text-white/40 hover:text-white transition-colors rounded" :title="t('tasks.rename_group')">
+                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                                        </svg>
+                                    </button>
+                                    <button type="button" @click="handleDeleteGroup(taskGroup)" class="p-1 text-white/40 hover:text-red-400 transition-colors rounded" :title="t('tasks.delete_group')">
+                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div v-show="!isTaskGroupCollapsed(accountName, taskGroup.key)"
+                                 class="p-2.5 sm:p-5 space-y-3 sm:space-y-4"
+                                 @dragover.prevent="onGroupDropzoneDragOver($event, taskGroup, accountName)"
+                                 @dragleave="onGroupDropzoneDragLeave($event, taskGroup)"
+                                 @drop="onDropGroup($event, accountName, taskGroup.tasks, taskGroup.key)">
+                                <TaskCard v-for="task in taskGroup.tasks" :key="task.id"
                                   :task="task"
                                   :isDragging="draggedTaskId === task.id"
                                   :isDragOver="dropTargetTaskId === task.id"
@@ -791,11 +887,18 @@
                                   @edit="editTask"
                                   @duplicate="handleDuplicateTask"
                                   @delete="deleteTask"
-                                  @dragstart="onTaskDragStart($event, task, accountName)"
-                                  @dragover="onTaskDragOver($event, task, accountName)"
+                                  @dragstart="onTaskDragStart($event, task, accountName, taskGroup.key)"
+                                  @dragover="onTaskDragOver($event, task, accountName, taskGroup.key)"
                                   @dragleave="onTaskDragLeave($event, task)"
                                   @dragend="onTaskDragEnd" />
-                    </div>
+
+                                <div v-if="taskGroup.tasks.length === 0"
+                                     class="border-2 border-dashed border-white/10 rounded-xl p-6 text-center text-white/30 text-xs transition-colors hover:border-emerald-500/40 hover:bg-emerald-500/5">
+                                    {{ t('tasks.empty_group_dropzone') }}
+                                </div>
+                            </div>
+                        </div>
+                    </template>
                 </div>
             </TaskList>
         </div>
@@ -813,6 +916,7 @@
                         :searchedFriendBuildings="searchedFriendBuildings"
                         :selectedFriend="selectedFriend"
                         :loadingFriendZone="loadingFriendZone"
+                        :friendZoneError="friendZoneError"
                         :zone="zone"
                         :isSelectedBuilding="isSelectedBuilding"
                         :getBuildingIcon="getBuildingIcon"
@@ -821,7 +925,8 @@
                         @close="closeBuildingModal"
                         @select-all="selectAllFilteredBuildings"
                         @clear="clearSelectedBuildings"
-                        @toggle-building="toggleBuildingSelection" />
+                        @toggle-building="toggleBuildingSelection"
+                        @refresh-friend-zone="() => fetchFriendZoneBuildings(true)" />
 
         <SpecialistPicker :showModal="showSpecialistModal"
                           v-model:specialistSearch="specialistSearch"
@@ -896,6 +1001,47 @@
                         @select-producer="selectProducer"
                         @select-recipe="selectRecipe"
                         @clear-producer="clearSelectedProducer" />
+
+        <!-- МОДАЛЬНОЕ ОКНО СОЗДАНИЯ / ПЕРЕИМЕНОВАНИЯ ГРУППЫ -->
+        <div v-if="showGroupModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" @click.self="closeGroupModal">
+            <div class="glass-card w-full max-w-md p-5 sm:p-6 space-y-4 border border-white/10 shadow-2xl rounded-2xl bg-dark-900/95">
+                <div class="flex items-center justify-between pb-3 border-b border-white/10">
+                    <h3 class="text-sm sm:text-base font-semibold text-white">
+                        {{ groupModalMode === 'create' ? t('tasks.create_group') : t('tasks.rename_group') }}
+                    </h3>
+                    <button type="button" @click="closeGroupModal" class="text-white/40 hover:text-white transition-colors">
+                        ✕
+                    </button>
+                </div>
+
+                <form @submit.prevent="submitGroupModal" class="space-y-4">
+                    <div v-if="groupModalMode === 'create' && accounts.length > 1 && !groupFormAccountId">
+                        <label class="block text-xs font-medium text-white/40 mb-1.5 uppercase">{{ t('tasks.game_account') }}</label>
+                        <select v-model="groupFormAccountId" class="glass-select w-full text-xs sm:text-sm py-2" required>
+                            <option v-for="acc in accounts" :key="acc.id" :value="acc.id">
+                                {{ acc.nickname || acc.username }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-white/40 mb-1.5 uppercase">{{ t('tasks.new_group_name') }}</label>
+                        <input type="text" v-model="groupFormName" maxlength="120" required autofocus
+                               :placeholder="t('tasks.group_name_placeholder')"
+                               class="glass-input w-full text-xs sm:text-sm py-2 px-3">
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2 pt-2 border-t border-white/10">
+                        <button type="button" @click="closeGroupModal" class="btn-secondary text-xs px-4 py-2">
+                            {{ t('common.cancel') || 'Cancel' }}
+                        </button>
+                        <button type="submit" :disabled="savingGroup || !groupFormName.trim()" class="btn-primary text-xs px-4 py-2">
+                            {{ savingGroup ? (t('common.saving') || 'Saving...') : (t('common.save') || 'Save') }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -909,6 +1055,7 @@ import { t, gameAny, gameAnyLookup, intlLocale } from '../lang';
 import { humanizeGameId, resourceName, buildingName, isBuffableBuilding, getBuildingCategory } from '../lang/gameNames';
 import { canBuffTarget, isBuildingBuff, isFriendZoneBuff, getBuffDurations, formatBuffDuration } from '../lang/buffTargets';
 import { getGameImageUrl, handleGameImageError } from '../services/gameImageService';
+import { deduplicateSequenceActions } from '../services/taskDeduplication';
 
 import Spinner from '../components/Spinner.vue';
 import SchedulePicker from '../components/tasks/SchedulePicker.vue';
@@ -922,6 +1069,7 @@ import TaskCard from '../components/tasks/TaskCard.vue';
 import TaskList from '../components/tasks/TaskList.vue';
         const tasks = ref([]);
         const accounts = ref([]);
+        const taskGroups = ref([]);
         const loadingPlanner = ref(true);
         const scheduling = ref(false);
         const executingTasks = ref({});
@@ -934,9 +1082,99 @@ import TaskList from '../components/tasks/TaskList.vue';
 
         const selectedAccountId = ref('');
         const taskName = ref('');
+        const taskGroupName = ref('');
         const activeDropdown = ref(null);
         const taskType = ref('sequence');
         const runAtTime = ref('');
+
+        // Task Group Modal State
+        const showGroupModal = ref(false);
+        const groupModalMode = ref('create'); // 'create' | 'rename'
+        const groupFormAccountId = ref('');
+        const groupFormName = ref('');
+        const groupFormTargetId = ref(null);
+        const savingGroup = ref(false);
+
+        const openCreateGroupModal = (accountId = null) => {
+            groupModalMode.value = 'create';
+            groupFormAccountId.value = accountId || selectedAccountId.value || (accounts.value[0]?.id ?? '');
+            groupFormName.value = '';
+            groupFormTargetId.value = null;
+            showGroupModal.value = true;
+        };
+
+        const openRenameGroupModal = (taskGroup) => {
+            groupModalMode.value = 'rename';
+            groupFormAccountId.value = taskGroup.accountId || '';
+            groupFormName.value = taskGroup.name;
+            groupFormTargetId.value = taskGroup.id;
+            showGroupModal.value = true;
+        };
+
+        const closeGroupModal = () => {
+            showGroupModal.value = false;
+            groupFormName.value = '';
+            groupFormTargetId.value = null;
+            savingGroup.value = false;
+        };
+
+        const submitGroupModal = async () => {
+            const name = groupFormName.value.trim();
+            if (!name) return;
+
+            savingGroup.value = true;
+            try {
+                if (groupModalMode.value === 'create') {
+                    const accId = Number(groupFormAccountId.value);
+                    const res = await tasksApi.createTaskGroup({ account_id: accId, name });
+                    const created = res.group || res;
+                    taskGroups.value.push(created);
+                    showToast(t('tasks.toast.group_created'));
+                } else {
+                    const gId = groupFormTargetId.value;
+                    const res = await tasksApi.updateTaskGroup(gId, { name });
+                    const updated = res.group || res;
+                    const idx = taskGroups.value.findIndex(g => g.id === gId);
+                    if (idx !== -1) {
+                        const oldName = taskGroups.value[idx].name;
+                        taskGroups.value[idx] = updated;
+                        // Update local tasks with oldName to newName
+                        tasks.value.forEach(t => {
+                            if (t.group_name === oldName) {
+                                t.group_name = name;
+                            }
+                        });
+                    }
+                    showToast(t('tasks.toast.group_updated'));
+                }
+                closeGroupModal();
+            } catch (err) {
+                const msg = err.response?.data?.message || err.message;
+                showToast(msg, 'error');
+            } finally {
+                savingGroup.value = false;
+            }
+        };
+
+        const handleDeleteGroup = async (taskGroup) => {
+            if (!taskGroup.id) return;
+            const confirmMsg = t('tasks.delete_group_confirm', { name: taskGroup.name });
+            if (!window.confirm(confirmMsg)) return;
+
+            try {
+                await tasksApi.deleteTaskGroup(taskGroup.id);
+                taskGroups.value = taskGroups.value.filter(g => g.id !== taskGroup.id);
+                // Unlink tasks in memory
+                tasks.value.forEach(t => {
+                    if (t.group_name === taskGroup.name) {
+                        t.group_name = null;
+                    }
+                });
+                showToast(t('tasks.toast.group_deleted'));
+            } catch (err) {
+                showToast(err.response?.data?.message || err.message, 'error');
+            }
+        };
 
         // New scheduling fields
         const scheduleType = ref('daily');
@@ -957,6 +1195,28 @@ import TaskList from '../components/tasks/TaskList.vue';
             const acc = selectedAccount.value;
             if (!acc) return t('tasks.select_account');
             return `${acc.nickname || acc.username} (${(acc.region || '').toUpperCase()})`;
+        });
+
+        const taskGroupOptions = computed(() => {
+            const accountId = Number(selectedAccountId.value);
+            if (!accountId) return [];
+
+            const list = taskGroups.value
+                .filter(g => Number(g.account_id) === accountId)
+                .map(g => ({ id: g.id, name: g.name }));
+
+            const names = new Set(list.map(g => g.name));
+            tasks.value
+                .filter(task => Number(task.account_id) === accountId && task.group_name)
+                .forEach(task => {
+                    const name = String(task.group_name).trim();
+                    if (name && !names.has(name)) {
+                        names.add(name);
+                        list.push({ id: null, name });
+                    }
+                });
+
+            return list.sort((a, b) => a.name.localeCompare(b.name));
         });
 
         const stepActionTypeLabel = computed(() => {
@@ -1390,6 +1650,8 @@ import TaskList from '../components/tasks/TaskList.vue';
                 if (friendZonesCache.value[cacheKey]) {
                     friendBuildings.value = friendZonesCache.value[cacheKey];
                     friendZoneError.value = false;
+                } else {
+                    friendBuildings.value = [];
                 }
                 fetchFriendZoneBuildings();
             } else {
@@ -1397,27 +1659,37 @@ import TaskList from '../components/tasks/TaskList.vue';
             }
         };
 
-        const fetchFriendZoneBuildings = async () => {
+        const fetchFriendZoneBuildings = async (force = false) => {
             if (!selectedAccountId.value || !selectedFriend.value) return;
             const friendId = selectedFriend.value.id;
             const cacheKey = `${selectedAccountId.value}:${friendId}`;
 
-            if (!friendZonesCache.value[cacheKey] || friendZonesCache.value[cacheKey].length === 0) {
+            if (force) {
+                delete friendZonesCache.value[cacheKey];
+            }
+
+            if (force || !friendZonesCache.value[cacheKey] || friendZonesCache.value[cacheKey].length === 0) {
                 loadingFriendZone.value = true;
             }
             friendZoneError.value = false;
             try {
-                const res = await axios.get(`/api/accounts/${selectedAccountId.value}/friends/${friendId}/zone`);
+                const url = `/api/accounts/${selectedAccountId.value}/friends/${friendId}/zone` + (force ? '?refresh=1' : '');
+                const res = await axios.get(url);
                 if (res.data.success && Array.isArray(res.data.buildings)) {
                     friendBuildings.value = res.data.buildings;
                     friendZonesCache.value[cacheKey] = res.data.buildings;
+                    if (force) {
+                        showToast(t('tasks.toast.friend_zone_refreshed'), 'success');
+                    }
                 } else if (!friendZonesCache.value[cacheKey]) {
                     friendZoneError.value = true;
                 }
             } catch (e) {
-                if (!friendZonesCache.value[cacheKey]) {
+                if (!friendZonesCache.value[cacheKey] || force) {
                     friendZoneError.value = true;
                 }
+                const msg = e.response?.data?.message || t('tasks.toast.friend_zone_error');
+                showToast(msg, 'error');
             } finally {
                 loadingFriendZone.value = false;
             }
@@ -1516,6 +1788,7 @@ import TaskList from '../components/tasks/TaskList.vue';
                 const res = await axios.get('/api/tasks');
                 tasks.value = res.data.data || res.data.tasks || [];
                 accounts.value = res.data.accounts || [];
+                taskGroups.value = res.data.groups || [];
 
                 const distinctAccountIds = [...new Set(tasks.value.map(t => Number(t.account_id)).filter(Boolean))];
                 distinctAccountIds.forEach(id => {
@@ -1857,6 +2130,17 @@ import TaskList from '../components/tasks/TaskList.vue';
             }
         };
 
+        const removeDuplicateActions = () => {
+            if (sequenceActions.value.length <= 1) return;
+            const { uniqueActions, removedCount } = deduplicateSequenceActions(sequenceActions.value);
+            if (removedCount === 0) {
+                showToast(t('tasks.toast.no_duplicates_found'), 'info');
+                return;
+            }
+            sequenceActions.value = uniqueActions;
+            showToast(t('tasks.toast.duplicates_removed', { count: removedCount }), 'success');
+        };
+
         const removeAction = (idx) => {
             sequenceActions.value.splice(idx, 1);
             showToast(t('tasks.toast.action_removed'));
@@ -2021,6 +2305,8 @@ import TaskList from '../components/tasks/TaskList.vue';
         // Central game-catalog lookup with legacy prettifier fallback.
         const resourceDisplayName = resourceName;
 
+        const starBuffNameCache = new Map();
+
         const getStarBuffName = (b) => {
             if (!b) return t('tasks.unknown_buff');
             const name = typeof b === 'string'
@@ -2028,28 +2314,33 @@ import TaskList from '../components/tasks/TaskList.vue';
                 : (b.buffName_string || b.buff_raw_name || b.name || b.buff_name);
             if (!name) return t('tasks.unknown_buff');
 
+            const resName = typeof b === 'object' ? (b.resourceName_string || b.buff_resource_name || '') : '';
+            const cacheKey = `${name}:${resName}`;
+            if (starBuffNameCache.has(cacheKey)) {
+                return starBuffNameCache.get(cacheKey);
+            }
+
+            let result;
             const template = gameAnyLookup(name);
             if (template) {
                 let tpl = template;
                 if (tpl.includes('{0}')) {
-                    const resName = typeof b === 'object' ? (b.resourceName_string || b.buff_resource_name || '') : '';
                     tpl = tpl.replace('{0}', resourceDisplayName(resName));
                 }
                 tpl = tpl.replace(/\{1,\w+\}/g, '').replace(/[:\s]+$/, '').replace(/\s+/g, ' ').trim();
-                return tpl;
+                result = tpl;
+            } else if (name === 'AddResource') {
+                result = `${t('tasks.buff_add_resource')}: ${resourceDisplayName(resName)}`;
+            } else if (name === 'BuildBuilding') {
+                result = `${t('tasks.buff_build_license')}: ${resourceDisplayName(resName)}`;
+            } else if (name === 'Adventure') {
+                result = `${t('tasks.buff_adventure')}: ${resourceDisplayName(resName)}`;
+            } else {
+                result = humanizeGameId(name);
             }
 
-            if (name === 'AddResource') {
-                return `${t('tasks.buff_add_resource')}: ${resourceDisplayName(typeof b === 'object' ? (b.resourceName_string || b.buff_resource_name) : '')}`;
-            }
-            if (name === 'BuildBuilding') {
-                return `${t('tasks.buff_build_license')}: ${resourceDisplayName(typeof b === 'object' ? (b.resourceName_string || b.buff_resource_name) : '')}`;
-            }
-            if (name === 'Adventure') {
-                return `${t('tasks.buff_adventure')}: ${resourceDisplayName(typeof b === 'object' ? (b.resourceName_string || b.buff_resource_name) : '')}`;
-            }
-
-            return humanizeGameId(name);
+            starBuffNameCache.set(cacheKey, result);
+            return result;
         };
 
         const getBuffImageName = (buff) => {
@@ -2100,6 +2391,10 @@ import TaskList from '../components/tasks/TaskList.vue';
             onlyAvailableBuildingFilter.value = false;
             buildingModalTab.value = tab;
             showBuildingModal.value = true;
+
+            if (tab === 'friend' && selectedFriend.value && friendBuildings.value.length === 0 && !loadingFriendZone.value) {
+                fetchFriendZoneBuildings();
+            }
 
             if (stepActionType.value === 'collect_building' && selectedAccountId.value) {
                 fetchClickableBuildings(selectedAccountId.value);
@@ -2247,6 +2542,9 @@ import TaskList from '../components/tasks/TaskList.vue';
                     // Match task name
                     if (task.name && task.name.toLowerCase().includes(q)) return true;
 
+                    // Match task group
+                    if (task.group_name && task.group_name.toLowerCase().includes(q)) return true;
+
                     // Match account nickname / username
                     const nickname = task.account?.nickname || '';
                     const username = task.account?.username || '';
@@ -2289,6 +2587,19 @@ import TaskList from '../components/tasks/TaskList.vue';
             });
         });
 
+        const collapsedTaskGroups = ref({});
+
+        const getTaskGroupKey = (accountName, groupKey) => `${accountName}::${groupKey}`;
+
+        const toggleTaskGroup = (accountName, groupKey) => {
+            const key = getTaskGroupKey(accountName, groupKey);
+            collapsedTaskGroups.value[key] = !collapsedTaskGroups.value[key];
+        };
+
+        const isTaskGroupCollapsed = (accountName, groupKey) => {
+            return Boolean(collapsedTaskGroups.value[getTaskGroupKey(accountName, groupKey)]);
+        };
+
         const groupedTasks = computed(() => {
             const groups = {};
             const sortedTasks = [...filteredTasks.value].sort((a, b) => {
@@ -2297,12 +2608,93 @@ import TaskList from '../components/tasks/TaskList.vue';
                 if (orderA !== orderB) return orderA - orderB;
                 return (Number(a.id) || 0) - (Number(b.id) || 0);
             });
-            sortedTasks.forEach(taskItem => {
-                const name = taskItem.account ? (taskItem.account.nickname || taskItem.account.username) : t('tasks.unknown_account');
-                if (!groups[name]) groups[name] = [];
-                groups[name].push(taskItem);
+
+            // 1. Initialize for all known accounts
+            accounts.value.forEach(acc => {
+                const accountName = acc.nickname || acc.username;
+                if (!groups[accountName]) {
+                    groups[accountName] = { accountId: acc.id, groups: [], taskCount: 0 };
+                }
+
+                // Pre-populate defined groups for this account, sorted by sort_order
+                const accTaskGroups = taskGroups.value
+                    .filter(g => Number(g.account_id) === Number(acc.id))
+                    .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+
+                accTaskGroups.forEach(g => {
+                    groups[accountName].groups.push({
+                        key: g.name,
+                        id: g.id,
+                        name: g.name,
+                        sort_order: g.sort_order ?? 0,
+                        accountId: acc.id,
+                        tasks: []
+                    });
+                });
             });
-            return groups;
+
+            // 2. Distribute sorted tasks
+            sortedTasks.forEach(taskItem => {
+                const accountName = taskItem.account ? (taskItem.account.nickname || taskItem.account.username) : t('tasks.unknown_account');
+                const groupName = taskItem.group_name ? String(taskItem.group_name).trim() : '';
+                const groupKey = groupName || '__ungrouped__';
+
+                if (!groups[accountName]) {
+                    groups[accountName] = { accountId: taskItem.account_id, groups: [], taskCount: 0 };
+                }
+
+                let taskGroup = groups[accountName].groups.find(group => group.key === groupKey);
+                if (!taskGroup) {
+                    taskGroup = {
+                        key: groupKey,
+                        id: null,
+                        name: groupName,
+                        sort_order: groupKey === '__ungrouped__' ? 999999 : 0,
+                        accountId: taskItem.account_id,
+                        tasks: []
+                    };
+                    groups[accountName].groups.push(taskGroup);
+                }
+
+                taskGroup.tasks.push(taskItem);
+                groups[accountName].taskCount += 1;
+            });
+
+            // 3. Sort groups within each account by sort_order
+            Object.values(groups).forEach(accGroup => {
+                accGroup.groups.sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+            });
+
+            // 4. If account filter is active, only show selected account
+            if (taskAccountFilter.value) {
+                const targetAcc = accounts.value.find(a => String(a.id) === String(taskAccountFilter.value));
+                const targetName = targetAcc ? (targetAcc.nickname || targetAcc.username) : '';
+                const filteredGroups = {};
+                if (groups[targetName] && groups[targetName].taskCount > 0) {
+                    if (taskSearchQuery.value || taskStatusFilter.value) {
+                        const activeGroups = groups[targetName].groups.filter(g => g.tasks.length > 0);
+                        filteredGroups[targetName] = { ...groups[targetName], groups: activeGroups };
+                    } else {
+                        filteredGroups[targetName] = groups[targetName];
+                    }
+                }
+                return filteredGroups;
+            }
+
+            // 5. Hide accounts that have no tasks at all (and hide empty groups when search/status filters are active)
+            const filteredGroups = {};
+            Object.entries(groups).forEach(([name, accGroup]) => {
+                if (accGroup.taskCount > 0) {
+                    if (taskSearchQuery.value || taskStatusFilter.value) {
+                        const activeGroups = accGroup.groups.filter(g => g.tasks.length > 0);
+                        filteredGroups[name] = { ...accGroup, groups: activeGroups };
+                    } else {
+                        filteredGroups[name] = accGroup;
+                    }
+                }
+            });
+
+            return filteredGroups;
         });
 
         const getSubTaskLabel = (
@@ -2428,6 +2820,7 @@ import TaskList from '../components/tasks/TaskList.vue';
         const cancelEdit = async () => {
             editingTaskId.value = null;
             taskName.value = '';
+            taskGroupName.value = '';
             sequenceActions.value = [];
             selectedBuildings.value = [];
             selectedSpecialists.value = [];
@@ -2460,6 +2853,7 @@ import TaskList from '../components/tasks/TaskList.vue';
         const editTask = async (task) => {
             editingTaskId.value = task.id;
             taskName.value = task.name || '';
+            taskGroupName.value = task.group_name || '';
             selectedAccountId.value = task.account_id;
             await onAccountChange();
 
@@ -2472,28 +2866,123 @@ import TaskList from '../components/tasks/TaskList.vue';
             if (task.task_type === 'sequence' && task.payload && task.payload.actions) {
                 const zoneData = await fetchAccountZone(task.account_id);
 
-                sequenceActions.value = task.payload.actions.map(act => {
-                    const meta = act.meta && typeof act.meta === 'object' ? { ...act.meta } : { building: null, buff: null, specialist: null };
-
-                    const isFriendBuff = act.task_type === 'apply_buff' && (act.payload?.target_scope === 'friend' || Boolean(act.payload?.target_player_id));
-                    if (['stop_production', 'start_production', 'collect_building', 'apply_buff'].includes(act.task_type) && !meta.building && !isFriendBuff) {
-                        if (zoneData.buildings) {
-                            meta.building = zoneData.buildings.find(b => b.buildingGrid == act.payload?.grid) || null;
+                const buildingsByGrid = new Map();
+                if (zoneData && Array.isArray(zoneData.buildings)) {
+                    for (const b of zoneData.buildings) {
+                        if (b.buildingGrid !== undefined && b.buildingGrid !== null) {
+                            buildingsByGrid.set(Number(b.buildingGrid), b);
                         }
                     }
-                    if (act.task_type === 'apply_buff' && !meta.buff) {
-                        const buffs = zoneData.availableBuffs || zoneData.buffs || [];
-                        meta.buff = buffs.find(b => (b.uniqueId1 || b.uniqueID1) == act.payload?.unique_id1 && (b.uniqueId2 || b.uniqueID2) == act.payload?.unique_id2) || null;
+                }
+
+                const specialistsById = new Map();
+                if (zoneData && Array.isArray(zoneData.specialists)) {
+                    for (const s of zoneData.specialists) {
+                        const sid = s.uniqueId1 ?? s.uniqueID1 ?? s.uniqueId;
+                        if (sid !== undefined && sid !== null) {
+                            specialistsById.set(Number(sid), s);
+                        }
                     }
+                }
+
+                const buffs = (zoneData && (zoneData.availableBuffs || zoneData.buffs)) || [];
+                const buffsByUniqueId = new Map();
+                const buffsByRawName = new Map();
+                const buffsByStarName = new Map();
+
+                for (const b of buffs) {
+                    const u1 = b.uniqueId1 ?? b.uniqueID1 ?? b.uniqueId;
+                    const u2 = b.uniqueId2 ?? b.uniqueID2 ?? 0;
+                    if (u1 !== undefined && u1 !== null) {
+                        buffsByUniqueId.set(`${u1}:${u2}`, b);
+                        if (!buffsByUniqueId.has(`${u1}`)) {
+                            buffsByUniqueId.set(`${u1}`, b);
+                        }
+                    }
+                    if (b.buffName_string && !buffsByRawName.has(b.buffName_string)) {
+                        buffsByRawName.set(b.buffName_string, b);
+                    }
+                    if (b.name_string && !buffsByRawName.has(b.name_string)) {
+                        buffsByRawName.set(b.name_string, b);
+                    }
+                    const starName = getStarBuffName(b);
+                    if (starName && !buffsByStarName.has(starName)) {
+                        buffsByStarName.set(starName, b);
+                    }
+                }
+
+                const friendZonesMap = new Map();
+                for (const act of task.payload.actions) {
+                    const friendId = act.payload?.target_player_id;
+                    if (friendId && !friendZonesMap.has(friendId)) {
+                        const cacheKey = `${task.account_id}:${friendId}`;
+                        const fz = friendZonesCache.value[cacheKey];
+                        if (Array.isArray(fz)) {
+                            const gridMap = new Map();
+                            for (const fb of fz) {
+                                if (fb.buildingGrid !== undefined && fb.buildingGrid !== null) {
+                                    gridMap.set(Number(fb.buildingGrid), fb);
+                                }
+                            }
+                            friendZonesMap.set(friendId, gridMap);
+                        }
+                    }
+                }
+
+                sequenceActions.value = task.payload.actions.map(act => {
+                    const meta = act.meta && typeof act.meta === 'object' ? { ...act.meta } : { building: null, buff: null, specialist: null };
+                    const currentPayload = { ...act.payload };
+
+                    const isFriendBuff = act.task_type === 'apply_buff' && (act.payload?.target_scope === 'friend' || Boolean(act.payload?.target_player_id));
+                    const grid = Number(act.payload?.grid);
+
+                    if (['stop_production', 'start_production', 'collect_building', 'apply_buff'].includes(act.task_type) && !meta.building && !isNaN(grid)) {
+                        if (!isFriendBuff) {
+                            meta.building = buildingsByGrid.get(grid) || null;
+                        } else {
+                            const friendId = act.payload?.target_player_id;
+                            if (friendId && friendZonesMap.has(friendId)) {
+                                meta.building = friendZonesMap.get(friendId)?.get(grid) || null;
+                            }
+                        }
+                    }
+
+                    if (act.task_type === 'apply_buff') {
+                        let foundBuff = null;
+                        const u1 = currentPayload.unique_id1;
+                        const u2 = currentPayload.unique_id2 ?? 0;
+                        if (u1 !== undefined && u1 !== null) {
+                            foundBuff = buffsByUniqueId.get(`${u1}:${u2}`) || buffsByUniqueId.get(`${u1}`);
+                        }
+
+                        if (!foundBuff && (currentPayload.buff_raw_name || currentPayload.buff_name)) {
+                            if (currentPayload.buff_raw_name) {
+                                foundBuff = buffsByRawName.get(currentPayload.buff_raw_name);
+                            }
+                            if (!foundBuff && currentPayload.buff_name) {
+                                foundBuff = buffsByRawName.get(currentPayload.buff_name) || buffsByStarName.get(currentPayload.buff_name);
+                            }
+                            if (foundBuff) {
+                                currentPayload.unique_id1 = foundBuff.uniqueId1 || foundBuff.uniqueID1 || 0;
+                                currentPayload.unique_id2 = foundBuff.uniqueId2 || foundBuff.uniqueID2 || 0;
+                            }
+                        }
+
+                        if (!meta.buff && foundBuff) {
+                            meta.buff = foundBuff;
+                        }
+                    }
+
                     if (['send_geologist', 'send_explorer'].includes(act.task_type) && !meta.specialist) {
-                        if (zoneData.specialists) {
-                            meta.specialist = zoneData.specialists.find(s => (s.uniqueId1 || s.uniqueId) == act.payload?.unique_id1) || null;
+                        const sid = Number(act.payload?.unique_id1);
+                        if (!isNaN(sid)) {
+                            meta.specialist = specialistsById.get(sid) || null;
                         }
                     }
 
                     return {
                         task_type: act.task_type,
-                        payload: { ...act.payload },
+                        payload: currentPayload,
                         delay_seconds: act.delay_seconds || 0,
                         meta
                     };
@@ -2521,6 +3010,7 @@ import TaskList from '../components/tasks/TaskList.vue';
             try {
                 const postData = {
                     name: taskName.value || null,
+                    group_name: taskGroupName.value.trim() || null,
                     account_id: selectedAccountId.value,
                     task_type: 'sequence',
                     payload: {
@@ -2616,18 +3106,137 @@ import TaskList from '../components/tasks/TaskList.vue';
             }
         };
 
+        // Group reordering state
+        const reorderingGroups = ref(false);
+        const draggedGroupId = ref(null);
+        const draggedGroupAccountName = ref(null);
+        const dropTargetGroupId = ref(null);
+
+        const onGroupDragStart = (e, taskGroup, accountName) => {
+            if (taskGroup.key === '__ungrouped__' || reorderingGroups.value) return;
+            draggedGroupId.value = taskGroup.id;
+            draggedGroupAccountName.value = accountName;
+            dropTargetGroupId.value = null;
+
+            if (e.dataTransfer) {
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', String(taskGroup.id));
+            }
+        };
+
+        const onGroupHeaderDragOver = (e, taskGroup, accountName) => {
+            if (!draggedGroupId.value || draggedGroupId.value === taskGroup.id) return;
+            if (draggedGroupAccountName.value !== accountName) return;
+            if (taskGroup.key === '__ungrouped__') return;
+
+            e.preventDefault();
+            if (e.dataTransfer) {
+                e.dataTransfer.dropEffect = 'move';
+            }
+            dropTargetGroupId.value = taskGroup.id;
+        };
+
+        const onGroupHeaderDragLeave = (e, taskGroup) => {
+            if (dropTargetGroupId.value === taskGroup.id) {
+                const related = e.relatedTarget;
+                if (!related || !e.currentTarget.contains(related)) {
+                    dropTargetGroupId.value = null;
+                }
+            }
+        };
+
+        const onGroupDragEnd = () => {
+            draggedGroupId.value = null;
+            draggedGroupAccountName.value = null;
+            dropTargetGroupId.value = null;
+        };
+
+        const onGroupHeaderDrop = async (e, targetGroup, accountName) => {
+            e.preventDefault();
+            const fromGroupId = draggedGroupId.value;
+            const toGroupId = targetGroup?.id;
+            const accName = draggedGroupAccountName.value;
+
+            onGroupDragEnd();
+
+            if (!fromGroupId || !toGroupId || fromGroupId === toGroupId || accName !== accountName) return;
+            if (targetGroup.key === '__ungrouped__' || reorderingGroups.value) return;
+
+            const targetAccountId = targetGroup.accountId;
+            const accountGroups = taskGroups.value.filter(g => Number(g.account_id) === Number(targetAccountId));
+            const fromIdx = accountGroups.findIndex(g => g.id === fromGroupId);
+            const toIdx = accountGroups.findIndex(g => g.id === toGroupId);
+            if (fromIdx === -1 || toIdx === -1) return;
+
+            // Optimistically reorder in taskGroups
+            const [movedGroup] = accountGroups.splice(fromIdx, 1);
+            accountGroups.splice(toIdx, 0, movedGroup);
+
+            accountGroups.forEach((g, idx) => {
+                g.sort_order = idx + 1;
+            });
+
+            const otherGroups = taskGroups.value.filter(g => Number(g.account_id) !== Number(targetAccountId));
+            taskGroups.value = [...otherGroups, ...accountGroups];
+
+            reorderingGroups.value = true;
+            try {
+                const groupIds = accountGroups.map(g => g.id);
+                await tasksApi.reorderTaskGroups(groupIds);
+                showToast(t('tasks.toast.order_updated'));
+            } catch (err) {
+                showToast(t('tasks.toast.reorder_failed'), 'error');
+                await loadPlanner();
+            } finally {
+                reorderingGroups.value = false;
+            }
+        };
+
+        // Task drag and drop state
         const reorderingTasks = ref(false);
         const draggedTaskId = ref(null);
         const draggedAccountName = ref(null);
+        const draggedGroupKey = ref(null);
         const dropTargetTaskId = ref(null);
         const dropPosition = ref(null); // 'top' | 'bottom'
+        const groupDropTargetKey = ref(null);
+        const groupDropTargetAccount = ref(null);
 
-        const onTaskDragStart = (e, task, accountName) => {
+        const isGroupDropTarget = (groupKey, accountName) => {
+            return Boolean(draggedTaskId.value && groupDropTargetKey.value === groupKey && groupDropTargetAccount.value === accountName);
+        };
+
+        const onGroupDropzoneDragOver = (e, taskGroup, accountName) => {
+            if (!draggedTaskId.value) return;
+            if (draggedAccountName.value !== accountName) return;
+
+            e.preventDefault();
+            if (e.dataTransfer) {
+                e.dataTransfer.dropEffect = 'move';
+            }
+            groupDropTargetKey.value = taskGroup.key;
+            groupDropTargetAccount.value = accountName;
+        };
+
+        const onGroupDropzoneDragLeave = (e, taskGroup) => {
+            if (groupDropTargetKey.value === taskGroup.key) {
+                const related = e.relatedTarget;
+                if (!related || !e.currentTarget.contains(related)) {
+                    groupDropTargetKey.value = null;
+                    groupDropTargetAccount.value = null;
+                }
+            }
+        };
+
+        const onTaskDragStart = (e, task, accountName, groupKey) => {
             if (reorderingTasks.value) return;
             draggedTaskId.value = task.id;
             draggedAccountName.value = accountName;
+            draggedGroupKey.value = groupKey;
             dropTargetTaskId.value = null;
             dropPosition.value = null;
+            groupDropTargetKey.value = groupKey;
+            groupDropTargetAccount.value = accountName;
 
             if (e.dataTransfer) {
                 e.dataTransfer.effectAllowed = 'move';
@@ -2635,7 +3244,7 @@ import TaskList from '../components/tasks/TaskList.vue';
             }
         };
 
-        const onTaskDragOver = (e, targetTask, accountName) => {
+        const onTaskDragOver = (e, targetTask, accountName, groupKey) => {
             if (!draggedTaskId.value || draggedTaskId.value === targetTask.id) return;
             if (draggedAccountName.value !== accountName) return;
 
@@ -2654,11 +3263,12 @@ import TaskList from '../components/tasks/TaskList.vue';
             }
 
             dropTargetTaskId.value = targetTask.id;
+            groupDropTargetKey.value = groupKey;
+            groupDropTargetAccount.value = accountName;
         };
 
         const onTaskDragLeave = (e, task) => {
             if (dropTargetTaskId.value === task.id) {
-                // If leaving the card to outside, clear
                 const related = e.relatedTarget;
                 if (!related || !e.currentTarget.contains(related)) {
                     dropTargetTaskId.value = null;
@@ -2670,68 +3280,131 @@ import TaskList from '../components/tasks/TaskList.vue';
         const onTaskDragEnd = () => {
             draggedTaskId.value = null;
             draggedAccountName.value = null;
+            draggedGroupKey.value = null;
             dropTargetTaskId.value = null;
             dropPosition.value = null;
+            groupDropTargetKey.value = null;
+            groupDropTargetAccount.value = null;
         };
 
-        const onDropGroup = async (e, accountName, groupTasks) => {
+        const onDropGroup = async (e, accountName, groupTasks, taskGroupKey) => {
             e.preventDefault();
+            if (!draggedTaskId.value || draggedAccountName.value !== accountName) return;
+            if (reorderingTasks.value) return;
 
             const fromId = draggedTaskId.value;
             const toId = dropTargetTaskId.value;
             const position = dropPosition.value;
+            const originalGroupKey = draggedGroupKey.value;
+            const targetGroupKey = taskGroupKey;
+            const targetGroupName = targetGroupKey === '__ungrouped__' ? null : targetGroupKey;
 
-            // Reset drag state
             onTaskDragEnd();
 
-            if (!fromId || !toId || fromId === toId) return;
-            if (reorderingTasks.value) return;
+            const movedTask = tasks.value.find(t => t.id === fromId);
+            if (!movedTask) return;
 
-            const fromIdx = groupTasks.findIndex(t => t.id === fromId);
-            const toIdx = groupTasks.findIndex(t => t.id === toId);
-            if (fromIdx === -1 || toIdx === -1) return;
+            const isGroupChange = originalGroupKey !== targetGroupKey;
 
-            // Reorder group items
-            const newGroupList = [...groupTasks];
-            const [movedItem] = newGroupList.splice(fromIdx, 1);
+            // If dropped onto self in the same group without position change
+            if (!isGroupChange && (!toId || fromId === toId)) return;
 
-            let insertIdx = newGroupList.findIndex(t => t.id === toId);
-            if (position === 'bottom') {
-                insertIdx += 1;
-            }
-            newGroupList.splice(insertIdx, 0, movedItem);
+            // Case 1: Reordering within the SAME group
+            if (!isGroupChange && toId && toId !== fromId) {
+                const fromIdx = groupTasks.findIndex(t => t.id === fromId);
+                const toIdx = groupTasks.findIndex(t => t.id === toId);
+                if (fromIdx === -1 || toIdx === -1) return;
 
-            // Optimistically update global tasks array
-            const groupTaskIds = new Set(newGroupList.map(t => t.id));
-            const reorderedGlobalTasks = [];
-            let groupIdx = 0;
+                const newGroupList = [...groupTasks];
+                const [movedItem] = newGroupList.splice(fromIdx, 1);
 
-            for (const t of tasks.value) {
-                if (groupTaskIds.has(t.id)) {
-                    reorderedGlobalTasks.push(newGroupList[groupIdx++]);
-                } else {
-                    reorderedGlobalTasks.push(t);
+                let insertIdx = newGroupList.findIndex(t => t.id === toId);
+                if (position === 'bottom') {
+                    insertIdx += 1;
                 }
+                newGroupList.splice(insertIdx, 0, movedItem);
+
+                const groupTaskIds = new Set(newGroupList.map(t => t.id));
+                const reorderedGlobalTasks = [];
+                let groupIdx = 0;
+
+                for (const t of tasks.value) {
+                    if (groupTaskIds.has(t.id)) {
+                        reorderedGlobalTasks.push(newGroupList[groupIdx++]);
+                    } else {
+                        reorderedGlobalTasks.push(t);
+                    }
+                }
+
+                tasks.value = reorderedGlobalTasks;
+                tasks.value.forEach((task, idx) => {
+                    task.sort_order = idx;
+                });
+
+                reorderingTasks.value = true;
+                try {
+                    const taskIds = tasks.value.map(t => t.id);
+                    await tasksApi.reorderTasks(taskIds);
+                    showToast(t('tasks.toast.order_updated'));
+                } catch (err) {
+                    showToast(t('tasks.toast.reorder_failed'), 'error');
+                    await loadPlanner();
+                } finally {
+                    reorderingTasks.value = false;
+                }
+                return;
             }
 
-            tasks.value = reorderedGlobalTasks;
+            // Case 2: Moving across groups (or adding to empty group / group dropzone)
+            if (isGroupChange) {
+                movedTask.group_name = targetGroupName;
 
-            // Update sort_order on each task so computed groupedTasks preserves the new order
-            tasks.value.forEach((task, idx) => {
-                task.sort_order = idx;
-            });
+                const oldGlobalIdx = tasks.value.findIndex(t => t.id === fromId);
+                if (oldGlobalIdx !== -1) {
+                    tasks.value.splice(oldGlobalIdx, 1);
+                }
 
-            // Persist order on backend
-            reorderingTasks.value = true;
-            try {
-                const taskIds = tasks.value.map(t => t.id);
-                await axios.post('/api/tasks/reorder', { task_ids: taskIds });
-                showToast(t('tasks.toast.order_updated'));
-            } catch (err) {
-                showToast(t('tasks.toast.reorder_failed'), 'error');
-                await loadPlanner();
-            } finally {
-                reorderingTasks.value = false;
+                if (toId && toId !== fromId) {
+                    let insertIdx = tasks.value.findIndex(t => t.id === toId);
+                    if (insertIdx !== -1) {
+                        if (position === 'bottom') {
+                            insertIdx += 1;
+                        }
+                        tasks.value.splice(insertIdx, 0, movedTask);
+                    } else {
+                        tasks.value.push(movedTask);
+                    }
+                } else {
+                    const lastGroupTask = groupTasks.length > 0 ? groupTasks[groupTasks.length - 1] : null;
+                    if (lastGroupTask) {
+                        const lastIdx = tasks.value.findIndex(t => t.id === lastGroupTask.id);
+                        tasks.value.splice(lastIdx + 1, 0, movedTask);
+                    } else {
+                        const accTaskIdx = tasks.value.findIndex(t => Number(t.account_id) === Number(movedTask.account_id));
+                        if (accTaskIdx !== -1) {
+                            tasks.value.splice(accTaskIdx, 0, movedTask);
+                        } else {
+                            tasks.value.push(movedTask);
+                        }
+                    }
+                }
+
+                tasks.value.forEach((task, idx) => {
+                    task.sort_order = idx;
+                });
+
+                reorderingTasks.value = true;
+                try {
+                    await tasksApi.updateTask(fromId, { group_name: targetGroupName });
+                    const taskIds = tasks.value.map(t => t.id);
+                    await tasksApi.reorderTasks(taskIds);
+                    showToast(t('tasks.toast.order_updated'));
+                } catch (err) {
+                    showToast(t('tasks.toast.reorder_failed'), 'error');
+                    await loadPlanner();
+                } finally {
+                    reorderingTasks.value = false;
+                }
             }
         };
 
@@ -3178,14 +3851,31 @@ import TaskList from '../components/tasks/TaskList.vue';
         };
 
         const getBuildingInfo = (taskObj, action) => {
+            if (action && typeof action === 'object' && action._bInfo) {
+                return action._bInfo;
+            }
+
             const grid = action?.payload?.grid || action?.meta?.building?.buildingGrid;
             let buildingObj = action?.meta?.building;
 
             if (!buildingObj && grid) {
                 const accId = Number(taskObj?.account_id || selectedAccountId.value);
-                const zd = accountZonesCache.value[accId];
-                if (zd && zd.buildings) {
-                    buildingObj = zd.buildings.find(b => Number(b.buildingGrid) === Number(grid));
+                const isFriend = action?.payload?.target_scope === 'friend' || Boolean(action?.payload?.target_player_id);
+                const friendId = action?.payload?.target_player_id;
+                if (isFriend && friendId) {
+                    const friendKey = `${accId}:${friendId}`;
+                    const fz = friendZonesCache.value[friendKey];
+                    if (Array.isArray(fz)) {
+                        buildingObj = fz.find(b => Number(b.buildingGrid) === Number(grid));
+                    }
+                } else {
+                    const zd = accountZonesCache.value[accId];
+                    if (zd && zd.buildings) {
+                        buildingObj = zd.buildings.find(b => Number(b.buildingGrid) === Number(grid));
+                    }
+                }
+                if (action?.meta && buildingObj) {
+                    action.meta.building = buildingObj;
                 }
             }
 
@@ -3211,26 +3901,38 @@ import TaskList from '../components/tasks/TaskList.vue';
                 icon = getBuildingIcon(action.payload.building_name);
             }
 
-            return {
+            const result = {
                 name: name || '',
                 grid: grid || null,
                 icon: icon,
                 level: buildingObj?.upgradeLevel || null,
                 raw: buildingObj || action?.meta?.building || null
             };
+            if (action && typeof action === 'object') {
+                action._bInfo = result;
+            }
+            return result;
         };
 
         const getBuffInfo = (taskObj, action) => {
+            if (action && typeof action === 'object' && action._buffInfo) {
+                return action._buffInfo;
+            }
+
             if (action?.task_type === 'produce_buff') {
                 const rName = action?.payload?.recipe_name || action?.meta?.recipe?.name;
                 const recipeTranslated = rName ? (resourceName(rName) || humanizeGameId(rName)) : t('tasks.action.produce_buff');
-                return {
+                const result = {
                     name: recipeTranslated,
                     icon: rName ? getBuffIcon({ buffName_string: rName }) : null,
                     amount: action?.payload?.amount || 1,
                     stacks: action?.payload?.stacks || 1,
                     raw: action?.meta?.recipe || null,
                 };
+                if (action && typeof action === 'object') {
+                    action._buffInfo = result;
+                }
+                return result;
             }
 
             let buffObj = action?.meta?.buff;
@@ -3241,6 +3943,9 @@ import TaskList from '../components/tasks/TaskList.vue';
                 if (zd) {
                     const buffs = zd.availableBuffs || zd.buffs || [];
                     buffObj = buffs.find(b => (b.uniqueId1 || b.uniqueID1 || b.uniqueId) == action.payload.unique_id1);
+                    if (action?.meta && buffObj) {
+                        action.meta.buff = buffObj;
+                    }
                 }
             }
 
@@ -3264,15 +3969,23 @@ import TaskList from '../components/tasks/TaskList.vue';
                 icon = getBuffIcon({ buffName_string: action.payload.buff_raw_name });
             }
 
-            return {
+            const result = {
                 name: name || t('tasks.buff'),
                 icon: icon,
                 amount: action?.payload?.amount || 1,
                 raw: buffObj || action?.meta?.buff || null
             };
+            if (action && typeof action === 'object') {
+                action._buffInfo = result;
+            }
+            return result;
         };
 
         const getSpecialistInfo = (taskObj, action) => {
+            if (action && typeof action === 'object' && action._specInfo) {
+                return action._specInfo;
+            }
+
             const u1 = action?.payload?.unique_id1;
             let specObj = action?.meta?.specialist;
 
@@ -3281,6 +3994,9 @@ import TaskList from '../components/tasks/TaskList.vue';
                 const zd = accountZonesCache.value[accId];
                 if (zd && zd.specialists) {
                     specObj = zd.specialists.find(s => (s.uniqueId1 || s.uniqueID1 || s.uniqueId) == u1);
+                    if (action?.meta && specObj) {
+                        action.meta.specialist = specObj;
+                    }
                 }
             }
 
@@ -3290,13 +4006,17 @@ import TaskList from '../components/tasks/TaskList.vue';
             const icon = type !== undefined ? getSpecialistIcon(type) : null;
             const subTaskLabel = action?.meta?.subTaskLabel || action?.payload?.sub_task_label || getSubTaskLabel(action?.task_type, action?.payload?.task_type, action?.payload?.sub_task_id);
 
-            return {
+            const result = {
                 name: name || typeName,
                 typeName: typeName,
                 icon: icon,
                 subTaskLabel: subTaskLabel,
                 raw: specObj || action?.meta?.specialist || null
             };
+            if (action && typeof action === 'object') {
+                action._specInfo = result;
+            }
+            return result;
         };
 
         const getBuildingDisplayName = (taskObj, action) => {

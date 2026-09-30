@@ -10,8 +10,10 @@ use App\Http\Requests\Tasks\StoreScheduledTaskRequest;
 use App\Http\Requests\Tasks\UpdateScheduledTaskRequest;
 use App\Http\Resources\AccountResource;
 use App\Http\Resources\ScheduledTaskResource;
+use App\Http\Resources\TaskGroupResource;
 use App\Models\ScheduledTask;
 use App\Services\Tasks\ScheduledTaskService;
+use App\Services\Tasks\TaskGroupService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
@@ -21,7 +23,10 @@ use Illuminate\Http\Response;
  */
 class ScheduledTaskController extends Controller
 {
-    public function __construct(private readonly ScheduledTaskService $tasks) {}
+    public function __construct(
+        private readonly ScheduledTaskService $tasks,
+        private readonly TaskGroupService $groups,
+    ) {}
 
     /**
      * Show the task planner view payload with paginated tasks.
@@ -33,6 +38,7 @@ class ScheduledTaskController extends Controller
 
         return ScheduledTaskResource::collection($tasks)->additional([
             'accounts' => AccountResource::collection($accounts),
+            'groups' => TaskGroupResource::collection($this->groups->all()),
             'meta' => [
                 'server_time' => now()->toIso8601String(),
             ],

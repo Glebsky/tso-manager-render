@@ -22,6 +22,7 @@ use App\Http\Controllers\Market\SyncLogController;
 use App\Http\Controllers\Market\VersionController;
 use App\Http\Controllers\ScheduledTaskController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\TaskGroupController;
 use App\Http\Middleware\HttpCacheHeaders;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -65,6 +66,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/tasks/{task}', [ScheduledTaskController::class, 'update'])->whereNumber('task');
     Route::post('/tasks/{task}/duplicate', [ScheduledTaskController::class, 'duplicate'])->whereNumber('task');
     Route::delete('/tasks/{task}', [ScheduledTaskController::class, 'destroy'])->whereNumber('task');
+
+    // Task groups
+    Route::get('/task-groups', [TaskGroupController::class, 'index']);
+    Route::post('/task-groups', [TaskGroupController::class, 'store']);
+    Route::put('/task-groups/{taskGroup}', [TaskGroupController::class, 'update'])->whereNumber('taskGroup');
+    Route::delete('/task-groups/{taskGroup}', [TaskGroupController::class, 'destroy'])->whereNumber('taskGroup');
+    Route::post('/task-groups/reorder', [TaskGroupController::class, 'reorder']);
 
     // Game lookups
     Route::get('/game/clickable-buildings', [ClickableBuildingController::class, 'index']);
@@ -114,7 +122,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // logs) intentionally stay uncached.
     Route::middleware(HttpCacheHeaders::class)->group(function () {
         Route::get('/market/goods', [CatalogController::class, 'goods']);
+        Route::get('/market/target-goods', [CatalogController::class, 'targetGoods']);
         Route::get('/market/targets', [CatalogController::class, 'targets']);
+        Route::get('/market/sources', [CatalogController::class, 'sources']);
         Route::get('/market/popular', PopularController::class);
         Route::get('/market/analytics', AnalyticsController::class);
         Route::get('/market/arbitrage', ArbitrageController::class);
@@ -138,7 +148,9 @@ Route::prefix('public/market')
         Route::middleware(HttpCacheHeaders::class)->group(function () {
             Route::get('/servers', PublicServerController::class);
             Route::get('/goods', [CatalogController::class, 'goods']);
+            Route::get('/target-goods', [CatalogController::class, 'targetGoods']);
             Route::get('/targets', [CatalogController::class, 'targets']);
+            Route::get('/sources', [CatalogController::class, 'sources']);
             Route::get('/popular', PopularController::class);
             Route::get('/analytics', AnalyticsController::class);
             Route::get('/arbitrage', ArbitrageController::class);

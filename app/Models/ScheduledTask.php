@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * @property int $id
  * @property string $name
+ * @property ?string $group_name
  * @property int $account_id
  * @property TaskType $task_type
  * @property ScheduleType $schedule_type
@@ -23,11 +24,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property ?Carbon $run_at_datetime
  * @property ?int $interval_hours
  * @property ?int $interval_minutes
+ * @property ?Carbon $next_run_at
  * @property ?array<string, mixed> $payload
  * @property bool $is_active
  * @property int $sort_order
  * @property TaskStatus $status
  * @property ?Carbon $queued_at
+ * @property ?Carbon $heartbeat_at
  * @property ?string $execution_token
  * @property int $completed_steps
  * @property ?Carbon $last_run_at
@@ -46,6 +49,7 @@ class ScheduledTask extends Model
 
     protected $fillable = [
         'name',
+        'group_name',
         'account_id',
         'task_type',
         'payload',
@@ -58,8 +62,10 @@ class ScheduledTask extends Model
         'run_at_datetime',
         'interval_hours',
         'interval_minutes',
+        'next_run_at',
         'status',
         'queued_at',
+        'heartbeat_at',
         'execution_token',
         'completed_steps',
     ];
@@ -70,7 +76,9 @@ class ScheduledTask extends Model
         'sort_order' => 'integer',
         'last_run_at' => 'datetime',
         'run_at_datetime' => 'datetime',
+        'next_run_at' => 'datetime',
         'queued_at' => 'datetime',
+        'heartbeat_at' => 'datetime',
         'interval_hours' => 'integer',
         'interval_minutes' => 'integer',
         'completed_steps' => 'integer',

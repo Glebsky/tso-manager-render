@@ -22,6 +22,7 @@ final class MarketCatalogTargetsRequest extends FormRequest
         return [
             'server_id' => ['nullable', 'string', 'max:50'],
             'item_id' => ['nullable', 'string', 'max:100'],
+            'target_item_id' => ['nullable', 'string', 'max:100'],
             'kind' => ['sometimes', 'string', 'in:all,resource,buff,adventure,building'],
         ];
     }
@@ -36,6 +37,11 @@ final class MarketCatalogTargetsRequest extends FormRequest
     public function itemId(): string
     {
         return (string) $this->input('item_id', '');
+    }
+
+    public function targetItemId(): string
+    {
+        return (string) $this->input('target_item_id', $this->input('item_id', ''));
     }
 
     public function kind(): ?MarketItemKind

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\Market;
 
+use App\Enums\MarketSyncStatus;
+use App\Enums\MarketVerificationStatus;
 use App\Exceptions\MarketOperationException;
 use App\Models\Account;
 use App\Models\MarketServerConnection;
@@ -63,7 +65,7 @@ final class MarketServerService
                 'custom_interval_minutes' => $this->settings->customIntervalMinutes(),
                 'cache_strategy' => (string) config('market.cache_strategy', 'bulk'),
             ],
-            'connection_status' => $servers->contains(fn ($server): bool => $server->sync_status === 'connected') ? 'Connected' : 'Disconnected',
+            'connection_status' => $servers->contains(fn ($server): bool => $server->sync_status === MarketSyncStatus::Connected->value) ? 'Connected' : 'Disconnected',
             'last_sync' => $lastSyncTime ? $lastSyncTime->toIso8601String() : 'Never',
         ];
     }
@@ -113,8 +115,8 @@ final class MarketServerService
             'locale' => $locale,
             'display_name' => $this->displayName($account->server_name, $serverId),
             'account_id' => $account->id,
-            'verification_status' => 'verified',
-            'sync_status' => 'connected',
+            'verification_status' => MarketVerificationStatus::Verified->value,
+            'sync_status' => MarketSyncStatus::Connected->value,
         ]);
 
         $this->invalidate($serverId);
@@ -148,8 +150,8 @@ final class MarketServerService
         if (! empty($server->account_id)) {
             $this->applyAccountVerification($server);
         } else {
-            $server->verification_status = 'unverified';
-            $server->sync_status = 'not_configured';
+            $server->verification_status = MarketVerificationStatus::Unverified->value;
+            $server->sync_status = MarketSyncStatus::NotConfigured->value;
         }
 
         $server->save();
@@ -176,14 +178,14 @@ final class MarketServerService
     {
         if (empty($server->account_id)) {
             $server->update([
-                'verification_status' => 'unverified',
+                'verification_status' => MarketVerificationStatus::Unverified->value,
                 'last_error' => __('ui.market.api.no_account_assigned'),
             ]);
 
             return [
                 'payload' => [
                     'success' => false,
-                    'status' => 'unverified',
+                    'status' => MarketVerificationStatus::Unverified->value,
                     'message' => __('ui.market.api.no_account_assigned'),
                     'server' => $server->load(self::ACCOUNT_COLUMNS),
                 ],
@@ -195,14 +197,14 @@ final class MarketServerService
 
         if (! $account) {
             $server->update([
-                'verification_status' => 'error',
+                'verification_status' => MarketVerificationStatus::Error->value,
                 'last_error' => __('ui.market.api.account_not_found'),
             ]);
 
             return [
                 'payload' => [
                     'success' => false,
-                    'status' => 'error',
+                    'status' => MarketVerificationStatus::Error->value,
                     'message' => __('ui.market.api.account_not_found'),
                     'server' => $server->load(self::ACCOUNT_COLUMNS),
                 ],
@@ -346,8 +348,8 @@ final class MarketServerService
         if ($verification['status'] === 'verified') {
             $server->last_error = null;
 
-            if (in_array($server->sync_status, ['error', 'not_configured'], true)) {
-                $server->sync_status = 'connected';
+            if (in_array($server->sync_status, [MarketSyncStatus::Error->value, MarketSyncStatus::NotConfigured->value], true)) {
+                $server->sync_status = MarketSyncStatus::Connected->value;
             }
         }
     }

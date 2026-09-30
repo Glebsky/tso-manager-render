@@ -38,9 +38,10 @@ return [
             'driver' => 'database',
             'table' => 'jobs',
             'queue' => 'default',
-            // Must exceed the longest job timeout (ExecuteScheduledTaskJob::$timeout = 120)
-            // to avoid the same job being handed to two workers.
-            'retry_after' => 180,
+            // Must exceed the longest job timeout (ExecuteScheduledTaskJob::$timeout = 150)
+            // plus a safety margin, otherwise the same job is handed to two workers.
+            // Enforced by QueueTimeoutInvariantTest.
+            'retry_after' => 200,
             'after_commit' => false,
         ],
 
@@ -68,7 +69,8 @@ return [
             'driver' => 'redis',
             'connection' => 'default',
             'queue' => env('REDIS_QUEUE', 'default'),
-            'retry_after' => 90,
+            // See the database connection: must exceed the longest job timeout + margin.
+            'retry_after' => 200,
             'block_for' => null,
             'after_commit' => false,
         ],

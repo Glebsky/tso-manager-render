@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Account\Sync;
 
 use App\Exceptions\AccountSyncException;
+use App\Exceptions\AuthChallengeException;
 use App\Exceptions\SessionExpiredException;
 use App\Models\Account;
 use App\Services\TsoAmfService;
@@ -18,6 +19,9 @@ use Illuminate\Support\Facades\Log;
  */
 readonly class AccountSyncFetcher
 {
+    /** At most one forced re-login per sync (FR-009): each login creates a new game session. */
+    private const int MAX_RELOGINS = 1;
+
     public function __construct(
         private TsoAuthService $authService,
         private TsoAmfService $amfService,
@@ -53,18 +57,8 @@ readonly class AccountSyncFetcher
                 $buildingCount = count($zoneData['buildings'] ?? []);
 
                 if ($errorCode === 1012) {
-                    if ($reloginCount < 2) {
-                        Log::info("[AccountSync] Zone locked/superseded (error 1012) for account #{$account->id}; re-authenticating to take over session (relogin #".($reloginCount + 1).')');
-                        try {
-                            $this->resetSessionState($account);
-                            $this->authService->ensureAuthenticated($account, force: true);
-                            $account->refresh();
-                        } catch (Exception $reloginEx) {
-                            Log::warning("[AccountSync] Background re-login for account #{$account->id} encountered: {$reloginEx->getMessage()}; proceeding to retry zone fetch");
-                            if ($this->authService->isCaptchaOr2faError($reloginEx->getMessage())) {
-                                throw $reloginEx;
-                            }
-                        }
+                    if ($reloginCount < self::MAX_RELOGINS) {
+                        $this->relogin($account, 'zone locked/superseded (error 1012)');
                         $reloginCount++;
                         sleep(3);
 
@@ -77,18 +71,8 @@ readonly class AccountSyncFetcher
                 }
 
                 if ($errorCode === 1005) {
-                    if ($reloginCount < 2) {
-                        Log::info("[AccountSync] Session expired (error {$errorCode}) for account #{$account->id}; re-authenticating (relogin #".($reloginCount + 1).')');
-                        try {
-                            $this->resetSessionState($account);
-                            $this->authService->ensureAuthenticated($account, force: true);
-                            $account->refresh();
-                        } catch (Exception $reloginEx) {
-                            Log::warning("[AccountSync] Background re-login for account #{$account->id} encountered: {$reloginEx->getMessage()}; proceeding to retry zone fetch");
-                            if ($this->authService->isCaptchaOr2faError($reloginEx->getMessage())) {
-                                throw $reloginEx;
-                            }
-                        }
+                    if ($reloginCount < self::MAX_RELOGINS) {
+                        $this->relogin($account, "session expired (error {$errorCode})");
                         $reloginCount++;
                         sleep(2);
 
@@ -110,21 +94,10 @@ readonly class AccountSyncFetcher
                     throw $e;
                 }
 
-                if ($e instanceof SessionExpiredException || stripos($e->getMessage(), 'session') !== false) {
-                    if ($reloginCount < 2) {
-                        Log::info("[AccountSync] Caught session error during fetch for account #{$account->id}: {$e->getMessage()}; resetting session and re-authenticating (relogin #".($reloginCount + 1).')');
-                        try {
-                            $this->resetSessionState($account);
-                            $this->authService->ensureAuthenticated($account, force: true);
-                            $account->refresh();
-                        } catch (Exception $reloginEx) {
-                            Log::warning("[AccountSync] Recovery re-login for account #{$account->id} encountered: {$reloginEx->getMessage()}");
-                            if ($this->authService->isCaptchaOr2faError($reloginEx->getMessage())) {
-                                throw $reloginEx;
-                            }
-                        }
-                        $reloginCount++;
-                    }
+                if (($e instanceof SessionExpiredException || stripos($e->getMessage(), 'session') !== false)
+                    && $reloginCount < self::MAX_RELOGINS) {
+                    $this->relogin($account, "session error during fetch: {$e->getMessage()}");
+                    $reloginCount++;
                 }
             }
 
@@ -158,6 +131,30 @@ readonly class AccountSyncFetcher
         $this->authService->resetSession($account);
         $this->amfService->invalidateSession($account->id);
         $this->amfService->resetClient($account->id);
+    }
+
+    /**
+     * The single forced re-login of a sync (FR-009). A failed re-login is
+     * logged and the zone fetch is retried anyway, except for CAPTCHA / 2FA,
+     * which no retry can fix.
+     *
+     * @throws Exception
+     */
+    private function relogin(Account $account, string $why): void
+    {
+        Log::info("[AccountSync] {$why} for account #{$account->id}; resetting session and re-authenticating");
+
+        try {
+            $this->resetSessionState($account);
+            $this->authService->ensureAuthenticated($account, force: true);
+            $account->refresh();
+        } catch (Exception $reloginEx) {
+            Log::warning("[AccountSync] Re-login for account #{$account->id} encountered: {$reloginEx->getMessage()}; proceeding to retry zone fetch");
+
+            if ($reloginEx instanceof AuthChallengeException || $this->authService->isCaptchaOr2faError($reloginEx->getMessage())) {
+                throw $reloginEx;
+            }
+        }
     }
 
     /**

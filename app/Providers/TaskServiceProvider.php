@@ -16,6 +16,8 @@ use App\Services\Game\Production\AmfProductionCommandGateway;
 use App\Services\Game\Production\ConfigProductionCatalog;
 use App\Services\Game\Production\ProductionCatalogInterface;
 use App\Services\Game\Production\ProductionCommandGatewayInterface;
+use App\Services\Game\Zone\VersionedZoneCacheInvalidator;
+use App\Services\Game\Zone\ZoneCacheInvalidator;
 use App\Services\Tasks\Handlers\ApplyBuffHandler;
 use App\Services\Tasks\Handlers\BuildMineHandler;
 use App\Services\Tasks\Handlers\CollectBuildingHandler;
@@ -61,6 +63,7 @@ final class TaskServiceProvider extends ServiceProvider
         $this->app->bind(\App\Services\Game\Production\ZoneSnapshotProviderInterface::class, \App\Services\Game\Production\AmfZoneSnapshotProvider::class);
         $this->app->bind(MineCommandGatewayInterface::class, AmfMineCommandGateway::class);
         $this->app->bind(ProductionCommandGatewayInterface::class, AmfProductionCommandGateway::class);
+        $this->app->bind(ZoneCacheInvalidator::class, VersionedZoneCacheInvalidator::class);
 
         $this->app->bind(TaskHandlerRegistry::class, static function ($app): TaskHandlerRegistry {
             return new TaskHandlerRegistry($app, [

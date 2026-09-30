@@ -141,7 +141,8 @@ Below is a detailed description of all configuration keys from `.env.example`, g
 ### 9. TSO Game Client & Scheduler (`config/game.php`)
 | Key | Default Value | Description |
 | :--- | :--- | :--- |
-| `TSO_SCHEDULER_MODE` | `queue` | Scheduler execution mode: `queue` (dispatch to `tso-tasks`/`tso-market` queues), `cron` (run via cron worker), or `sync` (synchronous execution). |
+| `TSO_SCHEDULER_MODE` | `queue` | Scheduler execution mode: `queue` (dispatch to the `tso-*` queues, a dedicated long-lived worker processes them), `cron` (dispatch and then drain the same queues with an inline worker on every tick — OSPanel / Windows Task Scheduler), or `sync` (synchronous execution). See [Deployment Modes](#deployment-modes). |
+| `TSO_WORKER_QUEUES` | `tso-tasks,tso-accounts,tso-market,default` | Queue list consumed by the Docker `worker` service. Must match `config('game.queues')` (enforced by `QueueTopologyTest`). |
 | `TSO_STALE_TASK_TIMEOUT` | `10` | Stale task timeout in minutes (automatically resets stuck `running` tasks). |
 | `TSO_SSL_VERIFY` | `true` | Verify SSL certificates when communicating with Ubisoft/TSO game servers. |
 | `TSO_HTTP_TIMEOUT` | `30` | HTTP request timeout for TSO game gateways (in seconds). |
@@ -225,7 +226,8 @@ The project extends the standard Laravel CLI with domain-specific commands:
   - Triggers synchronization for connected game market servers (`tso-market`).
   - Triggers periodic synchronization of zones and account data (`tso-accounts`).
   - Runs log cleanup according to the Log Retention Policy.
-  - With the `--work` flag, runs the built-in worker to isolate cron invocations.
+  - In `cron` mode (or with the explicit `--work` flag) runs the built-in worker
+    (`queue:work --stop-when-empty --max-time=50`) over all queues from `config('game.queues')`.
 
 * **`php artisan tso:sync-market [--sync] [--server=SERVER_ID]`**
   Executes market lot synchronization for configured connections with interval checks and concurrent execution prevention (atomic Redis/Cache locks).
@@ -241,24 +243,53 @@ The project extends the standard Laravel CLI with domain-specific commands:
 
 ---
 
-## Background Workers & Scheduler (Production)
+## Deployment Modes
 
-For reliable and uninterrupted automation in a production environment:
+Both modes are first-class (ADR-004, `docs/spec/scheduler-reliability/decisions.md`).
+The queue list is defined once in `config('game.queues')` (`tso-tasks`, `tso-accounts`, `tso-market`, `default`)
+and every worker consumes exactly that list.
 
-### 1. Dedicated Queues (Queue Worker)
-Background processing runs through dedicated queues `tso-tasks`, `tso-accounts`, `tso-market`, and the system `default` queue:
+| | Docker (`TSO_SCHEDULER_MODE=queue`) | OSPanel / cron (`TSO_SCHEDULER_MODE=cron`) |
+| :--- | :--- | :--- |
+| Scheduler tick | `scheduler` service: `schedule:work` → `tso:run-scheduler` every minute | System cron / Windows Task Scheduler: `schedule:run` every minute → `tso:run-scheduler` (inline worker implied) |
+| Job execution | Long-lived `worker` service: `queue:work redis --queue=$TSO_WORKER_QUEUES --tries=1 --timeout=150 --max-time=3600` | Inline worker started by the tick: `queue:work --queue=<config> --stop-when-empty --max-time=50 --max-jobs=20` |
+| `pcntl` | Present in the image → job `$timeout` is enforced | Not available on Windows → job `$timeout` is **not** enforced; protection is `TSO_HTTP_TIMEOUT` per request, the per-job work budget and stale-task recovery |
+| Start latency | ≤ 5 s | ≤ 60 s (next tick) |
 
-```bash
-php artisan queue:work --queue=tso-tasks,tso-accounts,tso-market,default --sleep=3 --tries=3
-```
+The queue connection's `retry_after` (200 s) must always exceed the longest job `$timeout` (150 s) plus a
+safety margin, otherwise a still-running job is redelivered to a second worker (`QueueTimeoutInvariantTest`).
 
-### 2. Laravel Scheduler (Cron)
-Add the scheduler invocation to the system crontab:
+### 1. Docker (`queue` mode)
+
+`docker compose up` starts `worker` and `scheduler` with the correct commands; nothing else is required.
+Do **not** pass `--work` to the scheduled command in this mode — a second worker on the same queues only races the dedicated one.
+
+### 2. OSPanel / bare cron (`cron` mode)
+
+Set `TSO_SCHEDULER_MODE=cron` and invoke the Laravel scheduler once per minute.
+
+Linux crontab:
 ```cron
 * * * * * cd /path-to-your-project && php artisan schedule:run >> /dev/null 2>&1
 ```
 
-> The schedule in [`routes/console.php`](routes/console.php) runs `tso:run-scheduler --work` every minute with `withoutOverlapping(10)` and `onOneServer()` safeguards.
+Windows Task Scheduler (OSPanel): create a basic task that repeats every 1 minute indefinitely with the action
+```
+Program:   C:\OSPanel\modules\PHP-8.5\php.exe
+Arguments: artisan schedule:run
+Start in:  C:\OSPanel\home\admin
+```
+
+> The schedule in [`routes/console.php`](routes/console.php) runs `tso:run-scheduler` every minute with
+> `withoutOverlapping(10)` and `onOneServer()` safeguards. In `cron` mode the command drains the queues itself.
+
+### 3. Standalone worker (any mode)
+
+If you run a worker outside Docker (e.g. supervisor), use the same queue list:
+
+```bash
+php artisan queue:work --queue=tso-tasks,tso-accounts,tso-market,default --sleep=3 --tries=1 --timeout=150
+```
 
 ---
 

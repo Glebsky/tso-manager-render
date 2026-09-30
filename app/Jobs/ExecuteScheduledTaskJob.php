@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
-use App\Enums\LogLevel;
 use App\Enums\TaskResultPrefix;
 use App\Enums\TaskStatus;
 use App\Enums\TaskType;
 use App\Exceptions\TaskCancelledException;
 use App\Exceptions\TokenMismatchException;
-use App\Models\BotLog;
 use App\Models\ScheduledTask;
 use App\Services\TaskExecutionService;
+use App\Services\Tasks\Execution\TaskStateMachine;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -25,26 +24,27 @@ class ExecuteScheduledTaskJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public int $tries = 3;
-
-    public int $timeout = 120;
+    /**
+     * A task run is never retried by the queue: a failed run is final
+     * (TaskExecutionService writes the failed state itself) and a redelivered
+     * run would repeat game actions. The next run comes from the schedule.
+     */
+    public int $tries = 1;
 
     /**
-     * @var list<int>
+     * Must stay below the connection's retry_after minus a safety margin
+     * (see QueueTimeoutInvariantTest), otherwise a long run is redelivered
+     * to a second worker while the first one is still executing it.
      */
-    public array $backoff = [30, 120, 300];
+    public int $timeout = 150;
+
+    public bool $failOnTimeout = true;
 
     /**
      * Seconds of work budget per job invocation. Kept short so the inline
      * cron worker (queue:work --max-time=50) is not blocked by one job.
      */
     private const int TIME_BUDGET_SECONDS = 45;
-
-    /**
-     * Safety margin for a single step's own duration when deciding whether
-     * to continue in-process or hand off to a delayed job.
-     */
-    private const int STEP_MARGIN_SECONDS = 10;
 
     public int $taskId;
 
@@ -65,7 +65,7 @@ class ExecuteScheduledTaskJob implements ShouldQueue
         $this->taskId = $taskId;
         $this->executionToken = $executionToken;
         $this->force = $force;
-        $this->onQueue('tso-tasks');
+        $this->onQueue(config('game.queues.tasks'));
     }
 
     /**
@@ -73,7 +73,7 @@ class ExecuteScheduledTaskJob implements ShouldQueue
      *
      * @throws Throwable
      */
-    public function handle(TaskExecutionService $executionService): void
+    public function handle(TaskExecutionService $executionService, TaskStateMachine $stateMachine): void
     {
         $task = ScheduledTask::find($this->taskId);
 
@@ -130,70 +130,38 @@ class ExecuteScheduledTaskJob implements ShouldQueue
             return;
         }
 
-        // Sequence tasks are executed step-by-step. Short delays are waited
-        // out inline within the time budget; long delays (or an exhausted
-        // budget) hand the remaining steps to a fresh delayed job so no
-        // single run blocks the worker or hits execution time limits.
-        $budgetEndsAt = microtime(true) + self::TIME_BUDGET_SECONDS;
-
-        while (true) {
-            $task->refresh();
-
-            if ($task->status !== TaskStatus::Running && $task->status !== TaskStatus::Queued) {
-                Log::info("[TaskJob] Task #{$this->taskId} is no longer active (status='{$task->status->value}'); stopping execution loop.");
-
-                return;
-            }
-
-            if ($task->execution_token === null || $task->execution_token !== $this->executionToken) {
-                Log::info("[TaskJob] Task #{$this->taskId} execution token mismatch or cleared; stopping execution loop.");
-
-                return;
-            }
-
-            try {
-                $state = $executionService->executeSequenceStep($task, $this->executionToken, $this->force);
-            } catch (TaskCancelledException|TokenMismatchException $e) {
-                Log::info("[TaskJob] Task #{$this->taskId} sequence step aborted: {$e->getMessage()}");
-
-                return;
-            }
-
-            if ($state['finished']) {
-                return;
-            }
-
-            $delay = max(0, (int) $state['nextDelay']);
-
-            if (microtime(true) + $delay + self::STEP_MARGIN_SECONDS < $budgetEndsAt) {
-                if ($delay > 0) {
-                    $sleepRemaining = $delay;
-                    while ($sleepRemaining > 0) {
-                        sleep(min(1, $sleepRemaining));
-                        $sleepRemaining--;
-                        $task->refresh();
-                        if ($task->status !== TaskStatus::Running && $task->status !== TaskStatus::Queued) {
-                            Log::info("[TaskJob] Task #{$this->taskId} cancelled during delay wait; exiting execution loop.");
-
-                            return;
-                        }
-                    }
-                }
-
-                continue;
-            }
-
-            // Push the stale-recovery heartbeat past the intentional wait so
-            // recoverStaleTasks() does not reset a healthy paused run.
-            $task->update(['queued_at' => now()->addSeconds($delay)]);
-
-            self::dispatch($this->taskId, $this->executionToken, $this->force)
-                ->delay(now()->addSeconds(max($delay, 1)));
-
-            Log::info("[TaskJob] Task #{$this->taskId} handed off to a delayed job (next step in {$delay}s, completed steps: {$task->completed_steps})");
+        // Sequence tasks run in the shared SequenceRunner within this job's
+        // time budget. When the next delay does not fit, the remaining steps
+        // are handed to a fresh delayed job so no single run blocks the
+        // worker or hits execution time limits.
+        try {
+            $result = $executionService->runSequence($task, $this->executionToken, $this->force, self::TIME_BUDGET_SECONDS);
+        } catch (TaskCancelledException|TokenMismatchException $e) {
+            Log::info("[TaskJob] Task #{$this->taskId} sequence run aborted: {$e->getMessage()}");
 
             return;
         }
+
+        if (! $result->isHandOff()) {
+            return;
+        }
+
+        $delay = $result->nextDelay;
+
+        // Push the heartbeat past the intentional wait so stale recovery
+        // does not reset a healthy paused run. A lost CAS means the run
+        // was stopped concurrently — do not re-dispatch it.
+        if (! $stateMachine->heartbeat($task, $this->executionToken, now()->addSeconds($delay))) {
+            Log::info("[TaskJob] Task #{$this->taskId} lost ownership before hand-off; not re-dispatching.");
+
+            return;
+        }
+
+        self::dispatch($this->taskId, $this->executionToken, $this->force)
+            ->delay(now()->addSeconds(max($delay, 1)));
+
+        $task->refresh();
+        Log::info("[TaskJob] Task #{$this->taskId} handed off to a delayed job (next step in {$delay}s, completed steps: {$task->completed_steps})");
     }
 
     /**
@@ -216,26 +184,15 @@ class ExecuteScheduledTaskJob implements ShouldQueue
     }
 
     /**
-     * Handle job failure after all retries exhausted.
+     * Handle job failure (exception or timeout).
      */
     public function failed(Throwable $exception): void
     {
-        Log::error("[TaskJob] Task #{$this->taskId} failed permanently after all retries: {$exception->getMessage()}");
+        Log::error("[TaskJob] Task #{$this->taskId} failed permanently: {$exception->getMessage()}");
 
         $task = ScheduledTask::find($this->taskId);
         if ($task) {
-            $task->update([
-                'status' => TaskStatus::Failed,
-                'last_run_at' => now(),
-                'last_result' => TaskResultPrefix::Failed->format($exception->getMessage()),
-                'execution_token' => null,
-            ]);
-
-            BotLog::create([
-                'account_id' => $task->account_id,
-                'level' => LogLevel::Error,
-                'message' => "[Task][Task#{$task->id}] ".__('logs.task.job_failed', ['id' => $task->id, 'type' => $task->task_type->value, 'error' => $exception->getMessage()]),
-            ]);
+            app(TaskStateMachine::class)->failJob($task, $this->executionToken, $exception->getMessage());
         }
     }
 }

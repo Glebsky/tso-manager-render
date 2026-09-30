@@ -120,7 +120,7 @@ protected function isAccessible(User $user, ?string $path = null): bool
 
 - Use `php artisan make:` commands to create new files (i.e. migrations, controllers, models, etc.). You can list available Artisan commands using the `list-artisan-commands` tool.
 - If you're creating a generic PHP class, use `php artisan make:class`.
-- Pass `--no-interaction` to all Artisan commands to ensure they work without user input. You should also pass the correct `--options` to ensure correct behavior.
+- Pass `--no-interaction` only to Artisan commands that support it. Verify available options first; test runner commands such as `php artisan test` do not accept this option.
 
 ### Database
 - Always use proper Eloquent relationship methods with return type hints. Prefer relationship methods over raw queries or manual joins.
@@ -159,25 +159,23 @@ protected function isAccessible(User $user, ?string $path = null): bool
 ### Vite Error
 - If you receive an "Illuminate\Foundation\ViteException: Unable to locate file in Vite manifest" error, you can run `npm run build` or ask the user to run `npm run dev` or `composer run dev`.
 
-=== laravel/v10 rules ===
+=== laravel/v12 rules ===
 
-## Laravel 10
+## Laravel 12
 
-- Use the `search-docs` tool to get version-specific documentation.
-- Middleware typically live in `app/Http/Middleware/` and service providers in `app/Providers/`.
-- Laravel 10 has a `bootstrap/app.php` file that creates the application instance and binds kernel contracts, but does not use it for application configuration like Laravel 11:
-    - Middleware registration is in `app/Http/Kernel.php`
-    - Exception handling is in `app/Exceptions/Handler.php`
-    - Console commands and schedule registration is in `app/Console/Kernel.php`
-    - Rate limits likely exist in `RouteServiceProvider` or `app/Http/Kernel.php`
-- When using Eloquent model casts, you must use `protected $casts = [];` and not the `casts()` method. The `casts()` method isn't available on models in Laravel 10.
+- Use version-specific Laravel 12 documentation before changing framework behavior.
+- Follow this repository's existing Laravel 12 structure rather than assuming the legacy Laravel 10 kernel layout.
+- Application configuration, middleware, exception handling, and route registration may be defined from `bootstrap/app.php`; inspect the real project files before editing.
+- Eloquent models may define casts with the `casts(): array` method. Preserve the convention already used by sibling models.
+- Register console commands and schedules according to the project's current Laravel 12 structure.
 
 === pint/core rules ===
 
 ## Laravel Pint Code Formatter
 
-- You must run `vendor/bin/pint --dirty` before finalizing changes to ensure your code matches the project's expected style.
-- Do not run `vendor/bin/pint --test`, simply run `vendor/bin/pint` to fix any formatting issues.
+- Use `vendor/bin/pint --test` as the non-destructive project gate.
+- When formatting changes are needed, run `vendor/bin/pint --dirty`, inspect the diff, then rerun `vendor/bin/pint --test`.
+- Do not silently rewrite unrelated files.
 
 === phpunit/core rules ===
 
@@ -186,7 +184,7 @@ protected function isAccessible(User $user, ?string $path = null): bool
 - This application uses PHPUnit for testing. All tests must be written as PHPUnit classes. Use `php artisan make:test --phpunit {name}` to create a new test.
 - If you see a test using "Pest", convert it to PHPUnit.
 - Every time a test has been updated, run that singular test.
-- When the tests relating to your feature are passing, ask the user if they would like to also run the entire test suite to make sure everything is still passing.
+- Run the relevant focused tests first. Run the complete suite when the change scope or project gate requires it; never report a full-suite pass unless the command completed and its result was captured.
 - Tests should test all of the happy paths, failure paths, and weird paths.
 - You must not remove any tests or test files from the tests directory without approval. These are not temporary or helper files; these are core to the application.
 
@@ -226,4 +224,3 @@ protected function isAccessible(User $user, ?string $path = null): bool
 ## Tailwind CSS 3
 
 - Always use Tailwind CSS v3; verify you're using only classes supported by this version.
-</laravel-boost-guidelines>

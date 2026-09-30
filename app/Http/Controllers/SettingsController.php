@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Enums\TaskStatus;
 use App\Http\Requests\UpdateSettingsRequest;
 use App\Http\Resources\SettingResource;
 use App\Models\ScheduledTask;
 use App\Models\Setting;
 use App\Services\Market\MarketSettingsService;
 use App\Services\SystemLogCleanupService;
+use App\Services\Tasks\ScheduledTaskService;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 
@@ -55,14 +57,23 @@ class SettingsController extends Controller
         return response()->noContent();
     }
 
-    public function stopAllTasks(): Response
+    public function stopAllTasks(ScheduledTaskService $taskService): Response
     {
+        $busyTasks = ScheduledTask::query()
+            ->whereIn('status', [TaskStatus::Queued, TaskStatus::Running])
+            ->get();
+
+        foreach ($busyTasks as $busyTask) {
+            $taskService->stop($busyTask);
+        }
+
         $affected = ScheduledTask::query()->where('is_active', true)->pluck('id')->all();
 
         Log::warning(sprintf(
-            '[Task] Mass pause via /settings/tasks/stop: %d task(s) deactivated [%s]',
+            '[Task] Mass pause via /settings/tasks/stop: %d task(s) deactivated [%s], %d active run(s) cancelled',
             count($affected),
-            implode(', ', array_map(static fn ($id) => '#'.$id, $affected))
+            implode(', ', array_map(static fn ($id) => '#'.$id, $affected)),
+            $busyTasks->count()
         ));
 
         ScheduledTask::query()->update(['is_active' => false]);

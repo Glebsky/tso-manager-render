@@ -9,8 +9,8 @@ use App\Services\Amf\Amf3Encoder;
 use App\Services\Amf\Transport\TsoClientInterface;
 use App\Services\Amf\Vo\defaultGame_Communication_VO_dServerCall;
 use App\Services\Amf\Vo\defaultGame_Communication_VO_dTimedProductionVO;
+use App\Services\Tasks\Execution\GameResponseValidator;
 use App\Services\TsoAmfService;
-use App\Services\TsoAuthService;
 use Mockery;
 use Tests\TestCase;
 
@@ -72,7 +72,6 @@ final class StartTimedProductionEncodingTest extends TestCase
 
     public function test_queue_timed_production_sends_command_91_with_direct_vo(): void
     {
-        $authMock = Mockery::mock(TsoAuthService::class);
         $clientMock = Mockery::mock(TsoClientInterface::class);
 
         $account = new Account;
@@ -93,7 +92,7 @@ final class StartTimedProductionEncodingTest extends TestCase
             })
             ->andReturn('dummy_amf_response');
 
-        $amfService = new TsoAmfService($authMock, $clientMock);
+        $amfService = new TsoAmfService($clientMock, $this->app->make(GameResponseValidator::class));
 
         $response = $amfService->queueTimedProduction(
             account: $account,

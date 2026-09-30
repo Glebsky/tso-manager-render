@@ -68,6 +68,7 @@ abstract class ScheduledTaskRequest extends FormRequest
     {
         return [
             'name' => 'nullable|string|max:255',
+            'group_name' => 'nullable|string|max:120',
             'account_id' => 'required|exists:accounts,id',
             'task_type' => ['required', Rule::enum(TaskType::class)],
             'payload' => 'required|array',

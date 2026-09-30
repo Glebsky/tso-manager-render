@@ -4,11 +4,16 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\AccountStatus;
+use App\Exceptions\AuthChallengeException;
+use App\Exceptions\SessionBusyException;
 use App\Models\Account;
 use App\Services\Auth\TsoPlayPageParser;
 use App\Services\Auth\UbisoftConnectAuthClient;
+use App\Support\Http\TsoCurlHelper;
 use App\Support\Security\CredentialRedactor;
 use Exception;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
@@ -49,15 +54,6 @@ class TsoAuthService
         'el' => ['domain' => 'https://www.thesettlersonline.gr',      'uplay' => '/el/api/user/uplay', 'main' => '/el/%CE%B1%CF%81%CF%87%CE%B9%CE%BA%CE%AE-%CF%83%CE%B5%CE%BB%CE%AF%CE%B4%CE%B1', 'play' => '/el/play'],
         'ro' => ['domain' => 'https://www.thesettlersonline.ro',      'uplay' => '/ro/api/user/uplay', 'main' => '/ro/pagina-de-start',                                        'play' => '/ro/play'],
         'ts' => ['domain' => 'https://www.tsotesting.com',            'uplay' => '/en/api/user/uplay', 'main' => '/en/homepage',                                               'play' => '/en/play'],
-    ];
-
-    /**
-     * Browser fingerprint expected by the game backend. Must stay byte-identical
-     * to what the reference Flash client sends.
-     */
-    private const array BROWSER_HEADERS = [
-        'User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.12 (KHTML, like Gecko) Chrome/9.0.570.0 Safari/534.12',
-        'Referer: http://game-cdn.thesettlersonline.net/prestaging/PS5724/SWMMO/debug/SWMMO.swf',
     ];
 
     /**
@@ -118,34 +114,35 @@ class TsoAuthService
      */
     public function login(Account $account): array
     {
-        $lock = Cache::lock("tso:login_lock:{$account->id}", 60);
-        $locked = false;
+        $waitSeconds = (int) config('game.session_lock_wait_seconds', 20);
+        $lock = Cache::lock("tso:login_lock:{$account->id}", (int) config('game.session_lock_ttl_seconds', 130));
 
+        // FR-008: two concurrent logins for one account each create a game
+        // session and invalidate the other's (error 1012), so a login never
+        // proceeds without the lock. The caller retries later.
         try {
-            $locked = (bool) $lock->block(25);
-        } catch (Throwable $e) {
-            Log::warning("[TsoAuth] Proceeding without login lock for account #{$account->id}: ".$e->getMessage());
+            $lock->block($waitSeconds);
+        } catch (LockTimeoutException) {
+            Log::warning("[TsoAuth] Login lock for account #{$account->id} not acquired within {$waitSeconds}s; login not started");
+
+            throw SessionBusyException::forAccount($account->id, 'login', $waitSeconds);
         }
 
         try {
-            if ($locked) {
-                // Another process may have completed a full login while we were
-                // waiting for the lock. Logging in again would create a second
-                // game session and invalidate the fresh one (error 1012).
-                $account->refresh();
+            // Another process may have completed a full login while we were
+            // waiting for the lock. Logging in again would create a second
+            // game session and invalidate the fresh one (error 1012).
+            $account->refresh();
 
-                if (Cache::get(self::SESSION_OK_KEY.$account->id) === true) {
-                    Log::info("[TsoAuth] Reusing session established by another process for account #{$account->id}");
+            if (Cache::get(self::SESSION_OK_KEY.$account->id) === true) {
+                Log::info("[TsoAuth] Reusing session established by another process for account #{$account->id}");
 
-                    return $this->sessionParams($account);
-                }
+                return $this->sessionParams($account);
             }
 
             return $this->performLogin($account);
         } finally {
-            if ($locked) {
-                $lock->release();
-            }
+            $lock->release();
         }
     }
 
@@ -161,9 +158,8 @@ class TsoAuthService
         $cooldownKey = "account_login_cooldown:{$account->id}";
         if (Cache::has($cooldownKey)) {
             $reason = Cache::get($cooldownKey);
-            $msg = is_string($reason) && ! empty($reason) ? $reason : __('ui.auth.captcha_required');
 
-            throw new RuntimeException($msg);
+            throw AuthChallengeException::cooldown(is_string($reason) ? $reason : '');
         }
 
         $region = $account->region;
@@ -201,7 +197,7 @@ class TsoAuthService
 
                 if ($this->isCaptchaOr2faError($errMsg)) {
                     Cache::put($cooldownKey, $errMsg, 900);
-                    $account->update(['status' => 'session_expired']);
+                    $account->update(['status' => AccountStatus::SessionExpired->value]);
 
                     throw $e;
                 }
@@ -234,7 +230,7 @@ class TsoAuthService
             'dso_auth_token' => $params['dsoAuthToken'],
             'bb_url' => $params['bburl'],
             'nickname' => $params['nickName'],
-            'status' => 'online',
+            'status' => AccountStatus::Online->value,
         ]);
 
         $this->markSessionVerified($account);
@@ -248,6 +244,10 @@ class TsoAuthService
         Cache::forget("account_login_cooldown:{$id}");
     }
 
+    /**
+     * Message-based fallback for callers that only have text. Prefer the typed
+     * check `UnrecoverableAuthError::isUnrecoverable()` when an exception is at hand.
+     */
     public function isCaptchaOr2faError(string $message): bool
     {
         return str_contains($message, 'CAPTCHA') ||
@@ -346,7 +346,6 @@ class TsoAuthService
             $error = curl_error($ch);
             $httpCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
             $headerSize = (int) curl_getinfo($ch, CURLINFO_HEADER_SIZE);
-            curl_close($ch);
 
             if ($error) {
                 throw new RuntimeException('cURL Error: '.$error);
@@ -415,27 +414,23 @@ class TsoAuthService
             @file_put_contents($cookieFile, '');
         }
 
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, rtrim((string) $account->bb_url, '/').'/authenticate');
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
-            'DSOAUTHUSER' => (string) $account->dso_auth_user,
-            'DSOAUTHTOKEN' => (string) $account->dso_auth_token,
-        ]));
-        curl_setopt($ch, CURLOPT_COOKIEFILE, $cookieFile);
-        curl_setopt($ch, CURLOPT_COOKIEJAR, $cookieFile);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, (bool) config('game.ssl_verify', true));
-        curl_setopt($ch, CURLOPT_TIMEOUT, (int) config('game.http_timeout', 30));
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array_merge(
-            ['Content-Type: application/x-www-form-urlencoded'],
-            self::BROWSER_HEADERS,
-        ));
+        $ch = TsoCurlHelper::init(rtrim((string) $account->bb_url, '/').'/authenticate', [
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => http_build_query([
+                'DSOAUTHUSER' => (string) $account->dso_auth_user,
+                'DSOAUTHTOKEN' => (string) $account->dso_auth_token,
+            ]),
+            CURLOPT_COOKIEFILE => $cookieFile,
+            CURLOPT_COOKIEJAR => $cookieFile,
+            CURLOPT_HTTPHEADER => array_merge(
+                ['Content-Type: application/x-www-form-urlencoded'],
+                TsoCurlHelper::defaultFlashHeaders(),
+            ),
+        ]);
 
         $response = (string) curl_exec($ch);
         $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $error = curl_error($ch);
-        curl_close($ch);
 
         if ($error !== '') {
             Log::warning("[TsoAuth] Session probe for account #{$account->id} failed on transport level: {$error}");

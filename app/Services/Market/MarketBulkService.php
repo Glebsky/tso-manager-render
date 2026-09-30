@@ -59,6 +59,8 @@ final readonly class MarketBulkService
             'data_version' => $this->cache->dataVersion($serverId),
             'goods' => $data['goods'],
             'targets_map' => $data['targets_map'],
+            'target_goods' => $data['target_goods'] ?? [],
+            'sources_map' => $data['sources_map'] ?? [],
             'popular' => $data['popular'],
             'active_offers' => $data['active_offers'],
             'total_active_count' => $data['total_active_count'],
@@ -73,6 +75,10 @@ final readonly class MarketBulkService
     private function build(string $serverId): array
     {
         $goods = $this->catalog->distinctGoods($serverId);
+        $targetsMap = $this->catalog->targetsMap($serverId, $goods);
+        $targetGoods = $this->catalog->invertTargetGoods($goods, $targetsMap);
+        $sourcesMap = $this->catalog->invertSourcesMap($goods, $targetsMap);
+
         $activeOffers = MarketOfferResource::listFrom(
             $this->offers->activeOffers($serverId),
             $this->names,
@@ -86,7 +92,9 @@ final readonly class MarketBulkService
 
         return [
             'goods' => $goods,
-            'targets_map' => $this->catalog->targetsMap($serverId, $goods),
+            'targets_map' => $targetsMap,
+            'target_goods' => $targetGoods,
+            'sources_map' => $sourcesMap,
             'popular' => $popular,
             'active_offers' => $activeOffers,
             'total_active_count' => count($activeOffers),

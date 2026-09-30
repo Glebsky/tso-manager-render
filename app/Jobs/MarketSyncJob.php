@@ -4,22 +4,32 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
+use App\Enums\AccountStatus;
 use App\Enums\LogLevel;
+use App\Enums\MarketSyncStatus;
+use App\Exceptions\UnrecoverableAuthError;
 use App\Models\Account;
 use App\Models\BotLog;
 use App\Models\MarketServerConnection;
 use App\Models\MarketSyncLog;
 use App\Services\MarketSyncService;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-class MarketSyncJob implements ShouldQueue
+/**
+ * One market sync per game server at a time, guaranteed by ShouldBeUnique
+ * (A-13). The unique lock is held across retries and released by the queue
+ * only after success or permanent failure — the former cache lock was
+ * released in `finally` on every attempt, so a retrying sync could be
+ * duplicated by the next scheduler tick.
+ */
+class MarketSyncJob implements ShouldBeUnique, ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -32,6 +42,12 @@ class MarketSyncJob implements ShouldQueue
      */
     public array $backoff = [30, 120, 300];
 
+    /**
+     * Must cover the whole retry window (3 × timeout + all backoffs = 810 s).
+     * Verified by SyncJobUniquenessTest.
+     */
+    public int $uniqueFor = 1200;
+
     public Account $account;
 
     public string $serverId;
@@ -43,7 +59,12 @@ class MarketSyncJob implements ShouldQueue
     {
         $this->account = $account;
         $this->serverId = $serverId;
-        $this->onQueue('tso-market');
+        $this->onQueue(config('game.queues.market'));
+    }
+
+    public function uniqueId(): string
+    {
+        return $this->serverId;
     }
 
     /**
@@ -59,10 +80,10 @@ class MarketSyncJob implements ShouldQueue
         } catch (Throwable $e) {
             Log::error("[MarketSyncJob] Failed for account #{$this->account->id} on server [{$this->serverId}]: {$e->getMessage()}");
 
-            if ($this->isUnrecoverableAuthError($e->getMessage())) {
-                $this->account->update(['status' => 'session_expired']);
+            if (UnrecoverableAuthError::isUnrecoverable($e)) {
+                $this->account->update(['status' => AccountStatus::SessionExpired->value]);
                 MarketServerConnection::where('server_id', $this->serverId)->update([
-                    'sync_status' => 'error',
+                    'sync_status' => MarketSyncStatus::Error->value,
                     'last_error' => $e->getMessage(),
                 ]);
                 BotLog::create([
@@ -78,21 +99,7 @@ class MarketSyncJob implements ShouldQueue
             }
 
             throw $e;
-        } finally {
-            Cache::forget("market_sync_lock:server:{$this->serverId}");
-            Cache::forget("market_sync_lock:{$this->account->id}");
         }
-    }
-
-    private function isUnrecoverableAuthError(string $message): bool
-    {
-        return str_contains($message, 'CAPTCHA') ||
-            str_contains($message, 'captcha') ||
-            str_contains($message, 'Captcha') ||
-            str_contains($message, '2FA') ||
-            str_contains($message, 'twoFactor') ||
-            str_contains($message, 'session_expired') ||
-            str_contains($message, 'Session expired');
     }
 
     /**
@@ -113,7 +120,7 @@ class MarketSyncJob implements ShouldQueue
 
         try {
             MarketServerConnection::where('server_id', $this->serverId)->update([
-                'sync_status' => 'error',
+                'sync_status' => MarketSyncStatus::Error->value,
                 'last_error' => $exception->getMessage(),
             ]);
 
@@ -126,8 +133,5 @@ class MarketSyncJob implements ShouldQueue
         } catch (Throwable $dbEx) {
             Log::error("[MarketSyncJob] Failed to write market sync failure to the activity log: {$dbEx->getMessage()}");
         }
-
-        Cache::forget("market_sync_lock:server:{$this->serverId}");
-        Cache::forget("market_sync_lock:{$this->account->id}");
     }
 }

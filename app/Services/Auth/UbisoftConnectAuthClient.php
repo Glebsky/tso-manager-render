@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Auth;
 
+use App\Exceptions\AuthChallengeException;
 use App\Models\Account;
 use Exception;
 use RuntimeException;
@@ -67,7 +68,7 @@ class UbisoftConnectAuthClient
         if (! is_string($accessToken) || $accessToken === '') {
             $formattedOauthError = $this->formatAuthResponse($oauthTokenRes);
             if (stripos($formattedOauthError, 'captcha') !== false) {
-                throw new RuntimeException((string) __('ui.auth.captcha_required'));
+                throw AuthChallengeException::captcha();
             }
 
             throw new RuntimeException('Ubisoft login failed (could not get oauthToken): '.$formattedOauthError);
@@ -86,7 +87,7 @@ class UbisoftConnectAuthClient
         $authTokenData = json_decode($authTokenRes, true, 512, JSON_THROW_ON_ERROR);
 
         if (is_array($authTokenData) && isset($authTokenData['twoFactorAuthenticationTicket'])) {
-            throw new RuntimeException((string) __('ui.auth.2fa_required'));
+            throw AuthChallengeException::twoFactor();
         }
 
         $token = is_array($authTokenData) ? ($authTokenData['token'] ?? null) : null;
@@ -99,7 +100,7 @@ class UbisoftConnectAuthClient
                     throw new RuntimeException((string) __('ui.auth.invalid_credentials'));
                 }
                 if (stripos($message, 'captcha') !== false) {
-                    throw new RuntimeException((string) __('ui.auth.captcha_required'));
+                    throw AuthChallengeException::captcha();
                 }
             }
 
@@ -214,7 +215,6 @@ class UbisoftConnectAuthClient
         $response = (string) curl_exec($ch);
         $error = curl_error($ch);
         $info = curl_getinfo($ch);
-        curl_close($ch);
 
         if ($error) {
             throw new RuntimeException('cURL Error: '.$error);

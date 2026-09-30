@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services\Amf\Transport;
 
+use App\Exceptions\SessionBusyException;
 use App\Models\Account;
+use Exception;
 
 interface TsoClientInterface
 {
@@ -15,6 +17,12 @@ interface TsoClientInterface
 
     /**
      * Send an AMF command to the remote game server.
+     *
+     * Implementations MUST serialize commands per account (INV-004) and MUST
+     * NOT send when the account's session lock cannot be acquired.
+     *
+     * @throws SessionBusyException the account's session is in use by another process (retryable, no re-login)
+     * @throws Exception transport / session errors
      */
     public function sendCommand(Account $account, mixed $dServerCall, string $destination = 'SMC', string $operation = 'ExecuteServerCall', ?string $source = 'com.bluebyte.game.servlet.EventHandler', ?int $targetZoneId = null): string;
 

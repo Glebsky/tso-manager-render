@@ -14,7 +14,7 @@ class RunSchedulerCommand extends Command
 {
     protected $signature = 'tso:run-scheduler
                             {--mode= : Override execution mode (queue|cron|sync)}
-                            {--work : Run inline queue worker for tso-tasks and tso-market after scheduling}';
+                            {--work : Run inline queue worker over config(game.queues) after scheduling (implied in cron mode)}';
 
     protected $description = 'Run TSO master scheduler to process Task Planner tasks and Market Analytics atomically.';
 
@@ -54,10 +54,13 @@ class RunSchedulerCommand extends Command
 
         $this->info("Scheduler cycle completed. Tasks reserved/dispatched: {$tasksProcessed}, Market sync triggered: ".($marketProcessed ? 'Yes' : 'No').', Account sync triggered: '.($accountSyncProcessed > 0 ? "Yes ({$accountSyncProcessed})" : 'No').', Log retention cleanup: '.($logCleanupProcessed ? 'Yes' : 'No'));
 
-        if ($this->option('work')) {
+        // cron mode has no long-lived worker, so the tick itself drains the
+        // queues. queue mode relies on a dedicated worker (Docker `worker`);
+        // running a second one here would only race it (ADR-004).
+        if ($this->option('work') || $mode === 'cron') {
             $this->info('Running inline TSO queue worker (--stop-when-empty --max-time=50)...');
             Artisan::call('queue:work', [
-                '--queue' => 'tso-tasks,tso-accounts,tso-market',
+                '--queue' => implode(',', config('game.queues')),
                 '--stop-when-empty' => true,
                 '--max-time' => 50,
                 '--max-jobs' => 20,

@@ -7,10 +7,11 @@ return [
     |--------------------------------------------------------------------------
     |
     | Supported modes:
-    | - 'queue': Enqueues jobs to dedicated queues ('tso-tasks', 'tso-market').
-    |            Requires a persistent queue worker process (e.g. supervisor).
-    | - 'cron':  Enqueues jobs to dedicated queues, and if --work is passed,
-    |            runs an isolated worker to process 'tso-tasks,tso-market'.
+    | - 'queue': Enqueues jobs to the queues below. Requires a persistent
+    |            queue worker process (Docker `worker` service, supervisor).
+    | - 'cron':  Enqueues jobs to the queues below and then runs an inline
+    |            worker (`--stop-when-empty`) over the same queues on every
+    |            scheduler tick. Intended for OSPanel / Windows Task Scheduler.
     | - 'sync':  Executes jobs inline/synchronously without external queues.
     |
     */
@@ -20,10 +21,17 @@ return [
     |--------------------------------------------------------------------------
     | TSO Dedicated Queues
     |--------------------------------------------------------------------------
+    |
+    | Single source of queue names for jobs and for every worker. The order
+    | is the worker priority order. Keep the TSO_WORKER_QUEUES default in
+    | docker-compose.yml in sync (enforced by QueueTopologyTest).
+    |
     */
     'queues' => [
         'tasks' => 'tso-tasks',
+        'accounts' => 'tso-accounts',
         'market' => 'tso-market',
+        'default' => 'default',
     ],
 
     /*
@@ -32,6 +40,26 @@ return [
     |--------------------------------------------------------------------------
     */
     'stale_task_timeout_minutes' => (int) env('TSO_STALE_TASK_TIMEOUT', 10),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Scheduler
+    |--------------------------------------------------------------------------
+    |
+    | heartbeat_interval_seconds: how often a running task run refreshes its
+    | `heartbeat_at` while waiting (e.g. between sequence steps). Must stay
+    | well below stale_task_timeout_minutes so a healthy wait is never
+    | mistaken for a stuck run (FR-007).
+    |
+    | missed_grace_minutes: a due slot is still executed if the tick arrives
+    | within this many minutes after `next_run_at`. Later than that the slot
+    | is skipped and the task moves to its next future slot (ADR-002).
+    |
+    */
+    'scheduler' => [
+        'heartbeat_interval_seconds' => (int) env('TSO_HEARTBEAT_INTERVAL', 15),
+        'missed_grace_minutes' => (int) env('TSO_MISSED_GRACE_MINUTES', 5),
+    ],
 
     /*
     |--------------------------------------------------------------------------
@@ -59,6 +87,12 @@ return [
          */
         'transport_retry_errors' => [1012],
         'transport_retry_delay' => 3,
+
+        /*
+         | Seconds to wait before retrying an action whose per-account session
+         | lock was busy (SessionBusyException). No re-login is performed.
+         */
+        'session_busy_retry_delay' => (int) env('TSO_SESSION_BUSY_RETRY_DELAY', 5),
     ],
 
     /*
@@ -95,6 +129,17 @@ return [
     | time would each create a session and invalidate the other's.
     */
     'session_lock_wait_seconds' => (int) env('TSO_SESSION_LOCK_WAIT', 20),
+
+    /*
+    | How long the per-account lock (AMF command / login) may be held before
+    | the cache store expires it. Must cover the worst operation done under
+    | the lock — session resolve (authenticate + Z) plus the command itself,
+    | each bounded by http_timeout — otherwise the lock evaporates mid-flight
+    | and a second process starts a competing session (FR-008, INV-004).
+    | If the lock is not acquired in time the command is NOT sent; a
+    | SessionBusyException is thrown and the action is retried later.
+    */
+    'session_lock_ttl_seconds' => (int) env('TSO_SESSION_LOCK_TTL', ((int) env('TSO_HTTP_TIMEOUT', 30)) * 4 + 10),
 
     /*
     |--------------------------------------------------------------------------

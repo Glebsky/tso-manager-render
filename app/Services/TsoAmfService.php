@@ -13,12 +13,17 @@ use App\Services\Amf\Vo\defaultGame_Communication_VO_dServerCall;
 use App\Services\Amf\Vo\defaultGame_Communication_VO_dStartSpecialistTaskVO;
 use App\Services\Amf\Vo\defaultGame_Communication_VO_dTimedProductionVO;
 use App\Services\Amf\Vo\defaultGame_Communication_VO_dUniqueID;
+use App\Services\Tasks\Execution\GameResponseValidator;
 use Exception;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Sleep;
 
 class TsoAmfService
 {
+    /** NEWER_SESSION_DETECTED / zone not ready — the game session was superseded. */
+    public const int ERROR_NEWER_SESSION = 1012;
+
     public const int CMD_BUILD = 50;
 
     public const int CMD_UPGRADE = 60;
@@ -48,8 +53,8 @@ class TsoAmfService
     public const int QUEST_STACK_GET_LATEST_QUEST_LIST = 4;
 
     public function __construct(
-        private readonly TsoAuthService $authService,
-        private readonly TsoClientInterface $client
+        private readonly TsoClientInterface $client,
+        private readonly GameResponseValidator $responseValidator,
     ) {}
 
     /**
@@ -99,10 +104,14 @@ class TsoAmfService
 
     /**
      * Invalidate shared session in cache across all processes for a specific account.
+     *
+     * The persisted client id is deliberately kept (FR-009): a new id makes
+     * every subsequent call look like a brand-new client to the game server,
+     * which is one of the things that provoke error 1012. It is dropped only
+     * on an explicit credential change via forgetClientId().
      */
     public function invalidateSession(int $accountId): void
     {
-        $this->forgetClientId($accountId);
         $this->client->invalidateSession($accountId);
     }
 
@@ -118,19 +127,21 @@ class TsoAmfService
         $lastResponse = '';
 
         for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
-            Log::info("[TsoAmf] Ensuring zone is loaded for account #{$account->id} (attempt {$attempt}/{$maxAttempts})");
+            Log::debug("[TsoAmf] Ensuring zone is loaded for account #{$account->id} (attempt {$attempt}/{$maxAttempts})");
             $lastResponse = $this->getZone($account);
 
-            if (str_contains($lastResponse, '1012')) {
-                Log::info("[TsoAmf] Zone still initializing for account #{$account->id} (code 1012); waiting {$delaySeconds}s...");
+            // FR-009: decide on the decoded error code, not on the digits "1012"
+            // appearing somewhere in the binary payload (grid ids, amounts…).
+            if ($this->responseValidator->errorCode($lastResponse) === self::ERROR_NEWER_SESSION) {
+                Log::debug("[TsoAmf] Zone still initializing for account #{$account->id} (code 1012); waiting {$delaySeconds}s...");
                 if ($attempt < $maxAttempts) {
-                    sleep($delaySeconds);
+                    Sleep::for($delaySeconds)->seconds();
                 }
 
                 continue;
             }
 
-            Log::info("[TsoAmf] Zone ready for account #{$account->id} on attempt {$attempt}/{$maxAttempts}");
+            Log::debug("[TsoAmf] Zone ready for account #{$account->id} on attempt {$attempt}/{$maxAttempts}");
             break;
         }
 
@@ -162,31 +173,19 @@ class TsoAmfService
     }
 
     /**
+     * Sends one AMF call. No retry and no re-login here (FR-009): a
+     * SessionExpiredException propagates to the single retry layer
+     * (ActionRetryPolicy for tasks, the sync fetchers for account/market
+     * sync), which decides whether one forced re-login is warranted.
+     *
+     * @throws SessionExpiredException
      * @throws Exception
      */
     private function sendServerCall(Account $account, int $commandType, mixed $actionData, string $destination = 'SMC', string $operation = 'ExecuteServerCall', ?string $source = 'com.bluebyte.game.servlet.EventHandler', ?int $targetZoneId = null): string
     {
         $call = $this->buildServerCall($account, $commandType, $actionData, $targetZoneId);
 
-        try {
-            return $this->client->sendCommand($account, $call, $destination, $operation, $source, $targetZoneId);
-        } catch (SessionExpiredException $e) {
-            Log::info("[TsoAmf] Session rejected for account #{$account->id}; performing a single forced re-login and retry");
-
-            try {
-                $this->authService->resetSession($account);
-                $this->invalidateSession($account->id);
-                $this->resetClient($account->id);
-                $this->authService->ensureAuthenticated($account, force: true);
-                $account->refresh();
-
-                $call = $this->buildServerCall($account, $commandType, $actionData, $targetZoneId);
-
-                return $this->client->sendCommand($account, $call, $destination, $operation, $source, $targetZoneId);
-            } catch (Exception $retryException) {
-                throw new \RuntimeException($e->getMessage().' (Auto-relogin also failed: '.$retryException->getMessage().')');
-            }
-        }
+        return $this->client->sendCommand($account, $call, $destination, $operation, $source, $targetZoneId);
     }
 
     /**
@@ -293,7 +292,9 @@ class TsoAmfService
         $buffUid->uniqueID1 = $uniqueId1;
         $buffUid->uniqueID2 = $uniqueId2;
 
-        $action = $this->buildServerAction(0, $grid, $amount, $buffUid);
+        // Flash client sends endGrid=0 for standard building buffs (line 522243):
+        // SendServerAction(COMMAND.APPLY_BUFF, 0, cursorGrid, 0, buff.GetUniqueId())
+        $action = $this->buildServerAction(0, $grid, 0, $buffUid);
 
         return $this->sendServerCall(
             $account,

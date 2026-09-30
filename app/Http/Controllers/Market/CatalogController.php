@@ -29,6 +29,14 @@ final class CatalogController extends Controller
         return new JsonResponse($this->catalog->goods($serverId, $kind));
     }
 
+    public function targetGoods(MarketCatalogGoodsRequest $request): JsonResponse
+    {
+        $kind = $request->kind();
+        $serverId = $this->cache->resolveServerId($request->serverId());
+
+        return new JsonResponse($this->catalog->targetGoods($serverId, $kind));
+    }
+
     public function targets(MarketCatalogTargetsRequest $request): JsonResponse
     {
         $itemId = $request->itemId();
@@ -41,5 +49,19 @@ final class CatalogController extends Controller
         $serverId = $this->cache->resolveServerId($request->serverId());
 
         return new JsonResponse($this->catalog->targets($serverId, $itemId, $kind));
+    }
+
+    public function sources(MarketCatalogTargetsRequest $request): JsonResponse
+    {
+        $targetItemId = $request->targetItemId();
+
+        if ($targetItemId === '') {
+            return new JsonResponse([]);
+        }
+
+        $kind = $request->kind();
+        $serverId = $this->cache->resolveServerId($request->serverId());
+
+        return new JsonResponse($this->catalog->sources($serverId, $targetItemId, $kind));
     }
 }

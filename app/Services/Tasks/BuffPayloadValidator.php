@@ -61,6 +61,28 @@ final readonly class BuffPayloadValidator
             }
         }
 
+        // Pass 2: Fallback to matching by buff_raw_name / buff_name if the specific stack uniqueId was consumed or replaced in Star Menu
+        if (! $buffFound) {
+            $targetRawName = (string) ($payload['buff_raw_name'] ?? '');
+            $targetBuffName = (string) ($payload['buff_name'] ?? '');
+            $targetResName = (string) ($payload['buff_resource_name'] ?? '');
+
+            if ($targetRawName !== '' || $targetBuffName !== '' || $targetResName !== '') {
+                foreach ($buffs as $buff) {
+                    if ($this->isNameMatch($buff, $targetRawName, $targetBuffName, $targetResName)) {
+                        $buffFound = true;
+                        $availableAmount = $buff['amount'] ?? 0;
+
+                        if ($availableAmount < $amount) {
+                            return [$prefix.'amount' => [__('tasks.error.insufficient_buffs', ['available' => $availableAmount, 'required' => $amount])]];
+                        }
+
+                        break;
+                    }
+                }
+            }
+        }
+
         if (! $buffFound) {
             return [$prefix.'unique_id1' => [__('tasks.error.buff_not_found')]];
         }
@@ -128,6 +150,28 @@ final readonly class BuffPayloadValidator
             $friends,
             static fn (mixed $f): bool => is_array($f) && isset($f['id']) && (int) $f['id'] === $friendId
         );
+    }
+
+    /**
+     * @param  array<string, mixed>  $buff
+     */
+    private function isNameMatch(array $buff, string $rawNameTarget, string $buffNameTarget, string $resNameTarget): bool
+    {
+        $stackRaw = (string) ($buff['buffName_string'] ?? $buff['buff_raw_name'] ?? $buff['name_string'] ?? $buff['name'] ?? '');
+        $stackRes = (string) ($buff['resourceName_string'] ?? '');
+
+        $targets = array_filter([$rawNameTarget, $buffNameTarget, $resNameTarget], static fn (string $s): bool => $s !== '');
+
+        foreach ($targets as $target) {
+            if ($stackRaw !== '' && strcasecmp($stackRaw, $target) === 0) {
+                return true;
+            }
+            if ($stackRes !== '' && strcasecmp($stackRes, $target) === 0) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

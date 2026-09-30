@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit;
 
+use App\Enums\AccountStatus;
 use App\Enums\LogLevel;
+use App\Enums\MarketSyncStatus;
+use App\Enums\MarketVerificationStatus;
 use App\Enums\ScheduleType;
 use App\Enums\TaskResultPrefix;
 use App\Enums\TaskStatus;
@@ -20,7 +23,6 @@ class EnumsTest extends TestCase
         $this->assertEquals('running', TaskStatus::Running->value);
         $this->assertEquals('completed', TaskStatus::Completed->value);
         $this->assertEquals('failed', TaskStatus::Failed->value);
-        $this->assertEquals('paused', TaskStatus::Paused->value);
         $this->assertEquals('cancelled', TaskStatus::Cancelled->value);
     }
 
@@ -32,7 +34,6 @@ class EnumsTest extends TestCase
         $this->assertFalse(TaskStatus::Pending->isBusy());
         $this->assertFalse(TaskStatus::Completed->isBusy());
         $this->assertFalse(TaskStatus::Failed->isBusy());
-        $this->assertFalse(TaskStatus::Paused->isBusy());
         $this->assertFalse(TaskStatus::Cancelled->isBusy());
     }
 
@@ -99,5 +100,31 @@ class EnumsTest extends TestCase
         $this->assertEquals('OK: execution finished', TaskResultPrefix::Ok->format('execution finished'));
         $this->assertEquals('ERROR: invalid payload', TaskResultPrefix::Error->format('invalid payload'));
         $this->assertEquals('SKIPPED:', TaskResultPrefix::Skipped->format());
+    }
+
+    public function test_account_status_enum_values(): void
+    {
+        $this->assertEquals('online', AccountStatus::Online->value);
+        $this->assertEquals('active', AccountStatus::Active->value);
+        $this->assertEquals('syncing', AccountStatus::Syncing->value);
+        $this->assertEquals('error', AccountStatus::Error->value);
+        $this->assertEquals('session_expired', AccountStatus::SessionExpired->value);
+    }
+
+    public function test_market_sync_status_enum_values(): void
+    {
+        $this->assertEquals('not_configured', MarketSyncStatus::NotConfigured->value);
+        $this->assertEquals('syncing', MarketSyncStatus::Syncing->value);
+        $this->assertEquals('connected', MarketSyncStatus::Connected->value);
+        $this->assertEquals('error', MarketSyncStatus::Error->value);
+        $this->assertEquals('disabled', MarketSyncStatus::Disabled->value);
+    }
+
+    public function test_market_verification_status_enum_values(): void
+    {
+        $this->assertEquals('unverified', MarketVerificationStatus::Unverified->value);
+        $this->assertEquals('verified', MarketVerificationStatus::Verified->value);
+        $this->assertEquals('mismatch', MarketVerificationStatus::Mismatch->value);
+        $this->assertEquals('error', MarketVerificationStatus::Error->value);
     }
 }

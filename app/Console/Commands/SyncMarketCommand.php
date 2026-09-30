@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Enums\AccountStatus;
+use App\Enums\MarketSyncStatus;
 use App\Jobs\MarketSyncJob;
 use App\Models\MarketServerConnection;
 use App\Models\MarketSyncLog;
 use App\Models\Setting;
 use App\Services\MarketSyncService;
 use Carbon\Carbon;
-use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
 use Throwable;
@@ -54,7 +55,7 @@ class SyncMarketCommand extends Command
         $specificServer = $this->option('server');
         $query = MarketServerConnection::with('account')
             ->whereNotNull('account_id')
-            ->where('sync_status', '!=', 'disabled');
+            ->where('sync_status', '!=', MarketSyncStatus::Disabled->value);
 
         if ($specificServer) {
             $query->where('server_id', $specificServer);
@@ -74,14 +75,14 @@ class SyncMarketCommand extends Command
             if (! $account) {
                 $this->error("Account #{$connection->account_id} for server [{$serverId}] not found.");
                 $connection->update([
-                    'sync_status' => 'error',
+                    'sync_status' => MarketSyncStatus::Error->value,
                     'last_error' => "Configured account #{$connection->account_id} not found.",
                 ]);
 
                 continue;
             }
 
-            if ($account->status === 'session_expired' || Cache::has("account_login_cooldown:{$account->id}")) {
+            if ($account->status === AccountStatus::SessionExpired->value || Cache::has("account_login_cooldown:{$account->id}")) {
                 $this->warn("Account #{$account->id} ({$account->username}) for server [{$serverId}] requires manual session update or is under login cooldown. Skipping.");
 
                 continue;
@@ -106,32 +107,23 @@ class SyncMarketCommand extends Command
                 }
             }
 
-            $lockKey = "market_sync_lock:server:{$serverId}";
-            if (! Cache::add($lockKey, true, 180)) {
-                $this->info("Market sync lock for server [{$serverId}] already held. Skipping.");
-
-                continue;
-            }
-
             try {
                 if ($this->option('sync')) {
+                    // Inline mode runs under the scheduler's withoutOverlapping().
                     $this->info("Running MarketSync synchronously for server [{$serverId}] account [{$account->username}]...");
                     $this->syncService->sync($account, $serverId);
                     $this->info("Market sync for server [{$serverId}] completed successfully.");
                 } else {
+                    // Deduplicated per server by MarketSyncJob's ShouldBeUnique (A-13).
                     $this->info("Dispatching MarketSyncJob for server [{$serverId}] account [{$account->username}]...");
                     MarketSyncJob::dispatch($account, $serverId);
                 }
-            } catch (Exception $e) {
+            } catch (Throwable $e) {
                 $this->error("Market sync for server [{$serverId}] failed: {$e->getMessage()}");
                 $connection->update([
-                    'sync_status' => 'error',
+                    'sync_status' => MarketSyncStatus::Error->value,
                     'last_error' => $e->getMessage(),
                 ]);
-            } finally {
-                if ($this->option('sync')) {
-                    Cache::forget($lockKey);
-                }
             }
         }
 

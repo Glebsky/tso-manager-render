@@ -18,17 +18,30 @@ final readonly class GameResponseValidator
      */
     public function validateAndParse(string $payload): void
     {
+        $errorCode = $this->errorCode($payload);
+
+        if ($errorCode !== 0) {
+            throw new GameServerErrorException($errorCode, GameErrorResolver::getMessage($errorCode));
+        }
+    }
+
+    /**
+     * Game error code carried by an AMF response, `0` when the response is
+     * not an AMF payload or reports no error. Decodes the payload instead of
+     * scanning it for digits (FR-009: "1012" may legitimately appear in grid
+     * ids, amounts or timestamps).
+     *
+     * @throws \Exception
+     */
+    public function errorCode(string $payload): int
+    {
         if (! $this->isAmfPayload($payload)) {
-            return;
+            return 0;
         }
 
         $parsed = $this->zoneParser->parse($payload);
-        $errorCode = (int) ($parsed['errorCode'] ?? 0);
-        if ($errorCode !== 0) {
-            $errorMsg = GameErrorResolver::getMessage($errorCode);
 
-            throw new GameServerErrorException($errorCode, $errorMsg);
-        }
+        return (int) ($parsed['errorCode'] ?? 0);
     }
 
     private function isAmfPayload(string $payload): bool

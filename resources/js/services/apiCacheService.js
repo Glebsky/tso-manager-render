@@ -200,21 +200,23 @@ function adjustPayloadForAge(url, payload, savedAt) {
         return adjusted;
     }
 
-    adjusted.active_offers = adjusted.active_offers.map(offer => {
-        if (!offer || typeof offer !== 'object') {
-            return offer;
-        }
+    adjusted.active_offers = adjusted.active_offers
+        .map(offer => {
+            if (!offer || typeof offer !== 'object') {
+                return offer;
+            }
 
-        const timeLeft = Number(offer.time_left);
-        if (!Number.isFinite(timeLeft)) {
-            return offer;
-        }
+            const timeLeft = Number(offer.time_left);
+            if (!Number.isFinite(timeLeft)) {
+                return offer;
+            }
 
-        return {
-            ...offer,
-            time_left: Math.max(0, timeLeft - ageSeconds),
-        };
-    });
+            return {
+                ...offer,
+                time_left: Math.max(0, timeLeft - ageSeconds),
+            };
+        })
+        .filter(offer => offer && offer.time_left > 0);
 
     return adjusted;
 }
@@ -432,28 +434,44 @@ function writeBulkEntry(serverId, payload, ttlMs) {
     }
 }
 
+function filterAndAdjustOffers(offers, savedAt) {
+    if (!Array.isArray(offers)) return [];
+    const now = Date.now();
+    return offers
+        .map(offer => {
+            if (!offer || typeof offer !== 'object') return null;
+            if (offer.expires_at) {
+                const expiresAt = new Date(offer.expires_at).getTime();
+                const timeLeft = Math.max(0, Math.floor((expiresAt - now) / 1000));
+                return { ...offer, time_left: timeLeft };
+            }
+            if (Number.isFinite(Number(offer.time_left))) {
+                const ageSeconds = savedAt ? Math.max(0, Math.floor((now - savedAt) / 1000)) : 0;
+                return { ...offer, time_left: Math.max(0, Number(offer.time_left) - ageSeconds) };
+            }
+            return offer;
+        })
+        .filter(offer => offer && offer.time_left > 0);
+}
+
 export async function cachedGetBulk(url, serverId, options = {}) {
-    const { bypass = false, onRevalidate = null } = options;
+    const { bypass = false, onRevalidate = null, onRevalidateStart = null } = options;
     
     if (!bypass) {
         const cached = readBulkEntry(serverId);
         if (cached) {
-            // Adjust time_left on active_offers
+            // Adjust time_left on active_offers and filter out expired
             const adjusted = clonePayload(cached.payload);
             if (adjusted && Array.isArray(adjusted.active_offers)) {
-                const ageSeconds = Math.max(0, Math.floor((Date.now() - cached.savedAt) / 1000));
-                adjusted.active_offers = adjusted.active_offers.map(offer => {
-                    if (offer && offer.expires_at) {
-                        const expiresAt = new Date(offer.expires_at).getTime();
-                        const timeLeft = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
-                        return { ...offer, time_left: timeLeft };
-                    }
-                    return offer;
-                });
+                adjusted.active_offers = filterAndAdjustOffers(adjusted.active_offers, cached.savedAt);
+                adjusted.total_active_count = adjusted.active_offers.length;
             }
             
             // Background revalidation via version check
             if (serverId) {
+                if (onRevalidateStart) {
+                    onRevalidateStart();
+                }
                 checkServerVersion(url, serverId)
                     .then(version => {
                         const knownVersion = getKnownServerVersion(serverId);
@@ -471,9 +489,15 @@ export async function cachedGetBulk(url, serverId, options = {}) {
                                     updateKnownServerVersion(serverId, parseInt(headerVersion, 10));
                                 }
                             });
+                        } else if (onRevalidate) {
+                            onRevalidate(null);
                         }
                     })
-                    .catch(() => {});
+                    .catch(() => {
+                        if (onRevalidate) {
+                            onRevalidate(null);
+                        }
+                    });
             }
             
             return adjusted;
@@ -513,14 +537,8 @@ export function readBulkCache(serverId) {
     
     const adjusted = clonePayload(entry.payload);
     if (adjusted && Array.isArray(adjusted.active_offers)) {
-        adjusted.active_offers = adjusted.active_offers.map(offer => {
-            if (offer && offer.expires_at) {
-                const expiresAt = new Date(offer.expires_at).getTime();
-                const timeLeft = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
-                return { ...offer, time_left: timeLeft };
-            }
-            return offer;
-        });
+        adjusted.active_offers = filterAndAdjustOffers(adjusted.active_offers, entry.savedAt);
+        adjusted.total_active_count = adjusted.active_offers.length;
     }
     
     return adjusted;
