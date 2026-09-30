@@ -1289,18 +1289,28 @@ const router = useRouter();
         });
 
         // Trend calculation
-        const priceTrendText = computed(() => {
-            if (history.value.length < 2) return 'Stable';
+        const priceTrend = computed(() => {
+            if (history.value.length < 2) return 'stable';
             const last = history.value[history.value.length - 1].price;
             const prev = history.value[history.value.length - 2].price;
-            if (last > prev) return 'Rising';
-            if (last < prev) return 'Falling';
-            return 'Stable';
+            if (last > prev) return 'rising';
+            if (last < prev) return 'falling';
+            return 'stable';
+        });
+
+        const priceTrendText = computed(() => {
+            switch (priceTrend.value) {
+                case 'rising': return t('market.trend_rising');
+                case 'falling': return t('market.trend_falling');
+                case 'stable':
+                default:
+                    return t('market.trend_stable');
+            }
         });
 
         const priceTrendClass = computed(() => {
-            if (priceTrendText.value === 'Rising') return 'text-emerald-400';
-            if (priceTrendText.value === 'Falling') return 'text-red-400';
+            if (priceTrend.value === 'rising') return 'text-emerald-400';
+            if (priceTrend.value === 'falling') return 'text-red-400';
             return 'text-white/40';
         });
 

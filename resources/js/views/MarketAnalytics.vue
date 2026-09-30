@@ -66,11 +66,11 @@
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                     <div class="flex items-center gap-2.5 sm:gap-3">
                         <span class="badge text-[10px] sm:text-xs" :class="getSyncBadgeClass(currentServerConnection.sync_status)">
-                            {{ currentServerConnection.sync_status }}
+                            {{ getSyncStatusLabel(currentServerConnection.sync_status) }}
                         </span>
                         <div class="space-y-0.5 min-w-0 flex-1">
                             <p class="font-semibold text-white truncate">
-                                Server {{ currentServerConnection.display_name }} ({{ currentServerConnection.locale }}):
+                                {{ t('market.server') }} {{ currentServerConnection.display_name }} ({{ currentServerConnection.locale }}):
                                 <span v-if="!currentServerConnection.account_id" class="text-amber-400">{{ t('market.no_account_assigned') }}</span>
                                 <span v-else-if="currentServerConnection.last_error" class="text-red-400">{{ currentServerConnection.last_error }}</span>
                                 <span v-else class="text-white/60">{{ t('market.not_synced_yet') }}</span>
@@ -793,12 +793,12 @@
                         </template>
                         <template #cell-verification_status="{ row }">
                             <span class="badge text-[10px]" :class="getVerificationBadgeClass(row.verification_status)">
-                                {{ row.verification_status }}
+                                {{ getVerificationStatusLabel(row.verification_status) }}
                             </span>
                         </template>
                         <template #cell-sync_status="{ row }">
                             <span class="badge text-[10px]" :class="getSyncBadgeClass(row.sync_status)">
-                                {{ row.sync_status }}
+                                {{ getSyncStatusLabel(row.sync_status) }}
                             </span>
                         </template>
                         <template #cell-last_synced_at="{ row }">
@@ -1001,7 +1001,7 @@
                                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 0 1-3-3V3.75a3 3 0 0 1 3-3h13.5a3 3 0 0 1 3 3v7.5a3 3 0 0 1-3 3m-13.5 0a3 3 0 0 0-3 3v3.75a3 3 0 0 0 3 3h13.5a3 3 0 0 0 3-3V17.25a3 3 0 0 0-3-3" />
                                 </svg>
-                                Игровой мир: {{ detectedServerInfo.server_name }}
+                                {{ t('market.game_world') }} {{ detectedServerInfo.server_name }}
                             </div>
                             <div>{{ t('market.detected_id') }}: <span class="font-mono">{{ detectedServerInfo.server_id }}</span></div>
                             <div>{{ t('market.detected_name') }}: {{ detectedServerInfo.display_name }}</div>
@@ -1321,6 +1321,16 @@ const router = useRouter();
             }
         };
 
+        const getVerificationStatusLabel = (status) => {
+            if (!status) return '';
+            return t(`market.verification_status.${status}`) || status;
+        };
+
+        const getSyncStatusLabel = (status) => {
+            if (!status) return '';
+            return t(`market.sync_status.${status}`) || status;
+        };
+
         // Analytics state
         const goods = ref([]);
         const targets = ref([]);
@@ -1606,9 +1616,9 @@ const router = useRouter();
         const activeSellersCount = computed(() => activeInfo.value?.sellers_count || 0);
 
         const priceTrendText = computed(() => {
-            if (!stats.value || !stats.value.current || !stats.value.average) return 'Stable';
+            if (!stats.value || !stats.value.current || !stats.value.average) return t('market.trend_stable');
             const diff = stats.value.current - stats.value.average;
-            if (Math.abs(diff) < 0.01) return 'Stable';
+            if (Math.abs(diff) < 0.01) return t('market.trend_stable');
             return diff > 0 ? `+${((diff / stats.value.average) * 100).toFixed(1)}%` : `${((diff / stats.value.average) * 100).toFixed(1)}%`;
         });
 
@@ -1647,7 +1657,7 @@ const router = useRouter();
         };
 
         const formatDateTime = (dateStr) => {
-            if (!dateStr || dateStr === 'Never') return 'Never';
+            if (!dateStr || dateStr === 'Never') return t('market.never');
             try {
                 const date = new Date(dateStr);
                 if (isNaN(date.getTime())) return dateStr;
