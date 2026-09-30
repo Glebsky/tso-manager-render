@@ -93,6 +93,14 @@ class LocaleKeysParityTest extends TestCase
             'tasks.max_level_target',
             'tasks.free_or_unknown_cost',
             'tasks.toast.series_scheduled',
+            'market.unit.d',
+            'market.unit.h',
+            'market.unit.m',
+            'market.unit.s',
+            'time.unit.d',
+            'time.unit.h',
+            'time.unit.m',
+            'time.unit.s',
         ];
 
         $langDir = __DIR__.'/../../../resources/js/lang/generated';
@@ -101,6 +109,26 @@ class LocaleKeysParityTest extends TestCase
             $uiKeys = $data['ui'] ?? [];
             foreach ($criticalKeys as $key) {
                 $this->assertArrayHasKey($key, $uiKeys, "Critical key '{$key}' missing in {$locale}.json");
+            }
+        }
+    }
+
+    public function test_time_and_market_units_have_correct_translations(): void
+    {
+        $expected = [
+            'en' => ['d' => 'd', 'h' => 'h', 'm' => 'm', 's' => 's'],
+            'ru' => ['d' => 'д', 'h' => 'ч', 'm' => 'м', 's' => 'с'],
+            'uk' => ['d' => 'д', 'h' => 'год', 'm' => 'хв', 's' => 'с'],
+        ];
+
+        $langDir = __DIR__.'/../../../resources/js/lang/generated';
+        foreach ($expected as $locale => $units) {
+            $data = json_decode((string) file_get_contents("{$langDir}/{$locale}.json"), true);
+            $uiKeys = $data['ui'] ?? [];
+
+            foreach ($units as $unit => $val) {
+                $this->assertSame($val, $uiKeys["time.unit.{$unit}"] ?? null, "Mismatch for time.unit.{$unit} in {$locale}");
+                $this->assertSame($val, $uiKeys["market.unit.{$unit}"] ?? null, "Mismatch for market.unit.{$unit} in {$locale}");
             }
         }
     }

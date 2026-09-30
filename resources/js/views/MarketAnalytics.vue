@@ -691,7 +691,7 @@
                                     <span class="text-blue-400 font-mono">{{ row.lots_remaining }}</span>
                                 </template>
                                 <template #cell-time_left="{ row }">
-                                    <span class="font-mono text-xs" :class="getOfferTimeLeft(row) > 0 ? 'text-amber-400' : 'text-red-500'">
+                                    <span class="font-mono text-xs whitespace-nowrap" :class="getOfferTimeLeft(row) > 0 ? 'text-amber-400' : 'text-red-500'">
                                         {{ formatTimeLeft(getOfferTimeLeft(row)) }}
                                     </span>
                                 </template>
@@ -1025,7 +1025,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { t } from '../lang';
+import { t, formatTimeLeft } from '../lang';
 import { marketApi } from '../services/api/market';
 import { accountsApi } from '../services/api/accounts';
 import { cachedGet, clearApiCache, cachedGetBulk, readBulkCache, getMarketCacheStrategy, setMarketCacheStrategy } from '../services/apiCacheService';
@@ -1187,16 +1187,6 @@ const router = useRouter();
                 if (typeof document !== 'undefined' && document.hidden) return;
                 nowSec.value = Math.floor(Date.now() / 1000);
             }, 1000);
-        };
-
-        const formatTimeLeft = (seconds) => {
-            if (!seconds || seconds <= 0) return t('market.expired');
-            const h = Math.floor(seconds / 3600);
-            const m = Math.floor((seconds % 3600) / 60);
-            const s = seconds % 60;
-            if (h > 0) return `${h}h ${m}m`;
-            if (m > 0) return `${m}m ${s}s`;
-            return `${s}s`;
         };
 
         const loadMoreActiveOffers = async () => {

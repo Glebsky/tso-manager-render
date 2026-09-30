@@ -688,7 +688,7 @@
                                 <span class="text-blue-400 font-mono">{{ row.lots_remaining }}</span>
                             </template>
                             <template #cell-time_left="{ row }">
-                                <span class="font-mono text-xs" :class="getOfferTimeLeft(row) > 0 ? 'text-amber-400' : 'text-red-500'">
+                                <span class="font-mono text-xs whitespace-nowrap" :class="getOfferTimeLeft(row) > 0 ? 'text-amber-400' : 'text-red-500'">
                                     {{ formatTimeLeft(getOfferTimeLeft(row)) }}
                                 </span>
                             </template>
@@ -765,7 +765,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { showToast } from '../toast';
-import { t } from '../lang';
+import { t, formatTimeLeft } from '../lang';
 import { resourceName, marketItemName } from '../lang/gameNames';
 import { TRADABLE_RESOURCES } from '../lang/resourcesCatalog';
 import { cachedGet, cachedGetBulk, readBulkCache, clearApiCache, getMarketCacheStrategy, setMarketCacheStrategy } from '../services/apiCacheService';
@@ -1317,14 +1317,6 @@ const router = useRouter();
 
         const handleIconError = (event, itemId, kind = null) =>
             handleGameImageError(event, kind || 'resource', itemId || 'addresource', '/images/resources/addresource.webp');
-
-        const formatTimeLeft = (seconds) => {
-            if (seconds <= 0) return t('market.expired');
-            const h = Math.floor(seconds / 3600);
-            const m = Math.floor((seconds % 3600) / 60);
-            const s = seconds % 60;
-            return `${h}h ${m}m ${s}s`;
-        };
 
         const nowSec = ref(Math.floor(Date.now() / 1000));
         const getOfferTimeLeft = (offer) => {

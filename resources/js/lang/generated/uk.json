@@ -6799,6 +6799,10 @@
         "market.total_volume": "Загальний активний обсяг:",
         "market.trend": "Поточний тренд:",
         "market.unique_sellers": "Унікальних продавців",
+        "market.unit.d": "д",
+        "market.unit.h": "год",
+        "market.unit.m": "хв",
+        "market.unit.s": "с",
         "market.units_short": "шт.",
         "market.updating": "Оновлення...",
         "market.updating_listings": "Оновлення лотів...",
@@ -7225,7 +7229,11 @@
         "tasks.until_launch": "До запуску",
         "tasks.warning": "Попередження",
         "tasks.where_apply": "Де застосувати баф?",
-        "tasks.zone_load_failed": "Не вдалося завантажити зону друга"
+        "tasks.zone_load_failed": "Не вдалося завантажити зону друга",
+        "time.unit.d": "д",
+        "time.unit.h": "год",
+        "time.unit.m": "хв",
+        "time.unit.s": "с"
     },
     "locale": "uk"
 }

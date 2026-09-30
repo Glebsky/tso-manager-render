@@ -6799,6 +6799,10 @@
         "market.total_volume": "Total Active Volume:",
         "market.trend": "Current Trend:",
         "market.unique_sellers": "Unique Sellers",
+        "market.unit.d": "d",
+        "market.unit.h": "h",
+        "market.unit.m": "m",
+        "market.unit.s": "s",
         "market.units_short": "units",
         "market.updating": "Updating...",
         "market.updating_listings": "Updating listings...",
@@ -7225,7 +7229,11 @@
         "tasks.until_launch": "Until launch",
         "tasks.warning": "Warning",
         "tasks.where_apply": "Where to apply",
-        "tasks.zone_load_failed": "Failed to load friend's zone"
+        "tasks.zone_load_failed": "Failed to load friend's zone",
+        "time.unit.d": "d",
+        "time.unit.h": "h",
+        "time.unit.m": "m",
+        "time.unit.s": "s"
     },
     "locale": "en"
 }

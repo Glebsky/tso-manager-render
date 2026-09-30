@@ -6799,6 +6799,10 @@
         "market.total_volume": "Общий активный объём:",
         "market.trend": "Текущий тренд:",
         "market.unique_sellers": "Уникальных продавцов",
+        "market.unit.d": "д",
+        "market.unit.h": "ч",
+        "market.unit.m": "м",
+        "market.unit.s": "с",
         "market.units_short": "шт.",
         "market.updating": "Обновление...",
         "market.updating_listings": "Актуализация лотов...",
@@ -7225,7 +7229,11 @@
         "tasks.until_launch": "До запуска",
         "tasks.warning": "Предупреждение",
         "tasks.where_apply": "Где применить бафф?",
-        "tasks.zone_load_failed": "Не удалось загрузить зону друга"
+        "tasks.zone_load_failed": "Не удалось загрузить зону друга",
+        "time.unit.d": "д",
+        "time.unit.h": "ч",
+        "time.unit.m": "м",
+        "time.unit.s": "с"
     },
     "locale": "ru"
 }
