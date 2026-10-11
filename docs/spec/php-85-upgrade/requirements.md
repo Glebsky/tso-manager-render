@@ -1,7 +1,7 @@
 # Requirements: Upgrade to PHP 8.5
 
 - **Пакет:** php-85-upgrade v1.0
-- **Статус:** Draft / Planning
+- **Статус:** Implemented / Completed
 
 ## 1. Введение и Цель
 

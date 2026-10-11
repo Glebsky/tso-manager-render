@@ -1,7 +1,7 @@
 # Спека: источники рецептов производства (Production Recipe Sources)
 
 **Версия:** 1.0
-**Статус:** Ready for implementation
+**Статус:** Implemented (`app/Services/Game/Production/Sources/*`); уточнения — `../production-recipe-sources-v1.1/`
 **Дата:** 2026-08-30
 **Родительская фича:** `docs/spec/buff-production-queue/` (версия 2.0) — эта спека НЕ заменяет её, а закрывает её пробел.
 

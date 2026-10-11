@@ -1,9 +1,9 @@
 <!-- SDD package: log-retention-cleanup v1.0 -->
 # SDD: Автоматическая очистка системных логов по Log Retention Policy в Cron
 
-- **Статус:** Approved / Implementation
+- **Статус:** Implemented
 - **Версия пакета:** 1.0
-- **Проект:** Laravel 10 / Vue 3 (TSO Manager)
+- **Проект:** Laravel 12 / Vue 3 (TSO Manager)
 - **Компонент:** System Log Cleanup (`app/Services/SystemLogCleanupService.php`, `RunSchedulerCommand.php`, `SettingsController.php`)
 
 ## Назначение

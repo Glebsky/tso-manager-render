@@ -3,7 +3,7 @@
 
 - **Статус:** Approved / Implemented
 - **Версия пакета:** 1.1
-- **Проект:** Laravel 10 / Vue 3 (TSO Manager)
+- **Проект:** Laravel 12 / Vue 3 (TSO Manager)
 - **Компонент:** Task Planner (`resources/js/views/Tasks.vue`, `ScheduledTaskController.php`, `GameErrorResolver.php`)
 
 ## Назначение

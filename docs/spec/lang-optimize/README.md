@@ -3,9 +3,9 @@
 
 # SDD: унификация локализации и импорт игровых переводов
 
-- **Статус:** Draft для ревью
+- **Статус:** Implemented (см. `implementation-report.md`)
 - **Версия пакета:** 0.4
-- **Проект:** Laravel 10 / Vue 3
+- **Проект:** Laravel 12 / Vue 3
 - **Основной язык:** English (`en`)
 - **Дополнительный язык:** Russian (`ru`)
 - **Игровые XML:** `en_lang.xml` (`en_uk`) и `ru_lang.xml` (`ru_ru`)

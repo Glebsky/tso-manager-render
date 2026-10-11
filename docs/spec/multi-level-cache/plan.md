@@ -1,6 +1,6 @@
 # Спецификация и План реализации: Многоуровневое кеширование (Multi-Level Cache)
 
-**Проект:** TSO Admin / Market Analytics (Laravel 10 + Vue 3 SPA)  
+**Проект:** TSO Admin / Market Analytics (Laravel 12 + Vue 3 SPA)  
 **Дата:** 2026-07-25  
 **Статус:** Реализовано  
 **Размещение:** `docs/spec/multi-level-cache/plan.md`

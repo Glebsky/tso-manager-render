@@ -1,7 +1,7 @@
 <!-- SDD package: market-tradeables v1.0 -->
 # SDD: Приключения, бафы и постройки как отдельные лоты рынка
 
-- **Статус:** Ready for implementation (этап 0 содержит один нежёсткий блокер — см. `implementation-plan.md`)
+- **Статус:** Implemented (коммит `7dbf2d7` и последующие); ручная проверка — `verification.md` §5
 - **Версия пакета:** 1.0
 - **Проект:** Laravel 12 / Vue 3 (TSO Manager Admin), PHP ^8.5
 - **Компоненты:** Market sync (парсер лотов), Market read (каталог, аналитика, арбитраж), слой локализации, SPA рынка
