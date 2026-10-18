@@ -57,15 +57,25 @@ readonly class AccountSyncFetcher
                 $buildingCount = count($zoneData['buildings'] ?? []);
 
                 if ($errorCode === 1012) {
-                    if ($reloginCount < self::MAX_RELOGINS) {
-                        $this->relogin($account, 'zone locked/superseded (error 1012)');
-                        $reloginCount++;
-                        sleep(3);
+                    if ($attempt === 1) {
+                        Log::info("[AccountSync] Zone locked/superseded (error 1012) for account #{$account->id}. Socket lease busy; retrying in {$retryDelay}s (attempt {$attempt}/{$maxRetries}).");
+                        sleep($retryDelay);
 
                         continue;
                     }
 
-                    sleep($retryDelay);
+                    if ($reloginCount < self::MAX_RELOGINS) {
+                        $this->relogin($account, "zone locked/superseded by another session (error {$errorCode})");
+                        $reloginCount++;
+                        sleep(2);
+
+                        continue;
+                    }
+
+                    Log::warning("[AccountSync] Zone still locked (error 1012) after re-login for account #{$account->id}. Retrying in {$retryDelay}s (attempt {$attempt}/{$maxRetries}).");
+                    if ($attempt < $maxRetries) {
+                        sleep($retryDelay);
+                    }
 
                     continue;
                 }
@@ -131,6 +141,7 @@ readonly class AccountSyncFetcher
         $this->authService->resetSession($account);
         $this->amfService->invalidateSession($account->id);
         $this->amfService->resetClient($account->id);
+        $this->amfService->forgetClientId($account);
     }
 
     /**

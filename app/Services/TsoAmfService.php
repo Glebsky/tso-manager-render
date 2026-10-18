@@ -13,6 +13,7 @@ use App\Services\Amf\Vo\defaultGame_Communication_VO_dServerCall;
 use App\Services\Amf\Vo\defaultGame_Communication_VO_dStartSpecialistTaskVO;
 use App\Services\Amf\Vo\defaultGame_Communication_VO_dTimedProductionVO;
 use App\Services\Amf\Vo\defaultGame_Communication_VO_dUniqueID;
+use App\Services\Amf\Vo\defaultGame_Communication_VO_dZoneLoginVO;
 use App\Services\Tasks\Execution\GameResponseValidator;
 use Exception;
 use Illuminate\Support\Facades\Cache;
@@ -37,6 +38,8 @@ class TsoAmfService
     public const int CMD_STOP_PRODUCTION = 107;
 
     public const int CMD_GET_ZONE = 1001;
+
+    public const int CMD_ZONE_LOGIN = 1002;
 
     public const int CMD_EXECUTE_PICKUP = 13002;
 
@@ -193,7 +196,25 @@ class TsoAmfService
      */
     public function getZone(Account $account, ?int $targetZoneId = null): string
     {
+        $isHomeZone = ($targetZoneId === null || (int) $targetZoneId === (int) $account->dso_auth_user);
         $zoneId = $targetZoneId ?? (int) $account->dso_auth_user;
+
+        if ($isHomeZone) {
+            $zoneLogin = new defaultGame_Communication_VO_dZoneLoginVO;
+            $zoneLogin->versionHash = (string) config('game.zone_version_hash', '799f95cad1c9a5acfa981dee11d3eb73');
+            $zoneLogin->operatingSystem = 'Windows 10';
+            $zoneLogin->userAgent = 'Chrome 151.0.0';
+
+            return $this->sendServerCall(
+                $account,
+                self::CMD_ZONE_LOGIN,
+                $zoneLogin,
+                'SMC',
+                'ExecuteServerCall',
+                'com.bluebyte.game.servlet.EventHandler',
+                $zoneId
+            );
+        }
 
         return $this->sendServerCall(
             $account,

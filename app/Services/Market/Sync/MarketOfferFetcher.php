@@ -98,20 +98,8 @@ readonly class MarketOfferFetcher
                 $errorCode = (int) ($parsed['errorCode'] ?? 0);
 
                 if ($errorCode === 1012) {
-                    if ($hasResetSession) {
-                        throw new RuntimeException(__('ui.sync.session_intercepted_market', ['code' => $errorCode]));
-                    }
-
-                    if ($attempt === 1) {
-                        $logCallback('WARNING', __('logs.market.zone_loading_retry', ['delay' => $retryDelay]));
-                        sleep($retryDelay);
-
-                        continue;
-                    }
-
-                    $logCallback('WARNING', __('logs.market.session_expired_retry', ['code' => $errorCode]));
-                    $this->reloginOnce($account);
-                    $hasResetSession = true;
+                    $logCallback('WARNING', __('logs.market.zone_loading_retry', ['delay' => $retryDelay]));
+                    sleep($retryDelay);
 
                     continue;
                 }

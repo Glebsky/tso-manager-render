@@ -12,7 +12,7 @@
                     <!-- Avatar -->
                     <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br flex items-center justify-center text-white font-bold text-sm shadow-lg overflow-hidden flex-shrink-0"
                          :class="statusClass.gradient">
-                        <img v-if="avatarUrl" :src="avatarUrl" :alt="localAccount.nickname || localAccount.username" width="40" height="40" loading="lazy" decoding="async" class="w-full h-full object-cover" @error="$event.target.style.display='none'">
+                        <img v-if="avatarUrl" :src="avatarUrl" :alt="localAccount.nickname || localAccount.username" width="40" height="40" class="w-full h-full object-cover" @error="$event.target.style.display='none'">
                         <span v-else>{{ avatarLetters }}</span>
                     </div>
                     <router-link :to="'/admin/accounts/' + localAccount.id" class="block min-w-0">

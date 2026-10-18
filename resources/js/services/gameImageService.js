@@ -59,6 +59,7 @@ const BUILDING_ALIASES = Object.freeze({
     stonecutter: 'stonemason',
     marblecutter: 'marblemason',
     granitecutter: 'granitemason',
+    efficientcrossbowsmith: 'crossbowsmith',
 });
 
 export function parseItemIdentifier(type, name) {

@@ -83,7 +83,6 @@
                                 <span class="inline-flex items-center gap-1 text-emerald-300 font-medium">
                                     <img v-if="getBuildingInfo(task, { task_type: task.task_type, payload: task.payload }).icon"
                                          :src="getBuildingInfo(task, { task_type: task.task_type, payload: task.payload }).icon"
-                                         loading="lazy" decoding="async"
                                          class="w-4 h-4 object-contain rounded flex-shrink-0"
                                          @error="handleBuildingIconError($event, getBuildingInfo(task, { task_type: task.task_type, payload: task.payload }).raw)" />
                                     <span v-else class="text-xs">🏭</span>
@@ -99,7 +98,6 @@
                                 <span class="inline-flex items-center gap-1 text-amber-300 font-medium">
                                     <img v-if="getBuffInfo(task, { task_type: task.task_type, payload: task.payload }).icon"
                                          :src="getBuffInfo(task, { task_type: task.task_type, payload: task.payload }).icon"
-                                         loading="lazy" decoding="async"
                                          class="w-4 h-4 object-contain rounded flex-shrink-0"
                                          @error="handleBuffIconError($event, getBuffInfo(task, { task_type: task.task_type, payload: task.payload }).raw)" />
                                     <span v-else class="text-xs">✨</span>
@@ -112,7 +110,6 @@
                                 <span class="inline-flex items-center gap-1 text-emerald-300 font-medium">
                                     • <img v-if="getBuildingInfo(task, { task_type: task.task_type, payload: task.payload }).icon"
                                          :src="getBuildingInfo(task, { task_type: task.task_type, payload: task.payload }).icon"
-                                         loading="lazy" decoding="async"
                                          class="w-4 h-4 object-contain rounded flex-shrink-0"
                                          @error="handleBuildingIconError($event, getBuildingInfo(task, { task_type: task.task_type, payload: task.payload }).raw)" />
                                     <span v-else class="text-xs">🏭</span>
@@ -128,7 +125,6 @@
                                 <span class="inline-flex items-center gap-1 text-emerald-300 font-medium">
                                     <img v-if="getSpecialistInfo(task, { task_type: task.task_type, payload: task.payload }).icon"
                                          :src="getSpecialistInfo(task, { task_type: task.task_type, payload: task.payload }).icon"
-                                         loading="lazy" decoding="async"
                                          class="w-4 h-4 object-contain rounded flex-shrink-0"
                                          @error="handleSpecialistIconError($event)" />
                                     <span v-else class="text-xs">🎖️</span>
@@ -144,7 +140,6 @@
                                 <span class="inline-flex items-center gap-1 text-emerald-300 font-medium">
                                     <img v-if="getBuffInfo(task, { task_type: task.task_type, payload: task.payload }).icon"
                                          :src="getBuffInfo(task, { task_type: task.task_type, payload: task.payload }).icon"
-                                         loading="lazy" decoding="async"
                                          class="w-4 h-4 object-contain rounded flex-shrink-0"
                                          @error="handleBuffIconError($event, task.payload?.recipe_name)" />
                                     <span v-else class="text-xs">🧪</span>
@@ -289,7 +284,6 @@
                         <span class="inline-flex items-center gap-1.5 text-amber-300 font-medium max-w-full truncate bg-amber-400/10 px-2 py-0.5 rounded-md border border-amber-400/20 text-[10px]">
                             <img v-if="getBuffInfo(task, act).icon"
                                  :src="getBuffInfo(task, act).icon"
-                                 loading="lazy" decoding="async"
                                  class="w-4 h-4 object-contain rounded flex-shrink-0"
                                  @error="handleBuffIconError($event, getBuffInfo(task, act).raw || act.meta?.buff)" />
                             <span v-else class="text-[10px]">✨</span>
@@ -304,7 +298,6 @@
                         <span class="inline-flex items-center gap-1 text-emerald-300 font-medium max-w-full truncate text-[10px]">
                             <img v-if="getBuildingInfo(task, act).icon"
                                  :src="getBuildingInfo(task, act).icon"
-                                 loading="lazy" decoding="async"
                                  class="w-4 h-4 object-contain rounded flex-shrink-0"
                                  @error="handleBuildingIconError($event, getBuildingInfo(task, act).raw || act.meta?.building)" />
                             <span v-else class="text-[10px]">🏭</span>
@@ -321,7 +314,6 @@
                         <span class="inline-flex items-center gap-1 text-emerald-300 font-medium max-w-full truncate text-[10px]">
                             <img v-if="getBuildingInfo(task, act).icon"
                                  :src="getBuildingInfo(task, act).icon"
-                                 loading="lazy" decoding="async"
                                  class="w-4 h-4 object-contain rounded flex-shrink-0"
                                  @error="handleBuildingIconError($event, getBuildingInfo(task, act).raw || act.meta?.building)" />
                             <span v-else class="text-[10px]">🏭</span>
@@ -338,7 +330,6 @@
                         <span class="inline-flex items-center gap-1.5 text-emerald-300 font-medium max-w-full truncate bg-emerald-400/10 px-2 py-0.5 rounded-md border border-emerald-400/20 text-[10px]">
                             <img v-if="getSpecialistInfo(task, act).icon"
                                  :src="getSpecialistInfo(task, act).icon"
-                                 loading="lazy" decoding="async"
                                  class="w-4 h-4 object-contain rounded flex-shrink-0"
                                  @error="handleSpecialistIconError($event)" />
                             <span v-else class="text-[10px]">🎖️</span>
@@ -362,7 +353,6 @@
                         <span class="inline-flex items-center gap-1 text-emerald-300 font-medium max-w-full truncate text-[10px]">
                             <img v-if="getBuildingInfo(task, act).icon"
                                  :src="getBuildingInfo(task, act).icon"
-                                 loading="lazy" decoding="async"
                                  class="w-4 h-4 object-contain rounded flex-shrink-0"
                                  @error="handleBuildingIconError($event, getBuildingInfo(task, act).raw || act.payload?.mine_name)" />
                             <span v-else class="text-[10px]">⛏️</span>
@@ -378,7 +368,6 @@
                         <span class="inline-flex items-center gap-1 text-emerald-300 font-medium max-w-full truncate text-[10px]">
                             <img v-if="getBuildingInfo(task, act).icon"
                                  :src="getBuildingInfo(task, act).icon"
-                                 loading="lazy" decoding="async"
                                  class="w-4 h-4 object-contain rounded flex-shrink-0"
                                  @error="handleBuildingIconError($event, getBuildingInfo(task, act).raw || act.payload?.building_name)" />
                             <span v-else class="text-[10px]">🏭</span>
@@ -397,7 +386,6 @@
                         <span class="inline-flex items-center gap-1 text-emerald-300 font-medium max-w-full truncate text-[10px]">
                             <img v-if="getBuffInfo(task, act).icon"
                                  :src="getBuffInfo(task, act).icon"
-                                 loading="lazy" decoding="async"
                                  class="w-4 h-4 object-contain rounded flex-shrink-0"
                                  @error="handleBuffIconError($event, act.payload?.recipe_name)" />
                             <span v-else class="text-[10px]">🧪</span>
