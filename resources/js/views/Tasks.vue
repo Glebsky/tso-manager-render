@@ -147,7 +147,6 @@
                                             <span class="inline-flex items-center gap-1 text-emerald-400 font-semibold">
                                                 <img v-if="getBuildingInfo(null, act).icon"
                                                      :src="getBuildingInfo(null, act).icon"
-                                                     loading="lazy" decoding="async"
                                                      class="w-4 h-4 object-contain rounded flex-shrink-0"
                                                      @error="handleBuildingIconError($event, getBuildingInfo(null, act).raw || act.meta?.building)" />
                                                 <span v-else class="text-xs flex-shrink-0">🏭</span>
@@ -161,7 +160,6 @@
                                             <span class="inline-flex items-center gap-1 text-amber-300 font-medium">
                                                 <img v-if="getBuffInfo(null, act).icon"
                                                      :src="getBuffInfo(null, act).icon"
-                                                     loading="lazy" decoding="async"
                                                      class="w-4 h-4 object-contain rounded flex-shrink-0"
                                                      @error="handleBuffIconError($event, getBuffInfo(null, act).raw || act.meta?.buff)" />
                                                 <span v-else class="text-xs flex-shrink-0">✨</span>
@@ -179,7 +177,6 @@
                                             <span class="inline-flex items-center gap-1 text-emerald-400 font-semibold">
                                                 • <img v-if="getBuildingInfo(null, act).icon"
                                                      :src="getBuildingInfo(null, act).icon"
-                                                     loading="lazy" decoding="async"
                                                      class="w-4 h-4 object-contain rounded flex-shrink-0"
                                                      @error="handleBuildingIconError($event, getBuildingInfo(null, act).raw || act.meta?.building)" />
                                                 <span v-else class="text-xs flex-shrink-0">🏭</span>
@@ -193,7 +190,6 @@
                                             <span class="inline-flex items-center gap-1 text-emerald-300 font-medium">
                                                 <img v-if="getSpecialistInfo(null, act).icon"
                                                      :src="getSpecialistInfo(null, act).icon"
-                                                     loading="lazy" decoding="async"
                                                      class="w-4 h-4 object-contain rounded flex-shrink-0"
                                                      @error="handleSpecialistIconError($event)" />
                                                 <span v-else class="text-xs flex-shrink-0">🎖️</span>
@@ -212,7 +208,6 @@
                                             <span class="inline-flex items-center gap-1 text-emerald-400 font-semibold">
                                                 <img v-if="getBuildingInfo(null, act).icon"
                                                      :src="getBuildingInfo(null, act).icon"
-                                                     loading="lazy" decoding="async"
                                                      class="w-4 h-4 object-contain rounded flex-shrink-0"
                                                      @error="handleBuildingIconError($event, getBuildingInfo(null, act).raw || act.payload?.mine_name)" />
                                                 <span v-else class="text-xs flex-shrink-0">⛏️</span>
@@ -226,7 +221,6 @@
                                             <span class="inline-flex items-center gap-1 text-emerald-400 font-semibold">
                                                 <img v-if="getBuildingInfo(null, act).icon"
                                                      :src="getBuildingInfo(null, act).icon"
-                                                     loading="lazy" decoding="async"
                                                      class="w-4 h-4 object-contain rounded flex-shrink-0"
                                                      @error="handleBuildingIconError($event, getBuildingInfo(null, act).raw || act.payload?.building_name)" />
                                                 <span v-else class="text-xs flex-shrink-0">🏭</span>
@@ -243,7 +237,6 @@
                                             <span class="inline-flex items-center gap-1 text-emerald-400 font-semibold">
                                                 <img v-if="getBuffInfo(null, act).icon"
                                                      :src="getBuffInfo(null, act).icon"
-                                                     loading="lazy" decoding="async"
                                                      class="w-4 h-4 object-contain rounded flex-shrink-0"
                                                      @error="handleBuffIconError($event, act.payload?.recipe_name)" />
                                                 <span v-else class="text-xs flex-shrink-0">🧪</span>
@@ -386,7 +379,7 @@
                                                     class="glass-select w-full flex items-center justify-between text-left text-xs py-2 bg-dark-900/40 transition-all duration-300"
                                                     :class="{ 'border-amber-500/40 bg-amber-500/5': !selectedBuff }">
                                                 <span v-if="selectedBuff" class="flex items-center gap-2 min-w-0">
-                                                    <img alt="" v-if="getBuffIcon(selectedBuff)" :src="getBuffIcon(selectedBuff)" loading="lazy" decoding="async" class="w-5 h-5 object-contain flex-shrink-0" @error="handleBuffIconError($event, selectedBuff)" />
+                                                    <img alt="" v-if="getBuffIcon(selectedBuff)" :src="getBuffIcon(selectedBuff)" class="w-5 h-5 object-contain flex-shrink-0" @error="handleBuffIconError($event, selectedBuff)" />
                                                     <span class="truncate">{{ getStarBuffName(selectedBuff) }} ({{ selectedBuff.amount }})</span>
                                                     <span v-if="buffDurationLabel(selectedBuff)" class="badge badge-emerald text-[9px] flex-shrink-0">⏱ {{ buffDurationLabel(selectedBuff) }}</span>
                                                 </span>
@@ -417,7 +410,7 @@
                                                           :class="bTarget.scope === 'friend' ? 'bg-amber-500/20 text-amber-300' : 'bg-emerald-500/20 text-emerald-300'">
                                                         {{ bTarget.scope === 'friend' ? ('👤 ' + (bTarget.friend?.nickname || bTarget.friend?.username || t('tasks.friend'))) : '🏡 ' + t('tasks.my_city') }}
                                                     </span>
-                                                    <img alt="" v-if="getBuildingIcon(bTarget.building)" :src="getBuildingIcon(bTarget.building)" loading="lazy" decoding="async" class="w-4 h-4 object-contain flex-shrink-0" @error="handleBuildingIconError($event, bTarget.building)" />
+                                                    <img alt="" v-if="getBuildingIcon(bTarget.building)" :src="getBuildingIcon(bTarget.building)" class="w-4 h-4 object-contain flex-shrink-0" @error="handleBuildingIconError($event, bTarget.building)" />
                                                     <span class="text-white/90 font-medium truncate text-xs">{{ getBuildingName(bTarget.building) }} (Grid #{{ bTarget.buildingGrid }})</span>
                                                     <button type="button" @click="removeSelectedBuilding(bIdx)" class="text-white/40 hover:text-red-400 transition-colors ml-1 font-bold flex-shrink-0">✕</button>
                                                 </div>
@@ -468,7 +461,7 @@
                                             <div v-if="selectedSpecialists.length > 0" class="flex flex-wrap gap-2 mb-2 max-h-40 overflow-y-auto p-2 bg-dark-900/40 rounded-xl border border-white/5">
                                                 <div v-for="(spec, sIdx) in selectedSpecialists" :key="getSpecialistId(spec)"
                                                      class="glass-card px-2.5 py-1.5 flex items-center gap-2 text-xs border border-emerald-500/30 bg-emerald-500/10 rounded-lg max-w-full">
-                                                    <img alt="" v-if="getSpecialistIcon(spec.type)" :src="getSpecialistIcon(spec.type)" loading="lazy" decoding="async" class="w-5 h-5 object-contain flex-shrink-0" @error="handleSpecialistIconError($event, spec.type)" />
+                                                    <img alt="" v-if="getSpecialistIcon(spec.type)" :src="getSpecialistIcon(spec.type)" class="w-5 h-5 object-contain flex-shrink-0" @error="handleSpecialistIconError($event, spec.type)" />
                                                     <span class="text-white/90 font-medium truncate text-xs">{{ spec.name || getSpecialistTypeName(spec.type) }}</span>
                                                     <button type="button" @click="removeSelectedSpecialist(sIdx)" class="text-white/40 hover:text-red-400 transition-colors ml-1 font-bold flex-shrink-0">✕</button>
                                                 </div>
@@ -502,7 +495,7 @@
                                             <div v-if="selectedDeposits.length > 0" class="flex flex-wrap gap-2 mb-2 max-h-40 overflow-y-auto p-2 bg-dark-900/40 rounded-xl border border-white/5">
                                                 <div v-for="(dep, dIdx) in selectedDeposits" :key="dep.grid"
                                                      class="glass-card px-2.5 py-1.5 flex items-center gap-2 text-xs border border-emerald-500/30 bg-emerald-500/10 rounded-lg max-w-full">
-                                                    <img alt="" v-if="getBuildingIcon(dep.mine_name)" :src="getBuildingIcon(dep.mine_name)" loading="lazy" decoding="async" class="w-4 h-4 object-contain flex-shrink-0" @error="handleBuildingIconError($event, dep.mine_name)" />
+                                                    <img alt="" v-if="getBuildingIcon(dep.mine_name)" :src="getBuildingIcon(dep.mine_name)" class="w-4 h-4 object-contain flex-shrink-0" @error="handleBuildingIconError($event, dep.mine_name)" />
                                                     <span v-else class="text-xs">⛏️</span>
                                                     <span class="text-white/90 font-medium truncate text-xs">{{ getBuildingName(dep.mine_name) }} (Grid #{{ dep.grid }})</span>
                                                     <button type="button" @click="removeSelectedDeposit(dIdx)" class="text-white/40 hover:text-red-400 transition-colors ml-1 font-bold flex-shrink-0">✕</button>
@@ -537,7 +530,7 @@
                                             <div v-if="selectedMines.length > 0" class="flex flex-wrap gap-2 mb-2 max-h-40 overflow-y-auto p-2 bg-dark-900/40 rounded-xl border border-white/5">
                                                 <div v-for="(mine, mIdx) in selectedMines" :key="mine.grid"
                                                      class="glass-card px-2.5 py-1.5 flex items-center gap-2 text-xs border border-emerald-500/30 bg-emerald-500/10 rounded-lg max-w-full">
-                                                    <img alt="" v-if="getBuildingIcon(mine.building_name)" :src="getBuildingIcon(mine.building_name)" loading="lazy" decoding="async" class="w-4 h-4 object-contain flex-shrink-0" @error="handleBuildingIconError($event, mine.building_name)" />
+                                                    <img alt="" v-if="getBuildingIcon(mine.building_name)" :src="getBuildingIcon(mine.building_name)" class="w-4 h-4 object-contain flex-shrink-0" @error="handleBuildingIconError($event, mine.building_name)" />
                                                     <span v-else class="text-xs">🏭</span>
                                                     <span class="text-white/90 font-medium truncate text-xs">{{ getBuildingName(mine.building_name) }} (Grid #{{ mine.grid }})</span>
                                                     <button type="button" @click="removeSelectedMine(mIdx)" class="text-white/40 hover:text-red-400 transition-colors ml-1 font-bold flex-shrink-0">✕</button>
@@ -1613,11 +1606,14 @@ import TaskList from '../components/tasks/TaskList.vue';
         });
 
         const filteredFriendBuildings = computed(() => {
-            let list = friendBuildings.value.filter(b => isBuffableBuilding(b));
-            // Buff-first flow: filter buildings suitable for the selected buff.
-            if (stepActionType.value === 'apply_buff' && selectedBuff.value?.buffName_string) {
-                const buffKey = selectedBuff.value.buffName_string;
-                list = list.filter(b => canBuffTarget(buffKey, b.buildingName_string || b.buildingName || ''));
+            let list = friendBuildings.value;
+            if (['stop_production', 'start_production'].includes(stepActionType.value)) {
+                list = list.filter(b => isBuffableBuilding(b));
+            } else if (stepActionType.value === 'apply_buff') {
+                if (selectedBuff.value?.buffName_string) {
+                    const buffKey = selectedBuff.value.buffName_string;
+                    list = list.filter(b => canBuffTarget(buffKey, b.buildingName_string || b.buildingName || ''));
+                }
             }
             return list;
         });
@@ -2165,6 +2161,7 @@ import TaskList from '../components/tasks/TaskList.vue';
                 realwoodsawmill: 'sawmill_real_planks', exoticwoodsawmill: 'sawmill_exotic_planks',
                 mahoganysawmill: 'mahogany_sawmill', exoticwoodtreeschool: 'exoticwood_treeschool',
                 stonecutter: 'stonemason', marblecutter: 'marblemason', granitecutter: 'granitemason',
+                efficientcrossbowsmith: 'crossbowsmith',
             };
             return aliases[imageName] || imageName;
         };
@@ -2175,8 +2172,12 @@ import TaskList from '../components/tasks/TaskList.vue';
 
         const totalBuildingsCount = computed(() => {
             if (!zone.value || !zone.value.buildings) return 0;
-            if (['apply_buff', 'stop_production', 'start_production'].includes(stepActionType.value)) {
+            if (['stop_production', 'start_production'].includes(stepActionType.value)) {
                 return zone.value.buildings.filter(b => isBuffableBuilding(b)).length;
+            }
+            if (stepActionType.value === 'apply_buff' && selectedBuff.value?.buffName_string) {
+                const buffKey = selectedBuff.value.buffName_string;
+                return zone.value.buildings.filter(b => canBuffTarget(buffKey, b.buildingName_string || b.buildingName || '')).length;
             }
             return zone.value.buildings.length;
         });
@@ -2187,15 +2188,15 @@ import TaskList from '../components/tasks/TaskList.vue';
             if (!zone.value || !zone.value.buildings) return [];
             let list = zone.value.buildings;
 
-            // Only filter by isBuffableBuilding for buffing, stopping, or starting production
-            if (['apply_buff', 'stop_production', 'start_production'].includes(stepActionType.value)) {
+            if (['stop_production', 'start_production'].includes(stepActionType.value)) {
                 list = list.filter(b => isBuffableBuilding(b));
-            }
-
-            // Buff-first flow: when a buff is selected, only show buildings where it can be applied.
-            if (stepActionType.value === 'apply_buff' && selectedBuff.value?.buffName_string) {
-                const buffKey = selectedBuff.value.buffName_string;
-                list = list.filter(b => canBuffTarget(buffKey, b.buildingName_string || b.buildingName || ''));
+            } else if (stepActionType.value === 'apply_buff') {
+                if (selectedBuff.value?.buffName_string) {
+                    const buffKey = selectedBuff.value.buffName_string;
+                    list = list.filter(b => canBuffTarget(buffKey, b.buildingName_string || b.buildingName || ''));
+                } else {
+                    list = list.filter(b => isBuffableBuilding(b) || ['Mayorhouse', 'Barracks', 'EliteBarracks', 'Bookbinder', 'Tavern'].includes(b.buildingName_string || b.buildingName || ''));
+                }
             }
 
             // Optional "only available" filter for collect_building

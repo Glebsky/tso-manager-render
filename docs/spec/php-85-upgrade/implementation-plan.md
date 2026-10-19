@@ -1,7 +1,7 @@
 # Implementation Plan: Upgrade to PHP 8.5
 
 - **Пакет:** php-85-upgrade v1.0
-- **Статус:** Draft / Planning
+- **Статус:** Implemented / Completed
 
 ## 1. Пакеты Работ (Work Packages Breakdown)
 
@@ -20,9 +20,9 @@
 
 ### 2.1. WP1 — Infrastructure & Config
 
-1. Изменить версию базового образа PHP в [`Dockerfile`](file:///c:/OSPanel/home/admin/Dockerfile):
+1. Изменить версию базового образа PHP в [`Dockerfile`](../../../Dockerfile):
    - Заменить `FROM php:8.4-fpm-alpine AS base` на `FROM php:8.5-fpm-alpine AS base`.
-2. Обновить ограничения версии в [`composer.json`](file:///c:/OSPanel/home/admin/composer.json):
+2. Обновить ограничения версии в [`composer.json`](../../../composer.json):
    - Заменить `"php": "^8.4"` на `"php": "^8.5"`.
    - Заменить `"platform": { "php": "8.4.0" }` на `"platform": { "php": "8.5.0" }`.
 
@@ -56,24 +56,24 @@
 
 ### 2.4. WP4 — Governance & Docs Update
 
-1. Обновить [`docs/spec/constitution.md`](file:///c:/OSPanel/home/admin/docs/spec/constitution.md):
+1. Обновить [`docs/spec/constitution.md`](../constitution.md):
    - Указать `PHP ^8.5` в Разделе 3 (Runtime Contract).
-2. Обновить [`AGENTS.md`](file:///c:/OSPanel/home/admin/AGENTS.md):
+2. Обновить [`AGENTS.md`](../../../AGENTS.md):
    - Указать `PHP 8.5` в блоке QUICK RULES.
 
 ---
 
 ## 3. Затрагиваемые Файлы
 
-#### [MODIFY] [Dockerfile](file:///c:/OSPanel/home/admin/Dockerfile)
-#### [MODIFY] [composer.json](file:///c:/OSPanel/home/admin/composer.json)
-#### [MODIFY] [AGENTS.md](file:///c:/OSPanel/home/admin/AGENTS.md)
-#### [MODIFY] [constitution.md](file:///c:/OSPanel/home/admin/docs/spec/constitution.md)
-#### [NEW] [README.md](file:///c:/OSPanel/home/admin/docs/spec/php-85-upgrade/README.md)
-#### [NEW] [requirements.md](file:///c:/OSPanel/home/admin/docs/spec/php-85-upgrade/requirements.md)
-#### [NEW] [design.md](file:///c:/OSPanel/home/admin/docs/spec/php-85-upgrade/design.md)
-#### [NEW] [implementation-plan.md](file:///c:/OSPanel/home/admin/docs/spec/php-85-upgrade/implementation-plan.md)
-#### [NEW] [verification.md](file:///c:/OSPanel/home/admin/docs/spec/php-85-upgrade/verification.md)
+#### [MODIFY] [Dockerfile](../../../Dockerfile)
+#### [MODIFY] [composer.json](../../../composer.json)
+#### [MODIFY] [AGENTS.md](../../../AGENTS.md)
+#### [MODIFY] [constitution.md](../constitution.md)
+#### [NEW] [README.md](README.md)
+#### [NEW] [requirements.md](requirements.md)
+#### [NEW] [design.md](design.md)
+#### [NEW] [implementation-plan.md](implementation-plan.md)
+#### [NEW] [verification.md](verification.md)
 
 ---
 

@@ -185,7 +185,7 @@
                     <div v-for="b in filteredBuildings" :key="b.buildingGrid" class="glass-card p-3.5 sm:p-4 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 flex flex-col justify-between">
                         <div class="flex items-start gap-2.5 sm:gap-3">
                             <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-dark-900/50 border border-white/5">
-                                <img v-if="getBuildingIcon(b)" :src="getBuildingIcon(b)" :alt="getBuildingName(b)" width="32" height="32" loading="lazy" decoding="async" class="w-7 h-7 sm:w-8 sm:h-8 object-contain" @error="handleBuildingIconError($event, b)">
+                                <img v-if="getBuildingIcon(b)" :src="getBuildingIcon(b)" :alt="getBuildingName(b)" width="32" height="32" class="w-7 h-7 sm:w-8 sm:h-8 object-contain" @error="handleBuildingIconError($event, b)">
                                 <svg v-else class="w-6 h-6 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />
                                 </svg>
@@ -226,7 +226,7 @@
                                 <span v-for="(bf, idx) in b.buffs" :key="idx"
                                       class="inline-flex items-center gap-1 bg-amber-500/10 text-amber-300 text-[10px] font-medium px-2 py-0.5 rounded-md border border-amber-500/20 truncate"
                                       :title="'ID: ' + (bf.buffID || bf.buffId || '?')">
-                                    <img alt="{{ getBuffName(bf) }}" v-if="getBuffIcon(bf)" :src="getBuffIcon(bf)" width="14" height="14" loading="lazy" decoding="async" class="w-3.5 h-3.5 object-contain" @error="handleBuffIconError($event, bf)">
+                                    <img alt="{{ getBuffName(bf) }}" v-if="getBuffIcon(bf)" :src="getBuffIcon(bf)" width="14" height="14" class="w-3.5 h-3.5 object-contain" @error="handleBuffIconError($event, bf)">
                                     <span class="truncate">{{ getBuffName(bf) }}</span>
                                 </span>
                             </div>
@@ -277,7 +277,7 @@
                             <!-- Icon -->
                             <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg overflow-hidden bg-white/5"
                                  :class="getSpecialistCategory(s.type) === 'General' ? 'text-rose-400 shadow-rose-500/5' : getSpecialistCategory(s.type) === 'Explorer' ? 'text-teal-400 shadow-teal-500/5' : 'text-amber-400 shadow-amber-500/5'">
-                                <img alt="{{ getSpecialistCategory(s.type) }}" :src="getSpecialistIcon(s.type)" @error="handleSpecialistIconError($event, s.type)" loading="lazy" decoding="async" class="w-full h-full object-contain p-1" v-if="!hasSpecialistIconError(s.type) && getSpecialistIcon(s.type)" />
+                                <img alt="{{ getSpecialistCategory(s.type) }}" :src="getSpecialistIcon(s.type)" @error="handleSpecialistIconError($event, s.type)" class="w-full h-full object-contain p-1" v-if="!hasSpecialistIconError(s.type) && getSpecialistIcon(s.type)" />
                                 <span v-else-if="getSpecialistCategory(s.type) === 'General'" class="text-xl">🎖️</span>
                                 <span v-else-if="getSpecialistCategory(s.type) === 'Explorer'" class="text-xl">🧭</span>
                                 <span v-else class="text-xl">🔨</span>
@@ -343,7 +343,7 @@
                         <div v-for="(b, idx) in availableBuffs" :key="idx" class="glass-card p-3.5 sm:p-4 hover:border-white/20 hover:scale-[1.02] transition-all duration-300">
                             <div class="flex items-start gap-2.5 sm:gap-3">
                                 <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-500/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                                    <img :src="getBuffIcon(b)" :alt="getStarBuffName(b)" width="28" height="28" loading="lazy" decoding="async" class="w-6 h-6 sm:w-7 sm:h-7 object-contain" @error="handleBuffIconError($event, b)">
+                                    <img :src="getBuffIcon(b)" :alt="getStarBuffName(b)" width="28" height="28" class="w-6 h-6 sm:w-7 sm:h-7 object-contain" @error="handleBuffIconError($event, b)">
                                     <span class="text-xl" style="display: none;">
                                         {{ b.buffName_string === 'AddResource' ? '📥' : b.buffName_string === 'Adventure' ? '🗺️' : b.buffName_string === 'BuildBuilding' ? '🏗️' : '✨' }}
                                     </span>
@@ -393,7 +393,7 @@
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2.5">
                             <div v-for="r in basicResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
-                                    <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" width="24" height="24" loading="lazy" decoding="async" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
+                                    <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" width="24" height="24" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
                                 </div>
                                 <div class="flex-1 min-w-0">
@@ -413,7 +413,7 @@
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2.5">
                             <div v-for="r in improvedResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
-                                    <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" width="24" height="24" loading="lazy" decoding="async" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
+                                    <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" width="24" height="24" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
                                 </div>
                                 <div class="flex-1 min-w-0">
@@ -433,7 +433,7 @@
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2.5">
                             <div v-for="r in advancedResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
-                                    <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" width="24" height="24" loading="lazy" decoding="async" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
+                                    <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" width="24" height="24" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
                                 </div>
                                 <div class="flex-1 min-w-0">
@@ -453,7 +453,7 @@
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2.5">
                             <div v-for="r in masterResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
-                                    <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" width="24" height="24" loading="lazy" decoding="async" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
+                                    <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" width="24" height="24" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
                                 </div>
                                 <div class="flex-1 min-w-0">
@@ -473,7 +473,7 @@
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2.5">
                             <div v-for="r in eliteResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
-                                    <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" width="24" height="24" loading="lazy" decoding="async" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
+                                    <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" width="24" height="24" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
                                 </div>
                                 <div class="flex-1 min-w-0">
@@ -493,7 +493,7 @@
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2.5">
                             <div v-for="r in eventResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
-                                    <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" width="24" height="24" loading="lazy" decoding="async" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
+                                    <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" width="24" height="24" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
                                 </div>
                                 <div class="flex-1 min-w-0">
@@ -513,7 +513,7 @@
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2.5">
                             <div v-for="r in collectibleResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
-                                    <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" width="24" height="24" loading="lazy" decoding="async" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
+                                    <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" width="24" height="24" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
                                 </div>
                                 <div class="flex-1 min-w-0">
@@ -533,7 +533,7 @@
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2.5">
                             <div v-for="r in militaryResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
-                                    <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" width="24" height="24" loading="lazy" decoding="async" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
+                                    <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" width="24" height="24" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
                                 </div>
                                 <div class="flex-1 min-w-0">
@@ -553,7 +553,7 @@
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2.5">
                             <div v-for="r in otherResources" :key="r.name" class="glass-card p-2 flex items-center gap-2 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 w-full">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
-                                    <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" width="24" height="24" loading="lazy" decoding="async" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
+                                    <img v-if="getResourceIcon(r.name)" :src="getResourceIcon(r.name)" :alt="r.name" width="24" height="24" class="w-6 h-6 object-contain" @error="handleIconError($event, r.name)">
                                     <span v-else class="text-sm">{{ getResourceEmoji(r.name) }}</span>
                                 </div>
                                 <div class="flex-1 min-w-0">
@@ -574,7 +574,7 @@
                 <div v-if="parsedFriends.length > 0" class="space-y-2">
                     <div v-for="f in parsedFriends" :key="f.username" class="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] hover:bg-white/5 border border-transparent hover:border-white/5 transition-all duration-300">
                         <div class="w-10 h-10 rounded-xl overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
-                            <img v-if="getFriendAvatar(f)" :src="getFriendAvatar(f)" :alt="f.username" loading="lazy" decoding="async" class="w-full h-full object-cover" @error="$event.target.style.display='none'">
+                            <img v-if="getFriendAvatar(f)" :src="getFriendAvatar(f)" :alt="f.username" class="w-full h-full object-cover" @error="$event.target.style.display='none'">
                             <span v-else class="text-sm font-bold text-white">{{ (f.username || '?').substring(0, 2).toUpperCase() }}</span>
                         </div>
                         <div class="flex-1 min-w-0">

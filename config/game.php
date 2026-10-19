@@ -152,6 +152,7 @@ return [
     |
     */
     'friends_version' => env('TSO_FRIENDS_VERSION', '3c2374c967d4223b5ccb643c0305c8d9eeb0a943'),
+    'zone_version_hash' => env('TSO_ZONE_VERSION_HASH', '799f95cad1c9a5acfa981dee11d3eb73'),
 
     /*
     |--------------------------------------------------------------------------

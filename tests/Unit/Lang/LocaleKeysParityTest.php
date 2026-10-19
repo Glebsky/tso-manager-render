@@ -93,6 +93,21 @@ class LocaleKeysParityTest extends TestCase
             'tasks.max_level_target',
             'tasks.free_or_unknown_cost',
             'tasks.toast.series_scheduled',
+            'market.unit.d',
+            'market.unit.h',
+            'market.unit.m',
+            'market.unit.s',
+            'time.unit.d',
+            'time.unit.h',
+            'time.unit.m',
+            'time.unit.s',
+            'market.trend_stable',
+            'market.trend_rising',
+            'market.trend_falling',
+            'market.verification_status.verified',
+            'market.sync_status.connected',
+            'market.game_world',
+            'market.never',
         ];
 
         $langDir = __DIR__.'/../../../resources/js/lang/generated';
@@ -101,6 +116,45 @@ class LocaleKeysParityTest extends TestCase
             $uiKeys = $data['ui'] ?? [];
             foreach ($criticalKeys as $key) {
                 $this->assertArrayHasKey($key, $uiKeys, "Critical key '{$key}' missing in {$locale}.json");
+            }
+        }
+    }
+
+    public function test_market_trend_and_status_keys_have_correct_translations(): void
+    {
+        $expectedTrends = [
+            'en' => ['stable' => 'Stable', 'rising' => 'Rising', 'falling' => 'Falling'],
+            'ru' => ['stable' => 'Стабильный', 'rising' => 'Растущий', 'falling' => 'Падающий'],
+            'uk' => ['stable' => 'Стабільний', 'rising' => 'Зростаючий', 'falling' => 'Спадний'],
+        ];
+
+        $langDir = __DIR__.'/../../../resources/js/lang/generated';
+        foreach ($expectedTrends as $locale => $trends) {
+            $data = json_decode((string) file_get_contents("{$langDir}/{$locale}.json"), true);
+            $uiKeys = $data['ui'] ?? [];
+
+            foreach ($trends as $tKey => $expectedVal) {
+                $this->assertSame($expectedVal, $uiKeys["market.trend_{$tKey}"] ?? null, "Mismatch for market.trend_{$tKey} in {$locale}");
+            }
+        }
+    }
+
+    public function test_time_and_market_units_have_correct_translations(): void
+    {
+        $expected = [
+            'en' => ['d' => 'd', 'h' => 'h', 'm' => 'm', 's' => 's'],
+            'ru' => ['d' => 'д', 'h' => 'ч', 'm' => 'м', 's' => 'с'],
+            'uk' => ['d' => 'д', 'h' => 'год', 'm' => 'хв', 's' => 'с'],
+        ];
+
+        $langDir = __DIR__.'/../../../resources/js/lang/generated';
+        foreach ($expected as $locale => $units) {
+            $data = json_decode((string) file_get_contents("{$langDir}/{$locale}.json"), true);
+            $uiKeys = $data['ui'] ?? [];
+
+            foreach ($units as $unit => $val) {
+                $this->assertSame($val, $uiKeys["time.unit.{$unit}"] ?? null, "Mismatch for time.unit.{$unit} in {$locale}");
+                $this->assertSame($val, $uiKeys["market.unit.{$unit}"] ?? null, "Mismatch for market.unit.{$unit} in {$locale}");
             }
         }
     }

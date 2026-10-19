@@ -302,4 +302,30 @@ export function gameAny(id, params = null, fallback = null) {
     return interpolateGame(template, params);
 }
 
-export default { locale, intlLocale, AVAILABLE_LOCALES, setLocale, initLang, t, game, gameAny, gameLookup, gameAnyLookup };
+/**
+ * Format expiration / remaining time adapting units (d, h, m, s) to current language.
+ */
+export function formatTimeLeft(seconds) {
+    const sec = Number(seconds || 0);
+    if (sec <= 0) {
+        const expired = t('market.expired');
+        return expired !== 'market.expired' ? expired : 'Expired';
+    }
+
+    const d = Math.floor(sec / 86400);
+    const h = Math.floor((sec % 86400) / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    const s = sec % 60;
+
+    const unitD = t('time.unit.d') !== 'time.unit.d' ? t('time.unit.d') : (t('tasks.unit.d') !== 'tasks.unit.d' ? t('tasks.unit.d') : 'd');
+    const unitH = t('time.unit.h') !== 'time.unit.h' ? t('time.unit.h') : (t('tasks.unit.h') !== 'tasks.unit.h' ? t('tasks.unit.h') : 'h');
+    const unitM = t('time.unit.m') !== 'time.unit.m' ? t('time.unit.m') : (t('tasks.unit.m') !== 'tasks.unit.m' ? t('tasks.unit.m') : 'm');
+    const unitS = t('time.unit.s') !== 'time.unit.s' ? t('time.unit.s') : (t('tasks.unit.s') !== 'tasks.unit.s' ? t('tasks.unit.s') : 's');
+
+    if (d > 0) return `${d}${unitD} ${h}${unitH}`;
+    if (h > 0) return `${h}${unitH} ${m}${unitM} ${s}${unitS}`;
+    if (m > 0) return `${m}${unitM} ${s}${unitS}`;
+    return `${s}${unitS}`;
+}
+
+export default { locale, intlLocale, AVAILABLE_LOCALES, setLocale, initLang, t, game, gameAny, gameLookup, gameAnyLookup, formatTimeLeft };

@@ -245,13 +245,7 @@ readonly class AccountService
                     Log::warning("[FriendZone] Game server returned error {$errorCode} while loading zone of friend #{$friendId} for account #{$account->id} (attempt {$attempt}/{$maxAttempts})");
 
                     if ($errorCode === 1012 && $attempt < $maxAttempts) {
-                        if ($attempt === 2 && ! $reloggedIn) {
-                            Log::info("[FriendZone] Re-authenticating for account #{$account->id} to recover from error 1012");
-                            $this->amfService->invalidateSession($account->id);
-                            $this->authService->ensureAuthenticated($account, force: true);
-                            $account->refresh();
-                            $reloggedIn = true;
-                        }
+                        Log::info("[FriendZone] Zone busy (error 1012) for friend #{$friendId}; sleeping before retry");
                         sleep(2);
 
                         continue;

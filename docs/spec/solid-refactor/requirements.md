@@ -18,7 +18,7 @@ HTTP (Controllers / Form Requests / Resources) / Console Commands / Queue Jobs
 ```
 
 Rules:
-- **Mandatory Constructor Injection**: Every Controller, Service, Handler, Command, and Job MUST inject its dependencies via PHP 8.1 Constructor Property Promotion (`public function __construct(private readonly ServiceClass $service)`).
+- **Mandatory Constructor Injection**: Every Controller, Service, Handler, Command, and Job MUST inject its dependencies via Constructor Property Promotion (`public function __construct(private readonly ServiceClass $service)`).
 - **No Static Facades or Helper Locators in Domain Services**: The use of static facades (`DB::`, `Cache::`, `Log::`, `Auth::`, `Storage::`) or `app()` / `resolve()` helpers inside domain services is strictly forbidden. Inject contracts, models, loggers, or `CacheManager` / `Repository` dependencies instead.
 
 ---
@@ -80,8 +80,8 @@ Every API endpoint exposed by the application MUST strictly adhere to REST stand
 
 ## 3. Technology & Syntax Constraints
 
-- **PHP Constraint**: `^8.1` (PHP 8.1 syntax only; no `readonly class` or PHP 8.2+ features; constructor property promotion and `readonly` properties are enforced).
-- **Laravel Framework**: `^10.10`.
+- **PHP Constraint**: `^8.5` (superseded the original `^8.1` constraint per `architecture-hardening` ADR-002 and `php-85-upgrade`; constructor property promotion and `readonly` properties are enforced; see `docs/spec/constitution.md` §3).
+- **Laravel Framework**: `^12.0` (originally `^10.10`).
 - **Strict Types**: `declare(strict_types=1);` in every PHP file.
 - **Form Requests**: All incoming HTTP input validated via Form Requests (`App\Http\Requests\...`).
 - **JsonResources**: All HTTP API entity responses serialized via JsonResources (`App\Http\Resources\...`).

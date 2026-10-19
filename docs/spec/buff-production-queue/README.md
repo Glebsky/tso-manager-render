@@ -1,7 +1,7 @@
 <!-- SDD package: buff-production-queue v2.0 -->
 # SDD: Очередь производства бафов (`produce_buff`)
 
-- **Статус:** Ready for implementation
+- **Статус:** Implemented (`ProduceBuffHandler`, `TaskType::ProduceBuff`)
 - **Версия пакета:** 2.0 (все утверждения сверены с живым трафиком)
 - **Проект:** Laravel 12 / Vue 3 (TSO Manager Admin), PHP ^8.5
 - **Компонент:** Task Planner, TSO AMF protocol layer, Zone snapshot

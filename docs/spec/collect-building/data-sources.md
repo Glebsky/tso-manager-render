@@ -165,7 +165,7 @@ dQuestPoolVO.mQuestVO_vector
 Фильтр: `type == TYPE_BUILDING (1)` и `condition == CONDITION_SELECTED`,
 `actionName_string == "buildingselected"`. Имя здания — `name_string`.
 
-Это ровно та ��е проверка, которую делает сам клиент перед отправкой триггера
+Это ровно та же проверка, которую делает сам клиент перед отправкой триггера
 (`ContainsTriggerCondition`, `client_scripts.txt:57393`; вызов — `23068`). Повторяя её,
 мы получаем тот же ответ, который видит игрок в виде иконки над зданием.
 
