@@ -392,6 +392,8 @@ class TsoAuthService
      * both validates the tokens and refreshes the cookie jar.
      *
      * Returns false only when we can positively tell the session is unusable.
+     *
+     * @throws RuntimeException when transport/server failure leaves validity unknown
      */
     public function verifySession(Account $account): bool
     {
@@ -428,17 +430,25 @@ class TsoAuthService
             ),
         ]);
 
-        $response = (string) curl_exec($ch);
+        $response = curl_exec($ch);
         $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $error = curl_error($ch);
+        $errorCode = curl_errno($ch);
 
-        if ($error !== '') {
-            Log::warning("[TsoAuth] Session probe for account #{$account->id} failed on transport level: {$error}");
+        // An inconclusive probe must not fall through to login: creating a new
+        // session can invalidate the still-working token held by another client.
+        if ($response === false || $errorCode !== 0) {
+            Log::warning("[TsoAuth] Session probe for account #{$account->id} inconclusive (cURL {$errorCode})");
 
-            return false;
+            throw new RuntimeException('Session verification transport failure; authentication deferred.');
         }
 
-        $alive = $status === 200 && ! str_contains($response, 'ERROR');
+        if ($status !== 200 && ! in_array($status, [401, 403], true)) {
+            Log::warning("[TsoAuth] Session probe for account #{$account->id} inconclusive (HTTP {$status})");
+
+            throw new RuntimeException("Session verification unavailable (HTTP {$status}); authentication deferred.");
+        }
+
+        $alive = $status === 200 && ! str_contains((string) $response, 'ERROR');
 
         Log::info("[TsoAuth] Session probe for account #{$account->id}: HTTP {$status}, alive=".($alive ? 'yes' : 'no'));
 

@@ -6,13 +6,16 @@ namespace App\Services\Account\Sync;
 
 use App\Exceptions\AccountSyncException;
 use App\Exceptions\AuthChallengeException;
+use App\Exceptions\SessionBusyException;
 use App\Exceptions\SessionExpiredException;
 use App\Models\Account;
+use App\Services\Game\Session\GameSessionRecovery;
 use App\Services\TsoAmfService;
 use App\Services\TsoAuthService;
 use App\Services\ZoneParserService;
 use Exception;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Sleep;
 
 /**
  * Handles network authentication, AMF zone fetching, retry loops, error code handling (1012/1005), and friend list enrichment.
@@ -26,6 +29,7 @@ readonly class AccountSyncFetcher
         private TsoAuthService $authService,
         private TsoAmfService $amfService,
         private ZoneParserService $zoneParser,
+        private GameSessionRecovery $sessionRecovery,
     ) {}
 
     /**
@@ -37,54 +41,63 @@ readonly class AccountSyncFetcher
      */
     public function fetchZone(Account $account): array
     {
-        $this->ensureAuthenticatedWithRecovery($account);
+        $reloginCount = $this->ensureAuthenticatedWithRecovery($account) ? 1 : 0;
 
+        $identityRecovered = false;
         $maxRetries = 6;
         $retryDelay = 3;
         $zoneData = null;
         $errorCode = 0;
         $buildingCount = 0;
         $lastException = null;
-        $reloginCount = 0;
 
         for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
             try {
                 Log::info("[AccountSync] Loading zone for account #{$account->id} (attempt {$attempt}/{$maxRetries})");
+                $attemptIdentity = $this->sessionRecovery->currentIdentity($account);
                 $rawAmf = $this->amfService->getZone($account);
                 $zoneData = $this->zoneParser->parse($rawAmf);
 
-                $errorCode = (int) ($zoneData['errorCode'] ?? 0);
+                $rawCode = $zoneData['errorCode'] ?? null;
+                if (! is_int($rawCode) && ! (is_string($rawCode) && ctype_digit($rawCode))) {
+                    throw new \RuntimeException('Cannot confirm home zone login: invalid response');
+                }
+                $errorCode = (int) $rawCode;
                 $buildingCount = count($zoneData['buildings'] ?? []);
 
                 if ($errorCode === 1012) {
                     if ($attempt === 1) {
-                        Log::info("[AccountSync] Zone locked/superseded (error 1012) for account #{$account->id}. Socket lease busy; retrying in {$retryDelay}s (attempt {$attempt}/{$maxRetries}).");
-                        sleep($retryDelay);
+                        Log::info("[AccountSync] Zone locked/superseded (error 1012) for account #{$account->id}. Retrying before bounded game identity recovery in {$retryDelay}s (attempt {$attempt}/{$maxRetries}).");
+                        Sleep::for($retryDelay)->seconds();
 
                         continue;
                     }
 
-                    if ($reloginCount < self::MAX_RELOGINS) {
-                        $this->relogin($account, "zone locked/superseded by another session (error {$errorCode})");
-                        $reloginCount++;
-                        sleep(2);
+                    if (! $identityRecovered && $attempt < $maxRetries) {
+                        $identityRecovered = true;
+                        try {
+                            $this->sessionRecovery->renewGameIdentity($account, $attemptIdentity);
+                        } catch (SessionBusyException $busy) {
+                            // Recovery never ran: stop rather than retry the rejected identity.
+                            throw new AccountSyncException(__('ui.sync.zone_locked'), 409, [], $busy);
+                        }
 
                         continue;
                     }
 
-                    Log::warning("[AccountSync] Zone still locked (error 1012) after re-login for account #{$account->id}. Retrying in {$retryDelay}s (attempt {$attempt}/{$maxRetries}).");
+                    Log::warning("[AccountSync] Zone still locked (error 1012) after game identity recovery for account #{$account->id}. Retrying in {$retryDelay}s (attempt {$attempt}/{$maxRetries}).");
                     if ($attempt < $maxRetries) {
-                        sleep($retryDelay);
+                        Sleep::for($retryDelay)->seconds();
                     }
 
                     continue;
                 }
 
                 if ($errorCode === 1005) {
-                    if ($reloginCount < self::MAX_RELOGINS) {
-                        $this->relogin($account, "session expired (error {$errorCode})");
+                    if ($reloginCount < self::MAX_RELOGINS && $attempt < $maxRetries) {
                         $reloginCount++;
-                        sleep(2);
+                        $this->relogin($account, "session expired (error {$errorCode})");
+                        Sleep::for(2)->seconds();
 
                         continue;
                     }
@@ -100,19 +113,23 @@ readonly class AccountSyncFetcher
                 Log::warning("[AccountSync] Attempt {$attempt}/{$maxRetries} failed for account #{$account->id}: ".$e->getMessage());
                 $lastException = $e;
 
-                if ($this->authService->isCaptchaOr2faError($e->getMessage())) {
+                if ($e instanceof AccountSyncException) {
                     throw $e;
                 }
 
-                if (($e instanceof SessionExpiredException || stripos($e->getMessage(), 'session') !== false)
-                    && $reloginCount < self::MAX_RELOGINS) {
-                    $this->relogin($account, "session error during fetch: {$e->getMessage()}");
+                if ($e instanceof AuthChallengeException || $this->authService->isCaptchaOr2faError($e->getMessage())) {
+                    throw $e;
+                }
+
+                if ($e instanceof SessionExpiredException
+                    && $reloginCount < self::MAX_RELOGINS && $attempt < $maxRetries) {
                     $reloginCount++;
+                    $this->relogin($account, "session error during fetch: {$e->getMessage()}");
                 }
             }
 
             if ($attempt < $maxRetries) {
-                sleep($retryDelay);
+                Sleep::for($retryDelay)->seconds();
             }
         }
 
@@ -138,16 +155,12 @@ readonly class AccountSyncFetcher
      */
     public function resetSessionState(Account $account): void
     {
-        $this->authService->resetSession($account);
-        $this->amfService->invalidateSession($account->id);
-        $this->amfService->resetClient($account->id);
-        $this->amfService->forgetClientId($account);
+        $this->sessionRecovery->reset($account);
     }
 
     /**
-     * The single forced re-login of a sync (FR-009). A failed re-login is
-     * logged and the zone fetch is retried anyway, except for CAPTCHA / 2FA,
-     * which no retry can fix.
+     * The single forced re-login of a sync. Failure aborts recovery;
+     * CAPTCHA/2FA propagates unchanged. The next zone read confirms 1002.
      *
      * @throws Exception
      */
@@ -156,36 +169,44 @@ readonly class AccountSyncFetcher
         Log::info("[AccountSync] {$why} for account #{$account->id}; resetting session and re-authenticating");
 
         try {
-            $this->resetSessionState($account);
-            $this->authService->ensureAuthenticated($account, force: true);
-            $account->refresh();
+            $this->sessionRecovery->reauthenticate($account);
+            // The next bounded getZone() is the same CMD_ZONE_LOGIN(1002)
+            // used by task recovery; sync also consumes its parsed zone data.
         } catch (Exception $reloginEx) {
-            Log::warning("[AccountSync] Re-login for account #{$account->id} encountered: {$reloginEx->getMessage()}; proceeding to retry zone fetch");
+            Log::warning("[AccountSync] Re-login failed for account #{$account->id}; not continuing zone requests");
 
             if ($reloginEx instanceof AuthChallengeException || $this->authService->isCaptchaOr2faError($reloginEx->getMessage())) {
                 throw $reloginEx;
             }
+
+            throw new AccountSyncException('Session recovery failed.', 502, [], $reloginEx);
         }
     }
 
     /**
-     * Authenticate the account, with an automatic clean session reset and retry if initial attempt fails.
+     * Authenticate normally; only a typed session rejection permits the one clean forced login.
      *
      * @throws Exception
      */
-    private function ensureAuthenticatedWithRecovery(Account $account): void
+    private function ensureAuthenticatedWithRecovery(Account $account): bool
     {
         try {
             $this->ensureAuthenticated($account);
+
+            return false;
         } catch (Exception $e) {
-            if ($this->authService->isCaptchaOr2faError($e->getMessage())) {
+            if ($e instanceof AuthChallengeException || $this->authService->isCaptchaOr2faError($e->getMessage())) {
+                throw $e;
+            }
+
+            if (! $e instanceof SessionExpiredException) {
                 throw $e;
             }
 
             Log::warning("[AccountSync] Initial authentication failed for account #{$account->id}: {$e->getMessage()}. Resetting session state and retrying...");
-            $this->resetSessionState($account);
+            $this->sessionRecovery->reauthenticate($account);
 
-            $this->authService->ensureAuthenticated($account, force: true);
+            return true;
         }
     }
 

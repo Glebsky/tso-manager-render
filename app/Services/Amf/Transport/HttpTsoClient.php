@@ -429,8 +429,8 @@ class HttpTsoClient implements TsoClientInterface
         }
 
         $ch = TsoCurlHelper::init($client['url'], [
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_POSTREDIR => 3,
+            // A redirect cannot confirm a mutation and must never replay its POST.
+            CURLOPT_FOLLOWLOCATION => false,
             CURLOPT_COOKIEFILE => $client['cookie_file'],
             CURLOPT_COOKIEJAR => $client['cookie_file'],
             CURLOPT_HTTPHEADER => array_merge(
@@ -455,6 +455,10 @@ class HttpTsoClient implements TsoClientInterface
         if ($error) {
             Log::error("[TsoAmf] Command [{$operation}] for account #{$accountId} failed after {$durationMs}ms with cURL error: {$error}");
             throw new \RuntimeException('AMF cURL Error: '.$error);
+        }
+        if ($httpCode >= 300 && $httpCode < 400) {
+            Log::warning("[TsoAmf] Command [{$operation}] for account #{$accountId} returned HTTP {$httpCode}; outcome unconfirmed, redirect not followed");
+            throw new \RuntimeException("AMF command outcome unconfirmed (HTTP {$httpCode}); redirect not followed.");
         }
         if ($httpCode !== 200) {
             Log::error("[TsoAmf] Command [{$operation}] for account #{$accountId} returned HTTP {$httpCode} after {$durationMs}ms. Response: ".substr($response, 0, 300));

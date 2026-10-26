@@ -95,6 +95,27 @@ final readonly class ZoneSnapshot
         return [];
     }
 
+    /** The lifetime produced counter selects bookbinder price tiers, not current stock. */
+    public function resourceProducedAmount(string $name): ?int
+    {
+        $resources = $this->raw['resources'] ?? null;
+        if (! is_array($resources)) {
+            return null;
+        }
+        $matches = [];
+        foreach ($resources as $resource) {
+            if (is_array($resource) && ($resource['name_string'] ?? $resource['name'] ?? '') === $name) {
+                $matches[] = $resource['producedAmount'] ?? null;
+            }
+        }
+        if (count($matches) !== 1) {
+            return null;
+        }
+        $value = $matches[0];
+
+        return is_int($value) && $value >= 0 ? $value : null;
+    }
+
     /**
      * @return array<string, int>
      */
@@ -154,12 +175,21 @@ final readonly class ZoneSnapshot
 
         $result = [];
         foreach ($rawQueues as $q) {
-            if (! is_array($q) || ! isset($q['production_type'])) {
-                continue;
+            if (! is_array($q) || ! isset($q['production_type']) || ! is_int($q['production_type'])
+                || ! isset($q['orders']) || ! is_array($q['orders']) || ! array_is_list($q['orders'])) {
+                return null;
+            }
+
+            foreach ($q['orders'] as $order) {
+                if (! is_array($order) || ! isset($order['amount'], $order['produced_items'])
+                    || ! is_int($order['amount']) || $order['amount'] <= 0
+                    || ! is_int($order['produced_items']) || $order['produced_items'] < 0) {
+                    return null;
+                }
             }
 
             /** @var list<array{type_string: string, amount: int, produced_items: int, collected_time: float, stacks: int, index: int}> $orders */
-            $orders = isset($q['orders']) && is_array($q['orders']) ? $q['orders'] : [];
+            $orders = $q['orders'];
             $maxCapacity = isset($q['max_capacity']) && is_numeric($q['max_capacity']) ? (int) $q['max_capacity'] : null;
 
             $result[] = new ProductionQueueState(
