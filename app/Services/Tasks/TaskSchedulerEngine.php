@@ -238,6 +238,10 @@ readonly class TaskSchedulerEngine
      */
     public function processAccountSync(Carbon $now, string $mode = 'queue'): int
     {
+        if (config('game.account_sync_enabled', true) === false) {
+            return 0;
+        }
+
         $syncInterval = (int) Setting::get('sync_interval', 30);
 
         if ($syncInterval <= 0) {
