@@ -48,6 +48,22 @@ class SchedulerModeTest extends TestCase
         $this->assertSame([implode(',', config('game.queues'))], RecordingWorkCommand::$queues);
     }
 
+    public function test_inline_worker_respects_custom_queue_option(): void
+    {
+        Artisan::call('tso:run-scheduler', ['--mode' => 'cron', '--queue' => 'tso-tasks,tso-accounts']);
+
+        $this->assertSame(['tso-tasks,tso-accounts'], RecordingWorkCommand::$queues);
+    }
+
+    public function test_inline_worker_respects_config_worker_queues(): void
+    {
+        config(['game.worker_queues' => 'tso-market']);
+
+        Artisan::call('tso:run-scheduler', ['--mode' => 'cron']);
+
+        $this->assertSame(['tso-market'], RecordingWorkCommand::$queues);
+    }
+
     public function test_schedule_does_not_force_inline_worker(): void
     {
         $commands = collect(app(Schedule::class)->events())

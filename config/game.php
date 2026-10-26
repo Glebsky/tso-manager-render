@@ -101,8 +101,9 @@ return [
 
         /*
          | Codes that mean "this AMF endpoint is bound to another/newer session".
-         | Re-logging in would only create yet another session, so we just drop
-         | the cached transport for the account and retry.
+         | First warm up the zone without re-login. A persistent conflict permits
+         | one game identity renewal on the same token, then confirmed home-zone entry.
+         | Only actual web-session rejection permits a forced login.
          */
         'transport_retry_errors' => [1012],
         'transport_retry_delay' => 3,
