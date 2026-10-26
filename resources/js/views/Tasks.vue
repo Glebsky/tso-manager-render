@@ -310,6 +310,7 @@
                                         <button type="button" @click="stepActionType = 'send_geologist'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-2 text-left text-xs text-white/90 hover:bg-emerald-500/20 hover:text-white transition-colors flex items-center gap-2">⛏️ {{ t('tasks.action.send_geologist') }}</button>
                                         <button type="button" @click="stepActionType = 'send_explorer'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-2 text-left text-xs text-white/90 hover:bg-emerald-500/20 hover:text-white transition-colors flex items-center gap-2">🧭 {{ t('tasks.action.send_explorer') }}</button>
                                         <button type="button" @click="stepActionType = 'collect_pickups'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-2 text-left text-xs text-white/90 hover:bg-emerald-500/20 hover:text-white transition-colors flex items-center gap-2">🧺 {{ t('tasks.action.collect_pickups') }}</button>
+                                        <button type="button" @click="stepActionType = 'collect_daily_login_reward'; onStepActionTypeChange(); activeDropdown = null" class="w-full px-3 py-2 text-left text-xs text-white/90 hover:bg-emerald-500/20 hover:text-white transition-colors flex items-center gap-2">🎁 {{ t('tasks.action.collect_daily_login_reward') }}</button>
                                     </div>
                                 </div>
                             </div>
@@ -317,6 +318,9 @@
                             <!-- Кастомный выбор в зависимости от типа шага -->
                             <div class="md:col-span-2">
                                 <label class="block text-[10px] font-medium text-white/40 mb-1.5 uppercase">{{ t('tasks.step_params') }}</label>
+                                <p v-if="stepActionType === 'collect_daily_login_reward'" class="text-xs text-white/60 mb-3">
+                                    🎁 {{ t('tasks.daily_login_hint') }}
+                                </p>
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                     <!-- Селекторы целевой зоны и зданий/друзей -->
                                     <div class="col-span-2">
@@ -1049,6 +1053,8 @@ import { humanizeGameId, resourceName, buildingName, isBuffableBuilding, getBuil
 import { canBuffTarget, isBuildingBuff, isFriendZoneBuff, getBuffDurations, formatBuffDuration } from '../lang/buffTargets';
 import { getGameImageUrl, handleGameImageError } from '../services/gameImageService';
 import { deduplicateSequenceActions } from '../services/taskDeduplication';
+import { getTaskResultPresentation, getStepResultPresentation } from '../services/taskResultPresentation';
+import { getTaskActionsList, isInvalidTaskSequence } from '../services/taskActionList';
 
 import Spinner from '../components/Spinner.vue';
 import SchedulePicker from '../components/tasks/SchedulePicker.vue';
@@ -1223,7 +1229,8 @@ import TaskList from '../components/tasks/TaskList.vue';
                 apply_buff: '⚡ ' + t('tasks.action.apply_buff'),
                 send_geologist: '⛏️ ' + t('tasks.action.send_geologist'),
                 send_explorer: '🧭 ' + t('tasks.action.send_explorer'),
-                collect_pickups: '🧺 ' + t('tasks.action.collect_pickups')
+                collect_pickups: '🧺 ' + t('tasks.action.collect_pickups'),
+                collect_daily_login_reward: '🎁 ' + t('tasks.action.collect_daily_login_reward')
             };
             return labels[stepActionType.value] || t('tasks.select_action');
         });
@@ -1732,7 +1739,8 @@ import TaskList from '../components/tasks/TaskList.vue';
             apply_buff: '⚡',
             send_geologist: '⛏️',
             send_explorer: '🧭',
-            collect_pickups: '🧺'
+            collect_pickups: '🧺',
+            collect_daily_login_reward: '🎁'
         };
 
         const typeLabels = {
@@ -1745,7 +1753,8 @@ import TaskList from '../components/tasks/TaskList.vue';
             apply_buff: t('tasks.type_label.apply_buff'),
             send_geologist: t('tasks.type_label.send_geologist'),
             send_explorer: t('tasks.type_label.send_explorer'),
-            collect_pickups: t('tasks.type_label.collect_pickups')
+            collect_pickups: t('tasks.type_label.collect_pickups'),
+            collect_daily_login_reward: t('tasks.type_label.collect_daily_login_reward')
         };
 
         const SPECIALIST_TYPES = {
@@ -1876,6 +1885,8 @@ import TaskList from '../components/tasks/TaskList.vue';
                     task_type: type === 'send_geologist' ? 0 : 1,
                     sub_task_id: 0
                 };
+            } else if (type === 'collect_daily_login_reward') {
+                payload.value = { scope: 'self' };
             } else if (type === 'collect_pickups') {
                 // Не привязано к зданию: только фильтр и пауза между кликами
                 payload.value = { pickup_type: 'all', delay_ms: 250 };
@@ -2085,6 +2096,17 @@ import TaskList from '../components/tasks/TaskList.vue';
                         building: { ...selectedProducer.value },
                         recipe: { ...selectedRecipe.value },
                     }
+                });
+                showToast(t('tasks.toast.action_added'));
+                return;
+            }
+
+            if (stepActionType.value === 'collect_daily_login_reward') {
+                sequenceActions.value.push({
+                    task_type: 'collect_daily_login_reward',
+                    payload: { scope: 'self' },
+                    delay_seconds: Number(stepDelay.value || 0),
+                    meta: {}
                 });
                 showToast(t('tasks.toast.action_added'));
                 return;
@@ -2852,6 +2874,10 @@ import TaskList from '../components/tasks/TaskList.vue';
         };
 
         const editTask = async (task) => {
+            if (task?.task_type === 'sequence' && isInvalidTaskSequence(task)) {
+                showToast(t('tasks.invalid_sequence'), 'warning');
+                return;
+            }
             editingTaskId.value = task.id;
             taskName.value = task.name || '';
             taskGroupName.value = task.group_name || '';
@@ -2997,6 +3023,10 @@ import TaskList from '../components/tasks/TaskList.vue';
         };
 
         const scheduleTask = async () => {
+            if (editingTaskId.value && isInvalidTaskSequence(tasks.value.find(task => task.id === editingTaskId.value))) {
+                showToast(t('tasks.invalid_sequence'), 'warning');
+                return;
+            }
             if (!selectedAccountId.value) {
                 showToast(t('tasks.toast.select_game_account'), 'warning');
                 return;
@@ -3419,6 +3449,12 @@ import TaskList from '../components/tasks/TaskList.vue';
             executingTasks.value[taskId] = false;
         };
 
+        const showTaskExecutionResult = (task, fallback = '') => {
+            const result = getTaskResultPresentation(task);
+            const detail = result.detail || fallback;
+            showToast(t(result.toastKey) + (detail ? ': ' + detail : ''), result.toastType);
+        };
+
         const pollTaskExecution = (taskId) => {
             if (!taskId || taskId === 'undefined') return;
             stopPollingTask(taskId);
@@ -3450,13 +3486,7 @@ import TaskList from '../components/tasks/TaskList.vue';
                         stopPollingTask(taskId);
 
                         if (updatedTask && isFinished) {
-                            const isErr = updatedTask.status === 'failed' || (updatedTask.last_result && updatedTask.last_result.startsWith('ERROR:'));
-                            if (isErr) {
-                                const err = getActionStepError(updatedTask, 0) || updatedTask.last_result || t('tasks.toast.unknown');
-                                showToast(t('tasks.toast.run_error') + ': ' + err, 'error');
-                            } else if (updatedTask.last_result) {
-                                showToast(t('tasks.toast.run_success') + ': ' + updatedTask.last_result);
-                            }
+                            showTaskExecutionResult(updatedTask);
                         }
 
                         // One full refresh at the end to sync the planner state
@@ -3512,6 +3542,10 @@ import TaskList from '../components/tasks/TaskList.vue';
         };
 
         const runSingleActionNow = async ({ task, actionIndex }) => {
+            if (task?.task_type === 'sequence' && isInvalidTaskSequence(task)) {
+                showToast(t('tasks.invalid_sequence'), 'warning');
+                return;
+            }
             const taskId = task.id;
             const actionKey = `${taskId}_${actionIndex}`;
             if (!taskId || actionIndex === undefined || actionIndex === null) return;
@@ -3532,16 +3566,9 @@ import TaskList from '../components/tasks/TaskList.vue';
                     };
                 }
 
-                const stepResult = res.data?.step_result;
-                if (stepResult?.status === 'completed') {
-                    showToast(t('tasks.toast.action_completed'));
-                } else if (stepResult?.status === 'skipped') {
-                    showToast(t('tasks.toast.action_skipped') + (stepResult.reason ? ': ' + stepResult.reason : ''), 'warning');
-                } else if (stepResult?.status === 'failed') {
-                    showToast(t('tasks.toast.action_failed') + (stepResult.error ? ': ' + stepResult.error : ''), 'error');
-                } else {
-                    showToast(t('tasks.toast.action_completed'));
-                }
+                const stepResult = res.data?.step_result ?? updatedTask?.payload?.step_results?.[actionIndex];
+                const result = getStepResultPresentation(stepResult, res.data?.message);
+                showToast(t(result.toastKey) + (result.detail ? ': ' + result.detail : ''), result.toastType);
             } catch (e) {
                 showToast(e.response?.data?.message || t('tasks.toast.action_failed'), 'error');
             } finally {
@@ -3553,6 +3580,10 @@ import TaskList from '../components/tasks/TaskList.vue';
             const taskId = typeof target === 'object' && target !== null ? target.id : target;
             const taskObj = typeof target === 'object' && target !== null ? target : tasks.value.find(t => t.id === taskId);
             if (!taskId || taskId === 'undefined') return;
+            if (isInvalidTaskSequence(taskObj)) {
+                showToast(t('tasks.invalid_sequence'), 'warning');
+                return;
+            }
 
             if (executingTasks.value[taskId]) return;
             executingTasks.value[taskId] = true;
@@ -3588,8 +3619,8 @@ import TaskList from '../components/tasks/TaskList.vue';
                 }
 
                 if (currentTask && currentTask.status !== 'queued' && currentTask.status !== 'running') {
-                    if (res.data.success && !currentTask.last_result?.startsWith('ERROR:')) {
-                        showToast(t('tasks.toast.run_success') + ': ' + (currentTask.last_result || 'OK'));
+                    if (res.data.success) {
+                        showTaskExecutionResult(currentTask, res.data.message);
                     } else {
                         const err = getActionStepError(currentTask, 0) || currentTask.last_result || res.data.message || t('tasks.toast.unknown');
                         showToast(t('tasks.toast.run_error') + ': ' + err, 'error');
@@ -3615,16 +3646,13 @@ import TaskList from '../components/tasks/TaskList.vue';
             expandedTasks.value[taskId] = !expandedTasks.value[taskId];
         };
 
-        const getTaskActionsList = (task) => {
-            if (!task) return [];
-            if (task.task_type === 'sequence' && Array.isArray(task.payload?.actions)) {
-                return task.payload.actions;
+        const getStepResult = (task, aIdx) => {
+            const stepResults = task?.payload?.step_results;
+            if (!stepResults || typeof stepResults !== 'object') return null;
+            if (Array.isArray(stepResults)) {
+                return stepResults[aIdx] ?? null;
             }
-            return [{
-                task_type: task.task_type,
-                payload: task.payload || {},
-                delay_seconds: 0
-            }];
+            return stepResults[aIdx] ?? stepResults[String(aIdx)] ?? null;
         };
 
         const getActionStepStatus = (task, aIdx) => {
@@ -3634,9 +3662,9 @@ import TaskList from '../components/tasks/TaskList.vue';
                 return 'pending';
             }
 
-            const stepResults = task.payload?.step_results;
-            if (Array.isArray(stepResults) && stepResults[aIdx] && stepResults[aIdx].status) {
-                return stepResults[aIdx].status;
+            const step = getStepResult(task, aIdx);
+            if (step && step.status) {
+                return step.status;
             }
 
             const isFailed = task.status === 'failed' || (task.last_result && task.last_result.startsWith('ERROR:'));
@@ -3672,12 +3700,12 @@ import TaskList from '../components/tasks/TaskList.vue';
             if (!task) return null;
 
             let rawMsg = '';
-            const stepResults = task.payload?.step_results;
-            if (Array.isArray(stepResults) && stepResults[aIdx]) {
-                if (stepResults[aIdx].status === 'failed') {
-                    rawMsg = stepResults[aIdx].error || '';
-                } else if (stepResults[aIdx].status === 'skipped') {
-                    rawMsg = stepResults[aIdx].reason || '';
+            const step = getStepResult(task, aIdx);
+            if (step) {
+                if (step.status === 'failed') {
+                    rawMsg = step.error || '';
+                } else if (step.status === 'skipped') {
+                    rawMsg = step.reason || '';
                 }
             } else if (getActionStepStatus(task, aIdx) === 'failed') {
                 rawMsg = task.last_result || '';
@@ -3719,49 +3747,11 @@ import TaskList from '../components/tasks/TaskList.vue';
         };
 
         const getTaskLastResultBadge = (task) => {
-            if (!task || !task.last_result) return null;
-            const res = task.last_result;
-
-            if (task.status === 'cancelled' || res.includes('Остановлено') || res.includes('Stopped by user') || res.includes('Зупинено')) {
-                return {
-                    label: t('tasks.status.cancelled'),
-                    class: 'badge-neutral'
-                };
-            }
-
-            if (res.startsWith('WARNING:') || res.includes('timed out') || res.includes('stuck in')) {
-                return {
-                    label: t('tasks.warning'),
-                    class: 'badge-warning'
-                };
-            }
-
-            if (res.startsWith('PARTIAL:') || res.includes('PARTIAL')) {
-                return {
-                    label: t('tasks.partial'),
-                    class: 'badge-warning'
-                };
-            }
-
-            const isErr = res.startsWith('ERROR:') || res.startsWith('FAILED:') || (task.status === 'failed' && !res.includes('OK'));
-            if (isErr) {
-                return {
-                    label: t('tasks.error'),
-                    class: 'badge-danger'
-                };
-            }
-
-            if (res.includes('ERROR') && res.includes('OK')) {
-                return {
-                    label: t('tasks.partial'),
-                    class: 'badge-warning'
-                };
-            }
-
-            return {
-                label: t('tasks.success'),
-                class: 'badge-success'
-            };
+            const steps = task?.payload?.step_results;
+            const hasStepResults = steps && typeof steps === 'object' && Object.keys(steps).length > 0;
+            if (!task || (!task.last_result && !hasStepResults)) return null;
+            const result = getTaskResultPresentation(task);
+            return { label: t(result.badgeKey), class: result.badgeClass };
         };
 
         const getNextRunDate = (task) => {

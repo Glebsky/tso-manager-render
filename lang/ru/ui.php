@@ -8,6 +8,11 @@ declare(strict_types=1);
  */
 
 return [
+    'tasks.invalid_sequence' => 'Данные серии отсутствуют или повреждены. Запуск и редактирование отключены до восстановления данных.',
+    'tasks.action.collect_daily_login_reward' => 'Забрать подарок за ежедневный вход',
+    'tasks.type_label.collect_daily_login_reward' => 'Подарок за вход',
+    'tasks.daily_login_hint' => 'Забирает только доступный подарок за вход на своём острове. Без покупок и обычных ежедневных заданий.',
+
     'account.bb_url_label' => 'BB URL (Сервер авторизации)',
     'account.building_filter.advanced' => 'Продвинутые',
     'account.building_filter.all' => 'Все',

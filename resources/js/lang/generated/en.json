@@ -6240,6 +6240,7 @@
                 "deposit_type_mismatch": "Mine: skipped, deposit at grid :grid does not match required type (:name)",
                 "grid_occupied": "Mine: skipped, grid :grid is occupied by a building",
                 "no_deposit_at_grid": "Mine: skipped, no deposit found at grid :grid",
+                "resource_data_unavailable": "Cannot verify the current book price or resource data. No new order was sent.",
                 "unknown_deposit_type": "Mine: skipped, deposit type :name is not supported"
             },
             "unknown_outcome": "Mine: build outcome unknown on grid :grid, check manually"
@@ -6249,6 +6250,15 @@
             "gift_received": "Building: gift received :name (grid :grid)",
             "not_found": "Building: nothing to collect on grid :grid",
             "nothing_to_collect": "Building: reward not available yet :name"
+        },
+        "daily_login": {
+            "ambiguous": "Several daily login rewards found; manual inspection required.",
+            "busy": "Another reward or production action is running.",
+            "collected": "Daily login gift accepted; quest transition confirmed.",
+            "game_error": "Daily login gift: server error (:message).",
+            "none_available": "No daily login gift is waiting for acceptance.",
+            "unavailable": "Daily login reward: current quest data is unavailable; nothing sent.",
+            "unknown_outcome": "Daily login gift: outcome unconfirmed; not retried. Check in game."
         },
         "default_sequence_copy": "Sequence (copy)",
         "duplicate_copy": ":name (copy)",
@@ -6271,6 +6281,7 @@
             "friend_zone_not_cached": "Friend zone is not loaded or cache has expired. Please refresh it in the interface.",
             "insufficient_buffs": "Insufficient buffs in star menu (available: :available, required: :required).",
             "invalid_friend_id": "Invalid friend ID.",
+            "payload_invalid": "Task definition is damaged or invalid. Restore its action list before running it. No game command was sent.",
             "pickups_unavailable": "Zone response contains no collectibles list. Patch storage/app/parse_zone.py so it returns the pickups key.",
             "server_error": "Server error code :errorCode: :errorMsg",
             "server_maintenance": "Game server is under maintenance.",
@@ -6288,7 +6299,11 @@
             "summary": "Collectibles: :collected/:total collected"
         },
         "produce_buff": {
+            "busy": "Bookbinder is still producing; no new order sent.",
+            "delivery_unconfirmed": "Book collection unconfirmed; no new order sent.",
+            "enqueue_unconfirmed": "The game acknowledged the request, but the new book order was not confirmed in the queue. The command was not repeated. Check the game before retrying.",
             "game_error": "Production: failed (:message)",
+            "lock_busy": "Another reward or production action is running.",
             "queued": "Production: queued :amount x :recipe (grid :grid)",
             "rejected": {
                 "amount_exceeds_recipe_limit": "Production: skipped, requested amount exceeds recipe limit",
@@ -6900,6 +6915,7 @@
         "tasks.action.apply_buff": "Apply buff",
         "tasks.action.build_mine": "Build mine",
         "tasks.action.collect_building": "Collect from building",
+        "tasks.action.collect_daily_login_reward": "Collect daily login gift",
         "tasks.action.collect_pickups": "Collect collectibles",
         "tasks.action.produce_buff": "Produce buffs",
         "tasks.action.send_explorer": "Send explorer",
@@ -6950,6 +6966,7 @@
         "tasks.create_group": "Create group",
         "tasks.daily": "Daily",
         "tasks.daily_at": "Daily at",
+        "tasks.daily_login_hint": "Collects only the available login gift on your own island. No purchases or ordinary daily quests.",
         "tasks.delay": "delay",
         "tasks.delay_short": "delay",
         "tasks.delete_group": "Delete group",
@@ -7003,6 +7020,7 @@
         "tasks.hours_unit": "hr",
         "tasks.in_time": "in {time}",
         "tasks.interval": "Interval",
+        "tasks.invalid_sequence": "Series data is missing or invalid. Running and editing are disabled until the data is restored.",
         "tasks.level": "level",
         "tasks.level_short": "Lvl",
         "tasks.loading_tasks": "Loading tasks…",
@@ -7224,6 +7242,7 @@
         "tasks.type_label.apply_buff": "Buff application",
         "tasks.type_label.build_mine": "Build mine",
         "tasks.type_label.collect_building": "Collect from building",
+        "tasks.type_label.collect_daily_login_reward": "Daily login gift",
         "tasks.type_label.collect_pickups": "Collecting collectibles",
         "tasks.type_label.produce_buff": "Produce buffs",
         "tasks.type_label.send_explorer": "Explorer dispatch",

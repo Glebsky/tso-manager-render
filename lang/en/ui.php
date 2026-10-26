@@ -8,6 +8,11 @@ declare(strict_types=1);
  */
 
 return [
+    'tasks.invalid_sequence' => 'Series data is missing or invalid. Running and editing are disabled until the data is restored.',
+    'tasks.action.collect_daily_login_reward' => 'Collect daily login gift',
+    'tasks.type_label.collect_daily_login_reward' => 'Daily login gift',
+    'tasks.daily_login_hint' => 'Collects only the available login gift on your own island. No purchases or ordinary daily quests.',
+
     'account.bb_url_label' => 'BB URL (authorization server)',
     'account.building_filter.advanced' => 'Advanced',
     'account.building_filter.all' => 'All',

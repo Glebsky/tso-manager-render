@@ -6240,6 +6240,7 @@
                 "deposit_type_mismatch": "Шахта: пропуск, тип залежи на гриде :grid не соответствует требуемой (:name)",
                 "grid_occupied": "Шахта: пропуск, грид :grid занят зданием",
                 "no_deposit_at_grid": "Шахта: пропуск, залежь на гриде :grid не найдена",
+                "resource_data_unavailable": "Не удалось проверить текущую цену книги или данные ресурсов. Новый заказ не отправлен.",
                 "unknown_deposit_type": "Шахта: пропуск, тип залежи :name не поддерживается"
             },
             "unknown_outcome": "Шахта: исход постройки на гриде :grid неизвестен, проверьте вручную"
@@ -6249,6 +6250,15 @@
             "gift_received": "Здание: подарок получен :name (grid :grid)",
             "not_found": "Здание: на сетке :grid нечего собирать",
             "nothing_to_collect": "Здание: награда пока недоступна :name"
+        },
+        "daily_login": {
+            "ambiguous": "Найдено несколько ежедневных наград; нужна ручная проверка.",
+            "busy": "Другое действие наград или производства ещё выполняется.",
+            "collected": "Ежедневный подарок принят; изменение состояния задания подтверждено.",
+            "game_error": "Ежедневный подарок: ошибка сервера (:message).",
+            "none_available": "Нет ежедневного подарка, ожидающего принятия.",
+            "unavailable": "Ежедневный подарок: свежие данные заданий недоступны; команда не отправлена.",
+            "unknown_outcome": "Ежедневный подарок: результат не подтверждён, повтора нет. Проверьте в игре."
         },
         "default_sequence_copy": "Серия (копия)",
         "duplicate_copy": ":name (копия)",
@@ -6271,6 +6281,7 @@
             "friend_zone_not_cached": "Зона друга не загружена или истек срок кеша. Пожалуйста, обновите ее в интерфейсе.",
             "insufficient_buffs": "Недостаточно баффов в звездном меню (доступно: :available, требуется: :required).",
             "invalid_friend_id": "Неверный ID друга.",
+            "payload_invalid": "Данные задачи повреждены или некорректны. Перед запуском восстановите список действий. Команда в игру не отправлялась.",
             "pickups_unavailable": "Ответ зоны не содержит список коллекций. Обновите storage/app/parse_zone.py, чтобы он возвращал ключ pickups.",
             "server_error": "Код ошибки сервера :errorCode: :errorMsg",
             "server_maintenance": "Сервер игры на обслуживании.",
@@ -6288,7 +6299,11 @@
             "summary": "Коллекции: собрано :collected/:total"
         },
         "produce_buff": {
+            "busy": "Переплётчик ещё производит книгу; новый заказ не отправлен.",
+            "delivery_unconfirmed": "Получение книги не подтверждено; новый заказ не отправлен.",
+            "enqueue_unconfirmed": "Игра ответила на запрос, но новый заказ книги не подтверждён в очереди. Команда не повторялась. Перед повторным запуском проверьте игру.",
             "game_error": "Производство: ошибка (:message)",
+            "lock_busy": "Другое действие наград или производства ещё выполняется.",
             "queued": "Производство: поставлено в очередь :amount x :recipe (грид :grid)",
             "rejected": {
                 "amount_exceeds_recipe_limit": "Производство: пропуск, указанное количество превышает лимит рецепта",
@@ -6900,6 +6915,7 @@
         "tasks.action.apply_buff": "Применить бафф",
         "tasks.action.build_mine": "Построить шахту",
         "tasks.action.collect_building": "Собрать с здания",
+        "tasks.action.collect_daily_login_reward": "Забрать подарок за ежедневный вход",
         "tasks.action.collect_pickups": "Собрать коллекции",
         "tasks.action.produce_buff": "Произвести баффы",
         "tasks.action.send_explorer": "Отправить разведчика",
@@ -6950,6 +6966,7 @@
         "tasks.create_group": "Создать группу",
         "tasks.daily": "Ежедневно",
         "tasks.daily_at": "Ежедневно в",
+        "tasks.daily_login_hint": "Забирает только доступный подарок за вход на своём острове. Без покупок и обычных ежедневных заданий.",
         "tasks.delay": "задержка",
         "tasks.delay_short": "задержка",
         "tasks.delete_group": "Удалить группу",
@@ -7003,6 +7020,7 @@
         "tasks.hours_unit": "час.",
         "tasks.in_time": "через {time}",
         "tasks.interval": "Интервал",
+        "tasks.invalid_sequence": "Данные серии отсутствуют или повреждены. Запуск и редактирование отключены до восстановления данных.",
         "tasks.level": "уровень",
         "tasks.level_short": "Ур.",
         "tasks.loading_tasks": "Загрузка задач…",
@@ -7224,6 +7242,7 @@
         "tasks.type_label.apply_buff": "Применение баффа",
         "tasks.type_label.build_mine": "Постройка шахты",
         "tasks.type_label.collect_building": "Сбор с здания",
+        "tasks.type_label.collect_daily_login_reward": "Подарок за вход",
         "tasks.type_label.collect_pickups": "Сбор коллекций",
         "tasks.type_label.produce_buff": "Производство баффов",
         "tasks.type_label.send_explorer": "Отправка разведчика",
