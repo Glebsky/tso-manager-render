@@ -21,6 +21,7 @@ use App\Services\Game\Zone\ZoneCacheInvalidator;
 use App\Services\Tasks\Handlers\ApplyBuffHandler;
 use App\Services\Tasks\Handlers\BuildMineHandler;
 use App\Services\Tasks\Handlers\CollectBuildingHandler;
+use App\Services\Tasks\Handlers\CollectDailyLoginRewardHandler;
 use App\Services\Tasks\Handlers\CollectPickupsHandler;
 use App\Services\Tasks\Handlers\ProduceBuffHandler;
 use App\Services\Tasks\Handlers\SendSpecialistHandler;
@@ -72,6 +73,7 @@ final class TaskServiceProvider extends ServiceProvider
                 ApplyBuffHandler::class,
                 SendSpecialistHandler::class,
                 CollectPickupsHandler::class,
+                CollectDailyLoginRewardHandler::class,
                 CollectBuildingHandler::class,
                 BuildMineHandler::class,
                 UpgradeMineHandler::class,
