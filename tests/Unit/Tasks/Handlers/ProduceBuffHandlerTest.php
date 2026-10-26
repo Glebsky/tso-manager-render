@@ -273,7 +273,9 @@ final class ProduceBuffHandlerTest extends TestCase
             'amount' => 1,
         ];
 
-        $result = $handler->handle($this->account, $payload);
+        $result = $handler->handleResult($this->account, $payload);
+
+        $this->assertSame('skipped', $result->status);
 
         $this->assertSame(
             __('tasks.produce_buff.rejected.insufficient_resources', [
@@ -281,7 +283,7 @@ final class ProduceBuffHandlerTest extends TestCase
                 'recipe' => 'ProductivityBuffLvl3',
                 'type' => 1,
             ]),
-            $result
+            $result->message
         );
     }
 }

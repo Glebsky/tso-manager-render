@@ -61,6 +61,9 @@ export function getActionDeduplicationKey(action) {
             return `${taskType}:${String(rawSpecId).trim()}`;
         }
 
+        case 'collect_daily_login_reward':
+            return 'collect_daily_login_reward:self';
+
         case 'collect_pickups': {
             const pickupType = String(payload.pickup_type || 'all').trim().toLowerCase();
             return `collect_pickups:${pickupType}`;

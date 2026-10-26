@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Enums\TaskResultPrefix;
 use App\Enums\TaskStatus;
 use App\Enums\TaskType;
+use App\Exceptions\ActionOutcomeException;
 use App\Exceptions\Contracts\SkippableStepExceptionInterface;
 use App\Exceptions\InvalidTaskTypeException;
 use App\Exceptions\TaskAccountNotFoundException;
@@ -20,9 +21,12 @@ use App\Services\Game\Zone\ZoneCacheInvalidator;
 use App\Services\Tasks\Execution\SequenceRunner;
 use App\Services\Tasks\Execution\SequenceRunResult;
 use App\Services\Tasks\Execution\SingleActionExecutor;
+use App\Services\Tasks\Execution\StepResultCollection;
 use App\Services\Tasks\Execution\StepRunner;
 use App\Services\Tasks\Execution\TaskExecutionGuard;
+use App\Services\Tasks\Execution\TaskPayload;
 use App\Services\Tasks\Execution\TaskResultSummary;
+use App\Services\Tasks\Execution\TaskResultText;
 use App\Services\Tasks\Execution\TaskStateMachine;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -52,6 +56,7 @@ readonly class TaskExecutionService
     public function execute(ScheduledTask $task, ?string $expectedToken = null, bool $force = false): string
     {
         $account = $this->guard->ensureCanExecute($task, $expectedToken, $force);
+        TaskPayload::validate($task->payload, $task->task_type === TaskType::Sequence);
         $token = $expectedToken ?? $task->execution_token;
         if ($token === null) {
             $token = (string) Str::uuid();
@@ -111,17 +116,28 @@ readonly class TaskExecutionService
         try {
             $result = $this->singleActionExecutor->executeWithRetry($account, $taskTypeStr, $payload);
 
-            $payload['step_results'] = [['status' => 'completed', 'error' => null]];
-            $resultSummary = TaskResultSummary::formatSingle($result);
+            $message = TaskResultText::message($result);
+            $entry = ['status' => 'completed', 'error' => null];
+            if ($message !== null) {
+                $entry['message'] = $message;
+            }
+            $payload['step_results'] = [$entry];
+            $resultSummary = TaskResultSummary::formatSingle($message ?? '');
 
             $this->stateMachine->finish($task, $token, TaskStatus::Completed, $resultSummary, $payload, $account->id);
 
-            return $result;
+            return $message ?? '';
         } catch (SkippableStepExceptionInterface $e) {
             $payload['step_results'] = [['status' => 'skipped', 'error' => null, 'reason' => $e->getMessage()]];
             $resultSummary = TaskResultPrefix::Skipped->format($e->getMessage());
 
             $this->stateMachine->finish($task, $token, TaskStatus::Completed, $resultSummary, $payload, $account->id);
+
+            return $resultSummary;
+        } catch (ActionOutcomeException $e) {
+            $payload['step_results'] = [['status' => 'failed', 'error' => $e->getMessage()]];
+            $resultSummary = TaskResultSummary::formatSingle($e->getMessage(), false);
+            $this->stateMachine->finish($task, $token, TaskStatus::Failed, $resultSummary, $payload, $account->id);
 
             return $resultSummary;
         }
@@ -169,8 +185,8 @@ readonly class TaskExecutionService
             throw new TaskExecutionException('error.task_busy', ['id' => $task->id], 422);
         }
 
-        $payload = $task->payload ?? [];
-        $actions = $payload['actions'] ?? [];
+        $payload = TaskPayload::validate($task->payload, true);
+        $actions = array_values($payload['actions']);
         if (! isset($actions[$actionIndex])) {
             throw new TaskExecutionException('error.action_index_invalid', ['index' => $actionIndex], 422);
         }
@@ -202,10 +218,24 @@ readonly class TaskExecutionService
 
         $outcome = $this->stepRunner->run($task, $account, $actionIndex, (array) $action, manual: true);
 
-        $stepResults = $payload['step_results'] ?? [];
+        $stepResults = is_array($payload['step_results'] ?? null) ? $payload['step_results'] : [];
         $stepResults[$actionIndex] = $outcome->toArray();
         $payload['step_results'] = $stepResults;
-        $task->update(['payload' => $payload]);
+
+        $updateData = ['payload' => $payload];
+
+        $results = StepResultCollection::fromPayload($actions, $stepResults);
+        if (count($stepResults) >= count($actions)) {
+            $updateData['status'] = $results->finalStatus();
+            $updateData['last_result'] = $results->formattedSummary();
+            $updateData['last_run_at'] = now();
+        } elseif ($task->status === TaskStatus::Failed && ! $results->hasFailure()) {
+            $updateData['status'] = TaskStatus::Completed;
+            $updateData['last_result'] = $results->formattedSummary();
+            $updateData['last_run_at'] = now();
+        }
+
+        $task->update($updateData);
 
         /** @var array{status: string, error: ?string, reason?: string} */
         return $stepResults[$actionIndex];

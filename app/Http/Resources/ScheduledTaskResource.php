@@ -13,6 +13,9 @@ use Illuminate\Http\Resources\Json\JsonResource;
  */
 class ScheduledTaskResource extends JsonResource
 {
+    /** Preserve numeric array keys so sparse step_results are not reindexed. */
+    public bool $preserveKeys = true;
+
     /**
      * Transform the resource into an array.
      *

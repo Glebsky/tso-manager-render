@@ -6240,6 +6240,7 @@
                 "deposit_type_mismatch": "Шахта: пропуск, тип покладів на гріді :grid не відповідає потрібному (:name)",
                 "grid_occupied": "Шахта: пропуск, грід :grid зайнятий будівлею",
                 "no_deposit_at_grid": "Шахта: пропуск, поклади на гріді :grid не знайдено",
+                "resource_data_unavailable": "Не вдалося перевірити поточну ціну книги або дані ресурсів. Нове замовлення не надіслано.",
                 "unknown_deposit_type": "Шахта: пропуск, тип покладів :name не підтримується"
             },
             "unknown_outcome": "Шахта: результат побудови на гріді :grid невідомий, перевірте вручну"
@@ -6249,6 +6250,15 @@
             "gift_received": "Будівля: подарунок отримано :name (grid :grid)",
             "not_found": "Будівля: на сітці :grid нічого збирати",
             "nothing_to_collect": "Будівля: нагорода поки недоступна :name"
+        },
+        "daily_login": {
+            "ambiguous": "Знайдено декілька щоденних нагород; потрібна ручна перевірка.",
+            "busy": "Інша дія нагород або виробництва ще виконується.",
+            "collected": "Щоденний подарунок прийнято; зміну стану завдання підтверджено.",
+            "game_error": "Щоденний подарунок: помилка сервера (:message).",
+            "none_available": "Немає щоденного подарунка, що очікує прийняття.",
+            "unavailable": "Щоденний подарунок: свіжі дані завдань недоступні; команду не надіслано.",
+            "unknown_outcome": "Щоденний подарунок: результат не підтверджено, повтору немає. Перевірте у грі."
         },
         "default_sequence_copy": "Серія (копія)",
         "duplicate_copy": ":name (копія)",
@@ -6271,6 +6281,7 @@
             "friend_zone_not_cached": "Зону друга не завантажено або закінчився термін кешу. Будь ласка, оновіть її в інтерфейсі.",
             "insufficient_buffs": "Недостатньо бафів у зоряному меню (доступно: :available, потрібно: :required).",
             "invalid_friend_id": "Некоректний ID друга.",
+            "payload_invalid": "Дані завдання пошкоджені або некоректні. Перед запуском відновіть список дій. Команду в гру не надсилали.",
             "pickups_unavailable": "Відповідь зони не містить списку колекцій. Оновіть storage/app/parse_zone.py, щоб він повертав ключ pickups.",
             "server_error": "Код помилки сервера :errorCode: :errorMsg",
             "server_maintenance": "Сервер гри на обслуговуванні.",
@@ -6288,7 +6299,11 @@
             "summary": "Колекції: зібрано :collected/:total"
         },
         "produce_buff": {
+            "busy": "Палітурник ще виготовляє книгу; нове замовлення не надіслано.",
+            "delivery_unconfirmed": "Отримання книги не підтверджено; нове замовлення не надіслано.",
+            "enqueue_unconfirmed": "Гра відповіла на запит, але нове замовлення книги не підтверджено в черзі. Команда не повторювалась. Перед повторним запуском перевірте гру.",
             "game_error": "Виробництво: помилка (:message)",
+            "lock_busy": "Інша дія нагород або виробництва ще виконується.",
             "queued": "Виробництво: додано в чергу :amount x :recipe (грід :grid)",
             "rejected": {
                 "amount_exceeds_recipe_limit": "Виробництво: пропуск, зазначена кількість перевищує ліміт рецепта",
@@ -6900,6 +6915,7 @@
         "tasks.action.apply_buff": "Застосувати баф",
         "tasks.action.build_mine": "Побудувати шахту",
         "tasks.action.collect_building": "Зібрати з будівлі",
+        "tasks.action.collect_daily_login_reward": "Забрати подарунок за щоденний вхід",
         "tasks.action.collect_pickups": "Зібрати колекції",
         "tasks.action.produce_buff": "Виробити бафи",
         "tasks.action.send_explorer": "Відправити розвідника",
@@ -6950,6 +6966,7 @@
         "tasks.create_group": "Створити групу",
         "tasks.daily": "Щодня",
         "tasks.daily_at": "Щодня о",
+        "tasks.daily_login_hint": "Забирає лише доступний подарунок за вхід на своєму острові. Без покупок і звичайних щоденних завдань.",
         "tasks.delay": "затримка",
         "tasks.delay_short": "затримка",
         "tasks.delete_group": "Видалити групу",
@@ -7003,6 +7020,7 @@
         "tasks.hours_unit": "год.",
         "tasks.in_time": "через {time}",
         "tasks.interval": "Інтервал",
+        "tasks.invalid_sequence": "Дані серії відсутні або пошкоджені. Запуск і редагування вимкнено до відновлення даних.",
         "tasks.level": "рівень",
         "tasks.level_short": "Рів.",
         "tasks.loading_tasks": "Завантаження завдань…",
@@ -7224,6 +7242,7 @@
         "tasks.type_label.apply_buff": "Застосування бафа",
         "tasks.type_label.build_mine": "Побудова шахти",
         "tasks.type_label.collect_building": "Збір з будівлі",
+        "tasks.type_label.collect_daily_login_reward": "Подарунок за вхід",
         "tasks.type_label.collect_pickups": "Збір колекцій",
         "tasks.type_label.produce_buff": "Виробництво бафів",
         "tasks.type_label.send_explorer": "Відправлення розвідника",

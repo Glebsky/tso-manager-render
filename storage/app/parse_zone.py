@@ -193,10 +193,18 @@ def extract_production_queues(zone_obj):
     if tp_container is None:
         return None
 
+    if hasattr(tp_container, 'source'):
+        tp_container = tp_container.source
+    if not isinstance(tp_container, (list, tuple)):
+        return None
     collections = _as_items(tp_container)
     queues = []
 
     for col in collections:
+        if hasattr(col, 'source'):
+            col = col.source
+        if not isinstance(col, (list, tuple)):
+            return None
         orders_raw = _as_items(col)
         if not orders_raw:
             continue
@@ -206,14 +214,17 @@ def extract_production_queues(zone_obj):
 
         for item in orders_raw:
             if item is None:
-                continue
+                return None
 
             ptype = _attr(item, 'productionType')
-            if production_type is None and ptype is not None:
-                try:
-                    production_type = int(ptype)
-                except (TypeError, ValueError):
-                    pass
+            amount = _attr(item, 'amount')
+            produced = _attr(item, 'producedItems', 'produced_items')
+            if (any(not isinstance(v, int) or isinstance(v, bool) for v in (ptype, amount, produced))
+                    or ptype < 0 or amount <= 0 or produced < 0):
+                return None
+            if production_type is not None and production_type != ptype:
+                return None
+            production_type = ptype
 
             t_str = str(_attr(item, 'type_string', 'typeString', 'type', default='') or '')
 
@@ -281,6 +292,14 @@ def recursive_extract(obj, buildings, specialists, buffs, resources, friends, pl
 
         direct_alias = getattr(obj, 'alias', '')
         full_name = str(direct_alias or alias or type_name or class_name)
+
+        # Preserve quest data at the one decoding boundary; never confuse absent and empty.
+        if 'dQuestPoolVO' in full_name:
+            raw_quests = _attr(obj, 'mQuestVO_vector')
+            if hasattr(raw_quests, 'source'):
+                raw_quests = raw_quests.source
+            if isinstance(raw_quests, (list, tuple)):
+                zone_info['quest_pool'] = {'mQuestVO_vector': make_serializable(_as_items(raw_quests))}
 
         if 'dBuildingVO' in full_name or 'BuildingVO' in full_name:
             building = {}
@@ -799,17 +818,29 @@ def main():
     build_queue = {}
     error_code = 0
 
-    # Extract errorCode from dServerResponse first
-    for target, message in envelope.bodies:
-        if hasattr(message, 'body'):
-            body = message.body
-            # body -> AcknowledgeMessage.body -> dServerResponse (TypedObject/dict)
-            if hasattr(body, 'body'):
-                resp = body.body
-                # TypedObject is a dict-like object
-                resp_data = resp.get('data', None) if isinstance(resp, dict) else None
-                if isinstance(resp_data, dict):
-                    error_code = resp_data.get('errorCode', 0)
+    # Only one authoritative response at the envelope boundary may acknowledge a command.
+    # Never let a nested dServerResponse override the top-level error.
+    def exact_alias(obj):
+        direct = getattr(obj, 'alias', '')
+        if direct:
+            return str(direct)
+        try:
+            return str(pyamf.get_class_alias(type(obj)).alias)
+        except (pyamf.UnknownClassAlias, AttributeError):
+            return ''
+
+    if len(envelope.bodies) == 1:
+        response = _attr(envelope.bodies[0][1], 'body')
+        if exact_alias(response) == 'flex.messaging.messages.AcknowledgeMessage':
+            response = _attr(response, 'body')
+        if exact_alias(response) == 'defaultGame.Communication.VO.dServerResponse':
+            code = _attr(_attr(response, 'data'), 'errorCode')
+            if code is None:
+                code = _attr(response, 'errorCode')
+            if isinstance(code, int) and not isinstance(code, bool):
+                error_code = code
+                zone_info['server_response_confirmed'] = True
+                zone_info['server_error_code'] = code
 
     # Walk through all bodies in the remoting envelope
     for target, message in envelope.bodies:
@@ -943,7 +974,9 @@ def main():
         'zoneOwnerPlayerID': zone_info.get('zoneOwnerPlayerID'),
         'gameWorldName': zone_info.get('gameWorldName'),
         'pickups': make_serializable(merged_pickups),
-        'errorCode': error_code,
+        'errorCode': zone_info.get('server_error_code', error_code),
+        'server_response_confirmed': zone_info.get('server_response_confirmed', False),
+        'questPool': zone_info.get('quest_pool'),
         'visitors': make_serializable(visitors),
         'deposits': deposits,
         'build_queue': {

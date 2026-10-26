@@ -13,6 +13,11 @@ final readonly class AmfProductionCommandGateway implements ProductionCommandGat
         private TsoAmfService $amf
     ) {}
 
+    public function deliverOrder(Account $account, int $productionType): string
+    {
+        return $this->amf->deliverProduction($account, $productionType);
+    }
+
     public function queueOrder(
         Account $account,
         int $grid,

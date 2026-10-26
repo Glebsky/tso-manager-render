@@ -58,7 +58,7 @@ final readonly class TaskStateMachine
                 ->whereIn('status', self::RESERVABLE_STATUSES);
         }
 
-        $cleanPayload = $payload ?? ($task->payload ?? []);
+        $cleanPayload = TaskPayload::validate($payload ?? $task->payload, $task->task_type === TaskType::Sequence);
         unset($cleanPayload['step_results']);
 
         $data = [
@@ -68,7 +68,7 @@ final readonly class TaskStateMachine
             'execution_token' => $token,
             'completed_steps' => 0,
             'last_result' => null,
-            'payload' => $cleanPayload,
+            'payload' => TaskPayload::encode($cleanPayload),
         ];
 
         // A once task has no slot after it was taken (FR-006).
@@ -109,6 +109,8 @@ final readonly class TaskStateMachine
      */
     public function start(ScheduledTask $task, string $token, ?array $payload = null): bool
     {
+        $encodedPayload = TaskPayload::encode(TaskPayload::validate($payload ?? $task->payload, $task->task_type === TaskType::Sequence));
+
         $query = ScheduledTask::whereKey($task->id)
             ->where('execution_token', $token)
             ->whereIn('status', [TaskStatus::Queued, TaskStatus::Running]);
@@ -119,7 +121,7 @@ final readonly class TaskStateMachine
         ];
 
         if ($payload !== null) {
-            $data['payload'] = $payload;
+            $data['payload'] = $encodedPayload;
         }
 
         $updated = $query->update($data) === 1;
@@ -151,12 +153,14 @@ final readonly class TaskStateMachine
      */
     public function progress(ScheduledTask $task, string $token, int $completedSteps, array $payload): bool
     {
+        $encodedPayload = TaskPayload::encode(TaskPayload::validate($payload, $task->task_type === TaskType::Sequence));
+
         $updated = ScheduledTask::whereKey($task->id)
             ->where('execution_token', $token)
             ->where('status', TaskStatus::Running)
             ->update([
                 'completed_steps' => $completedSteps,
-                'payload' => $payload,
+                'payload' => $encodedPayload,
                 'heartbeat_at' => now(),
             ]) === 1;
 
@@ -211,6 +215,8 @@ final readonly class TaskStateMachine
         array $payload,
         ?int $accountId = null
     ): bool {
+        $encodedPayload = TaskPayload::encode(TaskPayload::validate($payload, $task->task_type === TaskType::Sequence));
+
         $accountId = $accountId ?? $task->account_id;
         $isActive = $task->schedule_type === ScheduleType::Once ? false : $task->is_active;
 
@@ -222,7 +228,7 @@ final readonly class TaskStateMachine
                 'last_run_at' => now(),
                 'next_run_at' => $this->nextRunAtAfterNow($task), // ADR-003: from the end of the run
                 'last_result' => $summary,
-                'payload' => $payload,
+                'payload' => $encodedPayload,
                 'completed_steps' => 0,
                 'execution_token' => null,
                 'is_active' => $isActive,

@@ -35,6 +35,7 @@ abstract class ScheduledTaskRequest extends FormRequest
             $this->isSpecialistTask() ? $this->specialistRules() : [],
             $this->buffRules(),
             $this->pickupRules(),
+            $this->dailyLoginRules(),
             $this->produceBuffRules(),
         );
     }
@@ -162,6 +163,26 @@ abstract class ScheduledTaskRequest extends FormRequest
      *
      * @return array<string, mixed>
      */
+    private function dailyLoginRules(): array
+    {
+        $rules = [];
+        if ($this->taskTypeString() === TaskType::CollectDailyLoginReward->value) {
+            $rules['payload.scope'] = 'required|string|in:self';
+        }
+        if ($this->isSequence()) {
+            foreach ((array) $this->input('payload.actions', []) as $index => $action) {
+                $type = $action['task_type'] ?? '';
+                $type = $type instanceof TaskType ? $type->value : $type;
+                if ($type === TaskType::CollectDailyLoginReward->value) {
+                    $rules["payload.actions.{$index}.payload.scope"] = 'required|string|in:self';
+                }
+            }
+        }
+
+        return $rules;
+    }
+
+    /** @return array<string, mixed> */
     private function pickupRules(): array
     {
         $rules = [];

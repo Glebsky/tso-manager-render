@@ -34,11 +34,12 @@ final readonly class StepOutcome
         public ?string $reason = null,
         public ?string $buff = null,
         public bool $alreadyDone = false,
+        public ?string $message = null,
     ) {}
 
-    public static function completed(int $stepIndex, string $actionType): self
+    public static function completed(int $stepIndex, string $actionType, ?string $message = null): self
     {
-        return new self($stepIndex, $actionType, self::COMPLETED);
+        return new self($stepIndex, $actionType, self::COMPLETED, message: TaskResultText::message($message));
     }
 
     /**
@@ -82,7 +83,7 @@ final readonly class StepOutcome
             ),
             default => ($raw['already_done'] ?? false) === true
                 ? self::alreadyDone($stepIndex, $actionType)
-                : self::completed($stepIndex, $actionType),
+                : self::completed($stepIndex, $actionType, is_string($raw['message'] ?? null) ? $raw['message'] : null),
         };
     }
 
@@ -109,6 +110,10 @@ final readonly class StepOutcome
     public function toArray(): array
     {
         $entry = ['status' => $this->status, 'error' => $this->error];
+
+        if ($this->message !== null) {
+            $entry['message'] = $this->message;
+        }
 
         if ($this->isSkipped()) {
             $entry['reason'] = (string) $this->reason;
@@ -168,6 +173,6 @@ final readonly class StepOutcome
             return (string) __('tasks.step.skipped_reason', $params + ['reason' => $this->reason]);
         }
 
-        return (string) __('tasks.step.done', $params);
+        return (string) __('tasks.step.done', $params).($this->message !== null ? ' — '.$this->message : '');
     }
 }

@@ -8,6 +8,7 @@ use App\Enums\TaskType;
 use App\Exceptions\GameServerErrorException;
 use App\Exceptions\UnknownTaskActionException;
 use App\Models\Account;
+use App\Services\Tasks\Contracts\ResultAwareTaskActionHandlerInterface;
 use App\Services\Tasks\TaskHandlerRegistry;
 use Exception;
 use Illuminate\Contracts\Container\BindingResolutionException;
@@ -49,7 +50,14 @@ final readonly class SingleActionExecutor
     {
         $taskTypeStr = $taskType instanceof TaskType ? $taskType->value : $taskType;
 
-        $result = $this->handlerRegistry->getHandler($taskTypeStr)->handle($account, $payload);
+        $handler = $this->handlerRegistry->getHandler($taskTypeStr);
+        // Adapt after handleResult returns: post-send catches cannot swallow the outcome,
+        // and these business exceptions never trigger the session retry policy.
+        if ($handler instanceof ResultAwareTaskActionHandlerInterface) {
+            return $handler->handleResult($account, $payload)->completedMessage();
+        }
+
+        $result = $handler->handle($account, $payload);
 
         $this->responseValidator->validateAndParse($result);
 

@@ -20,6 +20,7 @@ enum TaskType: string
     case BuildMine = 'build_mine';
     case UpgradeMine = 'upgrade_mine';
     case ProduceBuff = 'produce_buff';
+    case CollectDailyLoginReward = 'collect_daily_login_reward';
     case Sequence = 'sequence';
     case Trade = 'trade';
 

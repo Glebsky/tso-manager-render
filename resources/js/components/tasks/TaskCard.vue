@@ -229,7 +229,7 @@
                         <span class="truncate">{{ t('tasks.stop_task') }}</span>
                     </button>
 
-                    <button v-else type="button" @click="$emit('execute', task)"
+                    <button v-else type="button" @click="$emit('execute', task)" :disabled="invalidSequence"
                             class="btn-primary btn-sm text-xs py-1.5 px-2.5 sm:px-3 flex items-center justify-center gap-1.5 flex-1 sm:flex-initial whitespace-nowrap">
                         <span class="truncate">🚀 {{ t('tasks.run_now') }}</span>
                     </button>
@@ -242,7 +242,7 @@
                             📋
                         </button>
 
-                        <button type="button" @click="$emit('edit', task)"
+                        <button type="button" @click="$emit('edit', task)" :disabled="invalidSequence"
                                 class="btn-secondary btn-sm text-xs py-1.5 px-2 text-white/60 hover:text-white border-white/10 hover:border-white/20"
                                 :aria-label="t('tasks.edit_task') || 'Edit task'"
                                 :title="t('tasks.edit_task')">
@@ -260,8 +260,12 @@
             </div>
         </div>
 
+        <p v-if="invalidSequence" role="alert" class="mt-3 text-xs text-amber-300">
+            {{ t('tasks.invalid_sequence') }}
+        </p>
+
         <!-- Раскрывающийся список шагов серии -->
-        <div v-if="isExpanded" class="mt-4 pt-4 border-t border-white/5 space-y-2 animate-fade-in bg-black/20 p-4 rounded-xl">
+        <div v-if="isExpanded && !invalidSequence" class="mt-4 pt-4 border-t border-white/5 space-y-2 animate-fade-in bg-black/20 p-4 rounded-xl">
             <h4 class="text-xs font-semibold text-white/70 uppercase tracking-wider mb-2 flex items-center gap-2">
                 <span>📋 {{ t('tasks.actions_list') }}</span>
                 <span class="badge badge-neutral text-[10px]">{{ getTaskActionsList(task).length }}</span>
@@ -416,7 +420,7 @@
 
                     <button type="button"
                             @click.stop="$emit('execute-action', { task, actionIndex: aIdx })"
-                            :disabled="isRunning || isActionExecuting(task.id, aIdx)"
+                            :disabled="invalidSequence || isRunning || isActionExecuting(task.id, aIdx)"
                             class="p-1 rounded bg-white/5 hover:bg-emerald-500/20 text-white/50 hover:text-emerald-300 transition-colors border border-white/10 hover:border-emerald-500/30 disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center ml-1"
                             :title="t('tasks.run_single_action')">
                         <svg v-if="isActionExecuting(task.id, aIdx)" class="animate-spin h-3 w-3 text-emerald-400" fill="none" viewBox="0 0 24 24">
@@ -436,6 +440,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { t } from '../../lang';
+import { isInvalidTaskSequence } from '../../services/taskActionList';
 
 const props = defineProps({
     task: { type: Object, required: true },
@@ -484,6 +489,8 @@ const emit = defineEmits([
 const isActionExecuting = (taskId, aIdx) => {
     return Boolean(props.executingActions[`${taskId}_${aIdx}`]);
 };
+
+const invalidSequence = computed(() => isInvalidTaskSequence(props.task));
 
 const isRunning = computed(() => {
     return Boolean(props.isExecuting || props.task.status === 'running' || props.task.status === 'queued');

@@ -3,7 +3,17 @@
 declare(strict_types=1);
 
 return [
+    'daily_login' => [
+        'busy' => 'Another reward or production action is running.',
+        'unavailable' => 'Daily login reward: current quest data is unavailable; nothing sent.',
+        'none_available' => 'No daily login gift is waiting for acceptance.',
+        'ambiguous' => 'Several daily login rewards found; manual inspection required.',
+        'unknown_outcome' => 'Daily login gift: outcome unconfirmed; not retried. Check in game.',
+        'game_error' => 'Daily login gift: server error (:message).',
+        'collected' => 'Daily login gift accepted; quest transition confirmed.',
+    ],
     'error' => [
+        'payload_invalid' => 'Task definition is damaged or invalid. Restore its action list before running it. No game command was sent.',
         'task_inactive' => 'Task #:id is inactive or paused.',
         'token_mismatch' => 'Execution token mismatch for task #:id. Expected: :expected, found: :found',
         'account_not_found' => 'Account for task #:id not found.',
@@ -57,6 +67,7 @@ return [
         'unknown_outcome' => 'Mine: build outcome unknown on grid :grid, check manually',
         'game_error' => 'Mine: build failed (:message)',
         'rejected' => [
+            'resource_data_unavailable' => 'Cannot verify the current book price or resource data. No new order was sent.',
             'no_deposit_at_grid' => 'Mine: skipped, no deposit found at grid :grid',
             'unknown_deposit_type' => 'Mine: skipped, deposit type :name is not supported',
             'deposit_empty' => 'Mine: skipped, deposit at grid :grid is depleted',
@@ -82,6 +93,10 @@ return [
         ],
     ],
     'produce_buff' => [
+        'enqueue_unconfirmed' => 'The game acknowledged the request, but the new book order was not confirmed in the queue. The command was not repeated. Check the game before retrying.',
+        'busy' => 'Bookbinder is still producing; no new order sent.',
+        'delivery_unconfirmed' => 'Book collection unconfirmed; no new order sent.',
+        'lock_busy' => 'Another reward or production action is running.',
         'queued' => 'Production: queued :amount x :recipe (grid :grid)',
         'unknown_outcome' => 'Production: queue outcome unknown on grid :grid (:recipe), check manually',
         'game_error' => 'Production: failed (:message)',

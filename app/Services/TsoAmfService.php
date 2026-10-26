@@ -14,6 +14,7 @@ use App\Services\Amf\Vo\defaultGame_Communication_VO_dStartSpecialistTaskVO;
 use App\Services\Amf\Vo\defaultGame_Communication_VO_dTimedProductionVO;
 use App\Services\Amf\Vo\defaultGame_Communication_VO_dUniqueID;
 use App\Services\Amf\Vo\defaultGame_Communication_VO_dZoneLoginVO;
+use App\Services\Game\Session\GameClientIdentity;
 use App\Services\Tasks\Execution\GameResponseValidator;
 use Exception;
 use Illuminate\Support\Facades\Cache;
@@ -58,6 +59,7 @@ class TsoAmfService
     public function __construct(
         private readonly TsoClientInterface $client,
         private readonly GameResponseValidator $responseValidator,
+        private readonly GameClientIdentity $identities,
     ) {}
 
     /**
@@ -74,22 +76,17 @@ class TsoAmfService
      */
     private function clientIdFor(Account $account): int
     {
-        return (int) Cache::remember(
-            "tso:client_id:{$account->id}",
-            now()->addDays(30),
-            static fn (): int => random_int(0, 2147483646),
-        );
+        return $this->identities->current($account);
     }
 
     /**
-     * Forget the persisted client identity. Only needed when the account's
-     * credentials change, since a fresh identity forces the game server to
+     * Forget the persisted client identity. Used on credential changes; bounded
+     * 1012 recovery instead uses compare-and-swap renewal. A fresh identity forces the server to
      * treat the next call as a brand-new client.
      */
     public function forgetClientId(Account|int $account): void
     {
-        $id = $account instanceof Account ? $account->id : $account;
-        Cache::forget("tso:client_id:{$id}");
+        $this->identities->forget($account);
     }
 
     public function setDsId(string $dsId, ?int $accountId = null): void
@@ -375,6 +372,23 @@ class TsoAmfService
             $action,
             targetZoneId: (int) $account->dso_auth_user,
         );
+    }
+
+    public function sendDailyLoginRewardOk(Account $account, int $uniqueId1, int $uniqueId2): string
+    {
+        $uid = new defaultGame_Communication_VO_dUniqueID;
+        $uid->uniqueID1 = $uniqueId1;
+        $uid->uniqueID2 = $uniqueId2;
+        // client_scripts.txt:22601-22607,22758-22774: QUEST_TRIGGER100 / REWARD_BUTTON_OK1.
+        $action = $this->buildServerAction(1, 0, 0, $uid);
+
+        return $this->sendServerCall($account, self::CMD_QUEST_TRIGGER, $action, targetZoneId: (int) $account->dso_auth_user);
+    }
+
+    public function deliverProduction(Account $account, int $productionType): string
+    {
+        // client_scripts.txt:69446,302780-302787: primitive production type, NOT dServerAction.
+        return $this->sendServerCall($account, 141, $productionType, targetZoneId: (int) $account->dso_auth_user);
     }
 
     /**

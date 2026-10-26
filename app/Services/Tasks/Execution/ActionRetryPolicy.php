@@ -8,9 +8,9 @@ use App\Exceptions\GameServerErrorException;
 use App\Exceptions\SessionBusyException;
 use App\Exceptions\SessionExpiredException;
 use App\Models\Account;
+use App\Services\Game\Session\GameSessionRecovery;
 use App\Services\Game\Zone\ZoneCacheInvalidator;
 use App\Services\TsoAmfService;
-use App\Services\TsoAuthService;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Sleep;
@@ -19,7 +19,7 @@ use Throwable;
 final readonly class ActionRetryPolicy
 {
     public function __construct(
-        private TsoAuthService $authService,
+        private GameSessionRecovery $sessionRecovery,
         private TsoAmfService $amfService,
         private ZoneCacheInvalidator $zoneCache,
     ) {}
@@ -38,19 +38,21 @@ final readonly class ActionRetryPolicy
      */
     public function execute(Account $account, string $taskTypeStr, callable $action): string
     {
-        $maxAttempts = (int) config('game.tasks.max_action_attempts', 3);
-        $sessionCodes = (array) config('game.tasks.relogin_errors', [1005]);
-        $transportCodes = (array) config('game.tasks.transport_retry_errors', [1012]);
+        $maxAttempts = max(1, (int) config('game.tasks.max_action_attempts', 3));
+        $sessionCodes = array_map('intval', (array) config('game.tasks.relogin_errors', [1005]));
+        $transportCodes = array_map('intval', (array) config('game.tasks.transport_retry_errors', [1012]));
         $transportDelay = (int) config('game.tasks.transport_retry_delay', 3);
         $busyDelay = max(1, (int) config('game.tasks.session_busy_retry_delay', 5));
         $accountId = $account->id;
         $username = $account->username ?? $account->nickname ?? "account#{$accountId}";
         $reloggedIn = false;
+        $identityRecovered = false;
 
         for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
             Log::info("[TaskExecution] Action [{$taskTypeStr}] for account #{$accountId} ({$username}): attempt {$attempt}/{$maxAttempts} starting");
             $startTime = microtime(true);
 
+            $attemptIdentity = $this->sessionRecovery->currentIdentity($account);
             try {
                 $result = $action();
                 $durationMs = (int) round((microtime(true) - $startTime) * 1000);
@@ -80,7 +82,7 @@ final readonly class ActionRetryPolicy
                 }
 
                 Log::info("[TaskExecution] Action [{$taskTypeStr}] for account #{$accountId} ({$username}): session rejected by load server; performing the single forced re-login and retrying (attempt {$attempt}/{$maxAttempts})");
-                $this->relogin($account);
+                $this->relogin($account, $identityRecovered);
                 $reloggedIn = true;
 
                 continue;
@@ -111,7 +113,26 @@ final readonly class ActionRetryPolicy
                     continue;
                 }
 
-                if (in_array($code, $sessionCodes, true) || in_array($code, $transportCodes, true)) {
+                if ($code === 1012) {
+                    if ($identityRecovered) {
+                        throw $e;
+                    }
+                    $identityRecovered = true;
+                    $this->sessionRecovery->renewGameIdentity($account, $attemptIdentity);
+                    try {
+                        $this->sessionRecovery->enterHomeZone($account);
+                    } catch (SessionExpiredException|GameServerErrorException $zoneError) {
+                        if (($zoneError instanceof GameServerErrorException && (int) $zoneError->getCode() !== 1005) || $reloggedIn) {
+                            throw $zoneError;
+                        }
+                        $reloggedIn = true;
+                        $this->relogin($account, $identityRecovered);
+                    }
+
+                    continue;
+                }
+
+                if (in_array($code, $sessionCodes, true)) {
                     if ($reloggedIn) {
                         // FR-009: at most one re-login per action. The fresh session
                         // is rejected too — another login would only add one more
@@ -123,10 +144,8 @@ final readonly class ActionRetryPolicy
 
                     Log::info("[TaskExecution] Action [{$taskTypeStr}] hit session conflict/expired (error {$code}) for account #{$accountId} ({$username}); re-authenticating and retrying (attempt {$attempt}/{$maxAttempts})");
 
-                    $this->relogin($account);
+                    $this->relogin($account, $identityRecovered);
                     $reloggedIn = true;
-                    $this->zoneCache->invalidateFriendZones($accountId);
-                    $this->zoneCache->invalidateHomeZone($accountId);
                     Sleep::for(2)->seconds();
 
                     continue;
@@ -154,16 +173,23 @@ final readonly class ActionRetryPolicy
     /**
      * The one and only forced re-login of an action: drop the web session and
      * the shared game session (client id is kept — FR-009), log in again and
-     * reload the account so the new tokens are used by the next attempt.
+     * confirm home-zone entry before the next action attempt.
      *
      * @throws Exception
      */
-    private function relogin(Account $account): void
+    private function relogin(Account $account, bool &$identityRecovered): void
     {
-        $this->authService->resetSession($account);
-        $this->amfService->invalidateSession($account->id);
-        $this->amfService->resetClient($account->id);
-        $this->authService->ensureAuthenticated($account, force: true);
-        $account->refresh();
+        $this->sessionRecovery->reauthenticate($account);
+        $zoneIdentity = $this->sessionRecovery->currentIdentity($account);
+        try {
+            $this->sessionRecovery->enterHomeZone($account);
+        } catch (GameServerErrorException $error) {
+            if ((int) $error->getCode() !== 1012 || $identityRecovered) {
+                throw $error;
+            }
+            $identityRecovered = true;
+            $this->sessionRecovery->renewGameIdentity($account, $zoneIdentity);
+            $this->sessionRecovery->enterHomeZone($account);
+        }
     }
 }

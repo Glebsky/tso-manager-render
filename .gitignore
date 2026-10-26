@@ -33,3 +33,4 @@ docker/nginx/certs/
 *.zip
 __pycache__/
 *.py[cod]
+.autopilot/

@@ -53,9 +53,11 @@ final readonly class SequenceRunner
         while (true) {
             $task->refresh();
 
-            $payload = $task->payload ?? [];
+            $payload = TaskPayload::validate($task->payload, true);
+            // Reject unpersistable data before authentication or game commands.
+            TaskPayload::encode($payload);
             /** @var array<int, array<string, mixed>> $actions */
-            $actions = array_values((array) ($payload['actions'] ?? []));
+            $actions = array_values($payload['actions']);
             $stepResults = (array) ($payload['step_results'] ?? []);
             $index = $task->completed_steps ?? 0;
             $total = count($actions);

@@ -67,9 +67,7 @@ Route::post('/logout', [AuthController::class, 'logout'])
     ->name('legacy.logout');
 
 foreach (['accounts', 'tasks', 'market', 'settings', 'logs'] as $legacySection) {
-    Route::get('/' . $legacySection . '/{any?}', function ($any = null) use ($legacySection) {
-        return redirect('/admin/' . $legacySection . ($any ? '/' . $any : ''));
+    Route::get('/'.$legacySection.'/{any?}', function ($any = null) use ($legacySection) {
+        return redirect('/admin/'.$legacySection.($any ? '/'.$any : ''));
     })->where('any', '.*');
 }
-
-

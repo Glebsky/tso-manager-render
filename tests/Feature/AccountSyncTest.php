@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Exceptions\AuthChallengeException;
+use App\Exceptions\SessionExpiredException;
 use App\Jobs\AccountSyncJob;
 use App\Models\Account;
 use App\Models\Setting;
@@ -508,7 +509,7 @@ class AccountSyncTest extends TestCase
         $this->assertEquals('session_expired', $account->status);
     }
 
-    public function test_sync_recovers_from_initial_auth_failure_by_resetting_session_and_retrying(): void
+    public function test_sync_recovers_from_typed_initial_session_rejection_by_resetting_and_retrying(): void
     {
         $account = Account::create([
             'username' => 'recover_user',
@@ -520,7 +521,7 @@ class AccountSyncTest extends TestCase
         $this->authMock->shouldReceive('ensureAuthenticated')
             ->once()
             ->with(Mockery::on(fn ($arg) => $arg instanceof Account && $arg->id === $account->id))
-            ->andThrow(new \RuntimeException('Login failed: Temporary session error'));
+            ->andThrow(new SessionExpiredException('Login failed: Temporary session error'));
 
         $this->authMock->shouldReceive('isCaptchaOr2faError')
             ->with('Login failed: Temporary session error')

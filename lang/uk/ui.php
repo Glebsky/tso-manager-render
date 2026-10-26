@@ -8,6 +8,11 @@ declare(strict_types=1);
  */
 
 return [
+    'tasks.invalid_sequence' => 'Дані серії відсутні або пошкоджені. Запуск і редагування вимкнено до відновлення даних.',
+    'tasks.action.collect_daily_login_reward' => 'Забрати подарунок за щоденний вхід',
+    'tasks.type_label.collect_daily_login_reward' => 'Подарунок за вхід',
+    'tasks.daily_login_hint' => 'Забирає лише доступний подарунок за вхід на своєму острові. Без покупок і звичайних щоденних завдань.',
+
     'account.bb_url_label' => 'BB URL (Сервер авторизації)',
     'account.building_filter.advanced' => 'Просунуті',
     'account.building_filter.all' => 'Усі',
