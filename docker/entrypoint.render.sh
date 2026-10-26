@@ -18,7 +18,21 @@ set -e
 
 : "${PORT:=10000}"
 : "${RUN_MIGRATIONS:=true}"
-export PORT
+: "${TSO_WORKER_QUEUES:=tso-tasks,tso-accounts,tso-market,default}"
+: "${ENABLE_WORKER:=true}"
+: "${ENABLE_SCHEDULER:=true}"
+
+case "$ENABLE_WORKER" in
+    1|true|TRUE|yes|YES) ENABLE_WORKER=true ;;
+    *) ENABLE_WORKER=false ;;
+esac
+
+case "$ENABLE_SCHEDULER" in
+    1|true|TRUE|yes|YES) ENABLE_SCHEDULER=true ;;
+    *) ENABLE_SCHEDULER=false ;;
+esac
+
+export PORT TSO_WORKER_QUEUES ENABLE_WORKER ENABLE_SCHEDULER
 
 echo ">> render entrypoint: generating nginx config for port ${PORT}"
 mkdir -p /etc/nginx/http.d

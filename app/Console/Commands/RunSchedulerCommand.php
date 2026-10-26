@@ -14,6 +14,7 @@ class RunSchedulerCommand extends Command
 {
     protected $signature = 'tso:run-scheduler
                             {--mode= : Override execution mode (queue|cron|sync)}
+                            {--queue= : Optional queue list to consume in inline worker mode (defaults to TSO_WORKER_QUEUES or config(game.queues))}
                             {--work : Run inline queue worker over config(game.queues) after scheduling (implied in cron mode)}';
 
     protected $description = 'Run TSO master scheduler to process Task Planner tasks and Market Analytics atomically.';
@@ -58,9 +59,13 @@ class RunSchedulerCommand extends Command
         // queues. queue mode relies on a dedicated worker (Docker `worker`);
         // running a second one here would only race it (ADR-004).
         if ($this->option('work') || $mode === 'cron') {
-            $this->info('Running inline TSO queue worker (--stop-when-empty --max-time=50)...');
+            $queues = $this->option('queue')
+                ?: config('game.worker_queues')
+                ?: implode(',', config('game.queues'));
+
+            $this->info("Running inline TSO queue worker on [{$queues}] (--stop-when-empty --max-time=50)...");
             Artisan::call('queue:work', [
-                '--queue' => implode(',', config('game.queues')),
+                '--queue' => $queues,
                 '--stop-when-empty' => true,
                 '--max-time' => 50,
                 '--max-jobs' => 20,

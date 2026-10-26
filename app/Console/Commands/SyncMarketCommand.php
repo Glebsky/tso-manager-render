@@ -32,6 +32,10 @@ class SyncMarketCommand extends Command
 
     private function getSyncIntervalMinutes(): int
     {
+        if (config('game.market_sync_enabled', true) === false) {
+            return 0;
+        }
+
         $syncIntervalStr = (string) Setting::get('market_sync_interval', '15');
         if ($syncIntervalStr === 'custom') {
             return (int) Setting::get('market_custom_interval_minutes', 15);

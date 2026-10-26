@@ -36,6 +36,25 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Worker Queues Override
+    |--------------------------------------------------------------------------
+    |
+    | Optional comma-separated list of queues for worker instances to consume.
+    | When omitted, workers fall back to all declared game.queues.
+    |
+    */
+    'worker_queues' => env('TSO_WORKER_QUEUES'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Feature Toggles for Schedulers
+    |--------------------------------------------------------------------------
+    */
+    'market_sync_enabled' => env('MARKET_SYNC_ENABLED', true),
+    'account_sync_enabled' => env('ACCOUNT_SYNC_ENABLED', true),
+
+    /*
+    |--------------------------------------------------------------------------
     | Stale Task Timeout (Minutes)
     |--------------------------------------------------------------------------
     */

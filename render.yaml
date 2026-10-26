@@ -86,11 +86,30 @@ services:
       - key: FILESYSTEM_DISK
         value: local
 
-      # ---------------- Приложение ----------------
+      # ---------------- Приложение и Очереди ----------------
+      # queue: планировщик создает задачи в БД, а фоновый воркер их выполняет.
       - key: TSO_SCHEDULER_MODE
-        value: cron
+        value: queue
       - key: TSO_STALE_TASK_TIMEOUT
         value: "10"
+
+      # Управление воркером и планировщиком (true/false)
+      - key: ENABLE_WORKER
+        value: "true"
+      - key: ENABLE_SCHEDULER
+        value: "true"
+
+      # Очереди для этого инстанса.
+      # На основном сервере (UI): tso-tasks,tso-accounts,default (без рынка)
+      # На втором сервере (Рынок): tso-market
+      - key: TSO_WORKER_QUEUES
+        value: "tso-tasks,tso-accounts,tso-market,default"
+
+      # Включение/отключение генерации очередей через планировщик
+      - key: MARKET_SYNC_ENABLED
+        value: "true"
+      - key: ACCOUNT_SYNC_ENABLED
+        value: "true"
 
       # config/market.php - мультисерверная аналитика рынка.
       # bulk-стратегия дешевле по запросам к БД, что на Free важнее всего.
