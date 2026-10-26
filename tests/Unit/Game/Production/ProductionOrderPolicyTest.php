@@ -270,6 +270,7 @@ final class ProductionOrderPolicyTest extends TestCase
                 ],
             ],
             'production_queues' => [],
+            'resources' => [['name_string' => 'IntermediatePaper', 'amount' => 1000]],
         ]);
 
         $decisionLow = $this->policy->decide($snapshotLow, 2000, 2, 'Tome', 1);
@@ -287,6 +288,7 @@ final class ProductionOrderPolicyTest extends TestCase
                 ],
             ],
             'production_queues' => [],
+            'resources' => [['name_string' => 'IntermediatePaper', 'amount' => 1000]],
         ]);
 
         $decisionHigh = $this->policy->decide($snapshotHigh, 2000, 2, 'Tome', 1);
@@ -304,6 +306,7 @@ final class ProductionOrderPolicyTest extends TestCase
                 ],
             ],
             'production_queues' => [],
+            'resources' => [['name_string' => 'IntermediatePaper', 'amount' => 1000]],
         ]);
         $this->assertTrue($this->policy->decide($snapshotMin, 2000, 2, 'Tome', 1)->allowed);
 
@@ -317,6 +320,7 @@ final class ProductionOrderPolicyTest extends TestCase
                 ],
             ],
             'production_queues' => [],
+            'resources' => [['name_string' => 'IntermediatePaper', 'amount' => 1000]],
         ]);
         $this->assertTrue($this->policy->decide($snapshotMax, 2000, 2, 'Tome', 1)->allowed);
 
@@ -330,6 +334,7 @@ final class ProductionOrderPolicyTest extends TestCase
                 ],
             ],
             'production_queues' => [],
+            'resources' => [['name_string' => 'IntermediatePaper', 'amount' => 1000]],
         ]);
         $this->assertTrue($this->policy->decide($snapshotNullLvl, 2000, 2, 'Tome', 1)->allowed);
     }

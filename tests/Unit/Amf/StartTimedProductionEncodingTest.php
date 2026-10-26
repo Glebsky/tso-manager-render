@@ -9,6 +9,7 @@ use App\Services\Amf\Amf3Encoder;
 use App\Services\Amf\Transport\TsoClientInterface;
 use App\Services\Amf\Vo\defaultGame_Communication_VO_dServerCall;
 use App\Services\Amf\Vo\defaultGame_Communication_VO_dTimedProductionVO;
+use App\Services\Game\Session\GameClientIdentity;
 use App\Services\Tasks\Execution\GameResponseValidator;
 use App\Services\TsoAmfService;
 use Mockery;
@@ -92,7 +93,7 @@ final class StartTimedProductionEncodingTest extends TestCase
             })
             ->andReturn('dummy_amf_response');
 
-        $amfService = new TsoAmfService($clientMock, $this->app->make(GameResponseValidator::class));
+        $amfService = new TsoAmfService($clientMock, $this->app->make(GameResponseValidator::class), new GameClientIdentity);
 
         $response = $amfService->queueTimedProduction(
             account: $account,

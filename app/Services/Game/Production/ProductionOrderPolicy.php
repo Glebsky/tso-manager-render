@@ -111,8 +111,32 @@ final readonly class ProductionOrderPolicy
 
         // Resource check (ignoring Population)
         $resources = $snapshot->resources();
-        if ($resources !== [] && $recipe->costsKnown && $recipe->costs !== []) {
-            foreach ($recipe->costs as $cost) {
+        $costs = $recipe->costs;
+        if ($actualProductionType === 2) {
+            if (! $recipe->costsKnown) {
+                return ProductionDecision::reject(ProductionRejectionReason::ResourceDataUnavailable);
+            }
+            if ($recipe->costIsLowerBound || $recipe->costTiers !== null) {
+                $produced = $snapshot->resourceProducedAmount($recipeName);
+                $selectedThreshold = -1;
+                $selectedCosts = null;
+                foreach ($recipe->costTiers ?? [] as $tier) {
+                    if ($produced !== null && $tier['threshold'] <= $produced && $tier['threshold'] > $selectedThreshold) {
+                        $selectedThreshold = $tier['threshold'];
+                        $selectedCosts = $tier['costs'];
+                    }
+                }
+                if ($selectedCosts === null) {
+                    return ProductionDecision::reject(ProductionRejectionReason::ResourceDataUnavailable);
+                }
+                $costs = $selectedCosts;
+            }
+            if ($costs !== [] && $resources === []) {
+                return ProductionDecision::reject(ProductionRejectionReason::ResourceDataUnavailable);
+            }
+        }
+        if ($resources !== [] && $recipe->costsKnown && $costs !== []) {
+            foreach ($costs as $cost) {
                 $isPopulation = (bool) ($cost['is_population'] ?? ($cost['resource'] === 'Population'));
                 if ($isPopulation) {
                     continue;

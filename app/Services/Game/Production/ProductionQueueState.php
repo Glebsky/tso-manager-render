@@ -32,6 +32,16 @@ final readonly class ProductionQueueState
         return count($this->orders);
     }
 
+    public function headReadyForDelivery(): bool
+    {
+        $head = $this->orders[0] ?? null;
+        if (! is_array($head)) {
+            return false;
+        }
+
+        return $head['amount'] > 0 && $head['produced_items'] >= $head['amount'];
+    }
+
     public function hasOrders(): bool
     {
         return $this->orders !== [];

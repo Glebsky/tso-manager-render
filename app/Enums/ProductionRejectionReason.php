@@ -18,5 +18,6 @@ enum ProductionRejectionReason: string
     case BuildingUpgrading = 'building_upgrading';
     case QueueDataUnavailable = 'queue_data_unavailable';
     case QueueFull = 'queue_full';
+    case ResourceDataUnavailable = 'resource_data_unavailable';
     case InsufficientResources = 'insufficient_resources';
 }
