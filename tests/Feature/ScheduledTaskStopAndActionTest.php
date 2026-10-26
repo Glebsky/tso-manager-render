@@ -150,12 +150,62 @@ class ScheduledTaskStopAndActionTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonPath('success', true)
-            ->assertJsonPath('step_result.status', 'completed');
+            ->assertJsonPath('step_result.status', 'completed')
+            ->assertJsonPath('task.payload.step_results.1.status', 'completed');
 
         $task->refresh();
         $this->assertSame(0, $task->completed_steps, 'completed_steps must not advance on single action run');
         $payload = $task->payload ?? [];
         $this->assertSame('completed', $payload['step_results'][1]['status'] ?? null);
+    }
+
+    public function test_manual_single_action_resolves_failed_status_when_all_actions_succeed(): void
+    {
+        $user = User::factory()->create();
+        $account = Account::create([
+            'username' => 'testuser',
+            'password' => 'secret',
+            'region' => 'ru',
+            'nickname' => 'testuser',
+            'zone_data' => ['buildings' => []],
+        ]);
+
+        $task = ScheduledTask::create([
+            'account_id' => $account->id,
+            'task_type' => TaskType::Sequence,
+            'status' => TaskStatus::Failed,
+            'last_result' => 'ERROR: Step 1 [stop_production]: ERROR - Server error',
+            'completed_steps' => 0,
+            'payload' => [
+                'actions' => [
+                    ['task_type' => 'stop_production', 'payload' => ['grid' => 100]],
+                ],
+                'step_results' => [
+                    ['status' => 'failed', 'error' => 'Server error'],
+                ],
+            ],
+        ]);
+
+        $this->authMock->shouldReceive('ensureAuthenticated')
+            ->once()
+            ->with(Mockery::on(fn ($acc) => $acc->id === $account->id));
+
+        $this->amfMock->shouldReceive('stopProduction')
+            ->once()
+            ->with(Mockery::on(fn ($acc) => $acc->id === $account->id), 100)
+            ->andReturn('dummy-response');
+
+        $response = $this->actingAs($user)->postJson("/api/tasks/{$task->id}/actions/0/execute");
+
+        $response->assertStatus(200)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('step_result.status', 'completed')
+            ->assertJsonPath('task.status', 'completed')
+            ->assertJsonPath('task.payload.step_results.0.status', 'completed');
+
+        $task->refresh();
+        $this->assertSame(TaskStatus::Completed, $task->status);
+        $this->assertStringStartsWith('OK:', (string) $task->last_result);
     }
 
     public function test_cannot_execute_single_action_when_task_is_busy(): void

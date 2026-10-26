@@ -11,6 +11,7 @@ use App\Exceptions\TaskExecutionException;
 use App\Models\Account;
 use App\Models\ScheduledTask;
 use App\Services\Tasks\TaskActivityLogger;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 /**
@@ -45,11 +46,11 @@ final readonly class StepRunner
         $logParams = ['name' => $task->name, 'step' => $index + 1, 'type' => $actionType];
 
         try {
-            $this->actionExecutor->executeWithRetry($account, $actionType, $actionPayload);
+            $message = $this->actionExecutor->executeWithRetry($account, $actionType, $actionPayload);
 
             $this->log($account, $task, LogLevel::Success, $manual ? 'logs.task.single_action_completed' : 'logs.task.step_completed', $logParams);
 
-            return StepOutcome::completed($index, $actionType);
+            return StepOutcome::completed($index, $actionType, $message);
         } catch (SkippableStepExceptionInterface $e) {
             $reason = $e->getMessage();
             $buff = null;
@@ -84,6 +85,10 @@ final readonly class StepRunner
      */
     private function log(Account $account, ScheduledTask $task, LogLevel $level, string $key, array $params): void
     {
-        $this->activityLogger->logTaskEvent($account->id, $task->id, $level, __($key, $params));
+        try {
+            $this->activityLogger->logTaskEvent($account->id, $task->id, $level, __($key, $params));
+        } catch (Throwable) {
+            // Observational logging must never escape and cause a command to be replayed.
+        }
     }
 }

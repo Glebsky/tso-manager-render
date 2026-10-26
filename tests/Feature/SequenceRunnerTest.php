@@ -98,7 +98,7 @@ class SequenceRunnerTest extends TestCase
         $task->refresh();
         $this->assertSame(TaskStatus::Completed, $task->status);
         $this->assertNull($task->execution_token);
-        $this->assertSame('OK: Step 1 [stop_production]: OK; Step 2 [start_production]: OK', $task->last_result);
+        $this->assertSame('OK: Step 1 [stop_production]: OK — ok; Step 2 [start_production]: OK — ok', $task->last_result);
     }
 
     public function test_short_delay_is_waited_inline_with_the_delay_waiter(): void
@@ -194,7 +194,7 @@ class SequenceRunnerTest extends TestCase
 
         $task->refresh();
         $this->assertSame(TaskStatus::Completed, $task->status);
-        $this->assertSame('OK: Step 1 [stop_production]: OK; Step 2 [start_production]: OK', $task->last_result);
+        $this->assertSame('OK: Step 1 [stop_production]: OK — ok; Step 2 [start_production]: OK — ok', $task->last_result);
     }
 
     public function test_stop_during_a_step_aborts_the_run_without_overwriting_the_cancelled_state(): void

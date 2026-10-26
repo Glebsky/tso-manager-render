@@ -12,7 +12,7 @@ final class TaskResultSummary
     {
         $prefix = $isSuccess ? TaskResultPrefix::Ok : TaskResultPrefix::Error;
         $maxLen = (int) config('game.tasks.max_result_length', 1000);
-        $truncated = strlen($result) > $maxLen ? substr($result, 0, $maxLen - 3).'...' : $result;
+        $truncated = strlen($result) > $maxLen ? mb_strcut($result, 0, max(0, $maxLen - 3), 'UTF-8').'...' : $result;
 
         return $prefix->format($truncated);
     }
@@ -28,7 +28,7 @@ final class TaskResultSummary
         };
 
         $maxLen = (int) config('game.tasks.max_result_length', 1000);
-        $truncated = strlen($summaryText) > $maxLen ? substr($summaryText, 0, $maxLen - 3).'...' : $summaryText;
+        $truncated = strlen($summaryText) > $maxLen ? mb_strcut($summaryText, 0, max(0, $maxLen - 3), 'UTF-8').'...' : $summaryText;
 
         return $prefix->format($truncated);
     }

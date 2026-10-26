@@ -8,6 +8,8 @@ use App\Exceptions\GameServerErrorException;
 use App\Exceptions\SessionExpiredException;
 use App\Models\Account;
 use App\Services\Amf\Transport\TsoClientInterface;
+use App\Services\Game\Session\GameClientIdentity;
+use App\Services\Game\Session\GameSessionRecovery;
 use App\Services\Game\Zone\VersionedZoneCacheInvalidator;
 use App\Services\Tasks\Execution\ActionRetryPolicy;
 use App\Services\Tasks\Execution\GameResponseValidator;
@@ -62,7 +64,7 @@ class RetryPolicyTest extends TestCase
 
     private function policy(): ActionRetryPolicy
     {
-        return new ActionRetryPolicy($this->auth, $this->amf, new VersionedZoneCacheInvalidator(Cache::store('array')));
+        return new ActionRetryPolicy(new GameSessionRecovery($this->auth, $this->amf, app(ZoneParserService::class), new VersionedZoneCacheInvalidator(Cache::store('array')), new GameClientIdentity), $this->amf, new VersionedZoneCacheInvalidator(Cache::store('array')));
     }
 
     private function allowSessionReset(): void
@@ -70,6 +72,10 @@ class RetryPolicyTest extends TestCase
         $this->auth->shouldReceive('resetSession')->zeroOrMoreTimes();
         $this->amf->shouldReceive('invalidateSession')->zeroOrMoreTimes();
         $this->amf->shouldReceive('resetClient')->zeroOrMoreTimes();
+        $this->amf->shouldReceive('getZone')->once()->andReturn('recovered-zone');
+        $parser = Mockery::mock(ZoneParserService::class);
+        $parser->shouldReceive('parse')->with('recovered-zone')->once()->andReturn(['errorCode' => 0, 'buildings' => [['id' => 1]]]);
+        $this->app->instance(ZoneParserService::class, $parser);
     }
 
     // ── ActionRetryPolicy ────────────────────────────────────────────────
@@ -136,26 +142,27 @@ class RetryPolicyTest extends TestCase
         }
     }
 
-    public function test_persistent_1012_warms_up_once_relogs_in_once_and_gives_up(): void
+    public function test_persistent_1012_renews_game_identity_once_without_web_relogin(): void
     {
         config(['game.tasks.max_action_attempts' => 6]);
-        $this->allowSessionReset();
+        $this->auth->shouldNotReceive('ensureAuthenticated');
+        $this->auth->shouldNotReceive('resetSession');
+        $this->amf->shouldReceive('resetClient')->twice();
         $this->amf->shouldReceive('ensureZoneLoaded')->once()->andReturn('zone');
-        $this->auth->shouldReceive('ensureAuthenticated')->once()->with(Mockery::any(), true);
-
+        $this->amf->shouldReceive('getZone')->times(3)->andReturn('locked');
+        $parser = Mockery::mock(ZoneParserService::class);
+        $parser->shouldReceive('parse')->with('locked')->times(3)->andReturn(['errorCode' => 1012]);
+        $this->app->instance(ZoneParserService::class, $parser);
         $calls = 0;
-
         try {
             $this->policy()->execute($this->account, 'stop_production', function () use (&$calls): string {
                 $calls++;
-
-                throw new GameServerErrorException(1012, 'Newer game session detected');
+                throw new GameServerErrorException(1012, 'fixture rejected identity');
             });
-            $this->fail('Expected GameServerErrorException');
-        } catch (GameServerErrorException $e) {
-            $this->assertSame(1012, $e->getCode());
-            // attempt 1: warm-up; attempt 2: re-login; attempt 3: fails → stop.
-            $this->assertSame(3, $calls);
+            $this->fail('Expected bounded identity recovery failure');
+        } catch (GameServerErrorException $error) {
+            $this->assertSame(1012, $error->getCode());
+            $this->assertSame(2, $calls);
         }
     }
 
@@ -192,7 +199,7 @@ class RetryPolicyTest extends TestCase
         $client = Mockery::mock(TsoClientInterface::class);
         $parser = Mockery::mock(ZoneParserService::class);
 
-        return [new TsoAmfService($client, new GameResponseValidator($parser)), $client, $parser];
+        return [new TsoAmfService($client, new GameResponseValidator($parser), new GameClientIdentity), $client, $parser];
     }
 
     public function test_amf_service_propagates_session_expired_without_relogin(): void

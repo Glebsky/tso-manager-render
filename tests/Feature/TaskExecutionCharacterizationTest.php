@@ -152,6 +152,11 @@ class TaskExecutionCharacterizationTest extends TestCase
 
     public function test_retries_session_errors_1005_and_1012_with_relogin(): void
     {
+        $parser = Mockery::mock(ZoneParserService::class);
+        $parser->shouldReceive('parse')->with('recovered-zone')->once()->andReturn(['errorCode' => 0, 'buildings' => [['id' => 1]]]);
+        $this->app->instance(ZoneParserService::class, $parser);
+        $this->amfMock->shouldReceive('getZone')->once()->andReturn('recovered-zone');
+
         $account = Account::create([
             'username' => 'retry_user',
             'password' => 'secret',
@@ -194,8 +199,13 @@ class TaskExecutionCharacterizationTest extends TestCase
         $this->assertEquals(TaskStatus::Completed, $task->status);
     }
 
-    public function test_retries_session_error_1012_with_warmup_and_then_relogin(): void
+    public function test_retries_session_error_1012_with_warmup_and_identity_recovery_without_relogin(): void
     {
+        $parser = Mockery::mock(ZoneParserService::class);
+        $parser->shouldReceive('parse')->with('recovered-zone')->once()->andReturn(['errorCode' => 0, 'buildings' => [['id' => 1]]]);
+        $this->app->instance(ZoneParserService::class, $parser);
+        $this->amfMock->shouldReceive('getZone')->once()->andReturn('recovered-zone');
+
         $account = Account::create([
             'username' => 'retry_1012_user',
             'password' => 'secret',
@@ -213,11 +223,11 @@ class TaskExecutionCharacterizationTest extends TestCase
         ]);
 
         $this->authMock->shouldReceive('ensureAuthenticated')->andReturnNull();
-        $this->authMock->shouldReceive('resetSession')->atLeast()->once()->with(Mockery::any());
+        $this->authMock->shouldNotReceive('resetSession');
 
         $this->amfMock->shouldReceive('resetClient')->atLeast()->once();
         $this->amfMock->shouldReceive('ensureZoneLoaded')->once()->andReturn('zone_data');
-        $this->amfMock->shouldReceive('invalidateSession')->once();
+        $this->amfMock->shouldNotReceive('invalidateSession');
 
         $this->amfMock->shouldReceive('stopProduction')
             ->times(3)
@@ -228,13 +238,13 @@ class TaskExecutionCharacterizationTest extends TestCase
                     throw new GameServerErrorException(1012, 'Newer game session detected');
                 }
 
-                return 'stop_ok_after_1012_relogin';
+                return 'stop_ok_after_1012_identity_recovery';
             });
 
         $service = $this->app->make(TaskExecutionService::class);
         $result = $service->execute($task);
 
-        $this->assertEquals('stop_ok_after_1012_relogin', $result);
+        $this->assertEquals('stop_ok_after_1012_identity_recovery', $result);
         $task->refresh();
         $this->assertEquals(TaskStatus::Completed, $task->status);
     }
