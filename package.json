@@ -2,7 +2,9 @@
     "private": true,
     "type": "module",
     "scripts": {
+        "predev": "php artisan tso:lang:export-frontend",
         "dev": "vite",
+        "prebuild": "php artisan tso:lang:export-frontend",
         "build": "vite build"
     },
     "devDependencies": {
