@@ -12,6 +12,7 @@ use App\Exceptions\SessionExpiredException;
 use App\Models\Account;
 use App\Services\Account\Sync\AccountSyncFetcher;
 use App\Services\Game\Session\GameClientIdentity;
+use App\Services\Game\Session\GameSessionGuard;
 use App\Services\Game\Session\GameSessionRecovery;
 use App\Services\Game\Zone\VersionedZoneCacheInvalidator;
 use App\Services\Tasks\Execution\ActionRetryPolicy;
@@ -62,7 +63,7 @@ final class GameSessionRecoveryTest extends TestCase
         $amf->shouldNotReceive('getZone');
         $amf->shouldNotReceive('resetClient');
         $parser->shouldNotReceive('parse');
-        $policy = new ActionRetryPolicy($recovery, $amf, $zones);
+        $policy = new ActionRetryPolicy(new GameSessionGuard($recovery), $zones);
         $this->assertSame('ok', $policy->execute($this->account, 'collect_daily_login_reward', fn () => 'ok'));
     }
 
@@ -97,7 +98,7 @@ final class GameSessionRecoveryTest extends TestCase
             return ['errorCode' => 0, 'buildings' => [['id' => 1]]];
         });
         $calls = 0;
-        $policy = new ActionRetryPolicy($recovery, $amf, $zones);
+        $policy = new ActionRetryPolicy(new GameSessionGuard($recovery), $zones);
         $result = $policy->execute($this->account, 'collect_daily_login_reward', function () use (&$calls, &$zoneConfirmed): string {
             if (++$calls === 1) {
                 throw new SessionExpiredException('fixture expired');
@@ -132,15 +133,16 @@ final class GameSessionRecoveryTest extends TestCase
     {
         [$recovery, $auth, $amf, $parser, $zones] = $this->dependencies();
         $auth->shouldReceive('resetSession')->once();
-        $amf->shouldReceive('invalidateSession')->once();
-        $amf->shouldReceive('resetClient')->times($reads === 6 ? 2 : 1);
+        // A persistent 1012 after the forced login also takes the game session over once.
+        $amf->shouldReceive('invalidateSession')->times($reads === 6 ? 2 : 1);
+        $amf->shouldReceive('resetClient')->once();
         $auth->shouldReceive('ensureAuthenticated')->once()->with($this->account, true);
         $amf->shouldNotReceive('forgetClientId');
         $amf->shouldReceive('getZone')->times($reads)->andReturn('zone');
         $parser->shouldReceive('parse')->with('zone')->times($reads)->andReturn($zone);
         $calls = 0;
         try {
-            (new ActionRetryPolicy($recovery, $amf, $zones))->execute($this->account, 'produce_buff', function () use (&$calls): string {
+            (new ActionRetryPolicy(new GameSessionGuard($recovery), $zones))->execute($this->account, 'produce_buff', function () use (&$calls): string {
                 $calls++;
                 throw new SessionExpiredException('fixture expired before mutation');
             });
@@ -170,8 +172,9 @@ final class GameSessionRecoveryTest extends TestCase
         $auth->shouldReceive('ensureAuthenticated')->once()->with($this->account)->andThrow(new SessionExpiredException('fixture expired'));
         $auth->shouldReceive('isCaptchaOr2faError')->andReturnFalse();
         $auth->shouldReceive('resetSession')->once();
-        $amf->shouldReceive('invalidateSession')->once();
-        $amf->shouldReceive('resetClient')->twice();
+        // reset of the forced login + the one fresh-client takeover on 1012
+        $amf->shouldReceive('invalidateSession')->twice();
+        $amf->shouldReceive('resetClient')->once();
         $amf->shouldNotReceive('forgetClientId');
         $auth->shouldReceive('ensureAuthenticated')->once()->with($this->account, true);
         $amf->shouldReceive('getZone')->times(6)->andReturn('locked');

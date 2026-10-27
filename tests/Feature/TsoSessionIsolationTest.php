@@ -81,7 +81,7 @@ class TsoSessionIsolationTest extends TestCase
         $this->assertEquals(1, (int) Cache::get("tso:amf_gen:{$account2->id}", 1));
     }
 
-    public function test_task_execution_retries_1012_with_zone_warmup_and_succeeds(): void
+    public function test_task_execution_retries_1012_with_game_session_takeover_and_succeeds(): void
     {
         $account = Account::create([
             'username' => 'warmup_user',
@@ -116,8 +116,12 @@ class TsoSessionIsolationTest extends TestCase
                 return 'geo_success_response';
             });
 
-        $this->amfMock->shouldReceive('resetClient')->with((int) $account->id)->once();
-        $this->amfMock->shouldReceive('ensureZoneLoaded')->once()->andReturn('zone_data');
+        // Fresh-client takeover: new load-server session, confirmed by CMD_ZONE_LOGIN.
+        $this->amfMock->shouldReceive('invalidateSession')->with((int) $account->id)->once();
+        $this->amfMock->shouldNotReceive('resetClient');
+        $this->amfMock->shouldReceive('getZone')->once()->andReturn('home_zone');
+        $this->parserMock->shouldReceive('parse')->with('home_zone')->once()->andReturn(['errorCode' => 0, 'buildings' => [['id' => 1]]]);
+        $this->authMock->shouldNotReceive('resetSession');
 
         $service = $this->app->make(TaskExecutionService::class);
         $result = $service->execute($task);

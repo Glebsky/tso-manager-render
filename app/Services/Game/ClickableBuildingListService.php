@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Game;
 
 use App\Models\Account;
-use App\Services\TsoAmfService;
-use App\Services\ZoneParserService;
+use App\Services\Game\Zone\HomeZoneRepository;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -34,8 +33,7 @@ class ClickableBuildingListService
     public function __construct(
         private readonly ClickableBuildingRegistry $registry,
         private readonly QuestTriggerBuildingProvider $questProvider,
-        private readonly ZoneParserService $zoneParser,
-        private readonly TsoAmfService $amf,
+        private readonly HomeZoneRepository $homeZones,
     ) {}
 
     /**
@@ -173,8 +171,8 @@ class ClickableBuildingListService
                 return $bList;
             }
 
-            $rawAmf = $this->amf->getZone($account);
-            $parsed = $this->zoneParser->parse($rawAmf);
+            // Guarded (session recovery) and persisted, so the next call is served from zone_data.
+            $parsed = $this->homeZones->refresh($account);
 
             /** @var list<array<string, mixed>> $bList */
             $bList = (array) ($parsed['buildings'] ?? []);

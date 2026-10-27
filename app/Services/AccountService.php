@@ -6,9 +6,11 @@ namespace App\Services;
 
 use App\Enums\LogLevel;
 use App\Exceptions\GameServerErrorException;
+use App\Exceptions\SessionBusyException;
 use App\Exceptions\SessionExpiredException;
 use App\Models\Account;
 use App\Models\BotLog;
+use App\Services\Game\Session\GameSessionGuard;
 use Exception;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
 use Illuminate\Support\Facades\Cache;
@@ -22,6 +24,7 @@ readonly class AccountService
         private TsoAmfService $amfService,
         private ZoneParserService $zoneParser,
         private CacheRepository $cache,
+        private GameSessionGuard $sessionGuard,
     ) {}
 
     /**
@@ -48,40 +51,9 @@ readonly class AccountService
         try {
             $this->authService->ensureAuthenticated($account);
 
-            switch ($actionType) {
-                case 'stop_production':
-                    $this->amfService->stopProduction($account, (int) ($params['grid'] ?? 0));
-                    break;
-
-                case 'start_production':
-                    $this->amfService->startProduction($account, (int) ($params['grid'] ?? 0));
-                    break;
-
-                case 'apply_buff':
-                    $result = $this->amfService->applyBuff(
-                        $account,
-                        (int) ($params['grid'] ?? 0),
-                        (int) ($params['unique_id1'] ?? 0),
-                        (int) ($params['unique_id2'] ?? 0)
-                    );
-                    $parsed = $this->zoneParser->parse($result);
-                    $errorCode = $parsed['errorCode'] ?? 0;
-                    if ($errorCode !== 0) {
-                        $errorMsg = GameErrorResolver::getMessage((int) $errorCode);
-                        throw new GameServerErrorException((int) $errorCode, $errorMsg);
-                    }
-                    break;
-
-                case 'send_specialist':
-                    $this->amfService->sendSpecialist(
-                        $account,
-                        (int) ($params['task_type'] ?? 0),
-                        (int) ($params['sub_task_id'] ?? 0),
-                        (int) ($params['unique_id1'] ?? 0),
-                        (int) ($params['unique_id2'] ?? 0)
-                    );
-                    break;
-            }
+            $this->sessionGuard->run($account, "Manual action [{$actionType}]", function () use ($account, $actionType, $params): void {
+                $this->dispatchManualAction($account, $actionType, $params);
+            });
 
             $msg = __('logs.account.action_success', ['type' => $actionType]);
 
@@ -109,6 +81,73 @@ readonly class AccountService
                 'message' => $errorMsg,
             ];
         }
+    }
+
+    /**
+     * @param  array<string, mixed>  $params
+     *
+     * @throws Exception
+     */
+    private function dispatchManualAction(Account $account, string $actionType, array $params): void
+    {
+        switch ($actionType) {
+            case 'stop_production':
+                $this->amfService->stopProduction($account, (int) ($params['grid'] ?? 0));
+                break;
+
+            case 'start_production':
+                $this->amfService->startProduction($account, (int) ($params['grid'] ?? 0));
+                break;
+
+            case 'apply_buff':
+                $result = $this->amfService->applyBuff(
+                    $account,
+                    (int) ($params['grid'] ?? 0),
+                    (int) ($params['unique_id1'] ?? 0),
+                    (int) ($params['unique_id2'] ?? 0)
+                );
+                $parsed = $this->zoneParser->parse($result);
+                $errorCode = $parsed['errorCode'] ?? 0;
+                if ($errorCode !== 0) {
+                    $errorMsg = GameErrorResolver::getMessage((int) $errorCode);
+                    throw new GameServerErrorException((int) $errorCode, $errorMsg);
+                }
+                break;
+
+            case 'send_specialist':
+                $this->amfService->sendSpecialist(
+                    $account,
+                    (int) ($params['task_type'] ?? 0),
+                    (int) ($params['sub_task_id'] ?? 0),
+                    (int) ($params['unique_id1'] ?? 0),
+                    (int) ($params['unique_id2'] ?? 0)
+                );
+                break;
+        }
+    }
+
+    /**
+     * @param  array<string, mixed>  $zone
+     * @return list<array<string, mixed>>
+     */
+    private function friendBuildingsForCache(array $zone): array
+    {
+        $buildings = [];
+        foreach ((array) ($zone['buildings'] ?? []) as $b) {
+            if (! is_array($b)) {
+                continue;
+            }
+            $buildings[] = [
+                'buildingName_string' => $b['buildingName_string'] ?? $b['buildingName'] ?? 'Building',
+                'buildingName' => $b['buildingName'] ?? $b['buildingName_string'] ?? 'Building',
+                'buildingGrid' => $b['buildingGrid'] ?? $b['grid'] ?? 0,
+                'upgradeLevel' => $b['upgradeLevel'] ?? $b['level'] ?? 1,
+                'isProductionActive' => $b['isProductionActive'] ?? false,
+                'buildingMode' => $b['buildingMode'] ?? 0,
+            ];
+        }
+
+        return $buildings;
     }
 
     /**
@@ -222,58 +261,48 @@ readonly class AccountService
             $friendZoneData = null;
             $lastErrorCode = 0;
             $lastException = null;
-            $reloggedIn = false;
 
-            for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
-                try {
-                    $this->authService->ensureAuthenticated($account);
+            // Session recovery (1012 takeover, the single forced login, busy wait)
+            // is owned by GameSessionGuard, once per request; the inner loop only
+            // retries transport failures.
+            try {
+                $friendZoneData = $this->sessionGuard->run($account, "FriendZone [{$friendId}]", function () use ($account, $friendId, $maxAttempts): array {
+                    for ($attempt = 1; ; $attempt++) {
+                        try {
+                            $this->authService->ensureAuthenticated($account);
 
-                    Log::info("[FriendZone] Loading zone of friend #{$friendId} for account #{$account->id} (attempt {$attempt}/{$maxAttempts})");
-                    $rawAmf = $this->amfService->getZone($account, $friendId);
-                    $parsed = $this->zoneParser->parse($rawAmf);
+                            Log::info("[FriendZone] Loading zone of friend #{$friendId} for account #{$account->id} (attempt {$attempt}/{$maxAttempts})");
+                            $parsed = $this->zoneParser->parse($this->amfService->getZone($account, $friendId));
+                            $errorCode = (int) ($parsed['errorCode'] ?? 0);
+                            if ($errorCode !== 0) {
+                                throw new GameServerErrorException($errorCode, GameErrorResolver::getMessage($errorCode));
+                            }
 
-                    $errorCode = (int) ($parsed['errorCode'] ?? 0);
-                    if ($errorCode === 0) {
-                        $friendZoneData = $parsed;
-                        $jsonEncoded = json_encode($friendZoneData, JSON_THROW_ON_ERROR);
-                        $this->cache->put($cacheKey, $jsonEncoded, 3600);
-                        $this->cache->put($staleCacheKey, $jsonEncoded, 86400);
-                        break;
-                    }
-
-                    $lastErrorCode = $errorCode;
-                    Log::warning("[FriendZone] Game server returned error {$errorCode} while loading zone of friend #{$friendId} for account #{$account->id} (attempt {$attempt}/{$maxAttempts})");
-
-                    if ($errorCode === 1012 && $attempt < $maxAttempts) {
-                        Log::info("[FriendZone] Zone busy (error 1012) for friend #{$friendId}; sleeping before retry");
-                        sleep(2);
-
-                        continue;
-                    }
-
-                    break;
-                } catch (Exception $e) {
-                    $lastException = $e;
-                    Log::error("[FriendZone] Exception while loading zone of friend #{$friendId} for account #{$account->id} (attempt {$attempt}/{$maxAttempts}): ".$e->getMessage());
-
-                    if ($attempt < $maxAttempts) {
-                        // FR-009: the AMF layer no longer re-logs in by itself —
-                        // one forced re-login here, never more per request.
-                        if ($e instanceof SessionExpiredException && ! $reloggedIn) {
-                            Log::info("[FriendZone] Session rejected for account #{$account->id}; performing the single forced re-login");
-                            $this->authService->resetSession($account);
-                            $this->amfService->invalidateSession($account->id);
-                            $this->amfService->resetClient($account->id);
-                            $this->authService->ensureAuthenticated($account, force: true);
-                            $account->refresh();
-                            $reloggedIn = true;
+                            return $parsed;
+                        } catch (GameServerErrorException|SessionBusyException|SessionExpiredException $e) {
+                            throw $e;
+                        } catch (Exception $e) {
+                            Log::error("[FriendZone] Exception while loading zone of friend #{$friendId} for account #{$account->id} (attempt {$attempt}/{$maxAttempts}): ".$e->getMessage());
+                            if ($attempt >= $maxAttempts) {
+                                throw $e;
+                            }
+                            sleep(2);
                         }
-
-                        sleep(2);
-
-                        continue;
                     }
-                }
+                });
+
+                // Only the building list is ever read back; caching the whole
+                // friend zone twice in remote Redis was pure outbound traffic.
+                $jsonEncoded = json_encode(['buildings' => $this->friendBuildingsForCache($friendZoneData)], JSON_THROW_ON_ERROR);
+                $this->cache->put($cacheKey, $jsonEncoded, 3600);
+                $this->cache->put($staleCacheKey, $jsonEncoded, 86400);
+            } catch (GameServerErrorException $e) {
+                $lastErrorCode = (int) $e->getCode();
+                $lastException = $e;
+                Log::warning("[FriendZone] Game server returned error {$lastErrorCode} while loading zone of friend #{$friendId} for account #{$account->id}");
+            } catch (Exception $e) {
+                $lastException = $e;
+                Log::warning("[FriendZone] Failed to load zone of friend #{$friendId} for account #{$account->id}: ".$e->getMessage());
             }
 
             if ($friendZoneData === null) {

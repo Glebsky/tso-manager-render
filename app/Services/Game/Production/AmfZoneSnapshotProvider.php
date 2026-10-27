@@ -6,20 +6,20 @@ namespace App\Services\Game\Production;
 
 use App\Exceptions\GameServerErrorException;
 use App\Models\Account;
-use App\Services\GameErrorResolver;
-use App\Services\TsoAmfService;
-use App\Services\ZoneParserService;
+use App\Services\Game\Zone\HomeZoneRepository;
 use App\Support\Zone\ZoneSnapshot;
 use Exception;
 
 final readonly class AmfZoneSnapshotProvider implements ZoneSnapshotProviderInterface
 {
     public function __construct(
-        private TsoAmfService $amf,
-        private ZoneParserService $parser
+        private HomeZoneRepository $homeZones,
     ) {}
 
     /**
+     * Without $forceRefresh any persisted zone with buildings is used (as
+     * before); a live read goes through the guarded, persisted home zone read.
+     *
      * @throws GameServerErrorException
      * @throws Exception
      */
@@ -32,29 +32,6 @@ final readonly class AmfZoneSnapshotProvider implements ZoneSnapshotProviderInte
             }
         }
 
-        $zoneAmf = $this->amf->getZone($account);
-        $parsed = $this->parser->parse($zoneAmf);
-
-        $errorCode = (int) ($parsed['errorCode'] ?? 0);
-        if ($errorCode !== 0) {
-            throw new GameServerErrorException($errorCode, GameErrorResolver::getMessage($errorCode));
-        }
-
-        if ($account->exists) {
-            $existingFriends = is_array($account->zone_data) && is_array($account->zone_data['friends'] ?? null)
-                ? $account->zone_data['friends']
-                : [];
-            if (! empty($existingFriends)) {
-                $parsed['friends'] = $existingFriends;
-            }
-
-            $account->update([
-                'zone_data' => json_encode($parsed, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE),
-                'last_sync_at' => now(),
-                'status' => 'online',
-            ]);
-        }
-
-        return new ZoneSnapshot($parsed);
+        return new ZoneSnapshot($this->homeZones->refresh($account));
     }
 }

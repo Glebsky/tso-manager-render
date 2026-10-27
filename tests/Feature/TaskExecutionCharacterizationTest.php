@@ -199,7 +199,7 @@ class TaskExecutionCharacterizationTest extends TestCase
         $this->assertEquals(TaskStatus::Completed, $task->status);
     }
 
-    public function test_retries_session_error_1012_with_warmup_and_identity_recovery_without_relogin(): void
+    public function test_retries_session_error_1012_with_game_session_takeover_without_relogin(): void
     {
         $parser = Mockery::mock(ZoneParserService::class);
         $parser->shouldReceive('parse')->with('recovered-zone')->once()->andReturn(['errorCode' => 0, 'buildings' => [['id' => 1]]]);
@@ -225,16 +225,18 @@ class TaskExecutionCharacterizationTest extends TestCase
         $this->authMock->shouldReceive('ensureAuthenticated')->andReturnNull();
         $this->authMock->shouldNotReceive('resetSession');
 
-        $this->amfMock->shouldReceive('resetClient')->atLeast()->once();
-        $this->amfMock->shouldReceive('ensureZoneLoaded')->once()->andReturn('zone_data');
-        $this->amfMock->shouldNotReceive('invalidateSession');
+        // 1012 = superseded game session: take it over like a fresh client
+        // (new load-server session on the same token), no warm-up, no web login.
+        $this->amfMock->shouldReceive('invalidateSession')->once();
+        $this->amfMock->shouldNotReceive('resetClient');
+        $this->amfMock->shouldNotReceive('ensureZoneLoaded');
 
         $this->amfMock->shouldReceive('stopProduction')
-            ->times(3)
+            ->twice()
             ->andReturnUsing(function () {
                 static $attempts = 0;
                 $attempts++;
-                if ($attempts <= 2) {
+                if ($attempts === 1) {
                     throw new GameServerErrorException(1012, 'Newer game session detected');
                 }
 
