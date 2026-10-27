@@ -47,7 +47,7 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci
 COPY . .
-RUN npm run build
+RUN npm run build --ignore-scripts
 
 # ---------- stage 2: runtime ----------
 FROM mirror.gcr.io/library/php:${PHP_VERSION}-fpm-alpine
