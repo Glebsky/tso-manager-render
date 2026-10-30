@@ -18,6 +18,8 @@ class GameErrorResolver
             return $translation;
         }
 
-        return __('ui.game_error.unknown', ['code' => $errorCode], $locale);
+        $template = __('ui.game_error.unknown', ['code' => $errorCode], $locale);
+
+        return str_replace(['{code}', ':code'], (string) $errorCode, (string) $template);
     }
 }

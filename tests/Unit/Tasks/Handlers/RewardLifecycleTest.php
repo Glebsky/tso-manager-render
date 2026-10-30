@@ -158,6 +158,7 @@ final class RewardLifecycleTest extends TestCase
     #[DataProvider('unconfirmedCases')]
     public function test_bookbinder_never_starts_after_unconfirmed_collection(string $case): void
     {
+        Sleep::fake();
         $account = $this->account();
         $zones = Mockery::mock(ZoneSnapshotProviderInterface::class);
         $gateway = Mockery::mock(ProductionCommandGatewayInterface::class);
@@ -178,7 +179,8 @@ final class RewardLifecycleTest extends TestCase
                 $after['production_queues'] = [];
                 unset($after['server_response_confirmed']);
             }
-            $expectation = $zones->shouldReceive('forAccount')->with($account, true)->once();
+            $times = $case === 'still_queued' ? 3 : 1;
+            $expectation = $zones->shouldReceive('forAccount')->with($account, true)->times($times);
             if ($case === 'refresh_exception') {
                 $expectation->andThrow(new \RuntimeException('session lost'));
             } else {
@@ -189,6 +191,33 @@ final class RewardLifecycleTest extends TestCase
         $handler = new ProduceBuffHandler($zones, new ProductionOrderPolicy(new ConfigProductionCatalog($this->catalog())), $gateway, $parser);
         $result = $handler->handle($account, $this->payload());
         $this->assertNotSame(__('tasks.produce_buff.queued', ['recipe' => 'Tome', 'amount' => 1, 'grid' => 44]), $result);
+    }
+
+    public function test_bookbinder_claims_with_delayed_queue_clearance(): void
+    {
+        Sleep::fake();
+        $account = $this->account();
+        $zones = Mockery::mock(ZoneSnapshotProviderInterface::class);
+        $gateway = Mockery::mock(ProductionCommandGatewayInterface::class);
+        $parser = Mockery::mock(ZoneParserService::class);
+        $initial = $this->zone();
+        $cleared = $this->zone();
+        $cleared['production_queues'] = [];
+
+        $zones->shouldReceive('forAccount')->with($account, true)->once()->globally()->ordered()->andReturn(new ZoneSnapshot($initial));
+        $gateway->shouldReceive('deliverOrder')->with($account, 2)->once()->globally()->ordered()->andReturn('delivery');
+        $parser->shouldReceive('parse')->with('delivery')->once()->andReturn(['server_response_confirmed' => true, 'errorCode' => 0]);
+        // Attempt 0: server has not cleared queue yet
+        $zones->shouldReceive('forAccount')->with($account, true)->once()->globally()->ordered()->andReturn(new ZoneSnapshot($initial));
+        // Attempt 1: server finished clearing queue
+        $zones->shouldReceive('forAccount')->with($account, true)->once()->globally()->ordered()->andReturn(new ZoneSnapshot($cleared));
+        $gateway->shouldReceive('queueOrder')->with($account, 44, 2, 'Tome', 1, 1)->once()->globally()->ordered()->andReturn('queued');
+        $parser->shouldReceive('parse')->with('queued')->once()->andReturn(['server_response_confirmed' => true, 'errorCode' => 0]);
+        $confirmed = $this->zone(false);
+        $zones->shouldReceive('forAccount')->with($account, true)->once()->globally()->ordered()->andReturn(new ZoneSnapshot($confirmed));
+
+        $handler = new ProduceBuffHandler($zones, new ProductionOrderPolicy(new ConfigProductionCatalog($this->catalog())), $gateway, $parser);
+        $this->assertSame(__('tasks.produce_buff.queued', ['recipe' => 'Tome', 'amount' => 1, 'grid' => 44]), $handler->handle($account, $this->payload()));
     }
 
     public function test_shared_account_lock_prevents_duplicate_actions(): void

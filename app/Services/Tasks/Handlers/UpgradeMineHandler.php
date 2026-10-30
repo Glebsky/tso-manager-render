@@ -22,7 +22,7 @@ use Throwable;
 final readonly class UpgradeMineHandler implements TaskActionHandlerInterface
 {
     /** @var list<int> */
-    private const array SESSION_ERROR_CODES = [1005, 1012];
+    private const array SESSION_ERROR_CODES = [1001, 1005, 1012];
 
     public function __construct(
         private ZoneSnapshotProviderInterface $zones,

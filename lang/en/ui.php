@@ -913,7 +913,7 @@ return [
     'game_error.1013' => 'Client version mismatch',
     'game_error.1016' => 'Client settings mismatch',
     'game_error.1017' => 'Friend zone crashed',
-    'game_error.unknown' => 'Unknown game error ({code})',
+    'game_error.unknown' => 'Unknown game error (:code)',
     'tasks.my_city' => 'My city',
     'tasks.friend_city' => 'Friend\'s city',
 

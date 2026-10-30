@@ -38,7 +38,7 @@ final readonly class AmfZoneSnapshotProvider implements ZoneSnapshotProviderInte
      */
     public function forAccount(Account $account, bool $forceRefresh = false): ZoneSnapshot
     {
-        $zone = $this->homeZones->get($account, $forceRefresh, self::ZONE_CACHE_TTL_SECONDS);
+        $zone = $this->homeZones->get($account, $forceRefresh, self::ZONE_CACHE_TTL_SECONDS, allowStaleFallback: true);
 
         $depositsByGrid = [];
         if (isset($zone['deposits']) && is_array($zone['deposits'])) {

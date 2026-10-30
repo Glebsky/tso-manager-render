@@ -224,6 +224,38 @@ final class UpgradeMineHandlerTest extends TestCase
         $this->assertStringContainsString('6431', $result);
     }
 
+    public function test_it_handles_session_error_1001_without_throwing_and_returns_unknown_outcome(): void
+    {
+        /** @var ZoneSnapshotProviderInterface&MockInterface $mockZones */
+        $mockZones = Mockery::mock(ZoneSnapshotProviderInterface::class);
+        $mockZones->expects('forAccount')
+            ->with($this->account)
+            ->andReturn(new ZoneSnapshot(
+                depositsByGrid: [],
+                buildingsByGrid: [6431 => new BuildingSnapshot(grid: 6431, name: 'IronMine', upgradeLevel: 3, isProductionActive: true, upgradeInProgress: false)],
+                buildQueue: new BuildQueueSnapshot(used: 1, total: 3),
+            ));
+
+        /** @var MineCommandGatewayInterface&MockInterface $mockGateway */
+        $mockGateway = Mockery::mock(MineCommandGatewayInterface::class);
+        $mockGateway->expects('upgradeMine')
+            ->with($this->account, 6431)
+            ->andReturn('dummy_amf_1001');
+
+        /** @var ZoneParserService&MockInterface $mockParser */
+        $mockParser = Mockery::mock(ZoneParserService::class);
+        $mockParser->expects('parse')
+            ->with('dummy_amf_1001')
+            ->andReturn(['errorCode' => 1001]);
+
+        $policy = $this->app->make(MineUpgradePolicy::class);
+        $handler = new UpgradeMineHandler($mockZones, $policy, $mockGateway, $mockParser);
+
+        $result = $handler->handle($this->account, ['grid' => 6431]);
+
+        $this->assertStringContainsString('6431', $result);
+    }
+
     public function test_it_throws_task_execution_exception_for_game_errors(): void
     {
         /** @var ZoneSnapshotProviderInterface&MockInterface $mockZones */

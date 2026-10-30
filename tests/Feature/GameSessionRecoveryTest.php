@@ -166,6 +166,19 @@ final class GameSessionRecoveryTest extends TestCase
         Sleep::assertSleptTimes(1);
     }
 
+    public function test_zone_initializing_1001_retries_zone_reads_without_new_login(): void
+    {
+        [$recovery, $auth, $amf, $parser] = $this->dependencies();
+        $auth->shouldNotReceive('ensureAuthenticated');
+        $auth->shouldNotReceive('resetSession');
+        $amf->shouldNotReceive('forgetClientId');
+        $amf->shouldReceive('getZone')->twice()->andReturn('loading', 'ready');
+        $parser->shouldReceive('parse')->with('loading')->once()->andReturn(['errorCode' => 1001]);
+        $parser->shouldReceive('parse')->with('ready')->once()->andReturn(['errorCode' => 0, 'buildings' => [['id' => 1]]]);
+        $recovery->enterHomeZone($this->account);
+        Sleep::assertSleptTimes(1);
+    }
+
     public function test_sync_initial_auth_recovery_consumes_the_only_forced_login_budget(): void
     {
         [$recovery, $auth, $amf, $parser] = $this->dependencies();

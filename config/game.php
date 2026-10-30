@@ -109,6 +109,15 @@ return [
         'transport_retry_errors' => [1012],
 
         /*
+         | Codes that mean "the server is initializing or loading the player's zone".
+         | 1001 (SERVER_ZONE_INIT_FAILED) is a transient state while the zone server
+         | spins up the island instance. GameSessionGuard retries with backoff and
+         | session identity renewal before failing.
+         */
+        'zone_init_errors' => [1001],
+        'zone_init_retry_delay' => (int) env('TSO_ZONE_INIT_RETRY_DELAY', 3),
+
+        /*
          | Seconds to wait before retrying an action whose per-account session
          | lock was busy (SessionBusyException). No re-login is performed.
          */

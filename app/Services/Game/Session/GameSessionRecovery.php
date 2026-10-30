@@ -89,8 +89,9 @@ final readonly class GameSessionRecovery
                 throw new RuntimeException('Cannot confirm home zone login: invalid response');
             }
             $code = (int) $rawCode;
-            if ($code === 1012 && $attempt < $maxAttempts) {
-                Sleep::for(2)->seconds();
+            if (in_array($code, [1001, 1012], true) && $attempt < $maxAttempts) {
+                $delay = $code === 1001 ? 3 : 2;
+                Sleep::for($delay)->seconds();
 
                 continue;
             }

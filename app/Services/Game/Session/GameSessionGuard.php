@@ -73,6 +73,8 @@ final class GameSessionGuard
         $maxAttempts = max(1, (int) config('game.tasks.max_action_attempts', 3));
         $sessionCodes = array_map('intval', (array) config('game.tasks.relogin_errors', [1005]));
         $takeoverCodes = array_map('intval', (array) config('game.tasks.transport_retry_errors', [1012]));
+        $zoneInitCodes = array_map('intval', (array) config('game.tasks.zone_init_errors', [1001]));
+        $zoneInitDelay = max(1, (int) config('game.tasks.zone_init_retry_delay', 3));
         $busyDelay = max(1, (int) config('game.tasks.session_busy_retry_delay', 5));
         $accountId = $account->id;
         $who = "{$label} for account #{$accountId} (".($account->username ?? $account->nickname ?? "account#{$accountId}").')';
@@ -155,6 +157,26 @@ final class GameSessionGuard
                     continue;
                 }
 
+                if (in_array($code, $zoneInitCodes, true)) {
+                    if ($attempt < $maxAttempts) {
+                        if ($attempt > 1 && ! $tookOver) {
+                            Log::info("[GameSession] {$who}: error {$code} persists on attempt {$attempt}; renewing game identity");
+                            $tookOver = true;
+                            $this->recovery->renewGameIdentity($account, $attemptIdentity);
+                        }
+
+                        $delay = $zoneInitDelay * $attempt;
+                        Log::info("[GameSession] {$who}: zone is initializing (error {$code}); retrying in {$delay}s (attempt {$attempt}/{$maxAttempts})");
+                        Sleep::for($delay)->seconds();
+
+                        continue;
+                    }
+
+                    Log::error("[GameSession] {$who}: zone initialization failed after {$attempt}/{$maxAttempts} attempts");
+
+                    throw $e;
+                }
+
                 if ($retryGameError !== null && $retryGameError($e, $attempt)) {
                     continue;
                 }
@@ -183,7 +205,7 @@ final class GameSessionGuard
             $this->recovery->enterHomeZone($account);
         } catch (SessionExpiredException|GameServerErrorException $zoneError) {
             $code = $zoneError instanceof GameServerErrorException ? (int) $zoneError->getCode() : null;
-            $recoverable = $code === null || in_array($code, [1005, 1012], true);
+            $recoverable = $code === null || in_array($code, [1001, 1005, 1012], true);
             if ($reloggedIn || ! $recoverable) {
                 throw $zoneError;
             }

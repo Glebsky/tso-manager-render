@@ -12,6 +12,7 @@ use App\Services\TsoAmfService;
 use App\Services\ZoneParserService;
 use Carbon\CarbonInterface;
 use Exception;
+use Illuminate\Support\Facades\Log;
 
 /**
  * The player's home zone, read from the game at most once per freshness window.
@@ -44,8 +45,13 @@ final readonly class HomeZoneRepository
      *
      * @throws Exception
      */
-    public function get(Account $account, bool $forceRefresh = false, ?int $maxAgeSeconds = null): array
-    {
+    public function get(
+        Account $account,
+        bool $forceRefresh = false,
+        ?int $maxAgeSeconds = null,
+        bool $allowStaleFallback = true,
+        int $maxStaleAgeSeconds = 3600
+    ): array {
         if (! $forceRefresh) {
             $cached = $this->fresh($account, $maxAgeSeconds);
             if ($cached !== null) {
@@ -53,7 +59,48 @@ final readonly class HomeZoneRepository
             }
         }
 
-        return $this->refresh($account);
+        try {
+            return $this->refresh($account);
+        } catch (GameServerErrorException $e) {
+            if ($allowStaleFallback && (int) $e->getCode() === 1001) {
+                $stale = $this->stale($account, $maxStaleAgeSeconds);
+                if ($stale !== null) {
+                    Log::warning(sprintf(
+                        '[HomeZoneRepository] Account #%d: live zone read returned 1001 (initializing). Using stale zone fallback (age: %ds).',
+                        $account->id,
+                        (int) ($this->ageSeconds($account) ?? 0)
+                    ));
+
+                    return $stale;
+                }
+            }
+
+            throw $e;
+        }
+    }
+
+    /**
+     * The persisted zone when available, even if stale (up to maxStaleAgeSeconds).
+     *
+     * @return array<string, mixed>|null
+     */
+    public function stale(Account $account, int $maxStaleAgeSeconds = 3600): ?array
+    {
+        $zone = $account->zone_data;
+        if (! is_array($zone) || ! is_array($zone['buildings'] ?? null) || $zone['buildings'] === []) {
+            return null;
+        }
+
+        if (! $account->last_sync_at instanceof CarbonInterface) {
+            return null;
+        }
+
+        $age = abs($account->last_sync_at->diffInSeconds(now()));
+        if ($age > $maxStaleAgeSeconds) {
+            return null;
+        }
+
+        return $zone;
     }
 
     /**

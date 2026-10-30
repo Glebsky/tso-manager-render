@@ -180,4 +180,42 @@ final class HomeZoneRepositoryTest extends TestCase
 
         $this->assertSame('Stored', $account->refresh()->zone_data['buildings'][0]['buildingName_string'] ?? null);
     }
+
+    public function test_get_falls_back_to_stale_zone_when_live_read_fails_with_1001(): void
+    {
+        config(['game.tasks.max_action_attempts' => 1]);
+        $account = $this->account(1200); // Older than TTL (600s), but younger than stale window (3600s)
+        $this->amf->shouldReceive('getZone')->once()->andReturn('initializing');
+        $this->parser->shouldReceive('parse')->with('initializing')->once()->andReturn(['errorCode' => 1001]);
+
+        $zone = $this->repository()->get($account);
+
+        $this->assertSame('Stored', $zone['buildings'][0]['buildingName_string']);
+    }
+
+    public function test_get_rethrows_1001_when_stale_fallback_is_disabled(): void
+    {
+        config(['game.tasks.max_action_attempts' => 1]);
+        $account = $this->account(1200);
+        $this->amf->shouldReceive('getZone')->once()->andReturn('initializing');
+        $this->parser->shouldReceive('parse')->with('initializing')->once()->andReturn(['errorCode' => 1001]);
+
+        $this->expectException(GameServerErrorException::class);
+        $this->expectExceptionCode(1001);
+
+        $this->repository()->get($account, allowStaleFallback: false);
+    }
+
+    public function test_get_rethrows_1001_when_persisted_zone_is_older_than_max_stale_age(): void
+    {
+        config(['game.tasks.max_action_attempts' => 1]);
+        $account = $this->account(4000); // Older than maxStaleAgeSeconds (3600s)
+        $this->amf->shouldReceive('getZone')->once()->andReturn('initializing');
+        $this->parser->shouldReceive('parse')->with('initializing')->once()->andReturn(['errorCode' => 1001]);
+
+        $this->expectException(GameServerErrorException::class);
+        $this->expectExceptionCode(1001);
+
+        $this->repository()->get($account);
+    }
 }

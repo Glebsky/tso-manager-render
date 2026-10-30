@@ -26,6 +26,9 @@ class TsoAmfService
     /** NEWER_SESSION_DETECTED / zone not ready — the game session was superseded. */
     public const int ERROR_NEWER_SESSION = 1012;
 
+    /** SERVER_ZONE_INIT_FAILED — zone is temporarily initializing or waking up on server. */
+    public const int ERROR_ZONE_INIT_FAILED = 1001;
+
     public const int CMD_BUILD = 50;
 
     public const int CMD_UPGRADE = 60;
@@ -132,8 +135,9 @@ class TsoAmfService
 
             // FR-009: decide on the decoded error code, not on the digits "1012"
             // appearing somewhere in the binary payload (grid ids, amounts…).
-            if ($this->responseValidator->errorCode($lastResponse) === self::ERROR_NEWER_SESSION) {
-                Log::debug("[TsoAmf] Zone still initializing for account #{$account->id} (code 1012); waiting {$delaySeconds}s...");
+            $errorCode = $this->responseValidator->errorCode($lastResponse);
+            if ($errorCode === self::ERROR_NEWER_SESSION || $errorCode === self::ERROR_ZONE_INIT_FAILED) {
+                Log::debug("[TsoAmf] Zone still initializing for account #{$account->id} (code {$errorCode}); waiting {$delaySeconds}s...");
                 if ($attempt < $maxAttempts) {
                     Sleep::for($delaySeconds)->seconds();
                 }
