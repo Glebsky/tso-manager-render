@@ -6,8 +6,15 @@ namespace Tests\Unit\Game\Production;
 
 use App\Models\Account;
 use App\Services\Game\Production\AmfZoneSnapshotProvider;
+use App\Services\Game\Session\GameClientIdentity;
+use App\Services\Game\Session\GameSessionGuard;
+use App\Services\Game\Session\GameSessionRecovery;
+use App\Services\Game\Zone\HomeZoneRepository;
+use App\Services\Game\Zone\VersionedZoneCacheInvalidator;
 use App\Services\TsoAmfService;
+use App\Services\TsoAuthService;
 use App\Services\ZoneParserService;
+use Illuminate\Support\Facades\Cache;
 use Mockery;
 use Mockery\MockInterface;
 use Tests\TestCase;
@@ -45,7 +52,15 @@ final class AmfZoneSnapshotProviderTest extends TestCase
             }))
             ->andReturn(true);
 
-        $provider = new AmfZoneSnapshotProvider($mockAmf, $mockZones);
+        $provider = $this->provider($mockAmf, $mockZones);
         $provider->forAccount($account, forceRefresh: true);
+    }
+
+    private function provider(TsoAmfService $amf, ZoneParserService $parser): AmfZoneSnapshotProvider
+    {
+        $zones = new VersionedZoneCacheInvalidator(Cache::store('array'));
+        $guard = new GameSessionGuard(new GameSessionRecovery(Mockery::mock(TsoAuthService::class), $amf, $parser, $zones, new GameClientIdentity));
+
+        return new AmfZoneSnapshotProvider(new HomeZoneRepository($amf, $parser, $guard, $zones));
     }
 }

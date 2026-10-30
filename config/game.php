@@ -100,13 +100,22 @@ return [
         'relogin_errors' => [1005],
 
         /*
-         | Codes that mean "this AMF endpoint is bound to another/newer session".
-         | First warm up the zone without re-login. A persistent conflict permits
-         | one game identity renewal on the same token, then confirmed home-zone entry.
-         | Only actual web-session rejection permits a forced login.
+         | Codes that mean "our game session was superseded by a newer one".
+         | GameSessionGuard takes the session over like a freshly started client
+         | (new client identity + new load-server session on the same token,
+         | confirmed home-zone entry). If the fresh session is rejected as well,
+         | the single forced login of the call is used.
          */
         'transport_retry_errors' => [1012],
-        'transport_retry_delay' => 3,
+
+        /*
+         | Codes that mean "the server is initializing or loading the player's zone".
+         | 1001 (SERVER_ZONE_INIT_FAILED) is a transient state while the zone server
+         | spins up the island instance. GameSessionGuard retries with backoff and
+         | session identity renewal before failing.
+         */
+        'zone_init_errors' => [1001],
+        'zone_init_retry_delay' => (int) env('TSO_ZONE_INIT_RETRY_DELAY', 3),
 
         /*
          | Seconds to wait before retrying an action whose per-account session
@@ -142,6 +151,21 @@ return [
     |
     */
     'session_ttl_seconds' => (int) env('TSO_SESSION_TTL', 1800),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Home Zone Cache
+    |--------------------------------------------------------------------------
+    |
+    | How long the persisted home zone (accounts.zone_data) is reused by
+    | buffs and other readers before it is read from the game again. Every
+    | live read is ~0.5-1.5 MB that gets written back to the database, so
+    | this window is the main lever on outbound traffic. Account sync always
+    | refreshes it; home-zone invalidation (session recovery, manual buff
+    | step) makes the next reader fetch live.
+    |
+    */
+    'home_zone_cache_ttl_seconds' => (int) env('TSO_HOME_ZONE_CACHE_TTL', 600),
 
     /*
     | How long a job waits for another process to finish talking to the game

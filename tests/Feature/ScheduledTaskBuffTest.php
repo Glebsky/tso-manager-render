@@ -560,8 +560,18 @@ class ScheduledTaskBuffTest extends TestCase
                 ],
             ]);
 
-        $this->amfMock->shouldReceive('resetClient')->once();
-        $this->amfMock->shouldReceive('ensureZoneLoaded')->once()->andReturn('');
+        // 1012 on the friend zone: the game session is taken over like a fresh
+        // client and confirmed with a home zone login before the retry.
+        $this->amfMock->shouldReceive('invalidateSession')->once();
+        $this->amfMock->shouldNotReceive('resetClient');
+        $this->amfMock->shouldReceive('getZone')
+            ->once()
+            ->with(Mockery::any())
+            ->andReturn('raw_home_zone_amf');
+        $this->parserMock->shouldReceive('parse')
+            ->once()
+            ->with('raw_home_zone_amf')
+            ->andReturn(['errorCode' => 0, 'buildings' => [['buildingGrid' => 1]]]);
 
         $this->amfMock->shouldReceive('applyBuff')
             ->once()

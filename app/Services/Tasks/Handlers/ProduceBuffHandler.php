@@ -18,6 +18,7 @@ use App\Services\GameErrorResolver;
 use App\Services\Tasks\Contracts\ResultAwareTaskActionHandlerInterface;
 use App\Services\Tasks\Execution\TaskActionResult;
 use App\Services\ZoneParserService;
+use App\Support\Zone\ZoneSnapshot;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Sleep;
@@ -108,9 +109,8 @@ final readonly class ProduceBuffHandler implements ResultAwareTaskActionHandlerI
                     if ($code !== 0) {
                         return TaskActionResult::failed(__('tasks.produce_buff.delivery_unconfirmed'));
                     }
-                    $snapshot = $this->zones->forAccount($account, true);
-                    $queue = $snapshot->productionQueueFor(2);
-                    if (($snapshot->raw()['server_response_confirmed'] ?? false) !== true || ($snapshot->raw()['errorCode'] ?? null) !== 0 || $queue === null || $queue->hasOrders()) {
+                    $snapshot = $this->confirmBookbinderDelivery($account);
+                    if ($snapshot === null) {
                         return TaskActionResult::failed(__('tasks.produce_buff.delivery_unconfirmed'));
                     }
                     $decision = $this->policy->decide($snapshot, $grid, $productionType, $recipeName, $amount, $stacks);
@@ -179,6 +179,28 @@ final readonly class ProduceBuffHandler implements ResultAwareTaskActionHandlerI
 
             return TaskActionResult::failed(__('tasks.produce_buff.unknown_outcome', ['grid' => $grid, 'recipe' => $recipeName]));
         }
+    }
+
+    /** A transport ACK is not proof that the game cleared the queue. Never re-send delivery here. */
+    private function confirmBookbinderDelivery(Account $account): ?ZoneSnapshot
+    {
+        for ($attempt = 0; $attempt < 3; $attempt++) {
+            $snapshot = $this->zones->forAccount($account, true);
+            $queue = $snapshot->productionQueueFor(2);
+            if (($snapshot->raw()['server_response_confirmed'] ?? false) !== true
+                || ($snapshot->raw()['errorCode'] ?? null) !== 0
+                || $queue === null) {
+                return null;
+            }
+            if (! $queue->hasOrders()) {
+                return $snapshot;
+            }
+            if ($attempt < 2) {
+                Sleep::for(1)->seconds();
+            }
+        }
+
+        return null;
     }
 
     /** A transport ACK is not proof that the game accepted an order. Never re-send here. */

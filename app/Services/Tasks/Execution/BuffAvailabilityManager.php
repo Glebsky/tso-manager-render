@@ -5,17 +5,24 @@ declare(strict_types=1);
 namespace App\Services\Tasks\Execution;
 
 use App\Exceptions\BuffUnavailableException;
+use App\Exceptions\GameServerErrorException;
+use App\Exceptions\SessionBusyException;
+use App\Exceptions\SessionExpiredException;
 use App\Models\Account;
-use App\Services\TsoAmfService;
-use App\Services\ZoneParserService;
+use App\Services\Game\Zone\HomeZoneRepository;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
 use Illuminate\Support\Facades\Log;
 
 class BuffAvailabilityManager
 {
+    /** Session errors are recovered by the caller's GameSessionGuard, never swallowed here. */
+    private const array SESSION_ERROR_CODES = [1005, 1012];
+
+    /** Name fields of a star-menu stack read by findAndDeduct() and isNameMatch(). */
+    private const array STATE_BUFF_NAME_KEYS = ['buffName_string', 'name_string', 'buff_raw_name', 'name', 'resourceName_string'];
+
     public function __construct(
-        private readonly TsoAmfService $amfService,
-        private readonly ZoneParserService $zoneParser,
+        private readonly HomeZoneRepository $homeZones,
         private readonly CacheRepository $cache,
     ) {}
 
@@ -187,7 +194,40 @@ class BuffAvailabilityManager
      */
     private function saveSessionState(string $sessionKey, array $state): void
     {
+        // Saved after every buff step to remote Redis: keep only what is read back.
+        $state['buffs'] = $this->compactBuffs($state['buffs']);
         $this->cache->put($sessionKey, $state, 1800);
+    }
+
+    /**
+     * The raw star-menu stacks carry the whole AMF object; findAndDeduct(),
+     * isNameMatch() and release() only read the ids, amount and names.
+     *
+     * @param  array<mixed>  $buffs  untrusted: read back from the cache
+     * @return list<array<string, mixed>>
+     */
+    private function compactBuffs(array $buffs): array
+    {
+        $compact = [];
+        foreach ($buffs as $buff) {
+            if (! is_array($buff)) {
+                continue;
+            }
+
+            $item = [
+                'uniqueId1' => (int) ($buff['uniqueId1'] ?? $buff['uniqueID1'] ?? $buff['uniqueID']['uniqueID1'] ?? $buff['uniqueID']['uniqueId1'] ?? $buff['uniqueId']['uniqueId1'] ?? 0),
+                'uniqueId2' => (int) ($buff['uniqueId2'] ?? $buff['uniqueID2'] ?? $buff['uniqueID']['uniqueID2'] ?? $buff['uniqueID']['uniqueId2'] ?? $buff['uniqueId']['uniqueId2'] ?? 0),
+                'amount' => (int) ($buff['amount'] ?? 0),
+            ];
+            foreach (self::STATE_BUFF_NAME_KEYS as $key) {
+                if (isset($buff[$key]) && is_scalar($buff[$key])) {
+                    $item[$key] = $buff[$key];
+                }
+            }
+            $compact[] = $item;
+        }
+
+        return $compact;
     }
 
     /**
@@ -292,25 +332,22 @@ class BuffAvailabilityManager
     private function refreshZoneFromServer(Account $account): ?array
     {
         try {
-            $rawAmf = $this->amfService->getZone($account);
-            $zoneData = $this->zoneParser->parse($rawAmf);
-
-            $errorCode = (int) ($zoneData['errorCode'] ?? 0);
-            if ($errorCode !== 0) {
-                Log::warning("[BuffAvailabilityManager] Server returned errorCode {$errorCode} while refreshing zone for account #{$account->id}");
-
-                return null;
-            }
-
-            $existing = is_array($account->zone_data) ? $account->zone_data : [];
-            $merged = array_merge($existing, $zoneData);
-            $account->update([
-                'zone_data' => $merged,
-            ]);
+            $zoneData = $this->homeZones->refresh($account);
 
             $buffs = $zoneData['availableBuffs'] ?? $zoneData['buffs'] ?? [];
 
             return is_array($buffs) ? array_values($buffs) : [];
+        } catch (SessionBusyException|SessionExpiredException $e) {
+            // Session problems belong to the action's GameSessionGuard; a
+            // swallowed 1012 here used to be reported as "buff unavailable".
+            throw $e;
+        } catch (GameServerErrorException $e) {
+            if (in_array((int) $e->getCode(), self::SESSION_ERROR_CODES, true)) {
+                throw $e;
+            }
+            Log::warning("[BuffAvailabilityManager] Server returned errorCode {$e->getCode()} while refreshing zone for account #{$account->id}");
+
+            return null;
         } catch (\Throwable $e) {
             Log::warning("[BuffAvailabilityManager] Failed to refresh zone from server for account #{$account->id}: {$e->getMessage()}");
 

@@ -6601,7 +6601,7 @@
         "game_error.93": "Trade offer already accepted",
         "game_error.95": "Insufficient resources for deal",
         "game_error.96": "Required buff missing",
-        "game_error.unknown": "Unknown game error ({code})",
+        "game_error.unknown": "Unknown game error (:code)",
         "logs.all_accounts": "All Accounts",
         "logs.all_severities": "All Severities",
         "logs.empty": "No log records matching filters found.",

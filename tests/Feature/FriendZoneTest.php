@@ -167,7 +167,7 @@ class FriendZoneTest extends TestCase
         $response->assertJsonPath('buildings.0.buildingGrid', 20);
     }
 
-    public function test_1012_error_retries_and_recovers(): void
+    public function test_1012_error_takes_the_game_session_over_and_recovers(): void
     {
         $account = Account::create([
             'username' => 'testuser',
@@ -183,16 +183,30 @@ class FriendZoneTest extends TestCase
         $this->authMock->shouldReceive('ensureAuthenticated')
             ->twice()
             ->with(Mockery::on(fn ($acc) => $acc->id === $account->id));
+        $this->authMock->shouldNotReceive('resetSession');
 
         $this->amfMock->shouldReceive('getZone')
             ->twice()
             ->with(Mockery::on(fn ($acc) => $acc->id === $account->id), 12345)
             ->andReturn('attempt1_amf', 'attempt2_amf');
 
+        // Fresh-client takeover: new load-server session, confirmed by a home zone login.
+        $this->amfMock->shouldReceive('invalidateSession')->once()->with($account->id);
+        $this->amfMock->shouldNotReceive('resetClient');
+        $this->amfMock->shouldReceive('getZone')
+            ->once()
+            ->with(Mockery::on(fn ($acc) => $acc->id === $account->id))
+            ->andReturn('home_zone_amf');
+
         $this->zoneParserMock->shouldReceive('parse')
             ->once()
             ->with('attempt1_amf')
             ->andReturn(['errorCode' => 1012]);
+
+        $this->zoneParserMock->shouldReceive('parse')
+            ->once()
+            ->with('home_zone_amf')
+            ->andReturn(['errorCode' => 0, 'buildings' => [['id' => 1]]]);
 
         $this->zoneParserMock->shouldReceive('parse')
             ->once()
@@ -208,5 +222,116 @@ class FriendZoneTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJsonPath('buildings.0.buildingName_string', 'ironmine');
+    }
+
+    public function test_persistent_1012_takes_over_then_uses_the_single_forced_login(): void
+    {
+        $account = Account::create([
+            'username' => 'testuser',
+            'password' => 'secret',
+            'region' => 'ru',
+            'zone_data' => [
+                'friends' => [
+                    ['id' => 12345, 'username' => 'Lotamount'],
+                ],
+            ],
+        ]);
+
+        $this->authMock->shouldReceive('ensureAuthenticated')
+            ->times(3)
+            ->with(Mockery::on(fn ($acc) => $acc->id === $account->id));
+        // The fresh game session is rejected as well: exactly one forced login.
+        $this->authMock->shouldReceive('resetSession')->once();
+        $this->authMock->shouldReceive('ensureAuthenticated')
+            ->once()
+            ->with(Mockery::on(fn ($acc) => $acc->id === $account->id), true);
+
+        $this->amfMock->shouldReceive('getZone')
+            ->times(3)
+            ->with(Mockery::on(fn ($acc) => $acc->id === $account->id), 12345)
+            ->andReturn('attempt1_amf', 'attempt2_amf', 'attempt3_amf');
+
+        // Home zone confirmation after the takeover and after the forced login
+        $this->amfMock->shouldReceive('getZone')
+            ->twice()
+            ->with(Mockery::on(fn ($acc) => $acc->id === $account->id))
+            ->andReturn('home_zone_amf');
+
+        $this->amfMock->shouldReceive('invalidateSession')->twice();
+        $this->amfMock->shouldReceive('resetClient')->once();
+
+        $this->zoneParserMock->shouldReceive('parse')
+            ->once()
+            ->with('attempt1_amf')
+            ->andReturn(['errorCode' => 1012]);
+
+        $this->zoneParserMock->shouldReceive('parse')
+            ->once()
+            ->with('attempt2_amf')
+            ->andReturn(['errorCode' => 1012]);
+
+        $this->zoneParserMock->shouldReceive('parse')
+            ->twice()
+            ->with('home_zone_amf')
+            ->andReturn([
+                'errorCode' => 0,
+                'buildings' => [['id' => 1]],
+            ]);
+
+        $this->zoneParserMock->shouldReceive('parse')
+            ->once()
+            ->with('attempt3_amf')
+            ->andReturn([
+                'errorCode' => 0,
+                'buildings' => [
+                    ['buildingName_string' => 'goldtower', 'buildingGrid' => 88],
+                ],
+            ]);
+
+        $response = $this->getJson("/api/accounts/{$account->id}/friends/12345/zone");
+
+        $response->assertStatus(200);
+        $response->assertJsonPath('buildings.0.buildingName_string', 'goldtower');
+    }
+
+    public function test_friend_zone_cache_keeps_only_the_building_list(): void
+    {
+        $account = Account::create([
+            'username' => 'testuser',
+            'password' => 'secret',
+            'region' => 'ru',
+            'zone_data' => [
+                'friends' => [
+                    ['id' => 12345, 'username' => 'Lotamount'],
+                ],
+            ],
+        ]);
+
+        $this->authMock->shouldReceive('ensureAuthenticated')->once();
+        $this->amfMock->shouldReceive('getZone')->once()->andReturn('friend_amf');
+        $this->zoneParserMock->shouldReceive('parse')
+            ->once()
+            ->with('friend_amf')
+            ->andReturn([
+                'errorCode' => 0,
+                'deposits' => array_fill(0, 50, ['grid' => 1, 'amount' => 100]),
+                'buildings' => [
+                    ['buildingName_string' => 'cokingplant', 'buildingGrid' => 142, 'upgradeLevel' => 5, 'isProductionActive' => true, 'buffs' => [['buffName_string' => 'x']], 'huge' => str_repeat('x', 1000)],
+                ],
+            ]);
+
+        $this->getJson("/api/accounts/{$account->id}/friends/12345/zone")->assertStatus(200);
+
+        $cached = json_decode((string) Cache::get("friend-zone:{$account->id}:12345"), true);
+        $this->assertSame(['buildings'], array_keys($cached));
+        $this->assertSame([
+            'buildingName_string' => 'cokingplant',
+            'buildingName' => 'cokingplant',
+            'buildingGrid' => 142,
+            'upgradeLevel' => 5,
+            'isProductionActive' => true,
+            'buildingMode' => 0,
+        ], $cached['buildings'][0]);
+        $this->assertSame(Cache::get("friend-zone:{$account->id}:12345"), Cache::get("friend-zone-stale:{$account->id}:12345"));
     }
 }

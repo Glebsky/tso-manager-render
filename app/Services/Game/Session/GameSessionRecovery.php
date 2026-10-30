@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Game\Session;
 
 use App\Exceptions\GameServerErrorException;
+use App\Exceptions\SessionBusyException;
 use App\Models\Account;
 use App\Services\Game\Zone\ZoneCacheInvalidator;
 use App\Services\GameErrorResolver;
@@ -30,13 +31,30 @@ final readonly class GameSessionRecovery
         return $this->identities->current($account);
     }
 
-    /** Recover game ownership without invalidating a working web token. */
-    public function renewGameIdentity(Account $account, int $rejectedIdentity): void
+    /**
+     * Take the game session over like a freshly started client after 1012,
+     * keeping the working web token: new client identity AND a new
+     * load-server session (DSId) for every process. Reusing the superseded
+     * DSId is what kept 1012 alive. Only the compare-and-swap winner opens the
+     * new session; a parallel loser just joins it. Callers confirm with
+     * enterHomeZone() (or the next CMD_ZONE_LOGIN) before retrying.
+     *
+     * @return bool true when this call opened the new session
+     *
+     * @throws SessionBusyException
+     */
+    public function renewGameIdentity(Account $account, int $rejectedIdentity): bool
     {
-        $this->identities->renew($account, $rejectedIdentity);
-        $this->amf->resetClient($account->id);
+        $won = $this->identities->renew($account, $rejectedIdentity);
+        if ($won) {
+            $this->amf->invalidateSession($account->id);
+        } else {
+            $this->amf->resetClient($account->id);
+        }
         $this->zones->invalidateHomeZone($account->id);
         $this->zones->invalidateFriendZones($account->id);
+
+        return $won;
     }
 
     /** Only after a rejected session, never on the ordinary authenticated path. */
@@ -71,8 +89,9 @@ final readonly class GameSessionRecovery
                 throw new RuntimeException('Cannot confirm home zone login: invalid response');
             }
             $code = (int) $rawCode;
-            if ($code === 1012 && $attempt < $maxAttempts) {
-                Sleep::for(2)->seconds();
+            if (in_array($code, [1001, 1012], true) && $attempt < $maxAttempts) {
+                $delay = $code === 1001 ? 3 : 2;
+                Sleep::for($delay)->seconds();
 
                 continue;
             }

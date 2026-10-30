@@ -66,21 +66,25 @@ readonly class AccountSyncFetcher
                 $buildingCount = count($zoneData['buildings'] ?? []);
 
                 if ($errorCode === 1012) {
-                    if ($attempt === 1) {
-                        Log::info("[AccountSync] Zone locked/superseded (error 1012) for account #{$account->id}. Retrying before bounded game identity recovery in {$retryDelay}s (attempt {$attempt}/{$maxRetries}).");
-                        Sleep::for($retryDelay)->seconds();
-
-                        continue;
-                    }
-
+                    // Same policy as GameSessionGuard: take the superseded game
+                    // session over like a fresh client (the next getZone() is the
+                    // confirming CMD_ZONE_LOGIN), then one forced login at most.
                     if (! $identityRecovered && $attempt < $maxRetries) {
                         $identityRecovered = true;
+                        Log::info("[AccountSync] Game session superseded (error 1012) for account #{$account->id}; taking it over like a fresh client (attempt {$attempt}/{$maxRetries}).");
                         try {
                             $this->sessionRecovery->renewGameIdentity($account, $attemptIdentity);
                         } catch (SessionBusyException $busy) {
                             // Recovery never ran: stop rather than retry the rejected identity.
                             throw new AccountSyncException(__('ui.sync.zone_locked'), 409, [], $busy);
                         }
+
+                        continue;
+                    }
+
+                    if ($reloginCount < self::MAX_RELOGINS && $attempt < $maxRetries) {
+                        $reloginCount++;
+                        $this->relogin($account, 'error 1012 persists on the fresh game session');
 
                         continue;
                     }

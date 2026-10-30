@@ -6,6 +6,7 @@ namespace App\Services\Market\Sync;
 
 use App\Exceptions\SessionExpiredException;
 use App\Models\Account;
+use App\Services\Game\Session\GameSessionRecovery;
 use App\Services\TsoAmfService;
 use App\Services\TsoAuthService;
 use Exception;
@@ -19,6 +20,7 @@ readonly class MarketOfferFetcher
     public function __construct(
         private TsoAuthService $authService,
         private TsoAmfService $amfService,
+        private GameSessionRecovery $sessionRecovery,
     ) {}
 
     /**
@@ -33,10 +35,12 @@ readonly class MarketOfferFetcher
         $maxRetries = 3;
         $retryDelay = 3;
         $hasResetSession = false;
+        $identityRecovered = false;
         $parsed = null;
         $errorCode = 0;
 
         for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
+            $attemptIdentity = $this->sessionRecovery->currentIdentity($account);
             try {
                 $logCallback('INFO', __('logs.market.fetch_attempt', ['attempt' => $attempt, 'max' => $maxRetries]));
                 $rawAmf = $this->amfService->getMarketOffers($account);
@@ -98,6 +102,23 @@ readonly class MarketOfferFetcher
                 $errorCode = (int) ($parsed['errorCode'] ?? 0);
 
                 if ($errorCode === 1012) {
+                    // Superseded game session, same policy as GameSessionGuard:
+                    // take it over like a fresh client, then one forced login.
+                    if (! $identityRecovered && $attempt < $maxRetries) {
+                        $identityRecovered = true;
+                        $logCallback('WARNING', __('logs.market.zone_loading_retry', ['delay' => 0]));
+                        $this->sessionRecovery->renewGameIdentity($account, $attemptIdentity);
+                        $this->sessionRecovery->enterHomeZone($account);
+
+                        continue;
+                    }
+                    if (! $hasResetSession && $attempt < $maxRetries) {
+                        $logCallback('WARNING', __('logs.market.session_expired_retry', ['code' => $errorCode]));
+                        $this->reloginOnce($account);
+                        $hasResetSession = true;
+
+                        continue;
+                    }
                     $logCallback('WARNING', __('logs.market.zone_loading_retry', ['delay' => $retryDelay]));
                     sleep($retryDelay);
 
@@ -144,18 +165,15 @@ readonly class MarketOfferFetcher
     }
 
     /**
-     * Drop web + shared game session and log in again (client id is kept, FR-009).
+     * The single forced login of a market sync: the same primitive every other
+     * caller uses (drop web + shared game session, log in, confirm zone entry).
      *
      * @throws Exception
      */
     private function reloginOnce(Account $account): void
     {
-        $this->authService->resetSession($account);
-        $this->authService->login($account);
-        $this->amfService->invalidateSession($account->id);
-        $this->amfService->resetClient($account->id);
-        $account->refresh();
-        sleep(2);
+        $this->sessionRecovery->reauthenticate($account);
+        $this->sessionRecovery->enterHomeZone($account);
     }
 
     /**

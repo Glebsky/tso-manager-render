@@ -8,6 +8,7 @@ use App\Exceptions\SessionBusyException;
 use App\Models\Account;
 use App\Services\Amf\Transport\HttpTsoClient;
 use App\Services\Game\Session\GameClientIdentity;
+use App\Services\Game\Session\GameSessionGuard;
 use App\Services\Game\Session\GameSessionRecovery;
 use App\Services\Game\Zone\VersionedZoneCacheInvalidator;
 use App\Services\Tasks\Execution\ActionRetryPolicy;
@@ -129,7 +130,7 @@ class SessionLockTest extends TestCase
         $amf->shouldNotReceive('invalidateSession');
         $amf->shouldNotReceive('resetClient');
 
-        $policy = new ActionRetryPolicy(new GameSessionRecovery($auth, $amf, app(ZoneParserService::class), new VersionedZoneCacheInvalidator(Cache::store('array')), new GameClientIdentity), $amf, new VersionedZoneCacheInvalidator(Cache::store('array')));
+        $policy = new ActionRetryPolicy(new GameSessionGuard(new GameSessionRecovery($auth, $amf, app(ZoneParserService::class), new VersionedZoneCacheInvalidator(Cache::store('array')), new GameClientIdentity)), new VersionedZoneCacheInvalidator(Cache::store('array')));
 
         $calls = 0;
         $result = $policy->execute($this->account, 'stop_production', function () use (&$calls): string {
@@ -156,7 +157,7 @@ class SessionLockTest extends TestCase
         $auth->shouldNotReceive('ensureAuthenticated');
         $amf = Mockery::mock(TsoAmfService::class);
 
-        $policy = new ActionRetryPolicy(new GameSessionRecovery($auth, $amf, app(ZoneParserService::class), new VersionedZoneCacheInvalidator(Cache::store('array')), new GameClientIdentity), $amf, new VersionedZoneCacheInvalidator(Cache::store('array')));
+        $policy = new ActionRetryPolicy(new GameSessionGuard(new GameSessionRecovery($auth, $amf, app(ZoneParserService::class), new VersionedZoneCacheInvalidator(Cache::store('array')), new GameClientIdentity)), new VersionedZoneCacheInvalidator(Cache::store('array')));
 
         $this->expectException(SessionBusyException::class);
 

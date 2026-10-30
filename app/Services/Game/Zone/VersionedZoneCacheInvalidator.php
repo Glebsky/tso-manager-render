@@ -7,9 +7,11 @@ namespace App\Services\Game\Zone;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
 
 /**
- * Version-bump invalidation: cached zones are keyed by a per-account version
- * (`home-zone:exec:{id}:v{n}`, friend zones likewise), so bumping the version
- * orphans every existing entry at once without enumerating keys.
+ * Version-bump invalidation: cached zone entries are keyed by a per-account
+ * version (`home-zone:buffed:{id}:v{n}`, `friend-zone:exec:{id}:{fid}:v{n}`),
+ * so bumping the version orphans every existing entry at once without
+ * enumerating keys. The persisted home zone is distrusted via the
+ * invalidated-at marker instead (see HomeZoneRepository).
  */
 final readonly class VersionedZoneCacheInvalidator implements ZoneCacheInvalidator
 {
@@ -20,6 +22,21 @@ final readonly class VersionedZoneCacheInvalidator implements ZoneCacheInvalidat
     public function invalidateHomeZone(int $accountId): void
     {
         $this->bump(self::homeZoneVersionKey($accountId));
+        // Lets HomeZoneRepository distrust a persisted zone written before now.
+        $this->cache->put(self::homeZoneInvalidatedAtKey($accountId), microtime(true), self::VERSION_TTL_SECONDS);
+    }
+
+    /** Unix time (with fraction) of the last home zone invalidation, if any. */
+    public function homeZoneInvalidatedAt(int $accountId): ?float
+    {
+        $value = $this->cache->get(self::homeZoneInvalidatedAtKey($accountId));
+
+        return is_numeric($value) ? (float) $value : null;
+    }
+
+    public static function homeZoneInvalidatedAtKey(int $accountId): string
+    {
+        return "home-zone:invalidated-at:{$accountId}";
     }
 
     public function invalidateFriendZones(int $accountId): void

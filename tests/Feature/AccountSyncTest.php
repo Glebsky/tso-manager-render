@@ -242,6 +242,9 @@ class AccountSyncTest extends TestCase
         ]);
 
         $this->authMock->shouldReceive('ensureAuthenticated')->once()->andReturnNull();
+        // 1012: the superseded game session is taken over like a fresh client, no web login.
+        $this->amfMock->shouldReceive('invalidateSession')->once();
+        $this->authMock->shouldNotReceive('resetSession');
 
         $this->amfMock->shouldReceive('getZone')->twice()->andReturn('zone-amf-bytes');
 

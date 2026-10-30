@@ -11,6 +11,7 @@ use App\Exceptions\SessionExpiredException;
 use App\Models\Account;
 use App\Services\Account\Sync\AccountSyncFetcher;
 use App\Services\Game\Session\GameClientIdentity;
+use App\Services\Game\Session\GameSessionGuard;
 use App\Services\Game\Session\GameSessionRecovery;
 use App\Services\Game\Zone\VersionedZoneCacheInvalidator;
 use App\Services\Tasks\Execution\ActionRetryPolicy;
@@ -58,9 +59,10 @@ final class GameClientIdentityTest extends TestCase
         $auth->shouldNotReceive('ensureAuthenticated');
         $auth->shouldNotReceive('resetSession');
         $amf = Mockery::mock(TsoAmfService::class);
-        $amf->shouldNotReceive('invalidateSession');
-        $amf->shouldReceive('resetClient')->twice();
-        $amf->shouldReceive('ensureZoneLoaded')->once()->andReturn('warmup');
+        // Fresh-client takeover: the superseded load-server session is dropped at once.
+        $amf->shouldReceive('invalidateSession')->once()->with($this->account->id);
+        $amf->shouldNotReceive('resetClient');
+        $amf->shouldNotReceive('ensureZoneLoaded');
         $amf->shouldReceive('getZone')->once()->andReturn('confirmed-zone');
         $parser = Mockery::mock(ZoneParserService::class);
         $parser->shouldReceive('parse')->with('confirmed-zone')->once()->andReturn(['errorCode' => 0, 'buildings' => [['id' => 1]]]);
@@ -69,8 +71,8 @@ final class GameClientIdentityTest extends TestCase
         $recovery = new GameSessionRecovery($auth, $amf, $parser, $zones, $identities);
         $old = $identities->current($this->account);
         $calls = 0;
-        $result = (new ActionRetryPolicy($recovery, $amf, $zones))->execute($this->account, 'collect_daily_login_reward', function () use (&$calls, $identities, $old): string {
-            if (++$calls <= 2) {
+        $result = (new ActionRetryPolicy(new GameSessionGuard($recovery), $zones))->execute($this->account, 'collect_daily_login_reward', function () use (&$calls, $identities, $old): string {
+            if (++$calls === 1) {
                 $this->assertSame($old, $identities->current($this->account));
                 throw new GameServerErrorException(1012, 'fixture newer session');
             }
@@ -79,7 +81,7 @@ final class GameClientIdentityTest extends TestCase
             return 'confirmed';
         });
         $this->assertSame('confirmed', $result);
-        $this->assertSame(3, $calls);
+        $this->assertSame(2, $calls);
         $this->assertSame('fixture-token', $this->account->refresh()->dso_auth_token);
     }
 
@@ -89,7 +91,34 @@ final class GameClientIdentityTest extends TestCase
         $auth->shouldReceive('ensureAuthenticated')->once()->with($this->account);
         $auth->shouldNotReceive('resetSession');
         $amf = Mockery::mock(TsoAmfService::class);
-        $amf->shouldNotReceive('invalidateSession');
+        $amf->shouldReceive('invalidateSession')->once()->with($this->account->id);
+        $amf->shouldNotReceive('resetClient');
+        $amf->shouldReceive('getZone')->twice()->andReturn('locked', 'ready');
+        $amf->shouldReceive('getFriendList')->once()->andReturn('friends');
+        $parser = Mockery::mock(ZoneParserService::class);
+        $parser->shouldReceive('parse')->with('locked')->once()->andReturn(['errorCode' => 1012]);
+        $parser->shouldReceive('parse')->with('ready')->once()->andReturn(['errorCode' => 0, 'buildings' => [['id' => 1]]]);
+        $parser->shouldReceive('parse')->with('friends')->once()->andReturn(['friends' => []]);
+        $zones = new VersionedZoneCacheInvalidator(Cache::store('array'));
+        $identity = new GameClientIdentity;
+        $old = $identity->current($this->account);
+        $recovery = new GameSessionRecovery($auth, $amf, $parser, $zones, $identity);
+        $result = (new AccountSyncFetcher($auth, $amf, $parser, $recovery))->fetchZone($this->account);
+        $this->assertSame(0, $result['errorCode']);
+        $this->assertNotSame($old, $identity->current($this->account));
+        $this->assertSame('fixture-token', $this->account->refresh()->dso_auth_token);
+        Sleep::assertNeverSlept();
+    }
+
+    public function test_sync_persistent_1012_after_takeover_uses_the_single_forced_login(): void
+    {
+        $auth = Mockery::mock(TsoAuthService::class);
+        $auth->shouldReceive('ensureAuthenticated')->once()->with($this->account);
+        $auth->shouldReceive('resetSession')->once();
+        $auth->shouldReceive('ensureAuthenticated')->once()->with($this->account, true);
+        $amf = Mockery::mock(TsoAmfService::class);
+        // takeover + the reset of the forced login
+        $amf->shouldReceive('invalidateSession')->twice();
         $amf->shouldReceive('resetClient')->once();
         $amf->shouldReceive('getZone')->times(3)->andReturn('locked', 'locked', 'ready');
         $amf->shouldReceive('getFriendList')->once()->andReturn('friends');
@@ -104,27 +133,28 @@ final class GameClientIdentityTest extends TestCase
         $result = (new AccountSyncFetcher($auth, $amf, $parser, $recovery))->fetchZone($this->account);
         $this->assertSame(0, $result['errorCode']);
         $this->assertNotSame($old, $identity->current($this->account));
-        $this->assertSame('fixture-token', $this->account->refresh()->dso_auth_token);
     }
 
     public function test_rejected_identity_after_confirmed_recovery_does_not_rotate_again(): void
     {
         config(['game.tasks.max_action_attempts' => 6]);
         $auth = Mockery::mock(TsoAuthService::class);
-        $auth->shouldNotReceive('ensureAuthenticated');
-        $auth->shouldNotReceive('resetSession');
+        // The rejected fresh session uses the single forced login, never a second rotation.
+        $auth->shouldReceive('resetSession')->once();
+        $auth->shouldReceive('ensureAuthenticated')->once()->with($this->account, true);
         $amf = Mockery::mock(TsoAmfService::class);
-        $amf->shouldReceive('resetClient')->twice();
-        $amf->shouldReceive('ensureZoneLoaded')->once()->andReturn('warm');
-        $amf->shouldReceive('getZone')->once()->andReturn('zone');
+        $amf->shouldReceive('invalidateSession')->twice();
+        $amf->shouldReceive('resetClient')->once();
+        $amf->shouldNotReceive('ensureZoneLoaded');
+        $amf->shouldReceive('getZone')->twice()->andReturn('zone');
         $parser = Mockery::mock(ZoneParserService::class);
-        $parser->shouldReceive('parse')->with('zone')->once()->andReturn(['errorCode' => 0, 'buildings' => [['id' => 1]]]);
+        $parser->shouldReceive('parse')->with('zone')->twice()->andReturn(['errorCode' => 0, 'buildings' => [['id' => 1]]]);
         $zones = new VersionedZoneCacheInvalidator(Cache::store('array'));
         $identity = new GameClientIdentity;
         $recovery = new GameSessionRecovery($auth, $amf, $parser, $zones, $identity);
         $observed = [];
         try {
-            (new ActionRetryPolicy($recovery, $amf, $zones))->execute($this->account, 'produce_buff', function () use (&$observed, $identity): string {
+            (new ActionRetryPolicy(new GameSessionGuard($recovery), $zones))->execute($this->account, 'produce_buff', function () use (&$observed, $identity): string {
                 $observed[] = $identity->current($this->account);
                 throw new GameServerErrorException(1012, 'fixture conflict persists');
             });
@@ -132,8 +162,8 @@ final class GameClientIdentityTest extends TestCase
         } catch (GameServerErrorException $error) {
             $this->assertSame(1012, $error->getCode());
             $this->assertCount(3, $observed);
-            $this->assertSame($observed[0], $observed[1]);
-            $this->assertNotSame($observed[1], $observed[2]);
+            $this->assertNotSame($observed[0], $observed[1]);
+            $this->assertSame($observed[1], $observed[2]);
             $this->assertSame($observed[2], $identity->current($this->account));
         }
     }
@@ -169,8 +199,9 @@ final class GameClientIdentityTest extends TestCase
         $auth->shouldReceive('resetSession')->once();
         $auth->shouldReceive('ensureAuthenticated')->once()->with($this->account, true);
         $amf = Mockery::mock(TsoAmfService::class);
-        $amf->shouldReceive('invalidateSession')->once();
-        $amf->shouldReceive('resetClient')->twice();
+        // reset of the forced login + one takeover when the zone stays superseded
+        $amf->shouldReceive('invalidateSession')->twice();
+        $amf->shouldReceive('resetClient')->once();
         $amf->shouldReceive('getZone')->times(4)->andReturn('locked', 'locked', 'locked', 'ready');
         $parser = Mockery::mock(ZoneParserService::class);
         $parser->shouldReceive('parse')->with('locked')->times(3)->andReturn(['errorCode' => 1012]);
@@ -180,7 +211,7 @@ final class GameClientIdentityTest extends TestCase
         $old = $identity->current($this->account);
         $recovery = new GameSessionRecovery($auth, $amf, $parser, $zones, $identity);
         $calls = 0;
-        $result = (new ActionRetryPolicy($recovery, $amf, $zones))->execute($this->account, 'collect_daily_login_reward', function () use (&$calls): string {
+        $result = (new ActionRetryPolicy(new GameSessionGuard($recovery), $zones))->execute($this->account, 'collect_daily_login_reward', function () use (&$calls): string {
             if (++$calls === 1) {
                 throw new SessionExpiredException('fixture web session expired');
             }
@@ -198,8 +229,10 @@ final class GameClientIdentityTest extends TestCase
         $auth->shouldNotReceive('ensureAuthenticated');
         $auth->shouldNotReceive('resetSession');
         $amf = Mockery::mock(TsoAmfService::class);
-        $amf->shouldReceive('resetClient')->twice();
-        $amf->shouldReceive('ensureZoneLoaded')->once()->andReturn('warm');
+        // The loser joins the winner's session: no second load-server session.
+        $amf->shouldNotReceive('invalidateSession');
+        $amf->shouldReceive('resetClient')->once();
+        $amf->shouldNotReceive('ensureZoneLoaded');
         $amf->shouldReceive('getZone')->once()->andReturn('ready');
         $parser = Mockery::mock(ZoneParserService::class);
         $parser->shouldReceive('parse')->with('ready')->once()->andReturn(['errorCode' => 0, 'buildings' => [['id' => 1]]]);
@@ -209,13 +242,13 @@ final class GameClientIdentityTest extends TestCase
         $recovery = new GameSessionRecovery($auth, $amf, $parser, $zones, $identity);
         $winner = null;
         $calls = 0;
-        $result = (new ActionRetryPolicy($recovery, $amf, $zones))->execute($this->account, 'collect_daily_login_reward', function () use (&$calls, &$winner, $identity, $old): string {
+        $result = (new ActionRetryPolicy(new GameSessionGuard($recovery), $zones))->execute($this->account, 'collect_daily_login_reward', function () use (&$calls, &$winner, $identity, $old): string {
             $calls++;
-            if ($calls === 2) {
+            if ($calls === 1) {
+                // A parallel worker wins the takeover of the same rejected identity.
                 $this->assertTrue((new GameClientIdentity)->renew($this->account, $old));
                 $winner = $identity->current($this->account);
-            }
-            if ($calls <= 2) {
+
                 throw new GameServerErrorException(1012, 'fixture rejected older identity');
             }
             $this->assertSame($winner, $identity->current($this->account));
@@ -223,6 +256,7 @@ final class GameClientIdentityTest extends TestCase
             return 'ok';
         });
         $this->assertSame('ok', $result);
+        $this->assertSame(2, $calls);
         $this->assertSame($winner, $identity->current($this->account));
     }
 
@@ -233,10 +267,12 @@ final class GameClientIdentityTest extends TestCase
         $auth->shouldReceive('ensureAuthenticated')->once()->with($this->account);
         $auth->shouldNotReceive('resetSession');
         $amf = Mockery::mock(TsoAmfService::class);
-        $amf->shouldReceive('getZone')->twice()->andReturn('locked');
+        // The first 1012 already needs the takeover; a busy lock stops the sync.
+        $amf->shouldReceive('getZone')->once()->andReturn('locked');
         $amf->shouldNotReceive('resetClient');
+        $amf->shouldNotReceive('invalidateSession');
         $parser = Mockery::mock(ZoneParserService::class);
-        $parser->shouldReceive('parse')->with('locked')->twice()->andReturn(['errorCode' => 1012]);
+        $parser->shouldReceive('parse')->with('locked')->once()->andReturn(['errorCode' => 1012]);
         $zones = new VersionedZoneCacheInvalidator(Cache::store('array'));
         $identity = new GameClientIdentity;
         $old = $identity->current($this->account);
