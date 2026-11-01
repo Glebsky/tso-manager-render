@@ -142,7 +142,11 @@ Below is a detailed description of all configuration keys from `.env.example`, g
 | Key | Default Value | Description |
 | :--- | :--- | :--- |
 | `TSO_SCHEDULER_MODE` | `queue` | Scheduler execution mode: `queue` (dispatch to the `tso-*` queues, a dedicated long-lived worker processes them), `cron` (dispatch and then drain the same queues with an inline worker on every tick — OSPanel / Windows Task Scheduler), or `sync` (synchronous execution). See [Deployment Modes](#deployment-modes). |
-| `TSO_WORKER_QUEUES` | `tso-tasks,tso-accounts,tso-market,default` | Queue list consumed by the Docker `worker` service. Must match `config('game.queues')` (enforced by `QueueTopologyTest`). |
+| `TSO_WORKER_QUEUES` | `tso-tasks,tso-accounts,tso-market,default` | Comma-separated queue list consumed by workers (both long-lived and inline scheduler workers). Defaults to all queues from `config('game.queues')`. Use this to split queues across multiple worker instances (e.g. isolate `tso-market` onto a dedicated worker). |
+| `ENABLE_WORKER` | `true` | Process toggle for background worker execution in containerized environments (e.g. Render supervisord). Set to `false` on web-only instances. |
+| `ENABLE_SCHEDULER` | `true` | Process toggle for scheduler execution (`supercronic`). Set to `false` on dedicated worker-only instances to avoid duplicate scheduler ticks. |
+| `ACCOUNT_SYNC_ENABLED` | `true` | Feature toggle to enable/disable automated periodic account data synchronization (`tso-accounts`). |
+| `MARKET_SYNC_ENABLED` | `true` | Feature toggle to enable/disable automated periodic market data synchronization (`tso-market`). When disabled, market sync jobs are not scheduled automatically. |
 | `TSO_STALE_TASK_TIMEOUT` | `10` | Stale task timeout in minutes (automatically resets stuck `running` tasks). |
 | `TSO_SSL_VERIFY` | `true` | Verify SSL certificates when communicating with Ubisoft/TSO game servers. |
 | `TSO_HTTP_TIMEOUT` | `30` | HTTP request timeout for TSO game gateways (in seconds). |

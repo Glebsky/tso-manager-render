@@ -98,6 +98,38 @@ DB_PASSWORD  = <пароль>
 
 ---
 
+## 4.1. Разделение очередей на несколько инстансов (Multi-Worker Topology)
+
+Для разгрузки исходящего трафика (лимит 100 ГБ на Render) и изоляции тяжелых сетевых задач (синхронизация рынка `tso-market`) поддерживаются следующие переменные:
+
+| Переменная | Значение по умолчанию | Назначение |
+| :--- | :--- | :--- |
+| `TSO_WORKER_QUEUES` | `tso-tasks,tso-accounts,tso-market,default` | Список очередей, которые разгребает воркер контейнера. |
+| `ENABLE_WORKER` | `true` | Запуск фонового `queue:work` в supervisord (`true` / `false`). |
+| `ENABLE_SCHEDULER` | `true` | Запуск планировщика `supercronic` в supervisord (`true` / `false`). |
+| `MARKET_SYNC_ENABLED` | `true` | Включение/выключение автопланирования синхронизации рынка. |
+| `ACCOUNT_SYNC_ENABLED` | `true` | Включение/выключение автопланирования синхронизации аккаунтов. |
+
+### Конфигурация двух серверов:
+
+#### Сервер 1: Web + Аккаунты (Основной)
+* `TSO_SCHEDULER_MODE=queue`
+* `ENABLE_SCHEDULER=true`
+* `ENABLE_WORKER=true`
+* `TSO_WORKER_QUEUES=tso-tasks,tso-accounts,default` *(без `tso-market`, трафик рынка = 0)*
+* `MARKET_SYNC_ENABLED=true` *(ставит задачи рынка в БД)*
+* `ACCOUNT_SYNC_ENABLED=true`
+
+#### Сервер 2: Dedicated Market Worker (Рынок)
+* `TSO_SCHEDULER_MODE=none`
+* `ENABLE_SCHEDULER=false` *(выключен, чтобы не дублировать планировщик)*
+* `ENABLE_WORKER=true`
+* `TSO_WORKER_QUEUES=tso-market` *(забирает и выполняет только задачи рынка)*
+* `MARKET_SYNC_ENABLED=false`
+* `ACCOUNT_SYNC_ENABLED=false`
+
+---
+
 ## 5. Первый деплой этой версии — порядок действий
 
 1. Проверьте, что `RUN_MIGRATIONS=true`.
