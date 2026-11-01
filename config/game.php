@@ -50,8 +50,8 @@ return [
     | Feature Toggles for Schedulers
     |--------------------------------------------------------------------------
     */
-    'market_sync_enabled' => env('MARKET_SYNC_ENABLED', true),
-    'account_sync_enabled' => env('ACCOUNT_SYNC_ENABLED', true),
+    'market_sync_enabled' => env('TSO_MARKET_SYNC_ENABLED', env('MARKET_SYNC_ENABLED', true)),
+    'account_sync_enabled' => env('TSO_ACCOUNT_SYNC_ENABLED', env('ACCOUNT_SYNC_ENABLED', true)),
 
     /*
     |--------------------------------------------------------------------------

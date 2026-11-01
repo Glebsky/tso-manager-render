@@ -19,20 +19,24 @@ set -e
 : "${PORT:=10000}"
 : "${RUN_MIGRATIONS:=true}"
 : "${TSO_WORKER_QUEUES:=tso-tasks,tso-accounts,tso-market,default}"
-: "${ENABLE_WORKER:=true}"
-: "${ENABLE_SCHEDULER:=true}"
+: "${TSO_ENABLE_WORKER:=${ENABLE_WORKER:-true}}"
+: "${TSO_ENABLE_SCHEDULER:=${ENABLE_SCHEDULER:-true}}"
 
-case "$ENABLE_WORKER" in
-    1|true|TRUE|yes|YES) ENABLE_WORKER=true ;;
-    *) ENABLE_WORKER=false ;;
+case "$TSO_ENABLE_WORKER" in
+    1|true|TRUE|yes|YES) TSO_ENABLE_WORKER=true ;;
+    *) TSO_ENABLE_WORKER=false ;;
 esac
 
-case "$ENABLE_SCHEDULER" in
-    1|true|TRUE|yes|YES) ENABLE_SCHEDULER=true ;;
-    *) ENABLE_SCHEDULER=false ;;
+case "$TSO_ENABLE_SCHEDULER" in
+    1|true|TRUE|yes|YES) TSO_ENABLE_SCHEDULER=true ;;
+    *) TSO_ENABLE_SCHEDULER=false ;;
 esac
 
-export PORT TSO_WORKER_QUEUES ENABLE_WORKER ENABLE_SCHEDULER
+# Export both names for backwards compatibility
+ENABLE_WORKER="$TSO_ENABLE_WORKER"
+ENABLE_SCHEDULER="$TSO_ENABLE_SCHEDULER"
+
+export PORT TSO_WORKER_QUEUES TSO_ENABLE_WORKER TSO_ENABLE_SCHEDULER ENABLE_WORKER ENABLE_SCHEDULER
 
 echo ">> render entrypoint: generating nginx config for port ${PORT}"
 mkdir -p /etc/nginx/http.d

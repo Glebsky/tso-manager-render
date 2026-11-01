@@ -105,28 +105,28 @@ DB_PASSWORD  = <пароль>
 | Переменная | Значение по умолчанию | Назначение |
 | :--- | :--- | :--- |
 | `TSO_WORKER_QUEUES` | `tso-tasks,tso-accounts,tso-market,default` | Список очередей, которые разгребает воркер контейнера. |
-| `ENABLE_WORKER` | `true` | Запуск фонового `queue:work` в supervisord (`true` / `false`). |
-| `ENABLE_SCHEDULER` | `true` | Запуск планировщика `supercronic` в supervisord (`true` / `false`). |
-| `MARKET_SYNC_ENABLED` | `true` | Включение/выключение автопланирования синхронизации рынка. |
-| `ACCOUNT_SYNC_ENABLED` | `true` | Включение/выключение автопланирования синхронизации аккаунтов. |
+| `TSO_ENABLE_WORKER` | `true` | Запуск фонового `queue:work` в supervisord (`true` / `false`). (Поддерживается также старое имя `ENABLE_WORKER`). |
+| `TSO_ENABLE_SCHEDULER` | `true` | Запуск планировщика `supercronic` в supervisord (`true` / `false`). (Поддерживается также старое имя `ENABLE_SCHEDULER`). |
+| `TSO_MARKET_SYNC_ENABLED` | `true` | Включение/выключение автопланирования синхронизации рынка. (Поддерживается также старое имя `MARKET_SYNC_ENABLED`). |
+| `TSO_ACCOUNT_SYNC_ENABLED` | `true` | Включение/выключение автопланирования синхронизации аккаунтов. (Поддерживается также старое имя `ACCOUNT_SYNC_ENABLED`). |
 
 ### Конфигурация двух серверов:
 
 #### Сервер 1: Web + Аккаунты (Основной)
 * `TSO_SCHEDULER_MODE=queue`
-* `ENABLE_SCHEDULER=true`
-* `ENABLE_WORKER=true`
+* `TSO_ENABLE_SCHEDULER=true`
+* `TSO_ENABLE_WORKER=true`
 * `TSO_WORKER_QUEUES=tso-tasks,tso-accounts,default` *(без `tso-market`, трафик рынка = 0)*
-* `MARKET_SYNC_ENABLED=true` *(ставит задачи рынка в БД)*
-* `ACCOUNT_SYNC_ENABLED=true`
+* `TSO_MARKET_SYNC_ENABLED=true` *(ставит задачи рынка в БД)*
+* `TSO_ACCOUNT_SYNC_ENABLED=true`
 
 #### Сервер 2: Dedicated Market Worker (Рынок)
 * `TSO_SCHEDULER_MODE=none`
-* `ENABLE_SCHEDULER=false` *(выключен, чтобы не дублировать планировщик)*
-* `ENABLE_WORKER=true`
+* `TSO_ENABLE_SCHEDULER=false` *(выключен, чтобы не дублировать планировщик)*
+* `TSO_ENABLE_WORKER=true`
 * `TSO_WORKER_QUEUES=tso-market` *(забирает и выполняет только задачи рынка)*
-* `MARKET_SYNC_ENABLED=false`
-* `ACCOUNT_SYNC_ENABLED=false`
+* `TSO_MARKET_SYNC_ENABLED=false`
+* `TSO_ACCOUNT_SYNC_ENABLED=false`
 
 ---
 

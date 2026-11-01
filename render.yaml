@@ -94,9 +94,9 @@ services:
         value: "10"
 
       # Управление воркером и планировщиком (true/false)
-      - key: ENABLE_WORKER
+      - key: TSO_ENABLE_WORKER
         value: "true"
-      - key: ENABLE_SCHEDULER
+      - key: TSO_ENABLE_SCHEDULER
         value: "true"
 
       # Очереди для этого инстанса.
@@ -106,9 +106,9 @@ services:
         value: "tso-tasks,tso-accounts,tso-market,default"
 
       # Включение/отключение генерации очередей через планировщик
-      - key: MARKET_SYNC_ENABLED
+      - key: TSO_MARKET_SYNC_ENABLED
         value: "true"
-      - key: ACCOUNT_SYNC_ENABLED
+      - key: TSO_ACCOUNT_SYNC_ENABLED
         value: "true"
 
       # config/market.php - мультисерверная аналитика рынка.
