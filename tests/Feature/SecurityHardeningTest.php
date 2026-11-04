@@ -134,7 +134,27 @@ class SecurityHardeningTest extends TestCase
         $responseInvalid->assertStatus(422)
             ->assertJsonValidationErrors(['bb_url']);
 
-        // Valid http/https URL
+        // Insecure http scheme is rejected
+        $responseHttp = $this->putJson("/api/accounts/{$account->id}/session", [
+            'dso_auth_token' => 'token123',
+            'dso_auth_user' => 'user123',
+            'bb_url' => 'http://r01-ls.thesettlersonline.ru/',
+        ]);
+
+        $responseHttp->assertStatus(422)
+            ->assertJsonValidationErrors(['bb_url']);
+
+        // Untrusted host is rejected
+        $responseUntrusted = $this->putJson("/api/accounts/{$account->id}/session", [
+            'dso_auth_token' => 'token123',
+            'dso_auth_user' => 'user123',
+            'bb_url' => 'https://evil-hacker.com/play',
+        ]);
+
+        $responseUntrusted->assertStatus(422)
+            ->assertJsonValidationErrors(['bb_url']);
+
+        // Valid https URL with trusted host
         $responseValid = $this->putJson("/api/accounts/{$account->id}/session", [
             'dso_auth_token' => 'token123',
             'dso_auth_user' => 'user123',
@@ -193,5 +213,98 @@ class SecurityHardeningTest extends TestCase
 
         // With untrusted REMOTE_ADDR, client IP remains 198.51.100.1 and does NOT become 1.2.3.4
         $this->assertEquals('198.51.100.1', $response->baseResponse->headers->get('X-Request-Id') ? request()->ip() : request()->ip());
+    }
+
+    public function test_local_network_ip_cannot_spoof_client_ip_when_not_in_trusted_proxies(): void
+    {
+        $response = $this->withServerVariables([
+            'REMOTE_ADDR' => '192.168.1.50', // Local network IP (not trusted by default)
+            'HTTP_X_FORWARDED_FOR' => '10.99.99.99',
+        ])->get('/');
+
+        // Without TRUSTED_PROXIES explicitly configured, local network IPs are not trusted proxies
+        $this->assertEquals('192.168.1.50', request()->ip());
+    }
+
+    public function test_admin_login_is_rate_limited_by_ip(): void
+    {
+        User::factory()->create(['email' => 'admin_ip_test@example.com']);
+        RateLimiter::clear(sha1('admin-login127.0.0.1'));
+        RateLimiter::clear(sha1('admin-loginemail:admin_ip_test@example.com'));
+
+        for ($i = 0; $i < 5; $i++) {
+            $response = $this->post('/admin/login', [
+                'email' => 'admin_ip_test@example.com',
+                'password' => 'wrong_password',
+            ]);
+            $this->assertNotEquals(429, $response->getStatusCode(), "Login attempt #{$i} was unexpectedly throttled.");
+        }
+
+        $throttledResponse = $this->post('/admin/login', [
+            'email' => 'admin_ip_test@example.com',
+            'password' => 'wrong_password',
+        ]);
+        $this->assertEquals(429, $throttledResponse->getStatusCode(), '6th attempt from same IP was not throttled.');
+    }
+
+    public function test_admin_login_is_rate_limited_by_email_across_different_ips(): void
+    {
+        User::factory()->create(['email' => 'admin_email_test@example.com']);
+        RateLimiter::clear(sha1('admin-loginemail:admin_email_test@example.com'));
+
+        for ($i = 1; $i <= 5; $i++) {
+            $ip = "198.51.100.{$i}";
+            RateLimiter::clear(sha1('admin-login'.$ip));
+
+            $response = $this->withServerVariables(['REMOTE_ADDR' => $ip])->post('/admin/login', [
+                'email' => 'admin_email_test@example.com',
+                'password' => 'wrong_password',
+            ]);
+            $this->assertNotEquals(429, $response->getStatusCode(), "Login attempt #{$i} from IP {$ip} was unexpectedly throttled.");
+        }
+
+        // 6th attempt from a fresh IP with the same target email must be throttled
+        $freshIp = '198.51.100.99';
+        RateLimiter::clear(sha1('admin-login'.$freshIp));
+
+        $throttledResponse = $this->withServerVariables(['REMOTE_ADDR' => $freshIp])->post('/admin/login', [
+            'email' => 'admin_email_test@example.com',
+            'password' => 'wrong_password',
+        ]);
+        $this->assertEquals(429, $throttledResponse->getStatusCode(), 'Attempt exceeding 5/min on same email across different IPs was not throttled.');
+    }
+
+    public function test_verify_session_rejects_untrusted_bb_url(): void
+    {
+        $account = new Account([
+            'username' => 'untrusted_bb_user',
+            'password' => 'secret',
+            'region' => 'ru',
+            'bb_url' => 'https://evil-attacker.com/play',
+            'dso_auth_user' => '12345',
+            'dso_auth_token' => 'secret_token',
+        ]);
+
+        $service = app(TsoAuthService::class);
+        $this->assertFalse($service->verifySession($account));
+    }
+
+    public function test_http_tso_client_rejects_untrusted_bb_url_host(): void
+    {
+        $account = new Account([
+            'username' => 'untrusted_host_user',
+            'password' => 'pass',
+            'region' => 'en',
+            'bb_url' => 'https://evil-attacker.com/play',
+            'dso_auth_user' => '12345',
+            'dso_auth_token' => 'tok',
+        ]);
+
+        $client = app(HttpTsoClient::class);
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Invalid or unsupported URL scheme or host');
+
+        $client->resolveServerUrl($account);
     }
 }

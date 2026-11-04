@@ -13,6 +13,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Laravel\Sanctum\PersonalAccessToken;
@@ -40,6 +42,12 @@ class AuthController extends Controller
             throw ValidationException::withMessages([
                 'email' => __('auth.failed'),
             ]);
+        }
+
+        $email = Str::transliterate(Str::lower(trim((string) $request->input('email'))));
+        RateLimiter::clear(sha1('admin-login'.($request->ip() ?: 'global')));
+        if ($email !== '') {
+            RateLimiter::clear(sha1('admin-loginemail:'.$email));
         }
 
         $request->session()->regenerate();
@@ -93,6 +101,12 @@ class AuthController extends Controller
         });
 
         Auth::login($user);
+        $email = Str::transliterate(Str::lower(trim((string) $request->input('email'))));
+        RateLimiter::clear(sha1('admin-register'.($request->ip() ?: 'global')));
+        if ($email !== '') {
+            RateLimiter::clear(sha1('admin-registeremail:'.$email));
+        }
+
         $request->session()->regenerate();
 
         if ($request->expectsJson()) {

@@ -31,6 +31,51 @@ final class TsoCurlHelper
     }
 
     /**
+     * Determine if a load server URL (bb_url) is valid, secure (HTTPS), and points to an allowed TSO domain.
+     */
+    public static function isValidBbUrl(?string $url): bool
+    {
+        if ($url === null || trim($url) === '') {
+            return false;
+        }
+
+        $scheme = parse_url($url, PHP_URL_SCHEME);
+        $host = parse_url($url, PHP_URL_HOST);
+
+        if (! is_string($scheme) || ! is_string($host) || $host === '') {
+            return false;
+        }
+
+        $scheme = strtolower($scheme);
+        $host = strtolower($host);
+
+        // In testing / local development environments, allow loopback HTTP for mocks
+        if (app()->environment('testing', 'local') && in_array($host, ['127.0.0.1', 'localhost'], true)) {
+            return in_array($scheme, ['http', 'https'], true);
+        }
+
+        if ($scheme !== 'https') {
+            return false;
+        }
+
+        /** @var list<string> $allowedDomains */
+        $allowedDomains = (array) config('game.allowed_bb_hosts', []);
+
+        foreach ($allowedDomains as $allowedDomain) {
+            $allowedDomain = strtolower(trim((string) $allowedDomain));
+            if ($allowedDomain === '') {
+                continue;
+            }
+
+            if ($host === $allowedDomain || str_ends_with($host, '.'.$allowedDomain)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Initialize a cURL handle configured with game defaults (timeout, SSL verify, return transfer).
      *
      * @param  array<int, mixed>  $options
@@ -39,8 +84,10 @@ final class TsoCurlHelper
     {
         $ch = $url !== '' ? curl_init($url) : curl_init();
 
+        $sslVerify = (bool) config('game.ssl_verify', true);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, (bool) config('game.ssl_verify', true));
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $sslVerify);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, $sslVerify ? 2 : 0);
         curl_setopt($ch, CURLOPT_TIMEOUT, (int) config('game.http_timeout', 30));
 
         if ($options !== []) {
