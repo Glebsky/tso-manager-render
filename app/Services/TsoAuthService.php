@@ -225,6 +225,10 @@ class TsoAuthService
         Cache::forget($cooldownKey);
         Cache::forget("tso:session_invalidated:{$account->id}");
 
+        if (! empty($params['bburl']) && ! TsoCurlHelper::isValidBbUrl((string) $params['bburl'])) {
+            throw new RuntimeException("Untrusted or invalid load server URL (bb_url) in game response: {$params['bburl']}");
+        }
+
         $account->update([
             'dso_auth_user' => $params['dsoAuthUser'],
             'dso_auth_token' => $params['dsoAuthToken'],
@@ -319,7 +323,9 @@ class TsoAuthService
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $currentUrl);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, (bool) config('game.ssl_verify', true));
+            $sslVerify = (bool) config('game.ssl_verify', true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $sslVerify);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, $sslVerify ? 2 : 0);
             curl_setopt($ch, CURLOPT_COOKIEJAR, $cookieFile);
             curl_setopt($ch, CURLOPT_COOKIEFILE, $cookieFile);
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
@@ -409,6 +415,13 @@ class TsoAuthService
 
         $cookieFile = $this->getCookieFile($account);
         if ($cookieFile === '') {
+            return false;
+        }
+
+        $bbUrl = (string) $account->bb_url;
+        if (! TsoCurlHelper::isValidBbUrl($bbUrl)) {
+            Log::warning("[TsoAuth] Session probe rejected: invalid or untrusted bb_url for account #{$account->id}: {$bbUrl}");
+
             return false;
         }
 
