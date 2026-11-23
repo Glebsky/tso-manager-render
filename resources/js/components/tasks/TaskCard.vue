@@ -213,47 +213,50 @@
 
                 <!-- Кнопки действий -->
                 <div class="flex items-center gap-1.5 w-full sm:w-auto flex-wrap xs:flex-nowrap">
-                    <button type="button" @click="$emit('toggle-active', task)"
-                            class="btn-secondary btn-sm text-xs py-1.5 px-2.5 sm:px-3 flex items-center justify-center gap-1 flex-1 sm:flex-initial whitespace-nowrap"
+                    <button type="button" @click="$emit('toggle-active', task)" :disabled="isToggling || isDeleting"
+                            class="btn-secondary btn-sm text-xs py-1.5 px-2.5 sm:px-3 flex items-center justify-center gap-1.5 flex-1 sm:flex-initial whitespace-nowrap disabled:opacity-50"
                             :class="task.is_active ? 'border-amber-500/30 text-amber-300 hover:bg-amber-500/10' : 'border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/10'">
-                        {{ task.is_active ? '⏸ ' + t('tasks.status.pause_short') : '▶ ' + t('tasks.status.resume_short') }}
+                        <Spinner v-if="isToggling" size="xs" :class="task.is_active ? 'text-amber-300' : 'text-emerald-300'" />
+                        <span v-else>{{ task.is_active ? '⏸' : '▶' }}</span>
+                        <span>{{ task.is_active ? t('tasks.status.pause_short') : t('tasks.status.resume_short') }}</span>
                     </button>
 
-                    <button v-if="isRunning" type="button" @click="$emit('stop', task)" :disabled="isStopping"
-                            class="btn-secondary btn-sm text-xs py-1.5 px-2.5 sm:px-3 flex items-center justify-center gap-1.5 flex-1 sm:flex-initial whitespace-nowrap border-red-500/40 text-red-300 hover:bg-red-500/20 bg-red-500/10 transition-colors">
-                        <svg v-if="isStopping" class="animate-spin h-3.5 w-3.5 text-red-400" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
+                    <button v-if="isRunning" type="button" @click="$emit('stop', task)" :disabled="isStopping || isDeleting"
+                            class="btn-secondary btn-sm text-xs py-1.5 px-2.5 sm:px-3 flex items-center justify-center gap-1.5 flex-1 sm:flex-initial whitespace-nowrap border-red-500/40 text-red-300 hover:bg-red-500/20 bg-red-500/10 transition-colors disabled:opacity-50">
+                        <Spinner v-if="isStopping" size="xs" class="text-red-400" />
                         <span v-else>⏹</span>
                         <span class="truncate">{{ t('tasks.stop_task') }}</span>
                     </button>
 
-                    <button v-else type="button" @click="$emit('execute', task)" :disabled="invalidSequence"
-                            class="btn-primary btn-sm text-xs py-1.5 px-2.5 sm:px-3 flex items-center justify-center gap-1.5 flex-1 sm:flex-initial whitespace-nowrap">
-                        <span class="truncate">🚀 {{ t('tasks.run_now') }}</span>
+                    <button v-else type="button" @click="$emit('execute', task)" :disabled="invalidSequence || isStarting || isDeleting"
+                            class="btn-primary btn-sm text-xs py-1.5 px-2.5 sm:px-3 flex items-center justify-center gap-1.5 flex-1 sm:flex-initial whitespace-nowrap disabled:opacity-50">
+                        <Spinner v-if="isStarting" size="xs" class="text-white" />
+                        <span v-else>🚀</span>
+                        <span class="truncate">{{ t('tasks.run_now') }}</span>
                     </button>
 
                     <div class="flex items-center gap-1.5 shrink-0">
-                        <button type="button" @click="$emit('duplicate', task)"
-                                class="btn-secondary btn-sm text-xs py-1.5 px-2 text-white/60 hover:text-white border-white/10 hover:border-white/20"
+                        <button type="button" @click="$emit('duplicate', task)" :disabled="isDuplicating || isDeleting"
+                                class="btn-secondary btn-sm text-xs py-1.5 px-2 text-white/60 hover:text-white border-white/10 hover:border-white/20 disabled:opacity-50 flex items-center justify-center"
                                 :aria-label="t('tasks.duplicate_task') || 'Duplicate task'"
                                 :title="t('tasks.duplicate_task')">
-                            📋
+                            <Spinner v-if="isDuplicating" size="xs" class="text-white/60" />
+                            <span v-else>📋</span>
                         </button>
 
-                        <button type="button" @click="$emit('edit', task)" :disabled="invalidSequence"
-                                class="btn-secondary btn-sm text-xs py-1.5 px-2 text-white/60 hover:text-white border-white/10 hover:border-white/20"
+                        <button type="button" @click="$emit('edit', task)" :disabled="invalidSequence || isDeleting"
+                                class="btn-secondary btn-sm text-xs py-1.5 px-2 text-white/60 hover:text-white border-white/10 hover:border-white/20 disabled:opacity-50 flex items-center justify-center"
                                 :aria-label="t('tasks.edit_task') || 'Edit task'"
                                 :title="t('tasks.edit_task')">
                             ✏️
                         </button>
 
-                        <button type="button" @click="$emit('delete', task.id)"
-                                class="btn-secondary btn-sm text-xs py-1.5 px-2 text-red-400 hover:text-red-300 border-red-500/20 hover:border-red-500/40"
+                        <button type="button" @click="$emit('delete', task.id)" :disabled="isDeleting"
+                                class="btn-secondary btn-sm text-xs py-1.5 px-2 text-red-400 hover:text-red-300 border-red-500/20 hover:border-red-500/40 disabled:opacity-50 flex items-center justify-center"
                                 :aria-label="t('tasks.delete_task') || 'Delete task'"
                                 :title="t('tasks.delete_task')">
-                            🗑
+                            <Spinner v-if="isDeleting" size="xs" class="text-red-400" />
+                            <span v-else>🗑</span>
                         </button>
                     </div>
                 </div>
@@ -423,10 +426,7 @@
                             :disabled="invalidSequence || isRunning || isActionExecuting(task.id, aIdx)"
                             class="p-1 rounded bg-white/5 hover:bg-emerald-500/20 text-white/50 hover:text-emerald-300 transition-colors border border-white/10 hover:border-emerald-500/30 disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center ml-1"
                             :title="t('tasks.run_single_action')">
-                        <svg v-if="isActionExecuting(task.id, aIdx)" class="animate-spin h-3 w-3 text-emerald-400" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
+                        <Spinner v-if="isActionExecuting(task.id, aIdx)" size="xs" class="text-emerald-400" />
                         <svg v-else class="w-3 h-3 fill-current text-white/60 hover:text-emerald-300" viewBox="0 0 20 20">
                             <path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
                         </svg>
@@ -441,6 +441,7 @@
 import { ref, computed } from 'vue';
 import { t } from '../../lang';
 import { isInvalidTaskSequence } from '../../services/taskActionList';
+import Spinner from '../Spinner.vue';
 
 const props = defineProps({
     task: { type: Object, required: true },
@@ -448,7 +449,11 @@ const props = defineProps({
     typeLabels: { type: Object, required: true },
     isExpanded: { type: Boolean, default: false },
     isExecuting: { type: Boolean, default: false },
+    isStarting: { type: Boolean, default: false },
     isStopping: { type: Boolean, default: false },
+    isToggling: { type: Boolean, default: false },
+    isDuplicating: { type: Boolean, default: false },
+    isDeleting: { type: Boolean, default: false },
     executingActions: { type: Object, default: () => ({}) },
     getTaskActionsList: { type: Function, required: true },
     getSubTaskLabel: { type: Function, required: true },
