@@ -17,7 +17,7 @@
             <label class="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{{ t('tasks.run_every') }}</label>
             <div class="grid grid-cols-2 gap-3">
                 <div class="flex items-center gap-2">
-                    <input id="sched-interval-hours" type="number" min="0" max="23" required :value="intervalHours" @input="$emit('update:intervalHours', Number($event.target.value))" :aria-label="t('tasks.hours')" class="glass-input w-full text-center">
+                    <input id="sched-interval-hours" type="number" min="0" required :value="intervalHours" @input="$emit('update:intervalHours', Number($event.target.value))" :aria-label="t('tasks.hours')" class="glass-input w-full text-center">
                     <label for="sched-interval-hours" class="text-xs text-white/50 cursor-pointer">{{ t('tasks.hours') }}</label>
                 </div>
                 <div class="flex items-center gap-2">

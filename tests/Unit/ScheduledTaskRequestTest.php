@@ -159,4 +159,30 @@ class ScheduledTaskRequestTest extends TestCase
 
         $this->assertFalse($validator->fails());
     }
+
+    public function test_store_request_accepts_interval_greater_than_24_hours(): void
+    {
+        $account = Account::create([
+            'username' => 'intervaltest',
+            'password' => 'secret',
+            'region' => 'ru',
+            'nickname' => 'intervaltest',
+        ]);
+
+        $data = [
+            'account_id' => $account->id,
+            'task_type' => 'stop_production',
+            'payload' => ['grid' => 150],
+            'schedule_type' => 'interval',
+            'interval_hours' => 70,
+            'interval_minutes' => 0,
+        ];
+
+        $request = StoreScheduledTaskRequest::create('/api/tasks', 'POST', $data);
+        $request->setContainer($this->app);
+
+        $validator = Validator::make($data, $request->rules());
+
+        $this->assertFalse($validator->fails());
+    }
 }
