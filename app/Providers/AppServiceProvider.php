@@ -88,6 +88,26 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('api-actions', static function (Request $request): Limit {
             return Limit::perMinute(30)->by((string) ($request->user()?->id ?: $request->ip() ?: 'global'));
         });
+
+        RateLimiter::for('admin-login', static function (Request $request): array {
+            $email = (string) $request->input('email');
+            $normalizedEmail = Str::transliterate(Str::lower(trim($email)));
+
+            return [
+                Limit::perMinute(5)->by($request->ip() ?: 'global'),
+                Limit::perMinute(5)->by($normalizedEmail !== '' ? 'email:'.$normalizedEmail : ($request->ip() ?: 'global')),
+            ];
+        });
+
+        RateLimiter::for('admin-register', static function (Request $request): array {
+            $email = (string) $request->input('email');
+            $normalizedEmail = Str::transliterate(Str::lower(trim($email)));
+
+            return [
+                Limit::perMinute(5)->by($request->ip() ?: 'global'),
+                Limit::perMinute(5)->by($normalizedEmail !== '' ? 'email:'.$normalizedEmail : ($request->ip() ?: 'global')),
+            ];
+        });
     }
 
     private function registerTelescope(): void

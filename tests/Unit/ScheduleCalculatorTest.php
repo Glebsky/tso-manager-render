@@ -66,6 +66,15 @@ class ScheduleCalculatorTest extends TestCase
         $this->assertSame('2026-09-26 00:30:00', $next?->toDateTimeString());
     }
 
+    public function test_interval_supports_more_than_24_hours(): void
+    {
+        $task = $this->task(['schedule_type' => ScheduleType::Interval, 'interval_hours' => 70, 'interval_minutes' => 0]);
+
+        $next = $this->calculator->nextRunAt($task, $this->at('2026-09-25 12:00:00'));
+
+        $this->assertSame('2026-09-28 10:00:00', $next?->toDateTimeString());
+    }
+
     public function test_zero_interval_has_no_next_slot(): void
     {
         $task = $this->task(['schedule_type' => ScheduleType::Interval, 'interval_hours' => 0, 'interval_minutes' => 0]);

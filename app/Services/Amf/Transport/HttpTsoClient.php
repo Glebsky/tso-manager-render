@@ -192,9 +192,8 @@ class HttpTsoClient implements TsoClientInterface
     public function resolveServerUrl(Account $account, int $targetZoneId = 0, ?string &$dsId = null): string
     {
         $lsUrl = (string) $account->bb_url;
-        $scheme = parse_url($lsUrl, PHP_URL_SCHEME);
-        if (! in_array($scheme, ['http', 'https'], true)) {
-            throw new \RuntimeException("Invalid or unsupported URL scheme for account bb_url: {$scheme}");
+        if (! TsoCurlHelper::isValidBbUrl($lsUrl)) {
+            throw new \RuntimeException("Invalid or unsupported URL scheme or host for account bb_url: {$lsUrl}");
         }
 
         $dsoAuthUser = (string) $account->dso_auth_user;

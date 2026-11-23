@@ -132,6 +132,29 @@ return [
     */
     'ssl_verify' => (bool) env('TSO_SSL_VERIFY', true),
     'http_timeout' => (int) env('TSO_HTTP_TIMEOUT', 30),
+    'allowed_bb_hosts' => env('TSO_ALLOWED_BB_HOSTS')
+        ? array_filter(array_map('trim', explode(',', (string) env('TSO_ALLOWED_BB_HOSTS'))))
+        : [
+            'thesettlersonline.com',
+            'thesettlersonline.net',
+            'thesettlersonline.de',
+            'diesiedleronline.de',
+            'thesettlersonline.fr',
+            'thesettlersonline.ru',
+            'thesettlersonline.pl',
+            'thesettlersonline.es',
+            'juego-thesettlersonline.com',
+            'thesettlersonline.nl',
+            'thesettlersonline.cz',
+            'thesettlersonline.com.br',
+            'thesettlersonline.it',
+            'thesettlersonline.gr',
+            'thesettlersonline.ro',
+            'tsotesting.com',
+            'ubisoft.com',
+            'ubi.com',
+            'bluebyte.de',
+        ],
 
     /*
     |--------------------------------------------------------------------------

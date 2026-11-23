@@ -736,7 +736,7 @@
 
                 <button type="submit" :disabled="scheduling" class="btn-primary flex items-center justify-center gap-2 disabled:opacity-50 w-full sm:w-auto px-5 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm"
                         :class="{ 'bg-gradient-to-r from-amber-500 to-orange-600 border-amber-500/30': editingTaskId }">
-                    <spinner v-if="scheduling" size="sm" />
+                    <Spinner v-if="scheduling" size="sm" class="text-white" />
                     <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                     </svg>
@@ -837,8 +837,9 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                                         </svg>
                                     </button>
-                                    <button type="button" @click="handleDeleteGroup(taskGroup)" class="p-1 text-white/40 hover:text-red-400 transition-colors rounded" :title="t('tasks.delete_group')">
-                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <button type="button" @click="handleDeleteGroup(taskGroup)" :disabled="Boolean(deletingGroups[taskGroup.id])" class="p-1 text-white/40 hover:text-red-400 transition-colors rounded disabled:opacity-40 flex items-center justify-center" :title="t('tasks.delete_group')">
+                                        <Spinner v-if="deletingGroups[taskGroup.id]" size="xs" class="text-red-400" />
+                                        <svg v-else class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                                         </svg>
                                     </button>
@@ -859,7 +860,11 @@
                                   :typeLabels="typeLabels"
                                   :isExpanded="expandedTasks[task.id]"
                                   :isExecuting="executingTasks[task.id]"
+                                  :isStarting="Boolean(startingTasks[task.id])"
                                   :isStopping="stoppingTasks[task.id]"
+                                  :isToggling="Boolean(togglingTasks[task.id])"
+                                  :isDuplicating="duplicatingTaskId === task.id"
+                                  :isDeleting="Boolean(deletingTasks[task.id])"
                                   :executingActions="executingActions"
                                   :getTaskActionsList="getTaskActionsList"
                                   :getSubTaskLabel="getSubTaskLabel"
@@ -1032,8 +1037,9 @@
                         <button type="button" @click="closeGroupModal" class="btn-secondary text-xs px-4 py-2">
                             {{ t('common.cancel') || 'Cancel' }}
                         </button>
-                        <button type="submit" :disabled="savingGroup || !groupFormName.trim()" class="btn-primary text-xs px-4 py-2">
-                            {{ savingGroup ? (t('common.saving') || 'Saving...') : (t('common.save') || 'Save') }}
+                        <button type="submit" :disabled="savingGroup || !groupFormName.trim()" class="btn-primary text-xs px-4 py-2 flex items-center justify-center gap-1.5 disabled:opacity-50">
+                            <Spinner v-if="savingGroup" size="xs" class="text-white" />
+                            <span>{{ savingGroup ? (t('common.saving') || 'Saving...') : (t('common.save') || 'Save') }}</span>
                         </button>
                     </div>
                 </form>
@@ -1072,7 +1078,11 @@ import TaskList from '../components/tasks/TaskList.vue';
         const loadingPlanner = ref(true);
         const scheduling = ref(false);
         const executingTasks = ref({});
+        const startingTasks = ref({});
         const stoppingTasks = ref({});
+        const togglingTasks = ref({});
+        const deletingTasks = ref({});
+        const deletingGroups = ref({});
         const executingActions = ref({});
 
         const taskSearchQuery = ref('');
@@ -1157,9 +1167,11 @@ import TaskList from '../components/tasks/TaskList.vue';
 
         const handleDeleteGroup = async (taskGroup) => {
             if (!taskGroup.id) return;
+            if (deletingGroups.value[taskGroup.id]) return;
             const confirmMsg = t('tasks.delete_group_confirm', { name: taskGroup.name });
             if (!window.confirm(confirmMsg)) return;
 
+            deletingGroups.value[taskGroup.id] = true;
             try {
                 await tasksApi.deleteTaskGroup(taskGroup.id);
                 taskGroups.value = taskGroups.value.filter(g => g.id !== taskGroup.id);
@@ -1172,6 +1184,8 @@ import TaskList from '../components/tasks/TaskList.vue';
                 showToast(t('tasks.toast.group_deleted'));
             } catch (err) {
                 showToast(err.response?.data?.message || err.message, 'error');
+            } finally {
+                deletingGroups.value[taskGroup.id] = false;
             }
         };
 
@@ -3089,6 +3103,8 @@ import TaskList from '../components/tasks/TaskList.vue';
         const toggleTask = async (taskOrId) => {
             const taskId = typeof taskOrId === 'object' && taskOrId !== null ? taskOrId.id : taskOrId;
             if (!taskId || taskId === 'undefined') return;
+            if (togglingTasks.value[taskId]) return;
+            togglingTasks.value[taskId] = true;
             const task = typeof taskOrId === 'object' && taskOrId !== null ? taskOrId : tasks.value.find(t => t.id === taskId);
             try {
                 const res = await axios.post(`/api/tasks/${taskId}/toggle`);
@@ -3099,13 +3115,17 @@ import TaskList from '../components/tasks/TaskList.vue';
                 }
             } catch (e) {
                 showToast(t('tasks.toast.toggle_failed'), 'error');
+            } finally {
+                togglingTasks.value[taskId] = false;
             }
         };
 
         const deleteTask = async (idOrTask) => {
             const id = typeof idOrTask === 'object' && idOrTask !== null ? idOrTask.id : idOrTask;
             if (!id || id === 'undefined') return;
+            if (deletingTasks.value[id]) return;
             if (!confirm(t('tasks.confirm.delete_task'))) return;
+            deletingTasks.value[id] = true;
             try {
                 const res = await axios.delete(`/api/tasks/${id}`);
                 if (res.status === 204 || res.data.success) {
@@ -3114,6 +3134,8 @@ import TaskList from '../components/tasks/TaskList.vue';
                 }
             } catch (e) {
                 showToast(t('tasks.toast.delete_failed'), 'error');
+            } finally {
+                deletingTasks.value[id] = false;
             }
         };
 
@@ -3585,8 +3607,8 @@ import TaskList from '../components/tasks/TaskList.vue';
                 return;
             }
 
-            if (executingTasks.value[taskId]) return;
-            executingTasks.value[taskId] = true;
+            if (executingTasks.value[taskId] || startingTasks.value[taskId]) return;
+            startingTasks.value[taskId] = true;
 
             // Immediately reset local task state so UI doesn't show stale step_results/completed_steps
             const idx = tasks.value.findIndex(t => t.id === taskId);
@@ -3630,11 +3652,14 @@ import TaskList from '../components/tasks/TaskList.vue';
                     return;
                 }
 
+                executingTasks.value[taskId] = true;
                 // Poll status periodically until execution finishes
                 pollTaskExecution(taskId);
             } catch (e) {
                 showToast(e.response?.data?.message || t('tasks.toast.run_failed'), 'error');
                 executingTasks.value[taskId] = false;
+            } finally {
+                startingTasks.value[taskId] = false;
             }
         };
 
