@@ -225,6 +225,16 @@ class TsoAuthService
         Cache::forget($cooldownKey);
         Cache::forget("tso:session_invalidated:{$account->id}");
 
+        if (empty($params['bburl'])) {
+            if (! empty($account->bb_url) && TsoCurlHelper::isValidBbUrl((string) $account->bb_url)) {
+                $params['bburl'] = (string) $account->bb_url;
+            } elseif (! empty($account->region) && isset(self::SERVERS[$account->region])) {
+                $portalHost = (string) parse_url(self::SERVERS[$account->region]['domain'], PHP_URL_HOST);
+                $domain = preg_replace('/^www\./i', '', $portalHost);
+                $params['bburl'] = sprintf('https://r01-ls.%s/', $domain);
+            }
+        }
+
         if (! empty($params['bburl']) && ! TsoCurlHelper::isValidBbUrl((string) $params['bburl'])) {
             throw new RuntimeException("Untrusted or invalid load server URL (bb_url) in game response: {$params['bburl']}");
         }
