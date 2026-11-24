@@ -6,8 +6,14 @@ namespace Tests\Unit;
 
 use App\Models\Account;
 use App\Models\ScheduledTask;
+use App\Services\AccountSyncService;
+use App\Services\SystemLogCleanupService;
+use App\Services\TaskExecutionService;
+use App\Services\Tasks\Execution\TaskStateMachine;
+use App\Services\Tasks\Scheduling\ScheduleCalculator;
 use App\Services\Tasks\TaskSchedulerEngine;
 use Carbon\Carbon;
+use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
@@ -104,5 +110,38 @@ class TaskSchedulerEngineTest extends TestCase
         $task->refresh();
         $this->assertEquals('queued', $task->status->value);
         $this->assertNotNull($task->execution_token);
+    }
+
+    public function test_process_account_sync_preserves_account_attributes(): void
+    {
+        $account = Account::create([
+            'username' => 'synctest',
+            'password' => 'secret',
+            'region' => 'ru',
+            'nickname' => 'synctest',
+            'bb_url' => 'https://r01-ls.thesettlersonline.ru/',
+            'status' => 'online',
+            'last_sync_at' => now()->subHours(2),
+        ]);
+
+        $mockSync = $this->createMock(AccountSyncService::class);
+        $mockSync->expects($this->once())
+            ->method('sync')
+            ->with($this->callback(function (Account $passedAccount) use ($account): bool {
+                return $passedAccount->id === $account->id
+                    && $passedAccount->bb_url === 'https://r01-ls.thesettlersonline.ru/';
+            }));
+
+        $engine = new TaskSchedulerEngine(
+            $this->createMock(TaskExecutionService::class),
+            $mockSync,
+            $this->createMock(SystemLogCleanupService::class),
+            $this->app->make(Repository::class),
+            $this->app->make(TaskStateMachine::class),
+            $this->app->make(ScheduleCalculator::class),
+        );
+
+        $processed = $engine->processAccountSync(Carbon::now(), 'sync');
+        $this->assertEquals(1, $processed);
     }
 }

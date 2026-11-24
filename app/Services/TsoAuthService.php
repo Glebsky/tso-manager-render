@@ -477,11 +477,11 @@ class TsoAuthService
      */
     public function ensureAuthenticated(Account $account, bool $force = false): void
     {
-        if (! $force && Cache::get(self::SESSION_OK_KEY.$account->id) === true) {
+        if (! $force && $this->isAuthenticated($account) && Cache::get(self::SESSION_OK_KEY.$account->id) === true) {
             return;
         }
 
-        if (! $force && $this->verifySession($account)) {
+        if (! $force && $this->isAuthenticated($account) && $this->verifySession($account)) {
             $this->markSessionVerified($account);
 
             return;
@@ -543,7 +543,10 @@ class TsoAuthService
      */
     public function isAuthenticated(Account $account): bool
     {
-        return ! empty($account->dso_auth_token) && ! empty($account->dso_auth_user) && ! empty($account->bb_url);
+        return ! empty($account->dso_auth_token)
+            && ! empty($account->dso_auth_user)
+            && ! empty($account->bb_url)
+            && TsoCurlHelper::isValidBbUrl((string) $account->bb_url);
     }
 
     /**

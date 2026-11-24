@@ -10,6 +10,7 @@ use App\Services\Amf\Transport\HttpTsoClient;
 use App\Services\TsoAuthService;
 use Exception;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\RateLimiter;
 use Tests\TestCase;
 
@@ -306,5 +307,31 @@ class SecurityHardeningTest extends TestCase
         $this->expectExceptionMessage('Invalid or unsupported URL scheme or host');
 
         $client->resolveServerUrl($account);
+    }
+
+    public function test_ensure_authenticated_does_not_skip_login_when_bb_url_is_empty(): void
+    {
+        $account = new Account([
+            'username' => 'empty_bb_user',
+            'password' => 'secret',
+            'region' => 'ru',
+            'bb_url' => '',
+            'dso_auth_user' => '',
+            'dso_auth_token' => '',
+        ]);
+        $account->id = 999;
+
+        // Simulate a stale cached session-OK flag (set before the security fix).
+        Cache::put('tso:session_ok:999', true, 300);
+
+        $service = $this->getMockBuilder(TsoAuthService::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['login'])
+            ->getMock();
+
+        // login() MUST be called because bb_url is empty, despite the cache flag.
+        $service->expects($this->once())->method('login')->with($account);
+
+        $service->ensureAuthenticated($account);
     }
 }

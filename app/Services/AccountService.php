@@ -11,6 +11,7 @@ use App\Exceptions\SessionExpiredException;
 use App\Models\Account;
 use App\Models\BotLog;
 use App\Services\Game\Session\GameSessionGuard;
+use App\Support\Http\TsoCurlHelper;
 use Exception;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
 use Illuminate\Support\Facades\Cache;
@@ -182,7 +183,7 @@ readonly class AccountService
         }
 
         $this->authService->resetSession($account);
-        if (! empty($data['dso_auth_token'])) {
+        if (! empty($data['dso_auth_token']) && ! empty($account->bb_url) && TsoCurlHelper::isValidBbUrl((string) $account->bb_url)) {
             Cache::forget("tso:session_invalidated:{$account->id}");
             $this->authService->markSessionVerified($account);
         }
