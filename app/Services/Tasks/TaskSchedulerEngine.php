@@ -248,7 +248,7 @@ readonly class TaskSchedulerEngine
             return 0;
         }
 
-        $accounts = Account::query()->select(['id', 'username', 'nickname', 'region', 'status', 'last_sync_at'])->get();
+        $accounts = Account::all();
         $count = 0;
 
         foreach ($accounts as $account) {
