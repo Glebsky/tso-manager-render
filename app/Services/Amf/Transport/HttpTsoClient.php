@@ -205,6 +205,158 @@ class HttpTsoClient implements TsoClientInterface
 
         Log::debug("[TsoAmf] Resolving real AMF server: bbUrl={$lsUrl}, user={$dsoAuthUser}, targetZoneId={$targetZoneId}");
 
+        $amfServerUrl = TsoCurlHelper::isUnifiedLoadServerUrl($lsUrl)
+            ? $this->resolveUnifiedServerUrl($lsUrl, $targetZoneId, $dsoAuthUser, $dsoAuthToken, $cookieFile)
+            : $this->resolveLegacyServerUrl($account, $lsUrl, $targetZoneId, $dsoAuthUser, $dsoAuthToken, $cookieFile);
+
+        if (! str_starts_with($amfServerUrl, 'http')) {
+            if (str_starts_with($amfServerUrl, '//')) {
+                $amfServerUrl = 'https:'.$amfServerUrl;
+            } else {
+                $amfServerUrl = rtrim($lsUrl, '/').$amfServerUrl;
+            }
+        }
+
+        Log::debug("[TsoAmf] Real AMF server resolved: {$amfServerUrl}");
+
+        return $amfServerUrl;
+    }
+
+    private function loadServerMaxRetries(): int
+    {
+        $defaultMaxRetries = app()->runningInConsole() ? 20 : 6;
+        $configuredMaxRetries = config('game.load_server_max_retries');
+
+        return max(1, (int) ($configuredMaxRetries ?? $defaultMaxRetries));
+    }
+
+    private function retryDelaySeconds(?int $suggestedSeconds = null): int
+    {
+        $configuredDelay = config('game.load_server_retry_delay_seconds');
+        if ($configuredDelay !== null) {
+            return max(0, (int) $configuredDelay);
+        }
+
+        if ($suggestedSeconds !== null && $suggestedSeconds > 0) {
+            return min(10, $suggestedSeconds);
+        }
+
+        return 2;
+    }
+
+    /**
+     * Resolve GameServer AMF URL via CipSoft's Unified Load Server (POST .../zones/{zoneId}).
+     *
+     * @throws Exception
+     */
+    private function resolveUnifiedServerUrl(
+        string $lsUrl,
+        int $targetZoneId,
+        string $dsoAuthUser,
+        string $dsoAuthToken,
+        string $cookieFile,
+    ): string {
+        $maxRetries = $this->loadServerMaxRetries();
+        $requestUrl = rtrim($lsUrl, '/').'/zones/'.$targetZoneId;
+        $postFields = http_build_query([
+            'DSOAUTHUSER' => $dsoAuthUser,
+            'DSOAUTHTOKEN' => $dsoAuthToken,
+        ]);
+
+        $lsStatus = 0;
+        $lsRes = '';
+        $decoded = null;
+        $consecutiveTransportErrors = 0;
+
+        for ($i = 0; $i < $maxRetries; $i++) {
+            $ch = TsoCurlHelper::init($requestUrl, [
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => $postFields,
+                CURLOPT_COOKIEFILE => $cookieFile,
+                CURLOPT_COOKIEJAR => $cookieFile,
+                CURLOPT_HTTPHEADER => array_merge(
+                    ['Content-Type: application/x-www-form-urlencoded', 'Accept: application/json'],
+                    TsoCurlHelper::defaultFlashHeaders(),
+                ),
+            ]);
+
+            $lsRes = (string) curl_exec($ch);
+            $lsStatus = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $decoded = json_decode($lsRes, true);
+            $errorCode = is_array($decoded) && is_string($decoded['code'] ?? null) ? $decoded['code'] : null;
+            $state = is_array($decoded) && is_string($decoded['state'] ?? null) ? $decoded['state'] : null;
+
+            Log::debug("[TsoAmf] ULS load server attempt {$i}: HTTP {$lsStatus}, URL {$requestUrl}, response: ".substr($lsRes, 0, 300));
+
+            if (in_array($lsStatus, [401, 403], true)
+                || $errorCode === 'invalid_token'
+                || ($lsStatus >= 300 && $lsStatus < 400)
+            ) {
+                throw new SessionExpiredException("Load Server returned status {$lsStatus}: session expired or invalid.");
+            }
+
+            if ($this->isMaintenanceResponse($lsStatus, $lsRes)
+                || in_array($errorCode, ['maintenance', 'realm_unavailable'], true)
+            ) {
+                throw GameServerMaintenanceException::fromResponse($lsStatus, $lsRes);
+            }
+
+            if ($lsStatus === 200 && $state === 'assigned' && is_string($decoded['url'] ?? null) && trim($decoded['url']) !== '') {
+                return str_replace(':123443', '', trim($decoded['url']));
+            }
+
+            if ($lsStatus === 0 || $lsStatus >= 500) {
+                $consecutiveTransportErrors++;
+                if ($consecutiveTransportErrors >= 2) {
+                    $lsError = curl_error($ch);
+
+                    throw new \RuntimeException(
+                        "Load server unavailable (HTTP {$lsStatus}".($lsError !== '' ? ": {$lsError}" : '').').'
+                    );
+                }
+            } elseif ($lsStatus >= 400 && $lsStatus !== 429) {
+                throw new \RuntimeException("Load server rejected request (HTTP {$lsStatus}): ".substr($lsRes, 0, 200));
+            } else {
+                $consecutiveTransportErrors = 0;
+            }
+
+            if ($state !== 'queued' && $lsStatus !== 202) {
+                Log::warning("[TsoAmf] Unexpected ULS status {$lsStatus}, response: ".substr($lsRes, 0, 200));
+            }
+
+            $suggestedRetry = is_array($decoded) && isset($decoded['retryAfter']) && is_numeric($decoded['retryAfter'])
+                ? (int) $decoded['retryAfter']
+                : null;
+            $delay = $this->retryDelaySeconds($suggestedRetry);
+
+            if ($i < $maxRetries - 1 && $delay > 0) {
+                sleep($delay);
+            }
+        }
+
+        if (is_array($decoded) && (
+            ($decoded['state'] ?? null) === 'queued'
+            || isset($decoded['queuePosition'], $decoded['queueLength'])
+        )) {
+            throw GameServerMaintenanceException::fromResponse($lsStatus, $lsRes);
+        }
+
+        throw new \RuntimeException("Timeout waiting for Load Server. Last status: {$lsStatus}, Resp: {$lsRes}");
+    }
+
+    /**
+     * Resolve GameServer AMF URL via legacy Load Server (/authenticate + /Z{ms}).
+     *
+     * @throws Exception
+     */
+    private function resolveLegacyServerUrl(
+        Account $account,
+        string $lsUrl,
+        int $targetZoneId,
+        string $dsoAuthUser,
+        string $dsoAuthToken,
+        string $cookieFile,
+    ): string {
         $authUrl = rtrim($lsUrl, '/').'/authenticate';
         $chAuth = TsoCurlHelper::init($authUrl, [
             CURLOPT_POST => true,
@@ -246,10 +398,8 @@ class HttpTsoClient implements TsoClientInterface
             Log::warning("[TsoAmf] Unexpected load server authentication status for account #{$account->id}: HTTP {$authStatus}");
         }
 
-        $defaultMaxRetries = app()->runningInConsole() ? 20 : 6;
-        $configuredMaxRetries = config('game.load_server_max_retries');
-        $maxRetries = max(1, (int) ($configuredMaxRetries ?? $defaultMaxRetries));
-        $retryDelaySeconds = max(0, (int) config('game.load_server_retry_delay_seconds', 2));
+        $maxRetries = $this->loadServerMaxRetries();
+        $retryDelaySeconds = $this->retryDelaySeconds();
         $lsStatus = 0;
         $lsRes = '';
         $amfServerUrl = '';
@@ -321,16 +471,6 @@ class HttpTsoClient implements TsoClientInterface
 
             throw new \RuntimeException("Timeout waiting for Load Server. Last status: {$lsStatus}, Resp: {$lsRes}");
         }
-
-        if (! str_starts_with($amfServerUrl, 'http')) {
-            if (str_starts_with($amfServerUrl, '//')) {
-                $amfServerUrl = 'https:'.$amfServerUrl;
-            } else {
-                $amfServerUrl = rtrim($lsUrl, '/').$amfServerUrl;
-            }
-        }
-
-        Log::debug("[TsoAmf] Real AMF server resolved: {$amfServerUrl}");
 
         return $amfServerUrl;
     }

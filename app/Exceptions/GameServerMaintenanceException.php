@@ -32,6 +32,24 @@ class GameServerMaintenanceException extends TaskExecutionException
 
     public static function fromResponse(int $status, string $body): self
     {
+        $decoded = json_decode($body, true);
+        if (is_array($decoded)) {
+            if (
+                isset($decoded['queuePosition'], $decoded['queueLength'])
+                && is_numeric($decoded['queuePosition'])
+                && is_numeric($decoded['queueLength'])
+            ) {
+                return new self(
+                    queuePos: (int) $decoded['queuePosition'],
+                    queueSize: (int) $decoded['queueLength'],
+                );
+            }
+
+            if (is_string($decoded['code'] ?? null) && trim($decoded['code']) !== '') {
+                return new self(details: trim($decoded['code']));
+            }
+        }
+
         parse_str($body, $parsed);
         if (
             isset($parsed['queuePos'], $parsed['queueSize'])

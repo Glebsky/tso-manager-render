@@ -32,6 +32,27 @@ if (preg_match('~^/redirect/(\d+)/~', $path, $matches)) {
         http_response_code(202);
         echo 'queuePos=1&queueSize=2';
     }
+} elseif (str_starts_with($path, '/uls/')) {
+    header('Content-Type: application/json');
+    echo json_encode(['url' => 'https://r02-gs003.thesettlersonline.ru/GameServer/amf', 'state' => 'assigned']);
+} elseif (str_starts_with($path, '/uls-queue/')) {
+    header('Content-Type: application/json');
+    echo json_encode(['queuePosition' => 2, 'queueLength' => 4, 'retryAfter' => 5, 'state' => 'queued']);
+} elseif (str_starts_with($path, '/uls-expired/')) {
+    http_response_code(401);
+    header('Content-Type: application/json');
+    echo json_encode(['code' => 'invalid_token']);
+} elseif (str_starts_with($path, '/uls-unknown-realm/')) {
+    http_response_code(404);
+    header('Content-Type: application/json');
+    echo json_encode(['code' => 'unknown_realm']);
+} elseif (str_starts_with($path, '/uls-maintenance/')) {
+    http_response_code(503);
+    header('Content-Type: application/json');
+    echo json_encode(['code' => 'maintenance']);
+} elseif (str_starts_with($path, '/uls-outage/')) {
+    http_response_code(522);
+    echo 'Cloudflare connection timed out';
 } elseif (str_starts_with($path, '/timeout/')) {
     sleep(3);
     echo 'late synthetic success';

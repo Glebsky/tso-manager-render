@@ -36,8 +36,20 @@ final readonly class TsoPlayPageParser
             : '';
 
         $bburl = isset($params['bb']) && is_scalar($params['bb'])
-            ? (string) $params['bb']
+            ? trim((string) $params['bb'])
             : '';
+
+        // CipSoft Unified Load Server (uls=true, ls=https://login.thesettlersonline.com, territory=ru, realm=2)
+        if ($bburl === '' && ! empty($params['ls']) && is_string($params['ls'])
+            && ! empty($params['territory']) && is_scalar($params['territory'])
+            && ! empty($params['realm']) && is_numeric($params['realm']) && (int) $params['realm'] > 0
+        ) {
+            $lsBase = rtrim(trim($params['ls']), '/');
+            $territory = strtolower(trim((string) $params['territory']));
+            if ($lsBase !== '' && $territory !== '') {
+                $bburl = sprintf('%s/v1/territories/%s/realms/%d', $lsBase, rawurlencode($territory), (int) $params['realm']);
+            }
+        }
 
         // If 'bb' is not explicitly present, extract from chat server host
         // (e.g. "http://r02-chat.thesettlersonline.ru:80" -> "https://r02-ls.thesettlersonline.ru/")
