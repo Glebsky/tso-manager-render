@@ -439,7 +439,11 @@ class TsoAuthService
             @file_put_contents($cookieFile, '');
         }
 
-        $ch = TsoCurlHelper::init(rtrim((string) $account->bb_url, '/').'/authenticate', [
+        if (TsoCurlHelper::isUnifiedLoadServerUrl($bbUrl)) {
+            return $this->verifyUnifiedSession($account, $bbUrl, $cookieFile);
+        }
+
+        $ch = TsoCurlHelper::init(rtrim($bbUrl, '/').'/authenticate', [
             CURLOPT_POST => true,
             CURLOPT_POSTFIELDS => http_build_query([
                 'DSOAUTHUSER' => (string) $account->dso_auth_user,
@@ -476,6 +480,53 @@ class TsoAuthService
         Log::info("[TsoAuth] Session probe for account #{$account->id}: HTTP {$status}, alive=".($alive ? 'yes' : 'no'));
 
         return $alive;
+    }
+
+    private function verifyUnifiedSession(Account $account, string $bbUrl, string $cookieFile): bool
+    {
+        $ch = TsoCurlHelper::init(rtrim($bbUrl, '/').'/zones/0', [
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => http_build_query([
+                'DSOAUTHUSER' => (string) $account->dso_auth_user,
+                'DSOAUTHTOKEN' => (string) $account->dso_auth_token,
+            ]),
+            CURLOPT_COOKIEFILE => $cookieFile,
+            CURLOPT_COOKIEJAR => $cookieFile,
+            CURLOPT_HTTPHEADER => array_merge(
+                ['Content-Type: application/x-www-form-urlencoded', 'Accept: application/json'],
+                TsoCurlHelper::defaultFlashHeaders(),
+            ),
+        ]);
+
+        $response = curl_exec($ch);
+        $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $errorCode = curl_errno($ch);
+
+        if ($response === false || $errorCode !== 0) {
+            Log::warning("[TsoAuth] ULS session probe for account #{$account->id} inconclusive (cURL {$errorCode})");
+
+            throw new RuntimeException('Session verification transport failure; authentication deferred.');
+        }
+
+        $decoded = json_decode((string) $response, true);
+        $code = is_array($decoded) && is_string($decoded['code'] ?? null) ? $decoded['code'] : null;
+        $state = is_array($decoded) && is_string($decoded['state'] ?? null) ? $decoded['state'] : null;
+
+        if ($status === 401 || $status === 403 || $code === 'invalid_token') {
+            Log::info("[TsoAuth] ULS session probe for account #{$account->id}: HTTP {$status}, alive=no");
+
+            return false;
+        }
+
+        if (in_array($status, [200, 202], true) && in_array($state, ['assigned', 'queued'], true)) {
+            Log::info("[TsoAuth] ULS session probe for account #{$account->id}: HTTP {$status}, state={$state}, alive=yes");
+
+            return true;
+        }
+
+        Log::warning("[TsoAuth] ULS session probe for account #{$account->id} inconclusive (HTTP {$status}".($code !== null ? ", code={$code}" : '').')');
+
+        throw new RuntimeException("Session verification unavailable (HTTP {$status}); authentication deferred.");
     }
 
     /**

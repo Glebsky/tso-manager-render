@@ -31,6 +31,20 @@ final class TsoCurlHelper
     }
 
     /**
+     * Determine whether a load server URL uses the CipSoft Unified Load Server (/v1/territories/{t}/realms/{r}) API.
+     */
+    public static function isUnifiedLoadServerUrl(?string $url): bool
+    {
+        if ($url === null || trim($url) === '') {
+            return false;
+        }
+
+        $path = (string) parse_url(trim($url), PHP_URL_PATH);
+
+        return preg_match('#/v1/territories/[^/]+/realms/\d+/?$#i', $path) === 1;
+    }
+
+    /**
      * Determine if a load server URL (bb_url) is valid, secure (HTTPS), and points to an allowed TSO domain.
      */
     public static function isValidBbUrl(?string $url): bool

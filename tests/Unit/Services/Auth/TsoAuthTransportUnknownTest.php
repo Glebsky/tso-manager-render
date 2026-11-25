@@ -154,4 +154,50 @@ final class TsoAuthTransportUnknownTest extends TestCase
         $service->ensureAuthenticated($account);
         $this->assertSame([], $this->server->requests());
     }
+
+    public function test_uls_assigned_and_queued_probes_mark_session_alive(): void
+    {
+        foreach (['/uls/v1/territories/ru/realms/2', '/uls-queue/v1/territories/ru/realms/2'] as $path) {
+            Cache::flush();
+            $account = $this->account($path);
+            $account->shouldReceive('refresh')->never();
+            $service = $this->service();
+            $service->shouldReceive('login')->never();
+
+            $service->ensureAuthenticated($account);
+
+            $this->assertTrue(Cache::get('tso:session_ok:984201'));
+        }
+    }
+
+    public function test_uls_invalid_token_triggers_login(): void
+    {
+        $account = $this->account('/uls-expired/v1/territories/ru/realms/2');
+        $account->shouldReceive('refresh')->once()->andReturnSelf();
+        $service = $this->service();
+        $service->shouldReceive('login')->once()->with($account)->andReturn([]);
+
+        $service->ensureAuthenticated($account);
+
+        $reqs = $this->server->requests();
+        $this->assertCount(1, $reqs);
+        $this->assertSame('/uls-expired/v1/territories/ru/realms/2/zones/0', $reqs[0]['path']);
+    }
+
+    public function test_uls_522_aborts_without_login(): void
+    {
+        $account = $this->account('/uls-outage/v1/territories/ru/realms/2');
+        $account->shouldReceive('refresh')->never();
+        $service = $this->service();
+        $service->shouldReceive('login')->never();
+
+        try {
+            $service->ensureAuthenticated($account);
+            $this->fail('ULS HTTP 522 probe must abort authentication.');
+        } catch (RuntimeException $e) {
+            $this->assertStringContainsString('authentication deferred', $e->getMessage());
+        }
+
+        $this->assertNull(Cache::get('tso:session_ok:984201'));
+    }
 }

@@ -95,6 +95,23 @@ final class TsoPlayPageParserTest extends TestCase
         $this->assertSame('https://r03-ls.thesettlersonline.ru/', $result['bburl']);
     }
 
+    public function test_derives_uls_bburl_from_ls_territory_and_realm_when_bb_is_missing(): void
+    {
+        $html = <<<'HTML'
+        <html>
+            <script>
+                function getFlashVars() {
+                    return "dsoAuthToken=tok123&dsoAuthUser=usr456&chatS=http%3A%2F%2Fr02-chat.thesettlersonline.ru%3A80&uls=true&ls=https%3A%2F%2Flogin.thesettlersonline.com&territory=RU&realm=2";
+                }
+            </script>
+        </html>
+        HTML;
+
+        $result = $this->parser->parse($html);
+
+        $this->assertSame('https://login.thesettlersonline.com/v1/territories/ru/realms/2', $result['bburl']);
+    }
+
     public function test_throws_exception_when_tokens_are_missing(): void
     {
         $html = '<html><body><h3>Maintenance in progress</h3></body></html>';
