@@ -34,7 +34,21 @@ class MarketCacheService
     /**
      * @var array<string, string>
      */
-    private static array $resolvedServerIds = [];
+    private array $resolvedServerIds = [];
+
+    /**
+     * Invalidate both the per-instance cache and the shared cache generation
+     * for resolved server IDs whenever server connections change.
+     */
+    public static function resetResolvedServerIds(): void
+    {
+        if (app()->resolved(self::class)) {
+            app(self::class)->resolvedServerIds = [];
+        }
+
+        $gen = (int) Cache::get('market:resolved_server_gen', 1);
+        Cache::put('market:resolved_server_gen', $gen + 1, self::VERSION_MICRO_TTL_SECONDS * 12);
+    }
 
     /**
      * Resolve target server_id from string input or fallback to first available.
@@ -42,32 +56,41 @@ class MarketCacheService
     public function resolveServerId(?string $serverId = null): string
     {
         $cacheKey = $serverId ?? '__default__';
-        if (isset(self::$resolvedServerIds[$cacheKey])) {
-            return self::$resolvedServerIds[$cacheKey];
+        if (isset($this->resolvedServerIds[$cacheKey])) {
+            return $this->resolvedServerIds[$cacheKey];
         }
 
-        if (! empty($serverId)) {
-            $connectionServerId = MarketServerConnection::where('server_id', $serverId)
-                ->value('server_id');
+        $gen = (int) Cache::get('market:resolved_server_gen', 1);
+        $sharedKey = "market:resolved_server:g{$gen}:".md5($cacheKey);
 
-            if ($connectionServerId) {
-                return self::$resolvedServerIds[$cacheKey] = $connectionServerId;
+        return $this->resolvedServerIds[$cacheKey] = (string) Cache::remember(
+            $sharedKey,
+            self::VERSION_MICRO_TTL_SECONDS,
+            static function () use ($serverId): string {
+                if (! empty($serverId)) {
+                    $connectionServerId = MarketServerConnection::where('server_id', $serverId)
+                        ->value('server_id');
+
+                    if ($connectionServerId) {
+                        return $connectionServerId;
+                    }
+
+                    // Fallback for short region code if exact connection not found (e.g. 'ru' -> 'ru_tandriya')
+                    $fallbackServerId = MarketServerConnection::where('server_id', 'LIKE', "{$serverId}\\_%")
+                        ->value('server_id');
+
+                    if ($fallbackServerId) {
+                        return $fallbackServerId;
+                    }
+
+                    return $serverId;
+                }
+
+                return (string) (MarketServerConnection::whereNotNull('account_id')->value('server_id')
+                    ?? MarketServerConnection::value('server_id')
+                    ?? 'ru');
             }
-
-            // Fallback for short region code if exact connection not found (e.g. 'ru' -> 'ru_tandriya')
-            $fallbackServerId = MarketServerConnection::where('server_id', 'LIKE', "{$serverId}\\_%")
-                ->value('server_id');
-
-            if ($fallbackServerId) {
-                return self::$resolvedServerIds[$cacheKey] = $fallbackServerId;
-            }
-
-            return self::$resolvedServerIds[$cacheKey] = $serverId;
-        }
-
-        return self::$resolvedServerIds[$cacheKey] = (string) (MarketServerConnection::whereNotNull('account_id')->value('server_id')
-            ?? MarketServerConnection::value('server_id')
-            ?? 'ru');
+        );
     }
 
     /**

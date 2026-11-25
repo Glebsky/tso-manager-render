@@ -11,6 +11,7 @@ use App\Services\MarketCacheService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class MarketCacheTest extends TestCase
@@ -206,5 +207,43 @@ class MarketCacheTest extends TestCase
         // Setting::set invalidates cache
         Setting::set('test_key', 'new_val');
         $this->assertSame('new_val', Setting::get('test_key'));
+    }
+
+    public function test_setting_caches_missing_or_null_values_without_repeating_queries(): void
+    {
+        $this->assertNull(Setting::get('nonexistent_setting_key'));
+
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        $this->assertNull(Setting::get('nonexistent_setting_key'));
+        $this->assertSame('fallback', Setting::get('nonexistent_setting_key', 'fallback'));
+        $queries = DB::getQueryLog();
+        DB::disableQueryLog();
+
+        $this->assertCount(0, $queries);
+    }
+
+    public function test_resolve_server_id_caches_and_invalidates_on_connection_change(): void
+    {
+        MarketServerConnection::query()->delete();
+        $this->createConnection('ru_evelans');
+
+        $first = $this->cacheService->resolveServerId();
+        $this->assertSame('ru_evelans', $first);
+
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        $freshInstance = app(MarketCacheService::class);
+        $second = $freshInstance->resolveServerId();
+        $queries = DB::getQueryLog();
+        DB::disableQueryLog();
+
+        $this->assertSame('ru_evelans', $second);
+        $this->assertCount(0, $queries);
+
+        // Deleting/creating connection invalidates resolved server IDs
+        MarketServerConnection::query()->where('server_id', 'ru_evelans')->each(static fn (MarketServerConnection $c) => $c->delete());
+        $this->createConnection('de_morgentau');
+        $this->assertSame('de_morgentau', $this->cacheService->resolveServerId());
     }
 }

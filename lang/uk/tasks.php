@@ -37,7 +37,7 @@ return [
         'building_depleted' => 'Шахта :name (сітка :grid) вичерпана.',
         'building_not_found' => 'Будівлю на сітці :grid не знайдено.',
         'server_maintenance' => 'Сервер гри на обслуговуванні.',
-        'server_maintenance_queue' => 'Сервер гри на обслуговуванні (черга: :pos/:size).',
+        'server_maintenance_queue' => 'Сервер завантаження зайнятий або акаунт уже в грі (черга: :pos/:size). Якщо ви зараз у грі, закрийте клієнт.',
         'server_maintenance_details' => 'Сервер гри на обслуговуванні (:details).',
         'task_cancelled' => 'Завдання #:id скасовано користувачем.',
         'task_busy' => 'Завдання #:id виконується в даний момент.',

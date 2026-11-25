@@ -234,14 +234,26 @@ class HttpTsoClient implements TsoClientInterface
             throw GameServerMaintenanceException::fromResponse($authStatus, $authRes);
         }
 
+        if ($authStatus === 0 || $authStatus >= 500) {
+            $authError = curl_error($chAuth);
+
+            throw new \RuntimeException(
+                "Load server authentication unavailable (HTTP {$authStatus}".($authError !== '' ? ": {$authError}" : '').').'
+            );
+        }
+
         if ($authStatus !== 200) {
             Log::warning("[TsoAmf] Unexpected load server authentication status for account #{$account->id}: HTTP {$authStatus}");
         }
 
-        $maxRetries = 20;
+        $defaultMaxRetries = app()->runningInConsole() ? 20 : 6;
+        $configuredMaxRetries = config('game.load_server_max_retries');
+        $maxRetries = max(1, (int) ($configuredMaxRetries ?? $defaultMaxRetries));
+        $retryDelaySeconds = max(0, (int) config('game.load_server_retry_delay_seconds', 2));
         $lsStatus = 0;
         $lsRes = '';
         $amfServerUrl = '';
+        $consecutiveTransportErrors = 0;
 
         for ($i = 0; $i < $maxRetries; $i++) {
             $requestUrl = rtrim($lsUrl, '/').'/Z'.(int) round(microtime(true) * 1000);
@@ -280,11 +292,26 @@ class HttpTsoClient implements TsoClientInterface
                 break;
             }
 
+            if ($lsStatus === 0 || $lsStatus >= 500) {
+                $consecutiveTransportErrors++;
+                if ($consecutiveTransportErrors >= 2) {
+                    $lsError = curl_error($ch);
+
+                    throw new \RuntimeException(
+                        "Load server unavailable (HTTP {$lsStatus}".($lsError !== '' ? ": {$lsError}" : '').').'
+                    );
+                }
+            } else {
+                $consecutiveTransportErrors = 0;
+            }
+
             if ($lsStatus !== 202) {
                 Log::warning("[TsoAmf] Unexpected load server status {$lsStatus}, response: ".substr($lsRes, 0, 200));
             }
 
-            sleep(2);
+            if ($i < $maxRetries - 1 && $retryDelaySeconds > 0) {
+                sleep($retryDelaySeconds);
+            }
         }
 
         if ($amfServerUrl === '') {

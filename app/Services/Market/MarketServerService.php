@@ -27,9 +27,7 @@ use Throwable;
  */
 final class MarketServerService
 {
-    private const string ACCOUNT_COLUMNS = 'account:id,username,nickname,region,status,zone_data';
-
-    private const string ACCOUNT_COLUMNS_WITH_ZONE = 'account:id,username,nickname,region,status,zone_data';
+    private const string ACCOUNT_COLUMNS = 'account:id,username,nickname,region,status,game_world_name,avatar_id,building_count';
 
     public function __construct(
         private readonly MarketCacheService $cache,
@@ -48,7 +46,7 @@ final class MarketServerService
     {
         $servers = $this->normalizedServers();
 
-        $accounts = Account::select('id', 'username', 'nickname', 'region', 'status', 'zone_data')
+        $accounts = Account::select('id', 'username', 'nickname', 'region', 'status', 'game_world_name', 'avatar_id', 'building_count')
             ->latest()
             ->get();
 
@@ -284,7 +282,7 @@ final class MarketServerService
      */
     private function normalizedServers(): Collection
     {
-        return MarketServerConnection::with(self::ACCOUNT_COLUMNS_WITH_ZONE)
+        return MarketServerConnection::with(self::ACCOUNT_COLUMNS)
             ->orderBy('id')
             ->get()
             ->map(function (MarketServerConnection $server): MarketServerConnection {

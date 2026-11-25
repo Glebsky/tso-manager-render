@@ -6286,7 +6286,7 @@
             "server_error": "Код помилки сервера :errorCode: :errorMsg",
             "server_maintenance": "Сервер гри на обслуговуванні.",
             "server_maintenance_details": "Сервер гри на обслуговуванні (:details).",
-            "server_maintenance_queue": "Сервер гри на обслуговуванні (черга: :pos/:size).",
+            "server_maintenance_queue": "Сервер завантаження зайнятий або акаунт уже в грі (черга: :pos/:size). Якщо ви зараз у грі, закрийте клієнт.",
             "task_busy": "Завдання #:id виконується в даний момент.",
             "task_cancelled": "Завдання #:id скасовано користувачем.",
             "task_inactive": "Завдання #:id неактивне або призупинене.",
