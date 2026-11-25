@@ -105,7 +105,7 @@ class DomainExceptionHandlingTest extends TestCase
         $response->assertStatus(503)
             ->assertJsonStructure(['message', 'code']);
         $this->assertSame(503, $response->json('code'));
-        $this->assertMatchesRegularExpression('/maintenance|обслуживан/i', (string) $response->json('message'));
+        $this->assertMatchesRegularExpression('/load server is busy|queue: 2\/2|очередь: 2\/2/i', (string) $response->json('message'));
     }
 
     public function test_unhandled_exception_redacts_sensitive_details(): void

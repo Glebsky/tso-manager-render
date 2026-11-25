@@ -37,7 +37,7 @@ return [
         'building_depleted' => 'Mine :name (grid :grid) is depleted.',
         'building_not_found' => 'Building at grid :grid was not found.',
         'server_maintenance' => 'Game server is under maintenance.',
-        'server_maintenance_queue' => 'Game server is under maintenance (queue: :pos/:size).',
+        'server_maintenance_queue' => 'Load server is busy or account is already in game (queue: :pos/:size). Close the game client if you are logged in.',
         'server_maintenance_details' => 'Game server is under maintenance (:details).',
         'task_cancelled' => 'Task #:id was cancelled by user.',
         'task_busy' => 'Task #:id is currently executing.',

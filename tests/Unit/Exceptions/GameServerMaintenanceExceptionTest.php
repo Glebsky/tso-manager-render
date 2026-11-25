@@ -40,15 +40,15 @@ class GameServerMaintenanceExceptionTest extends TestCase
     {
         App::setLocale('ru');
         $ruEx = GameServerMaintenanceException::fromResponse(202, 'queuePos=2&queueSize=2');
-        $this->assertSame('Сервер игры на обслуживании (очередь: 2/2).', $ruEx->getMessage());
+        $this->assertSame('Сервер загрузки занят или аккаунт уже в игре (очередь: 2/2). Если вы сейчас в игре, закройте клиент.', $ruEx->getMessage());
 
         App::setLocale('en');
         $enEx = GameServerMaintenanceException::fromResponse(202, 'queuePos=2&queueSize=2');
-        $this->assertSame('Game server is under maintenance (queue: 2/2).', $enEx->getMessage());
+        $this->assertSame('Load server is busy or account is already in game (queue: 2/2). Close the game client if you are logged in.', $enEx->getMessage());
 
         App::setLocale('uk');
         $ukEx = GameServerMaintenanceException::fromResponse(202, 'queuePos=2&queueSize=2');
-        $this->assertSame('Сервер гри на обслуговуванні (черга: 2/2).', $ukEx->getMessage());
+        $this->assertSame('Сервер завантаження зайнятий або акаунт уже в грі (черга: 2/2). Якщо ви зараз у грі, закрийте клієнт.', $ukEx->getMessage());
     }
 
     public function test_it_localizes_custom_details_properly(): void
@@ -69,6 +69,6 @@ class GameServerMaintenanceExceptionTest extends TestCase
 
         $this->assertSame('tasks.error.server_maintenance_queue', $payload['key']);
         $this->assertSame(['pos' => 2, 'size' => 2], $payload['params']);
-        $this->assertSame('Сервер игры на обслуживании (очередь: 2/2).', $payload['message']);
+        $this->assertSame('Сервер загрузки занят или аккаунт уже в игре (очередь: 2/2). Если вы сейчас в игре, закройте клиент.', $payload['message']);
     }
 }

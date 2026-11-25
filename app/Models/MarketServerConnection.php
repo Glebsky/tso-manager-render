@@ -4,11 +4,23 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Services\MarketCacheService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class MarketServerConnection extends Model
 {
+    protected static function booted(): void
+    {
+        static::saved(static function (): void {
+            MarketCacheService::resetResolvedServerIds();
+        });
+
+        static::deleted(static function (): void {
+            MarketCacheService::resetResolvedServerIds();
+        });
+    }
+
     protected $fillable = [
         'server_id',
         'locale',

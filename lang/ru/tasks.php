@@ -37,7 +37,7 @@ return [
         'building_depleted' => 'Шахта :name (сетка :grid) истощена.',
         'building_not_found' => 'Здание на сетке :grid не найдено.',
         'server_maintenance' => 'Сервер игры на обслуживании.',
-        'server_maintenance_queue' => 'Сервер игры на обслуживании (очередь: :pos/:size).',
+        'server_maintenance_queue' => 'Сервер загрузки занят или аккаунт уже в игре (очередь: :pos/:size). Если вы сейчас в игре, закройте клиент.',
         'server_maintenance_details' => 'Сервер игры на обслуживании (:details).',
         'task_cancelled' => 'Задача #:id отменена пользователем.',
         'task_busy' => 'Задача #:id выполняется в данный момент.',

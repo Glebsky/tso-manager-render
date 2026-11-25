@@ -12,9 +12,26 @@ file_put_contents(getcwd().'/requests.jsonl', json_encode([
 if (preg_match('~^/redirect/(\d+)/~', $path, $matches)) {
     header('Location: /redirect-target', true, (int) $matches[1]);
     echo 'synthetic redirect';
+} elseif (preg_match('~^/outage/(\d+)/~', $path, $matches)) {
+    http_response_code((int) $matches[1]);
+    echo 'Cloudflare connection timed out';
 } elseif (preg_match('~^/status/(\d+)/~', $path, $matches)) {
     http_response_code((int) $matches[1]);
     echo 'ERROR synthetic rejection or outage';
+} elseif (str_starts_with($path, '/ls-outage/')) {
+    if (str_ends_with($path, '/authenticate')) {
+        echo 'tok|nick|hash';
+    } else {
+        http_response_code(522);
+        echo 'Cloudflare connection timed out';
+    }
+} elseif (str_starts_with($path, '/ls-queue/')) {
+    if (str_ends_with($path, '/authenticate')) {
+        echo 'tok|nick|hash';
+    } else {
+        http_response_code(202);
+        echo 'queuePos=1&queueSize=2';
+    }
 } elseif (str_starts_with($path, '/timeout/')) {
     sleep(3);
     echo 'late synthetic success';
