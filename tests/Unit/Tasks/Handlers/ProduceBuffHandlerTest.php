@@ -6,6 +6,7 @@ namespace Tests\Unit\Tasks\Handlers;
 
 use App\Enums\ProductionRejectionReason;
 use App\Enums\TaskType;
+use App\Exceptions\GameServerErrorException;
 use App\Exceptions\InvalidTaskTypeException;
 use App\Models\Account;
 use App\Services\Game\Production\ConfigProductionCatalog;
@@ -102,7 +103,7 @@ final class ProduceBuffHandlerTest extends TestCase
 
         $this->zonesMock->shouldReceive('forAccount')
             ->once()
-            ->with($this->account)
+            ->with($this->account, true)
             ->andReturn($snapshot);
 
         $this->gatewayMock->shouldReceive('queueOrder')
@@ -143,7 +144,7 @@ final class ProduceBuffHandlerTest extends TestCase
 
         $this->zonesMock->shouldReceive('forAccount')
             ->once()
-            ->with($this->account)
+            ->with($this->account, true)
             ->andReturn($snapshot);
 
         $this->gatewayMock->shouldNotReceive('queueOrder');
@@ -182,7 +183,7 @@ final class ProduceBuffHandlerTest extends TestCase
 
         $this->zonesMock->shouldReceive('forAccount')
             ->once()
-            ->with($this->account)
+            ->with($this->account, true)
             ->andReturn($snapshot);
 
         $this->gatewayMock->shouldReceive('queueOrder')
@@ -261,7 +262,7 @@ final class ProduceBuffHandlerTest extends TestCase
 
         $this->zonesMock->shouldReceive('forAccount')
             ->once()
-            ->with($this->account)
+            ->with($this->account, true)
             ->andReturn($snapshot);
 
         $this->gatewayMock->shouldNotReceive('queueOrder');
@@ -285,5 +286,32 @@ final class ProduceBuffHandlerTest extends TestCase
             ]),
             $result->message
         );
+    }
+
+    public function test_it_bubbles_session_error_from_live_zone_refresh_before_queue_order(): void
+    {
+        $snapshot = new ZoneSnapshot([
+            'server_response_confirmed' => true,
+            'errorCode' => 1012,
+            'buildings' => [],
+            'production_queues' => [],
+        ]);
+
+        $this->zonesMock->shouldReceive('forAccount')
+            ->once()
+            ->with($this->account, true)
+            ->andReturn($snapshot);
+
+        $this->gatewayMock->shouldNotReceive('queueOrder');
+
+        $this->expectException(GameServerErrorException::class);
+        $this->expectExceptionCode(1012);
+
+        $this->handler->handleResult($this->account, [
+            'grid' => 1234,
+            'production_type' => 20,
+            'recipe_name' => 'ProductivityBuffLvl3',
+            'amount' => 1,
+        ]);
     }
 }

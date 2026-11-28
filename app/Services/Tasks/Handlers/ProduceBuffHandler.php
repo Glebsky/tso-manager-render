@@ -77,11 +77,9 @@ final readonly class ProduceBuffHandler implements ResultAwareTaskActionHandlerI
             throw new InvalidTaskTypeException('Invalid produce_buff parameters.', 422);
         }
 
-        $snapshot = $productionType === 2
-            ? $this->zones->forAccount($account, true)
-            : $this->zones->forAccount($account);
+        $snapshot = $this->zones->forAccount($account, true);
         $initialCode = $snapshot->raw()['errorCode'] ?? null;
-        if ($productionType === 2 && ($snapshot->raw()['server_response_confirmed'] ?? false) === true
+        if (($snapshot->raw()['server_response_confirmed'] ?? false) === true
             && is_int($initialCode) && in_array($initialCode, self::SESSION_ERROR_CODES, true)) {
             throw new GameServerErrorException($initialCode, GameErrorResolver::getMessage($initialCode));
         }
