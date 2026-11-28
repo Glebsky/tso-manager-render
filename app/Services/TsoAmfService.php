@@ -325,7 +325,7 @@ class TsoAmfService
             'SMC',
             'ExecuteServerCall',
             'com.bluebyte.game.servlet.EventHandler',
-            $targetZoneId
+            $targetZoneId ?? (int) $account->dso_auth_user
         );
     }
 
