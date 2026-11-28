@@ -457,6 +457,11 @@ class TsoAmfService
         $vo->stacks = $stacks;
         $vo->buildingGrid = $grid;
 
-        return $this->sendServerCall($account, self::CMD_START_TIMED_PRODUCTION, $vo);
+        return $this->sendServerCall(
+            $account,
+            self::CMD_START_TIMED_PRODUCTION,
+            $vo,
+            targetZoneId: (int) $account->dso_auth_user,
+        );
     }
 }
